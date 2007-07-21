@@ -1,0 +1,850 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+	<extension point="org.eclipse.ui.preferencePages">
+		<page name="OcaIDE" class="ocaml.preferences.RootPreferencePage"
+			id="ocaml.preferences.RootPreferencePage">
+		</page>
+		<page category="ocaml.preferences.RootPreferencePage"
+			class="ocaml.preferences.PathsPreferencePage"
+			id="ocaml.preferences.PathsPreferencePage" name="Paths">
+		</page>
+		<page category="ocaml.preferences.RootPreferencePage"
+			class="ocaml.preferences.SyntaxColoringPreferencePage"
+			id="ocaml.preferences.SyntaxColoringPreferencePage"
+			name="Syntax Coloring">
+		</page>
+		<page category="ocaml.preferences.RootPreferencePage"
+			class="ocaml.preferences.EditorPreferencePage"
+			id="ocaml.preferences.EditorPreferencePage"
+			name="Editor">
+		</page>
+	</extension>
+	
+	<extension point="org.eclipse.core.runtime.preferences">
+		<initializer class="ocaml.preferences.PreferenceInitializer">
+		</initializer>
+	</extension>
+	
+	<extension point="org.eclipse.ui.perspectives">
+		<perspective name="O&apos;Caml" icon="icons/caml16x16.gif"
+			class="ocaml.perspectives.OcamlPerspective"
+			id="ocaml.perspectives.OcamlPerspective">
+		</perspective>
+		<perspective class="ocaml.perspectives.OcamlDebugPerspective"
+			icon="icons/caml16x16.gif"
+			id="ocaml.perspectives.OcamlDebugPerspective" name="Debug"/>
+	</extension>
+	
+	<extension
+       point="org.eclipse.ui.editors">
+		<editor name="mlEditor" icon="icons/implFile.gif" extensions="ml"
+			class="ocaml.editors.OcamlEditor"
+			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			id="ocaml.editors.mlEditor">
+		</editor>
+		
+		<editor name="mliEditor" icon="icons/interfFile.gif" extensions="mli"
+			class="ocaml.editors.OcamlEditor"
+			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			id="ocaml.editors.mliEditor">
+		</editor>
+		<editor name="mlpEditor" icon="icons/mlp.gif" extensions="mlp"
+			class="ocaml.editors.OcamlEditor"
+			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			id="ocaml.editors.mlpEditor">
+		</editor>
+		
+		<editor name="yaccEditor" icon="icons/yaccFile.gif" extensions="mly"
+			class="ocaml.editors.yacc.OcamlyaccEditor"
+			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			id="ocaml.editors.yaccEditor">
+		</editor>
+		
+		<editor name="lexEditor" icon="icons/lexFile.gif" extensions="mll"
+			class="ocaml.editors.lex.OcamllexEditor"
+			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			id="ocaml.editors.lexEditor">
+		</editor>
+	</extension>
+	
+	<extension point="org.eclipse.ui.views">
+		<category name="OCaml" id="ocaml.views.Category">
+		</category>
+		<category id="ocaml.views.DebugCategory" name="Ocaml Debugging"/>
+		<view allowMultiple="false" category="ocaml.views.Category"
+			class="ocaml.views.OcamlCompilerOutput" fastViewWidthRatio="90"
+			icon="icons/caml16x16.gif" id="ocaml.ocamlCompilerOutput"
+			name="OCaml Compiler Output">
+		</view>
+		<view allowMultiple="false" category="ocaml.views.Category"
+			class="ocaml.views.OcamlBrowserView" fastViewWidthRatio="75"
+			icon="icons/camlPurple16x16.gif" id="ocaml.ocamlBrowserView"
+			name="OCaml Browser">
+		</view>
+		<view allowMultiple="true" category="ocaml.views.Category"
+			class="ocaml.views.toplevel.OcamlToplevelView"
+			fastViewWidthRatio="40" icon="icons/toplevelViewIcon.gif"
+			id="Ocaml.ocamlToplevelView" name="OCaml Toplevel"/>
+		<view allowMultiple="false" category="ocaml.views.DebugCategory"
+			class="ocaml.debugging.views.OcamlCallStackView"
+			icon="icons/stackframe.gif" id="Ocaml.CallStackView"
+			name="Ocaml Call Stack"/>
+		<view allowMultiple="false" category="ocaml.views.DebugCategory"
+			class="ocaml.debugging.views.OcamlBreakpointsView"
+			icon="icons/breakpoint_view.gif" id="Ocaml.BreakpointsView"
+			name="Ocaml Breakpoints"/>
+		<view allowMultiple="false" category="ocaml.views.DebugCategory"
+			class="ocaml.debugging.views.OcamlWatchView"
+			icon="icons/watchlist.gif" id="Ocaml.WatchView"
+			name="Ocaml Variable Watch"/>
+	</extension>
+	
+	<extension point="org.eclipse.ui.newWizards">
+		<category name="OCaml" id="ocaml.wizards.Category">
+		</category>
+		
+		<wizard name="Module" icon="icons/implFile.gif"
+			category="ocaml.wizards.Category"
+			class="ocaml.wizards.OcamlNewModuleWizard"
+			id="ocaml.wizards.OcamlNewModuleWizard">
+			<description> Create a ml file </description>
+		</wizard>
+		
+		<wizard name="Interface" icon="icons/interfFile.gif"
+			category="ocaml.wizards.Category"
+			class="ocaml.wizards.OcamlNewInterfaceWizard"
+			id="ocaml.wizards.OcamlNewInterfaceWizard">
+			<description> Create a mli file </description>
+		</wizard>
+		
+		<wizard name="Yacc" icon="icons/yaccFile.gif"
+			category="ocaml.wizards.Category"
+			class="ocaml.wizards.OcamlNewYaccWizard"
+			id="ocaml.wizards.OcamlNewYaccWizard">
+			<description> Create a Yacc file </description>
+		</wizard>
+		
+		<wizard name="Lex" icon="icons/lexFile.gif"
+			category="ocaml.wizards.Category"
+			class="ocaml.wizards.OcamlNewLexWizard"
+			id="ocaml.wizards.OcamlNewLexWizard">
+			<description> Create a Lex file </description>
+		</wizard>
+		<wizard category="ocaml.wizards.Category"
+			class="ocaml.wizards.OcamlNewMakeProjectWizard"
+			finalPerspective="ocaml.perspectives.OcamlPerspective"
+			icon="icons/caml16x16.gif"
+			id="ocaml.wizards.OcamlNewMakefileProjectWizard"
+			name="OCaml Makefile Project"
+			preferredPerspectives="ocaml.perspectives.OcamlPerspective"
+			project="true">
+			<selection class="org.eclipse.core.resources.IResource"/>
+			<description> Create an OCaml project with Makefile </description>
+		</wizard>
+		
+		<wizard category="ocaml.wizards.Category"
+			class="ocaml.wizards.OcamlNewEmptyMakeProjectWizard"
+			finalPerspective="ocaml.perspectives.OcamlPerspective"
+			icon="icons/caml16x16.gif"
+			id="ocaml.wizards.OcamlNewEmptyMakefileProjectWizard"
+			name="OCaml Empty Makefile Project"
+			preferredPerspectives="ocaml.perspectives.OcamlPerspective"
+			project="true">
+			<selection class="org.eclipse.core.resources.IResource"/>
+			<description> Create an empty OCaml Makefile project (useful for importing projects) </description>
+		</wizard>
+
+		<wizard name="OCaml Managed Project" icon="icons/caml16x16.gif"
+			category="ocaml.wizards.Category"
+			class="ocaml.wizards.OcamlNewProjectWizard"
+			preferredPerspectives="ocaml.perspectives.OcamlPerspective"
+			finalPerspective="ocaml.perspectives.OcamlPerspective" project="true"
+			id="ocaml.wizards.OcamlNewProjectWizard">
+			<selection class="org.eclipse.core.resources.IResource">
+			</selection>
+			
+			<description> Create an OCaml project </description>
+		</wizard>
+	</extension>
+	
+	<extension point="org.eclipse.ui.ide.resourceFilters">
+		<filter selected="true" pattern=".project"/>
+		<filter selected="true" pattern=".DS_Store"/>		
+		<filter selected="true" pattern="*.annot"/>		
+		<filter selected="true" pattern="*.cmo"/>		
+		<filter selected="true" pattern="*.cmi"/>		
+		<filter selected="true" pattern="*.cmx"/>		
+		<filter selected="true" pattern="*.cma"/>		
+		<filter selected="true" pattern="*.cmxa"/>
+		<filter pattern="*.o" selected="true"/>
+		<filter pattern=".settings" selected="true"/>
+		<filter pattern=".paths" selected="true"/>
+		<filter pattern="._d" selected="true"/>
+		<filter pattern="._bcdi" selected="true"/>
+		<filter pattern="._ncdi" selected="true"/>
+  <filter
+        pattern="*._old"
+        selected="true"/>
+  <filter
+        pattern=".*"
+        selected="false"/>
+  <filter
+        pattern=".DebuggerSourceLookup"
+        selected="true"/>
+  <filter
+        pattern=".makefilepaths"
+        selected="true"/>
+  <filter
+        pattern=".HyperlinksLinkedFiles"
+        selected="true"/>
+	</extension>
+	
+   <extension point="org.eclipse.team.core.fileTypes">
+      <fileTypes extension="ml" type="text"/>
+      <fileTypes extension="mli" type="text"/>
+      <fileTypes extension="mll" type="text"/>
+      <fileTypes extension="mly" type="text"/>
+      <fileTypes extension="cmo" type="binary"/>
+      <fileTypes extension="cmi" type="binary"/>
+      <fileTypes extension="cma" type="binary"/>
+      <fileTypes extension="cmxo" type="binary"/>
+      <fileTypes extension="cmxi" type="binary"/>
+      <fileTypes extension="cmxa" type="binary"/>
+      <fileTypes
+            extension="mlp"
+            type="text">
+      </fileTypes>
+   </extension>
+	
+	
+	<extension point="org.eclipse.ui.propertyPages">
+		<page objectClass="org.eclipse.core.resources.IProject"
+			name="Ocaml Project" class="ocaml.properties.OcamlProjectProperties"
+			id="ocaml.properties.OcamlProjectProperties">
+			<filter name="nature" value="ocaml.ocamlnature"/>
+		</page>
+		<page class="ocaml.properties.OcamlFileProperties"
+			id="ocaml.properties.OcamlFileProperties" name="Ocaml Module"
+			nameFilter="*.ml" objectClass="org.eclipse.core.resources.IFile">
+			<enabledWhen>
+				<test forcePluginActivation="true" property="Ocaml.isInNature"
+					value="ocaml.ocamlnature"/>
+			</enabledWhen>
+		</page>
+		<page class="ocaml.properties.OcamlProjectPathsProperties"
+			id="Ocaml.properties.projectpaths" name="Project Paths"
+			objectClass="org.eclipse.core.resources.IProject">
+			<filter name="nature" value="ocaml.ocamlnature"/>
+		</page>
+		<page class="ocaml.properties.OcamlMakefileProjectProperties"
+			id="ocaml.properties.OcamlMakefileProjectProperties" name="Makefile"
+			objectClass="org.eclipse.core.resources.IProject">
+			<filter name="nature" value="ocaml.ocamlnatureMakefile"/>
+		</page>
+		<page class="ocaml.properties.OcamlMakefilePathsProperties"
+			id="ocaml.properties.OcamlMakefilePathsProperties" name="Makefile Paths"
+			objectClass="org.eclipse.core.resources.IProject">
+			<filter name="nature" value="ocaml.ocamlnatureMakefile"/>
+		</page>
+		<page class="ocaml.properties.LinkedFilesProperties"
+			id="ocaml.properties.LinkedFilesProperties"
+			name="Ocaml External File"
+			objectClass="org.eclipse.core.resources.IFile">
+			<enabledWhen>
+				<and>
+					<test forcePluginActivation="true"
+						property="Ocaml.isLinkedFile" value="true"/>
+					<test forcePluginActivation="true" property="Ocaml.isInNature"
+						value="ocaml.ocamlnature"/>
+				</and>
+			</enabledWhen>
+		</page>
+		<page class="ocaml.properties.OcamlProjectFlagsProperties"
+			id="ocaml.properties.OcamlProjectFlagsProperties"
+			name="Ocaml Build Flags"
+			objectClass="org.eclipse.core.resources.IProject">
+			<filter name="nature" value="ocaml.ocamlnature"/>
+		</page>
+	</extension>
+	<extension point="org.eclipse.ui.propertyPages">
+		<page class="ocaml.properties.OcamlProjectPathsProperties"
+			id="Ocaml.properties.projectpathsMakefile" name="Project Paths"
+			objectClass="org.eclipse.core.resources.IProject">
+			<filter name="nature" value="ocaml.ocamlnatureMakefile"/>
+		</page>
+	</extension>
+	
+	<extension id="ocaml.decoratorsextension" name="Decorators extension"
+		point="org.eclipse.ui.decorators">
+		<decorator adaptable="true" icon="icons/generated.gif"
+			id="Ocaml.generatedDecorator" label="Autogenerated" lightweight="true"
+			location="TOP_RIGHT" state="true">
+			<enablement>
+				<and>
+					<objectClass name="org.eclipse.core.resources.IFile"/>
+					
+					<objectState name="persistentProperty"
+						value="ocaml.is_gen=true"/>
+					<not>
+						<objectState name="path" value="*/External files/*"/>
+					</not>
+				</and>
+			</enablement>
+		</decorator>
+		<decorator adaptable="true" icon="icons/errorInSource.gif"
+			id="Ocaml.errorInSourceDecorator" label="Error in source"
+			lightweight="true" location="BOTTOM_LEFT" state="false">
+			<enablement>
+				<and>
+					<objectState name="persistentProperty"
+						value="ocaml.compilation_errors"/>
+     <objectClass name="org.eclipse.core.resources.IFile"/>
+				</and>
+			</enablement>
+		</decorator>
+		<decorator adaptable="true" icon="icons/warning_co.gif"
+			id="Ocaml.warningInSourceDecorator" label="Warning in source"
+			lightweight="true" location="BOTTOM_LEFT" state="false">
+			<enablement>
+				<and>
+					<objectState name="persistentProperty"
+						value="ocaml.compilation_warnings"/>
+     <objectClass name="org.eclipse.core.resources.IFile"/>
+     <not>
+        <objectState
+              name="persistentProperty"
+              value="ocaml.compilation_errors"/>
+     </not>
+				</and>
+			</enablement>
+		</decorator>
+		<decorator adaptable="true" icon="icons/makeexe.gif"
+			id="Ocaml.makeExeDecorator" label="Make Executable" lightweight="true"
+			location="BOTTOM_RIGHT" state="false">
+			<enablement>
+				<and>
+					<objectClass name="org.eclipse.core.resources.IFile"/>
+					<objectState name="persistentProperty"
+						value="ocaml.make_exe"/>
+				</and>
+			</enablement>
+		</decorator>
+		<decorator adaptable="true" class="ocaml.build.WithLocationDecorator"
+			id="Ocaml.LocationDecorator" label="LocationPrinter"
+			lightweight="true" location="TOP_LEFT" state="true">
+			<enablement>
+				<and>
+					<objectClass name="org.eclipse.core.resources.IFile"/>
+					<objectState name="path" value="*/External files/*"/>
+				</and>
+			</enablement>
+		</decorator>
+		<decorator icon="icons/library_obj.gif" id="Ocaml.externalFilesDecorator"
+			label="External files" lightweight="true" state="true">
+			<enablement>
+				<and>
+					<objectState name="name" value="External files"/>
+					<objectClass name="org.eclipse.core.resources.IFolder"/>
+				</and>
+			</enablement>
+		</decorator>
+		<decorator icon="icons/library_obj.gif"
+			id="Ocaml.externalSourcesDecorator" label=".DebuggerSourceLookup"
+			lightweight="true" state="true">
+			<enablement>
+				<and>
+					<objectState name="name" value=".DebuggerSourceLookup"/>
+					<objectClass name="org.eclipse.core.resources.IFolder"/>
+				</and>
+			</enablement>
+		</decorator>
+		<decorator icon="icons/binaryfile.gif"
+			id="Ocaml.nativeExecutableDecorator" label="Native Executable"
+			lightweight="true" state="true">
+			<enablement>
+				<and>
+					<objectClass name="org.eclipse.core.resources.IFile"/>
+					<objectState name="persistentProperty"
+						value="ocaml.compil_mode=native"/>
+				</and>
+			</enablement>
+		</decorator>
+		<decorator icon="icons/byteCode.gif"
+			id="Ocaml.byteCodeExecutableDecorator" label="Byte-code Executable"
+			lightweight="true" state="true">
+			<enablement>
+				<and>
+					<objectClass name="org.eclipse.core.resources.IFile"/>
+					<objectState name="persistentProperty"
+						value="ocaml.compil_mode=byte-code"/>
+				</and>
+			</enablement>
+		</decorator>
+  <decorator
+        adaptable="true"
+        icon="icons/warning_co.gif"
+        id="Ocaml.warningInProjectDecorator"
+        label="Warning in project"
+        lightweight="true"
+        location="BOTTOM_LEFT"
+        state="true">
+     <enablement>
+        <and>
+           <objectClass name="org.eclipse.core.resources.IProject"/>
+           <objectState
+                 name="persistentProperty"
+                 value="ocaml.compilation_warnings"/>
+           <not>
+              <objectState
+                    name="persistentProperty"
+                    value="ocaml.compilation_errors"/>
+           </not>
+        </and>
+     </enablement>
+  </decorator>
+  <decorator
+        adaptable="true"
+        icon="icons/errorInSource.gif"
+        id="Ocaml.errorInProjectDecorator"
+        label="Error in project"
+        lightweight="true"
+        location="BOTTOM_LEFT"
+        state="false">
+     <enablement>
+        <and>
+           <objectClass name="org.eclipse.core.resources.IProject"/>
+           <objectState
+                 name="persistentProperty"
+                 value="ocaml.compilation_errors"/>
+        </and>
+     </enablement>
+  </decorator>
+	</extension>
+	
+	<extension id="ocaml.ocamlnature" name="OCaml Nature"
+		point="org.eclipse.core.resources.natures">
+		<runtime>
+			<run class="ocaml.natures.OcamlNature"/>
+		</runtime>
+	</extension>
+	
+	<extension id="ocaml.ocamlnatureMakefile" name="OCaml Makefile Nature"
+		point="org.eclipse.core.resources.natures">
+		<runtime>
+			<run class="ocaml.natures.OcamlNatureMakefile"/>
+		</runtime>
+		<builder id="Ocaml.ocamlMakefileBuilder"/>
+	</extension>
+	
+	<extension point="org.eclipse.ui.ide.projectNatureImages">
+		<image icon="icons/camlNature.gif" natureId="ocaml.ocamlnature"
+			id="ocamlNatureImage">
+		</image>
+		<image icon="icons/camlNatureMakefile.gif" id="ocamlMakefileNatureImage"
+			natureId="ocaml.ocamlnatureMakefile"/>
+	</extension>
+	<extension id="ocamlbuilder" name="Ocaml Builder"
+		point="org.eclipse.core.resources.builders">
+		<builder hasNature="false" isConfigurable="true">
+			<run class="ocaml.build.OcamlBuilder"/>
+		</builder>
+	</extension>
+	
+	<extension id="ocamlMakefileBuilder" name="Ocaml Makefile Builder"
+		point="org.eclipse.core.resources.builders">
+		<builder hasNature="true" isConfigurable="true">
+			<run class="ocaml.build.makefile.OcamlMakefileBuilder"/>
+		</builder>
+	</extension>
+	
+	<extension point="org.eclipse.core.filebuffers.documentSetup">
+		<participant class="ocaml.editors.OcamlDocumentSetupParticipant"
+			extensions="ml,mli,mlp"/>
+		<participant class="ocaml.editors.lex.OcamllexDocumentSetupParticipant"
+			extensions="mll"/>
+		<participant class="ocaml.editors.yacc.OcamlyaccDocumentSetupParticipant"
+			extensions="mly"/>
+	</extension>
+	<extension point="org.eclipse.debug.core.launchConfigurationTypes">
+		<launchConfigurationType
+			delegate="ocaml.launching.OcamlLaunchConfigurationDelegate"
+			id="Ocaml.launchConfigurationType" modes="run,debug"
+			name="Ocaml Executable" public="true"/>
+	</extension>
+	<extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+		<launchConfigurationTypeImage
+			configTypeID="Ocaml.launchConfigurationType"
+			icon="icons/caml16x16.gif" id="Ocaml.launchConfigurationTypeImage"/>
+	</extension>
+	<extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+		<launchConfigurationTabGroup
+			class="ocaml.launching.OcamlLaunchConfigurationTabGroup"
+			description="Configure Ocaml executable launching"
+			id="Ocaml.launchConfigurationTabGroup"
+			type="Ocaml.launchConfigurationType"/>
+	</extension>
+	<extension point="org.eclipse.debug.ui.launchShortcuts">
+		<shortcut class="ocaml.launching.OcamlLaunchShortcut"
+			icon="icons/caml16x16.gif" id="Ocaml.launching.launchShortcut"
+			label="Ocaml Executable" modes="run,debug">
+			<contextualLaunch>
+				<enablement>
+					<with variable="selection">
+						<count value="1"/>
+						<iterate>
+							<or>
+								<test forcePluginActivation="true"
+									property="Ocaml.isExecutable"/>
+							</or>
+						</iterate>
+					</with>
+				</enablement>
+			</contextualLaunch>
+		</shortcut>
+	</extension>
+	<extension point="org.eclipse.ui.actionSets">
+		<actionSet description="Actions for debugging an Ocaml program"
+			id="Ocaml_debuggingActionSet" label="Ocaml Debugging" visible="false">
+			<menu id="Ocaml_debugMenu" label="Debug">
+				<separator name="slot1"/>
+				<separator name="slot2"/>
+				<separator name="slot3"/>
+			</menu>
+			<action class="ocaml.debugging.RemoveBreakpointsAction"
+				definitionId="Ocaml.removeBreakpointsCommand"
+				icon="icons/removeAll.gif"
+				id="Ocaml_debuggingActions_removeBreakpoints"
+				label="Remove Breakpoints" menubarPath="Ocaml_debugMenu/slot2"
+				style="push" toolbarPath="Ocaml_debugMenu/slot2"/>
+			<action class="ocaml.debugging.PutBreakpointAction"
+				definitionId="Ocaml.putBreakpointCommand"
+				icon="icons/breakpoint.gif"
+				id="Ocaml_debuggingActions_putBreakpoint" label="Put Breakpoint"
+				menubarPath="Ocaml_debugMenu/slot2" style="push"
+				toolbarPath="Ocaml_debugMenu/slot2"/>
+			<action class="ocaml.debugging.RestartAction"
+				definitionId="Ocaml.restartCommand" icon="icons/term_restart.gif"
+				id="Ocaml_debuggingActions_restart" label="Restart"
+				menubarPath="Ocaml_debugMenu/slot3" style="push"
+				toolbarPath="Ocaml_debugMenu/slot3"/>
+			<action class="ocaml.debugging.TerminateAction"
+				definitionId="Ocaml.terminateCommand" icon="icons/term_sbook.gif"
+				id="Ocaml_debuggingActions_terminate" label="Terminate"
+				menubarPath="Ocaml_debugMenu/slot3" style="push"
+				toolbarPath="Ocaml_debugMenu/slot3"/>
+			<action class="ocaml.debugging.StepReturnAction"
+				definitionId="Ocaml.stepReturnCommand"
+				icon="icons/stepreturn.gif"
+				id="Ocaml_debuggingActions_stepreturn" label="Step Return"
+				menubarPath="Ocaml_debugMenu/slot1" style="push"
+				toolbarPath="Ocaml_debugMenu/slot1"/>
+			<action class="ocaml.debugging.BackstepReturnAction"
+				definitionId="Ocaml.backstepReturnCommand"
+				icon="icons/stepreturnBackwards.gif"
+				id="Ocaml_debuggingActions_backstepReturn"
+				label="Backstep Return" menubarPath="Ocaml_debugMenu/slot1"
+				style="push" toolbarPath="Ocaml_debugMenu/slot1"/>
+			<action class="ocaml.debugging.StepOverAction"
+				definitionId="Ocaml.stepOverCommand" icon="icons/stepover.gif"
+				id="Ocaml_debuggingActions_stepover" label="Step Over"
+				menubarPath="Ocaml_debugMenu/slot1" style="push"
+				toolbarPath="Ocaml_debugMenu/slot1"/>
+			<action class="ocaml.debugging.BackStepOverAction"
+				definitionId="Ocaml.backstepOverCommand"
+				icon="icons/stepoverBackwards.gif"
+				id="Ocaml_debuggingActions_backstepOver" label="Backstep Over"
+				menubarPath="Ocaml_debugMenu/slot1" style="push"
+				toolbarPath="Ocaml_debugMenu/slot1"/>
+			<action class="ocaml.debugging.StepAction"
+				definitionId="Ocaml.stepCommand" icon="icons/stepinto.gif"
+				id="Ocaml_debuggingActions_step" label="Step"
+				menubarPath="Ocaml_debugMenu/slot1" style="push"
+				toolbarPath="Ocaml_debugMenu/slot1"/>
+			<action class="ocaml.debugging.BackStepAction"
+				definitionId="Ocaml.backstepCommand"
+				icon="icons/stepintoBackwards.gif"
+				id="Ocaml_debuggingActions_backstep" label="Backstep"
+				menubarPath="Ocaml_debugMenu/slot1" style="push"
+				toolbarPath="Ocaml_debugMenu/slot1"/>
+			<action class="ocaml.debugging.RunAction"
+				definitionId="Ocaml.runCommand" icon="icons/run.gif"
+				id="Ocaml_debuggingActions_run" label="Run"
+				menubarPath="Ocaml_debugMenu/slot3" style="push"
+				toolbarPath="Ocaml_debugMenu/slot3"/>
+			<action class="ocaml.debugging.ReverseAction"
+				definitionId="Ocaml.reverseCommand" icon="icons/runBackwards.gif"
+				id="Ocaml_debuggingActions_runBackwards" label="Reverse"
+				menubarPath="Ocaml_debugMenu/slot3" style="push"
+				toolbarPath="Ocaml_debugMenu/slot3"/>
+		</actionSet>
+		<actionSet description="Actions on Ocaml source code"
+			id="Ocaml_sourceActionSet" label="Ocaml Source Actions"
+			visible="false">
+			<menu id="Ocaml_sourceMenu" label="Ocaml">
+				<separator name="slot1"/>
+			</menu>
+			<action class="ocaml.editor.actions.ConvertWithCamlp4Action"
+				definitionId="Ocaml.camlp4convertCommand"
+				id="Ocaml_sourceActions_Camlp4Convert" label="Convert revised syntax to standard syntax"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+			<action class="ocaml.build.makefile.CleanAction"
+				definitionId="Ocaml.cleanCommand" id="Ocaml.cleanAction"
+				label="Clean" menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+			<action class="ocaml.editor.actions.ToplevelQuickEvalAction"
+				definitionId="Ocaml.toplevelQuickEvalCommand"
+				id="Ocaml_sourceActions_ToplevelQuickEval"
+				label="Eval In Toplevel" menubarPath="Ocaml_sourceMenu/slot1"
+				style="push"/>
+			<action class="ocaml.editor.actions.GotoMatchingDelimiterAction"
+				definitionId="Ocaml.gotoMatchingDelimiterCommand"
+				id="Ocaml_sourceActions_GotoMatchingDelimiter"
+				label="Goto Matching Delimiter"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+			<action class="ocaml.editor.actions.FormatWithCamlp4Action"
+				definitionId="Ocaml.camlp4formatterCommand"
+				id="Ocaml_sourceActions_Camlp4Formatter" label="Format with camlp4"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+			<action class="ocaml.editor.actions.FormatterAction"
+				definitionId="Ocaml.formatterCommand"
+				id="Ocaml_sourceActions_Formatter" label="Format"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+			<action class="ocaml.editor.actions.ContentAssistAction"
+				definitionId="Ocaml.contentAssistCommand"
+				id="Ocaml_sourceActions_ContentAssist" label="Content Assist"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+			<action class="ocaml.editor.actions.ContextInformationAction"
+				definitionId="Ocaml.contextInformationCommand"
+				icon="icons/help.gif" id="Ocaml_sourceActions_ContextInformation"
+				label="Show Tooltip Description"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+		</actionSet>
+	</extension>
+	<extension point="org.eclipse.ui.commands">
+		<category id="Ocaml.commandscategory" name="Ocaml Commands"/>
+		<command categoryId="Ocaml.commandscategory" id="Ocaml.stepCommand"
+			name="Step"/>
+		<command categoryId="Ocaml.commandscategory" id="Ocaml.backstepCommand"
+			name="Backstep"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.putBreakpointCommand" name="Put Breakpoint"/>
+		<command categoryId="Ocaml.commandscategory" id="Ocaml.runCommand"
+			name="Run"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.removeBreakpointsCommand" name="Remove Breakpoints"/>
+		<command categoryId="Ocaml.commandscategory" id="Ocaml.terminateCommand"
+			name="Terminate"/>
+		
+		<command categoryId="Ocaml.commandscategory" id="Ocaml.stepOverCommand"
+			name="Step Over"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.backstepOverCommand" name="Backstep Over"/>
+		
+		<command categoryId="Ocaml.commandscategory" id="Ocaml.stepReturnCommand"
+			name="Step Return"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.backstepReturnCommand" name="Backstep Return"/>
+		
+		<command categoryId="Ocaml.commandscategory" id="Ocaml.reverseCommand"
+			name="Reverse"/>
+		
+		<command categoryId="Ocaml.commandscategory" id="Ocaml.restartCommand"
+			name="Restart"/>
+		
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.contextInformationCommand"
+			name="Show Tooltip Description"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.contentAssistCommand" name="Content Assist"/>
+		<command categoryId="Ocaml.commandscategory" id="Ocaml.formatterCommand"
+			name="Format"/>
+		<command categoryId="Ocaml.commandscategory" id="Ocaml.camlp4formatterCommand"
+			name="Format with camlp4"/>
+		<command categoryId="Ocaml.commandscategory" id="Ocaml.camlp4convertCommand"
+			name="Convert from revised syntax to standard syntax with camlp4"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.gotoMatchingDelimiterCommand"
+			name="Goto Matching Delimiter"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.toplevelQuickEvalCommand" name="Eval In Toplevel"/>
+	</extension>
+	<extension point="org.eclipse.ui.bindings">
+		<key
+        commandId="Ocaml.stepCommand"
+        contextId="org.eclipse.ui.contexts.window"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+*"/>
+		<key commandId="Ocaml.backstepCommand"
+			contextId="org.eclipse.ui.contexts.window"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+Ù"/>
+		<key commandId="Ocaml.stepOverCommand"
+			contextId="org.eclipse.ui.contexts.window"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+="/>
+		<key commandId="Ocaml.backstepOverCommand"
+			contextId="org.eclipse.ui.contexts.window"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+)"/>
+		<key commandId="Ocaml.stepReturnCommand"
+			contextId="org.eclipse.ui.contexts.window"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+À"/>
+		<key commandId="Ocaml.backstepReturnCommand"
+			contextId="org.eclipse.ui.contexts.window"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+Ç"/>
+		<key commandId="Ocaml.putBreakpointCommand"
+			contextId="org.eclipse.ui.contexts.window"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+W B"/>
+		<key commandId="Ocaml.removeBreakpointsCommand"
+			contextId="org.eclipse.ui.contexts.window"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+W R"/>
+		<key commandId="Ocaml.terminateCommand"
+			contextId="org.eclipse.ui.contexts.window"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+F2"/>
+		<key commandId="Ocaml.contextInformationCommand"
+			contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="F2"/>
+		<key commandId="Ocaml.contentAssistCommand"
+			contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="CTRL+SPACE"/>
+		<key commandId="Ocaml.formatterCommand" contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="F3"/>
+		<key commandId="Ocaml.camlp4formatterCommand" contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M2+F3"/>
+		<key commandId="Ocaml.gotoMatchingDelimiterCommand"
+			contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="F4"/>
+		<key commandId="Ocaml.toplevelQuickEvalCommand"
+			contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="F6"/>
+	</extension>
+	<extension point="org.eclipse.ui.contexts">
+		<context description="Context for editing Ocaml source"
+			id="Ocaml.editor.context" name="Editing Ocaml Source"
+			parentId="org.eclipse.ui.textEditorScope"/>
+	</extension>
+	<extension point="org.eclipse.core.expressions.propertyTesters">
+		<propertyTester class="ocaml.util.HasOcamlNaturePropertyTester"
+			id="Ocaml.natureTester" namespace="Ocaml" properties="isInNature"
+			type="org.eclipse.core.resources.IFile"/>
+		<propertyTester class="ocaml.util.IsExecutablePropertyTester"
+			id="Ocaml.isExecutableTester" namespace="Ocaml"
+			properties="isExecutable"
+			type="org.eclipse.core.resources.IResource"/>
+		<propertyTester class="ocaml.util.IsLinkedPropertyTester"
+			id="Ocaml.isLinkedTester" namespace="Ocaml" properties="isLinkedFile"
+			type="org.eclipse.core.resources.IFile"/>
+	</extension>
+	
+	<extension point="org.eclipse.ui.popupMenus">
+		<objectContribution adaptable="true"
+			id="ocaml.makefileProjectContribution"
+			objectClass="org.eclipse.core.resources.IProject">
+			<filter name="nature" value="ocaml.ocamlnatureMakefile"/>
+			
+			<action label="Create Documentation"
+				class="ocaml.popup.actions.GenDocAction" icon="icons/doc.gif"
+				menubarPath="additions" enablesFor="1"
+				id="ocaml.popup.actions.GenDocAction">
+			</action>
+			
+			<action label="Clean Project"
+				class="ocaml.popup.actions.CleanProjectAction"
+				icon="icons/clean.gif" menubarPath="additions" enablesFor="1"
+				id="ocaml.popup.actions.CleanProjectAction">
+			</action>
+			
+			<action label="Make Project"
+				class="ocaml.popup.actions.CompileProjectAction"
+				icon="icons/buildAll.gif" menubarPath="additions" enablesFor="1"
+				id="ocaml.popup.actions.CompileProjectAction">
+			</action>
+			
+		</objectContribution>
+		<objectContribution adaptable="true" id="ocaml.fileContribution"
+			nameFilter="*.ml" objectClass="org.eclipse.core.resources.IFile">
+			<action class="ocaml.popup.actions.GenMliAction" enablesFor="1"
+				icon="icons/interfFile.gif" id="ocaml.popup.actions.GenMliAction"
+				label="Generate Interface" menubarPath="additions"/>
+			
+			<enablement>
+				<!-- Ce warning correspond à un bug dans eclipse 3.2, l'élément "test" existe bel et bien -->
+				<test forcePluginActivation="true" property="Ocaml.isInNature"
+					value="ocaml.ocamlnatureMakefile"/>
+			</enablement>
+		</objectContribution>
+		<objectContribution adaptable="true" id="Ocaml.LoadInToplevelContribution"
+			nameFilter="*.ml" objectClass="org.eclipse.core.resources.IFile">
+			<action class="ocaml.popup.actions.LoadInToplevelAction"
+				enablesFor="+" icon="icons/openInToplevel.gif"
+				id="ocaml.popup.actions.LoadInToplevelAction"
+				label="Load in Toplevel" menubarPath="additions"/>
+		</objectContribution>
+		<objectContribution adaptable="true" id="Ocaml.projectContribution"
+			objectClass="org.eclipse.core.resources.IProject">
+			<filter name="nature" value="ocaml.ocamlnature"/>
+			<action class="ocaml.popup.actions.GenMakefileAction" enablesFor="1"
+				icon="icons/makefile.gif"
+				id="ocaml.popup.actions.GenMakefileAction"
+				label="Generate Makefile" menubarPath="additions"/>
+		</objectContribution>
+	</extension>
+	<extension point="org.eclipse.help.toc">
+		<toc file="docs/toc.xml" primary="true"/>
+	</extension>
+ <extension
+       id="ocamlSyntaxErrorMarker"
+       name="Ocaml syntax error marker"
+       point="org.eclipse.core.resources.markers">
+    <persistent
+          value="true">
+    </persistent>
+    <super
+          type="org.eclipse.core.resources.textmarker">
+    </super>
+ </extension>
+ <extension
+       point="org.eclipse.ui.editors.annotationTypes">
+    <type
+          markerType="Ocaml.ocamlSyntaxErrorMarker"
+          name="Ocaml.ocamlSyntaxErrorAnnotationType">
+    </type>
+ </extension>
+ <extension
+       point="org.eclipse.ui.editors.markerAnnotationSpecification">
+    <specification
+          annotationType="Ocaml.ocamlSyntaxErrorAnnotationType"
+          colorPreferenceKey="syntaxerror.color"
+          colorPreferenceValue="255,140,0"
+          contributesToHeader="true"
+          highlightPreferenceKey="syntaxerror.highlight"
+          highlightPreferenceValue="false"
+          includeOnPreferencePage="true"
+          isGoToNextNavigationTarget="false"
+          isGoToPreviousNavigationTarget="false"
+          label="Ocaml Syntax Error"
+          overviewRulerPreferenceKey="syntaxerror.rulers.overview"
+          overviewRulerPreferenceValue="true"
+          presentationLayer="1"
+          showInNextPrevDropdownToolbarAction="false"
+          symbolicIcon="error"
+          textPreferenceKey="syntaxerror.text"
+          textPreferenceValue="true"
+          textStylePreferenceKey="syntaxerror.textstyle"
+          textStylePreferenceValue="SQUIGGLES"
+          verticalRulerPreferenceKey="syntaxerror.rulers.vertical"
+          verticalRulerPreferenceValue="false">
+    </specification>
+ </extension>
+</plugin>
