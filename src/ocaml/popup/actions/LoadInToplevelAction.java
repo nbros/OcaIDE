@@ -8,6 +8,7 @@ import ocaml.OcamlPlugin;
 import ocaml.views.toplevel.OcamlToplevelView;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
@@ -16,10 +17,11 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**
- * This action is called when the user clicks on the "Load in Toplevel" menu item in the pop-up for O'Caml
- * modules.
+ * This action is called when the user clicks on the "Load in Toplevel" menu item in the pop-up for
+ * O'Caml modules.
  * 
- * It tries to load the object file with the same base name as the selected ml file, with the "#load" command.
+ * It tries to load the object file with the same base name as the selected ml file, with the
+ * "#load" command.
  */
 public class LoadInToplevelAction implements IObjectActionDelegate {
 
@@ -36,21 +38,20 @@ public class LoadInToplevelAction implements IObjectActionDelegate {
 				objFile = file.getLocation().removeFileExtension().addFileExtension("cmo").toFile();
 
 				if (!objFile.exists()) {
-					objFile = file.getLocation().removeFileExtension().addFileExtension("cmx").toFile();
+					objFile = file.getLocation().removeFileExtension().addFileExtension("cmx")
+							.toFile();
 
 					if (objFile.exists()) {
-						MessageDialog
-								.openInformation(
-										null,
-										"Cannot load file",
-										file.getName()
-												+ " is compiled in native mode.\n"
-												+ "To be loaded into the toplevel, it needs to be compiled in byte-code mode.");
+						MessageDialog.openInformation(null, "Cannot load file", file.getName()
+								+ " is compiled in native mode.\n"
+								+ "To be loaded into the toplevel, "
+								+ "it needs to be compiled in byte-code mode.");
 						continue;
 					}
 
 					MessageDialog.openInformation(null, "Cannot load file", file.getName()
-							+ " doesn't have a corresponding cmo file.\n" + "Have you compiled it yet?");
+							+ " doesn't have a corresponding cmo file.\n"
+							+ "Have you compiled it yet?");
 
 					continue;
 				}
@@ -62,7 +63,24 @@ public class LoadInToplevelAction implements IObjectActionDelegate {
 					continue;
 				}
 
-				OcamlToplevelView.eval("#cd \"" + objFile.getParent() + "\";;\n" + "#load \""
+				
+				// use a double "\" on Windows
+				String separator = ((File.separatorChar == '\\') ? "\\\\" : File.separator); 
+				
+				Path path = new Path(objFile.getParent());
+				path = (Path)path.makeAbsolute();
+				
+				String strPath = path.getDevice();
+				if(strPath == null)strPath = "";
+				strPath = strPath + separator;
+				
+				for(String segment : path.segments()){
+					strPath = strPath + segment + separator;
+				}
+				
+				
+					
+				OcamlToplevelView.eval("#cd \"" + strPath + "\";;\n" + "#load \""
 						+ objFile.getName() + "\";;");
 
 			} catch (Exception e) {

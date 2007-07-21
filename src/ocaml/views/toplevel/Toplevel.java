@@ -359,9 +359,15 @@ public class Toplevel {
 					return;
 				}
 				
-				String[] envp = { "OCAMLLIB=" + OcamlPlugin.getLibFullPath() };
+				
 				File dir = new File(OcamlPlugin.getPluginDirectory());
-				exec = ExecHelper.exec(execEvents, command, envp, dir);
+
+				ProcessBuilder processBuilder = new ProcessBuilder(command);
+				processBuilder.directory(dir);
+				processBuilder.environment().put("OCAMLLIB", OcamlPlugin.getLibFullPath());
+				
+				Process process = processBuilder.start();
+				exec = new ExecHelper(execEvents, process);
 			}
 		} catch (IOException e) {
 			OcamlPlugin.logError("OCaml plugin IO error while trying to start ocaml toplevel", e);

@@ -6,8 +6,8 @@ import java.util.Map;
 import ocaml.OcamlPlugin;
 
 /**
- * Execute an external process, and permits interactive communication with the process. To receive the output
- * from the process, we use the IExecEvents call-back interface.
+ * Execute an external process, and permits interactive communication with the process. To receive
+ * the output from the process, we use the IExecEvents call-back interface.
  */
 public class ExecHelper implements Runnable {
 	// Allocate 1K buffers for Input and Error Streams.
@@ -32,8 +32,8 @@ public class ExecHelper implements Runnable {
 
 	private IExecEvents handler;
 
-	// Private constructor so that no one can create a new ExecHelper directly.
-	private ExecHelper(IExecEvents ep, Process p) {
+	/** Do not use this constructor directly unless necessary. Use the static "exec" methods instead */
+	public ExecHelper(IExecEvents ep, Process p) {
 		// Save variables.
 		handler = ep;
 		process = p;
@@ -117,8 +117,8 @@ public class ExecHelper implements Runnable {
 	 * 
 	 * @see ExecHelper#exec()
 	 */
-	public static ExecHelper execMerge(IExecEvents handler, String command[], Map<String, String> envp,
-			File dir) throws IOException {
+	public static ExecHelper execMerge(IExecEvents handler, String command[],
+			Map<String, String> envp, File dir) throws IOException {
 		ProcessBuilder processBuilder = new ProcessBuilder(command);
 		processBuilder.directory(dir);
 		processBuilder.redirectErrorStream(true);
