@@ -1,7 +1,6 @@
 package ocaml.util;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -438,7 +437,7 @@ public class Misc {
 			URL url = new URL(installURL, iconPath + name);
 			ImageDescriptor icon = ImageDescriptor.createFromURL(url);
 			return icon.createImage();
-		} catch (MalformedURLException e) {
+		} catch (Exception e) {
 			OcamlPlugin.logError("ocaml plugin error in createIcon", e);
 		}
 		return null;
