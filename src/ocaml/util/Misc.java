@@ -431,7 +431,7 @@ public class Misc {
 	 * @return an image, or <code>null</code> if there was an error
 	 */
 	public static Image createIcon(String name) {
-		String iconPath = "icons" + File.separatorChar;
+		String iconPath = "icons/";
 		try {
 			URL installURL = OcamlPlugin.getInstallURL();
 			URL url = new URL(installURL, iconPath + name);
