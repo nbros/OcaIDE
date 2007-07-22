@@ -2,6 +2,7 @@ package ocaml.editor.completion;
 
 import ocaml.OcamlPlugin;
 import ocaml.parsers.OcamlDefinition;
+import ocaml.util.ImageRepository;
 import ocaml.util.Misc;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -26,20 +27,6 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 
 	private int typedLength;
 
-	private static Image libraryModuleIcon = null;
-
-	private static Image valueIcon = null;
-
-	private static Image constructorIcon = null;
-
-	private static Image typeIcon = null;
-
-	private static Image exceptionIcon = null;
-
-	private static Image externalIcon = null;
-
-	private static Image classIcon = null;
-
 	/**
 	 * @param definition
 	 *            the module, function, value...
@@ -56,20 +43,6 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 		this.definition = definition;
 		this.typedLength = typedWordLength;
 
-		if (libraryModuleIcon == null)
-			libraryModuleIcon = Misc.createIcon("var.gif");
-		if (valueIcon == null)
-			valueIcon = Misc.createIcon("value.gif");
-		if (constructorIcon == null)
-			constructorIcon = Misc.createIcon("constructor.gif");
-		if (typeIcon == null)
-			typeIcon = Misc.createIcon("type.gif");
-		if (exceptionIcon == null)
-			exceptionIcon = Misc.createIcon("exception.gif");
-		if (externalIcon == null)
-			externalIcon = Misc.createIcon("external.gif");
-		if (classIcon == null)
-			classIcon = Misc.createIcon("class.gif");
 	}
 
 	public void apply(IDocument document) {
@@ -129,22 +102,25 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 	}
 
 	public Image getImage() {
-		if (definition.getType() == OcamlDefinition.Type.DefModule)
-			return libraryModuleIcon;
-		else if (definition.getType() == OcamlDefinition.Type.DefConstructor)
-			return constructorIcon;
-		else if (definition.getType() == OcamlDefinition.Type.DefException)
-			return exceptionIcon;
-		else if (definition.getType() == OcamlDefinition.Type.DefType)
-			return typeIcon;
-		else if (definition.getType() == OcamlDefinition.Type.DefVal)
-			return valueIcon;
-		else if (definition.getType() == OcamlDefinition.Type.DefExternal)
-			return externalIcon;
-		else if (definition.getType() == OcamlDefinition.Type.DefClass)
-			return classIcon;
-		else
-			return null;
+		
+		switch(definition.getType()){
+		case DefClass:
+			return ImageRepository.getImage(ImageRepository.ICON_CLASS);
+		case DefConstructor:
+			return ImageRepository.getImage(ImageRepository.ICON_C);
+		case DefException:
+			return ImageRepository.getImage(ImageRepository.ICON_EXCEPTION);
+		case DefExternal:
+			return ImageRepository.getImage(ImageRepository.ICON_EXTERNAL);
+		case DefModule:
+			return ImageRepository.getImage(ImageRepository.ICON_LIBRARY);
+		case DefType:
+			return ImageRepository.getImage(ImageRepository.ICON_TYPE);
+		case DefVal:
+			return ImageRepository.getImage(ImageRepository.ICON_VALUE);
+		}
+		
+		return null;
 	}
 
 	public String getDisplayString() {
