@@ -94,6 +94,11 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_VAL, true);
 			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_VARIANT_CONS, true);
 
+			store.setDefault(PreferenceConstants.P_DEBUGGER_CHECKPOINTS, true);
+			store.setDefault(PreferenceConstants.P_DEBUGGER_SMALL_STEP, 1000);
+			store.setDefault(PreferenceConstants.P_DEBUGGER_BIG_STEP, 10000);
+			store.setDefault(PreferenceConstants.P_DEBUGGER_PROCESS_COUNT, 15);
+
 			String ocamlLibPath = "";
 			String ocaml = "";
 			String ocamlc = "";

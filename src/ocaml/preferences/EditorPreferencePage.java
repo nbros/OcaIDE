@@ -26,8 +26,11 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_EDITOR_DISABLE_AUTOFORMAT,
 				"Completely disable auto formatting", this.getFieldEditorParent()));
 
-		this.addField(new IntegerFieldEditor(PreferenceConstants.P_EDITOR_TABS,
-				"Tab width in spaces", this.getFieldEditorParent()));
+		IntegerFieldEditor tabWidth;
+		tabWidth = new IntegerFieldEditor(PreferenceConstants.P_EDITOR_TABS,
+				"Tab width in spaces", this.getFieldEditorParent());
+		tabWidth.setValidRange(1, 16);
+		this.addField(tabWidth);
 
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_EDITOR_CONTINUE_COMMENTS,
 				"Close and reopen comments on the next line", this.getFieldEditorParent()));

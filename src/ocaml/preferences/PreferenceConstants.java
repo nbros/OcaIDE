@@ -83,4 +83,9 @@ public class PreferenceConstants
 	public static final String P_OUTLINE_LET_MINIMUM_CHARS = "ocamlOutlineLetMinChars";
 	public static final String P_OUTLINE_LET_IN_MINIMUM_CHARS = "ocamlOutlineLetInMinChars";
 	
+	public static final String P_DEBUGGER_CHECKPOINTS = "ocamlDebuggerCheckpoints";
+	public static final String P_DEBUGGER_SMALL_STEP = "ocamlDebuggerSmallStep";
+	public static final String P_DEBUGGER_BIG_STEP = "ocamlDebuggerBigStep";
+	public static final String P_DEBUGGER_PROCESS_COUNT = "ocamlDebuggerProcessCount";
+	
 }

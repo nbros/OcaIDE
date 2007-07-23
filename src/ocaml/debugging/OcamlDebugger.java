@@ -15,6 +15,7 @@ import ocaml.exec.ExecHelper;
 import ocaml.exec.IExecEvents;
 import ocaml.perspectives.OcamlDebugPerspective;
 import ocaml.perspectives.OcamlPerspective;
+import ocaml.preferences.PreferenceConstants;
 import ocaml.util.OcamlPaths;
 
 import org.eclipse.core.resources.IFile;
@@ -43,7 +44,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	/** The possible states of the debugger */
 	public enum State {
-		NotStarted, Starting1, Starting2, Starting3, Starting4, Idle, Running, RunningBackwards, Stepping, BackStepping, SteppingOver, BackSteppingOver, Frame, Quitting, PuttingBreakpoint, StepReturn, BackstepReturn, Displaying, BackTrace, RemovingBreakpoint, RemovingBreakpoints, RemovedBreakpoints, Restarting, DisplayingWatchVars, DisplayWatchVars
+		NotStarted, Starting1, Starting1a, Starting1b, Starting1c, Starting1d, Starting2, Starting3, Starting4, Idle, Running, RunningBackwards, Stepping, BackStepping, SteppingOver, BackSteppingOver, Frame, Quitting, PuttingBreakpoint, StepReturn, BackstepReturn, Displaying, BackTrace, RemovingBreakpoint, RemovingBreakpoints, RemovedBreakpoints, Restarting, DisplayingWatchVars, DisplayWatchVars
 	};
 
 	/** The current state of the debugger: idle, not started, stepping... */
@@ -83,6 +84,9 @@ public class OcamlDebugger implements IExecEvents {
 
 	/** The index in <code>watchVariables</code> of the next variable to display */
 	private int iCurrentWatchVariable;
+	
+	/** whether checkpoints are activated */
+	private boolean checkpoints;
 
 	/**
 	 * private constructor (so that the user cannot create an instance of the debugger)
@@ -183,6 +187,11 @@ public class OcamlDebugger implements IExecEvents {
 	public synchronized void reverse() {
 		if (!checkStarted())
 			return;
+		
+		if(!checkpoints){
+			message("You cannot go back when checkpoints are disabled");
+			return;
+		}
 
 		if (state.equals(State.Idle)) {
 			state = State.RunningBackwards;
@@ -193,6 +202,11 @@ public class OcamlDebugger implements IExecEvents {
 	public synchronized void restart() {
 		if (!checkStarted())
 			return;
+
+		if(!checkpoints){
+			message("You cannot go back when checkpoints are disabled");
+			return;
+		}
 
 		if (state.equals(State.Idle)) {
 			emptyCallStackView();
@@ -216,6 +230,11 @@ public class OcamlDebugger implements IExecEvents {
 		if (!checkStarted())
 			return;
 
+		if(!checkpoints){
+			message("You cannot go back when checkpoints are disabled");
+			return;
+		}
+
 		if (state.equals(State.Idle)) {
 			state = State.BackStepping;
 			send("backstep");
@@ -236,6 +255,11 @@ public class OcamlDebugger implements IExecEvents {
 		if (!checkStarted())
 			return;
 
+		if(!checkpoints){
+			message("You cannot go back when checkpoints are disabled");
+			return;
+		}
+
 		if (state.equals(State.Idle)) {
 			state = State.BackSteppingOver;
 			send("previous");
@@ -255,6 +279,11 @@ public class OcamlDebugger implements IExecEvents {
 	public synchronized void backstepReturn() {
 		if (!checkStarted())
 			return;
+
+		if(!checkpoints){
+			message("You cannot go back when checkpoints are disabled");
+			return;
+		}
 
 		if (state.equals(State.Idle)) {
 			state = State.BackstepReturn;
@@ -379,7 +408,7 @@ public class OcamlDebugger implements IExecEvents {
 	Pattern patternLostConnection = Pattern.compile("Lost connection with process \\d+");
 
 	public synchronized void processNewError(String error) {
-		// System.err.print(error);
+		 System.err.print(error);
 
 		if (bDebuggingInfoMessage) {
 			if (error.endsWith("has no debugging info.\n")) {
@@ -409,7 +438,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	public synchronized void processNewInput(String input) {
 
-		// System.out.print(input);
+		 System.out.print(input);
 
 		debuggerOutput.append(input);
 
@@ -456,8 +485,31 @@ public class OcamlDebugger implements IExecEvents {
 				send("frame");
 			} else if (state.equals(State.Starting1)) {
 				debuggerOutput.setLength(0);
-				state = State.Starting2;
+				state = State.Starting1a;
 				send("set loadingmode manual");
+			} else if (state.equals(State.Starting1a)) {
+				debuggerOutput.setLength(0);
+				state = State.Starting1b;
+				checkpoints = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(PreferenceConstants.P_DEBUGGER_CHECKPOINTS);
+				if(checkpoints)
+					send("set checkpoints on");
+				else
+					send("set checkpoints off");
+			} else if (state.equals(State.Starting1b)) {
+				debuggerOutput.setLength(0);
+				state = State.Starting1c;
+				int smallstep = OcamlPlugin.getInstance().getPreferenceStore().getInt(PreferenceConstants.P_DEBUGGER_SMALL_STEP);
+				send("set smallstep " + smallstep);
+			} else if (state.equals(State.Starting1c)) {
+				debuggerOutput.setLength(0);
+				state = State.Starting1d;
+				int bigstep = OcamlPlugin.getInstance().getPreferenceStore().getInt(PreferenceConstants.P_DEBUGGER_BIG_STEP);
+				send("set bigstep " + bigstep);
+			} else if (state.equals(State.Starting1d)) {
+				debuggerOutput.setLength(0);
+				state = State.Starting2;
+				int processcount = OcamlPlugin.getInstance().getPreferenceStore().getInt(PreferenceConstants.P_DEBUGGER_PROCESS_COUNT);
+				send("set processcount " + processcount);
 			} else if (state.equals(State.Starting2)) {
 				debuggerOutput.setLength(0);
 				state = State.Starting3;
@@ -861,7 +913,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	private synchronized void send(String command) {
 		try {
-			// System.out.println("[" + command + "]");
+			 System.out.println("[" + command + "]");
 			debuggerProcess.sendLine(command);
 		} catch (IOException e) {
 			OcamlPlugin.logError("ocaml plugin error", e);

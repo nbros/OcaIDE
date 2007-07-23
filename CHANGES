@@ -25,5 +25,7 @@
 	* changed the formatter so that it doesn't add a space before a colon, since that can cause naming labels to become incorrect ("~a:1" became "~a : 1")
 	* added a preference page for the formatter
 	* added a preference page for filtering the contents of the outline
+	* added a preference page for the debugger 
+	* updated OcamlMakefile (generic makefile) to the latest version
 	* added "/bin" (on a Unix system, if it exists) and the Ocaml library path to the makefile paths of a new makefile project
 	* fixed a bug that caused the whole interface to freeze while the outline was being rebuilt 

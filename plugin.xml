@@ -31,6 +31,12 @@
         id="ocaml.preferences.OutlinePreferencePage"
         name="Outline">
   </page>
+  <page
+        category="ocaml.preferences.RootPreferencePage"
+        class="ocaml.preferences.DebuggerPreferencePage"
+        id="ocaml.preferences.DebuggerPreferencePage"
+        name="Debugger">
+  </page>
 	</extension>
 	
 	<extension point="org.eclipse.core.runtime.preferences">

@@ -32,8 +32,12 @@ public class FormatterPreferencePage extends FieldEditorPreferencePage implement
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_FORMATTER_FORMAT_COMMENTS,
 				"Format comments (that do not start with \"(*|\")", this.getFieldEditorParent()));
 
-		this.addField(new IntegerFieldEditor(PreferenceConstants.P_FORMATTER_COMMENT_WIDTH,
-				"Maximum comment width", this.getFieldEditorParent()));
+		
+		IntegerFieldEditor maxCommentWidth = 
+		new IntegerFieldEditor(PreferenceConstants.P_FORMATTER_COMMENT_WIDTH,
+				"Maximum comment width", this.getFieldEditorParent());
+		maxCommentWidth.setValidRange(10, 1000);		
+		this.addField(maxCommentWidth);
 
 		this.addField(new IntegerFieldEditor(PreferenceConstants.P_FORMATTER_MAX_BLANK_LINES,
 				"Maximum number of blank lines to keep", this.getFieldEditorParent()));
