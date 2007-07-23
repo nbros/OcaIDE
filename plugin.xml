@@ -19,6 +19,18 @@
 			id="ocaml.preferences.EditorPreferencePage"
 			name="Editor">
 		</page>
+  <page
+        category="ocaml.preferences.RootPreferencePage"
+        class="ocaml.preferences.FormatterPreferencePage"
+        id="ocaml.preferences.FormatterPreferencePage"
+        name="Formatter">
+  </page>
+  <page
+        category="ocaml.preferences.RootPreferencePage"
+        class="ocaml.preferences.OutlinePreferencePage"
+        id="ocaml.preferences.OutlinePreferencePage"
+        name="Outline">
+  </page>
 	</extension>
 	
 	<extension point="org.eclipse.core.runtime.preferences">

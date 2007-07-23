@@ -8,10 +8,11 @@ import ocaml.OcamlPlugin;
 import ocaml.preferences.PreferenceConstants;
 
 /**
- * This class is responsible for formating O'Caml code. It indents code, adds spaces where they are missing,
- * delete those that are redundant, splits comments on several lines if they are too long, merge consecutive
- * comments if they are too short, turn multi-line comments into single-line comments, and remove embedded
- * "(*" and "*)" in comments (because they hinder the plug-in parsers).
+ * This class is responsible for formating O'Caml code. It indents code, adds spaces where they are
+ * missing, delete those that are redundant, splits comments on several lines if they are too long,
+ * merge consecutive comments if they are too short, turn multi-line comments into single-line
+ * comments, and remove embedded "(*" and "*)" in comments (because they hinder the plug-in
+ * parsers).
  */
 public class OcamlFormater {
 
@@ -19,8 +20,8 @@ public class OcamlFormater {
 	private Pattern patternSequence = Pattern.compile("[^;];$");
 
 	/**
-	 * Words that when found at the end of a line prevent the following line from being unindented, and indent
-	 * it.
+	 * Words that when found at the end of a line prevent the following line from being unindented,
+	 * and indent it.
 	 */
 	private final Pattern lineContinuatorsPattern = Pattern
 			.compile("(\\Winitializer$)|(\\Wthen$)|(\\Welse$)|(\\Wdo$)|(\\Wbegin$)|(\\Wmodule$)|"
@@ -38,9 +39,11 @@ public class OcamlFormater {
 			.compile("(\\Wobject\\W)|(\\Wstruct\\W)|(\\Wsig\\W)|(\\Wdo\\W)|(\\Wbegin\\W)|\\(|\\{|\\[");
 
 	/**
-	 * A pattern to match the keywords "let", "type", "and", and "in" which must have the same indentation
+	 * A pattern to match the keywords "let", "type", "and", and "in" which must have the same
+	 * indentation
 	 */
-	private Pattern patternLetTypeAndIn = Pattern.compile("(\\Wlet\\W)|(\\Wtype\\W)|(\\Win\\W)|(\\Wand\\W)");
+	private Pattern patternLetTypeAndIn = Pattern
+			.compile("(\\Wlet\\W)|(\\Wtype\\W)|(\\Win\\W)|(\\Wand\\W)");
 
 	private Pattern patternLet = Pattern.compile("(\\Wlet\\W)");
 
@@ -49,8 +52,8 @@ public class OcamlFormater {
 	private Pattern patternAnd = Pattern.compile("(\\Wand\\W)");
 
 	/**
-	 * A pattern to match the "try" and "with" keywords that must have the same indentation. We filter out
-	 * matching "match" and "with" keywords in the corresponding rule.
+	 * A pattern to match the "try" and "with" keywords that must have the same indentation. We
+	 * filter out matching "match" and "with" keywords in the corresponding rule.
 	 */
 	private Pattern patternTryMatchWith = Pattern.compile("(\\Wtry\\W)|(\\Wmatch\\W)|(\\Wwith\\W)");
 
@@ -59,8 +62,8 @@ public class OcamlFormater {
 	private Pattern patternMatch = Pattern.compile("(\\Wmatch\\W)");
 
 	/**
-	 * A pattern to match the corresponding "if", "then" and "else" keywords, that must have the same
-	 * indentation.
+	 * A pattern to match the corresponding "if", "then" and "else" keywords, that must have the
+	 * same indentation.
 	 */
 	private Pattern patternIfThenElse = Pattern.compile("(\\Wif\\W)|(\\Wthen\\W)|(\\Welse\\W)");
 
@@ -69,14 +72,14 @@ public class OcamlFormater {
 	private Pattern patternThen = Pattern.compile("(\\Wthen\\W)");
 
 	/**
-	 * A pattern to match a comment. The "*?" quantifier is "reluctant", that is it doesn't match "(* *) (*
-	 * *)" in a single match, and instead gives us two matches, one for each comment.
+	 * A pattern to match a comment. The "*?" quantifier is "reluctant", that is it doesn't match
+	 * "(* *) (* *)" in a single match, and instead gives us two matches, one for each comment.
 	 */
 	private Pattern patternComment = Pattern.compile("\\(\\*.*?\\*\\)");
 
 	/**
-	 * A whole line comment (no code on this line). The group inside is the body of the comment (groups are
-	 * what's inside parenthesis in regular expressions).
+	 * A whole line comment (no code on this line). The group inside is the body of the comment
+	 * (groups are what's inside parenthesis in regular expressions).
 	 */
 	private Pattern patternWholeLineComment = Pattern.compile("^\\s*\\(\\*(.*)\\*\\)\\s*$");
 
@@ -86,7 +89,10 @@ public class OcamlFormater {
 	/** A pattern which matches O'Caml characters we want to remove because they hinder the parser */
 	private Pattern patternAnnoyingChars = Pattern.compile("'\\('|'\\)'|'\\{'|'\\}|'\\['|'\\]'");
 
-	/** A comment opened on this line, but not closed on this line (which we want to delete in the analysis) */
+	/**
+	 * A comment opened on this line, but not closed on this line (which we want to delete in the
+	 * analysis)
+	 */
 	private Pattern patternCommentEOL = Pattern.compile("\\(\\*.*");
 
 	/** A comment closed on this line, but not opened on this line (to delete) */
@@ -112,20 +118,23 @@ public class OcamlFormater {
 	/** Nesting levels stack, for the "|" */
 	private LinkedList<Integer> pipeNestingLevel = new LinkedList<Integer>();
 
-	/** Nesting levels stack for the "if" keyword (to manage correctly the "if" without "else" special case) */
+	/**
+	 * Nesting levels stack for the "if" keyword (to manage correctly the "if" without "else"
+	 * special case)
+	 */
 	private LinkedList<Integer> ifNestingLevel = new LinkedList<Integer>();
 
 	/** the current nesting level */
 	private int nestingLevel;
 
 	/** the characters to space */
-	private final String spacing = "\\+|\\-|\\*|\\/|\\=|\\||&|\\:|\\<|\\>|\\{|\\}";
+	private final String spacing = "\\+|\\-|\\*|\\/|\\=|\\||&|\\<|\\>|\\{|\\}";
 
 	/** the characters that must have a space before them */
 	private Pattern patternSpacingLeft = Pattern.compile("((\\w|\"|\\))(" + spacing + "))");
 
 	/** the characters that must have a space after them */
-	private Pattern patternSpacingRight = Pattern.compile("((" + spacing + "|,|;)(\\(|\\w|\"))");
+	private Pattern patternSpacingRight = Pattern.compile("((" + spacing + "|:|,|;)(\\(|\\w|\"))");
 
 	/** At least two consecutive spaces */
 	private Pattern patternSpaces = Pattern.compile("\\s\\s+");
@@ -149,6 +158,9 @@ public class OcamlFormater {
 
 	/** The current line being formated */
 	private String line;
+
+	private boolean preferenceFormatComments = OcamlPlugin.getInstance().getPreferenceStore()
+			.getBoolean(PreferenceConstants.P_FORMATTER_FORMAT_COMMENTS);
 
 	/**
 	 * Format the string <code>text</code> and return the result
@@ -181,9 +193,9 @@ public class OcamlFormater {
 		// number of consecutive blank lines
 		int nConsecutiveBlankLines = 0;
 
-		// TODO: preferences
 		/* number of consecutive blank lines to keep */
-		int nMaxBlankLines = 1;
+		int nMaxBlankLines = OcamlPlugin.getInstance().getPreferenceStore().getInt(
+				PreferenceConstants.P_FORMATTER_MAX_BLANK_LINES);
 
 		bDoNotFormatComment = false;
 
@@ -207,12 +219,12 @@ public class OcamlFormater {
 			 */
 			if (reformatMultilineComments()) {
 				/*
-				 * The reformatMultilineComments modified the current line number so that the formatter will
-				 * take its modifications into account (when return value = true)
+				 * The reformatMultilineComments modified the current line number so that the
+				 * formatter will take its modifications into account (when return value = true)
 				 */
 				/*
-				 * we decrement the current line number because the loop will immediately be incremented after
-				 * the "continue"
+				 * we decrement the current line number because the loop will immediately be
+				 * incremented after the "continue"
 				 */
 				currentLine--;
 				continue mainLoop;
@@ -231,9 +243,10 @@ public class OcamlFormater {
 			}
 
 			/*
-			 * We delete everything inside comments and inside strings, so that the parser will not be
-			 * hindered by false keywords. Here, we do it for single line comments and strings only. (we don't
-			 * actually remove the comments and strings from the source code, only from the parser's input
+			 * We delete everything inside comments and inside strings, so that the parser will not
+			 * be hindered by false keywords. Here, we do it for single line comments and strings
+			 * only. (we don't actually remove the comments and strings from the source code, only
+			 * from the parser's input
 			 * 
 			 */
 
@@ -287,20 +300,22 @@ public class OcamlFormater {
 				indent = pipeIndent.getLast();
 			}
 
-			// cancel the indentation we just did (to align the "object", "sig" or "struct" with the "end")
-			if ((trimmed.startsWith("object") || trimmed.startsWith("sig") || trimmed.startsWith("struct"))
+			// cancel the indentation we just did (to align the "object", "sig" or "struct" with the
+			// "end")
+			if ((trimmed.startsWith("object") || trimmed.startsWith("sig") || trimmed
+					.startsWith("struct"))
 					&& indent > 0)
 				indent--;
 
 			/*
-			 * Parse all the groups of keywords. These functions return the indentation of the current line
-			 * depending on the keywords found on this line.
+			 * Parse all the groups of keywords. These functions return the indentation of the
+			 * current line depending on the keywords found on this line.
 			 */
 			indent = parsePair(patternBeginOrEnd, patternBegin, trimmed, stackPairs, indent);
-			indent = parseLetTypeAndIn(patternLetTypeAndIn, patternLet, patternType, patternAnd, trimmed,
-					stackLetIn, indent);
-			indent = parseTryMatchWith(patternTryMatchWith, patternTry, patternMatch, trimmed, stackTryWith,
-					indent);
+			indent = parseLetTypeAndIn(patternLetTypeAndIn, patternLet, patternType, patternAnd,
+					trimmed, stackLetIn, indent);
+			indent = parseTryMatchWith(patternTryMatchWith, patternTry, patternMatch, trimmed,
+					stackTryWith, indent);
 			indent = parseIfThenElse(patternIfThenElse, patternIf, patternThen, trimmed, indent);
 
 			// *********************************************************
@@ -308,9 +323,9 @@ public class OcamlFormater {
 			// *********************************************************
 
 			/*
-			 * indent the first constructor (a constructor starts with a capital letter) or "[]" after a
-			 * "with" or "function" if it does not have a leading "| ", so that it will get aligned with the
-			 * following ones
+			 * indent the first constructor (a constructor starts with a capital letter) or "[]"
+			 * after a "with" or "function" if it does not have a leading "| ", so that it will get
+			 * aligned with the following ones
 			 */
 			if (currentLine >= 1) {
 				String prevLine = lines[currentLine - 1].trim();
@@ -321,7 +336,8 @@ public class OcamlFormater {
 						indent++;
 					else if (startsWith(prevLine, "(?:type\\W)") && prevLine.endsWith("="))
 						indent++;
-					else if (bLastDefIsType && startsWith(prevLine, "(?:and\\W)") && prevLine.endsWith("="))
+					else if (bLastDefIsType && startsWith(prevLine, "(?:and\\W)")
+							&& prevLine.endsWith("="))
 						indent++;
 
 				}
@@ -338,8 +354,8 @@ public class OcamlFormater {
 			}
 
 			/*
-			 * we have two rules for the ";;" : one for the current line indentation and another for the
-			 * indentation of the next line.
+			 * we have two rules for the ";;" : one for the current line indentation and another for
+			 * the indentation of the next line.
 			 */
 			else if (startsWith(trimmed, ";;")) {
 				if (nestingLevel == 0) {
@@ -368,8 +384,8 @@ public class OcamlFormater {
 			result.append(line);
 
 			/*
-			 * do not add a newline after the last line, or else we would add a new line after each time the
-			 * formatter is invoked
+			 * do not add a newline after the last line, or else we would add a new line after each
+			 * time the formatter is invoked
 			 * 
 			 */
 			if (currentLine != lines.length - 1)
@@ -395,12 +411,17 @@ public class OcamlFormater {
 				pipeNestingLevel.addLast(nestingLevel);
 				bContinueLine = true;
 			} else if (endsWith(trimmed, "\\Win")) {
+				boolean bIndentLets = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+						PreferenceConstants.P_FORMATTER_INDENT_IN_LETS);
+
 				if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
-						PreferenceConstants.P_EDITOR_INDENT_IN)) {
+						PreferenceConstants.P_FORMATTER_INDENT_IN)) {
 					if (currentLine < lines.length - 1) {
 						String nextLine = lines[currentLine + 1].trim();
-						if (trimmed.equals("in") || !startsWith(nextLine, "let\\W")
-								|| !startsWith(trimmed, "let\\W"))
+						if (trimmed.equals("in") || bIndentLets)
+							indent++;
+						else if((!(startsWith(nextLine, "let\\W")
+								&& startsWith(trimmed, "let\\W"))))
 							indent++;
 					}
 				}
@@ -415,8 +436,8 @@ public class OcamlFormater {
 			}
 
 			/*
-			 * Words that when they appear at the end of a line, mean that the current line must be continued
-			 * on the following line, with an incremented indentation.
+			 * Words that when they appear at the end of a line, mean that the current line must be
+			 * continued on the following line, with an incremented indentation.
 			 */
 			matcher = lineContinuatorsPattern.matcher("$" + trimmed);
 			if (matcher.find()) {
@@ -435,7 +456,8 @@ public class OcamlFormater {
 				pipeNestingLevel.addLast(nestingLevel);
 			}
 
-			// if this "and" is a type definition, then we memorize its indentation for the coming "|"
+			// if this "and" is a type definition, then we memorize its indentation for the coming
+			// "|"
 			if (startsWith(trimmed, "and\\W") && bLastDefIsType) {
 				pipeIndent.addLast(indent);
 				pipeNestingLevel.addLast(nestingLevel);
@@ -453,9 +475,9 @@ public class OcamlFormater {
 	}
 
 	/**
-	 * If the line has an opened but not closed comment, then we put back three lines into the pending lines:
-	 * what's before the comment on its first line, the entire body of the comment (we delete embedded
-	 * comments), and what's after the multi-line comment on its last line.
+	 * If the line has an opened but not closed comment, then we put back three lines into the
+	 * pending lines: what's before the comment on its first line, the entire body of the comment
+	 * (we delete embedded comments), and what's after the multi-line comment on its last line.
 	 * 
 	 * @return true if the loop must jump back
 	 */
@@ -494,7 +516,7 @@ public class OcamlFormater {
 					bAbort = true;
 			}
 
-			if (!bAbort) {
+			if (!bAbort && preferenceFormatComments) {
 
 				nestedCommentsLevel = 1;
 
@@ -525,8 +547,8 @@ public class OcamlFormater {
 					Matcher matcherCommentBeginEnd = patternCommentBeginEnd.matcher(commentLine);
 
 					/*
-					 * parse all the delimiters, and delete the nested ones, while keeping the body of the
-					 * comment
+					 * parse all the delimiters, and delete the nested ones, while keeping the body
+					 * of the comment
 					 */
 					while (matcherCommentBeginEnd.find()) {
 
@@ -551,8 +573,10 @@ public class OcamlFormater {
 
 							// delete the comment delimiter from the body of the comment
 							if (nestedCommentsLevel != 0) {
-								String before = commentLine.substring(0, matcherCommentBeginEnd.start());
-								String after = commentLine.substring(matcherCommentBeginEnd.start() + 2);
+								String before = commentLine.substring(0, matcherCommentBeginEnd
+										.start());
+								String after = commentLine
+										.substring(matcherCommentBeginEnd.start() + 2);
 								commentLine = before + after;
 							}
 
@@ -560,7 +584,8 @@ public class OcamlFormater {
 
 								commentLines = commentLines + " "
 										+ commentLine.substring(0, matcherCommentBeginEnd.start());
-								afterComment = commentLine.substring(matcherCommentBeginEnd.start() + 2);
+								afterComment = commentLine
+										.substring(matcherCommentBeginEnd.start() + 2);
 
 								break getWholeComment;
 							}
@@ -572,7 +597,8 @@ public class OcamlFormater {
 					commentLines = commentLines + " " + commentLine;
 				}
 
-				// if we are at the beginning, we must insert blank lines (or else we would access out of
+				// if we are at the beginning, we must insert blank lines (or else we would access
+				// out of
 				// bounds)
 				if (l < 3) {
 					String[] lines2 = new String[lines.length + 2];
@@ -587,8 +613,8 @@ public class OcamlFormater {
 					l--;
 
 				/*
-				 * Now, we put all the modified lines in the table, and we modify the current line so that the
-				 * formatter will take the modifications into account.
+				 * Now, we put all the modified lines in the table, and we modify the current line
+				 * so that the formatter will take the modifications into account.
 				 */
 
 				// Do not put blank lines
@@ -624,22 +650,26 @@ public class OcamlFormater {
 	}
 
 	/**
-	 * Formating comments: read words separated by spaces and split the comment onto several lines so that the
-	 * length of each line is inferior to the width of the edit window.
+	 * Formating comments: read words separated by spaces and split the comment onto several lines
+	 * so that the length of each line is inferior to the width of the edit window.
 	 * 
 	 * <p>
-	 * The formating of comments can be disabled in a selective manner, by starting the comment by "(*|"
-	 * instead of just "(*". This allows the user to keep source code in a comment, or draw some ASCII-art.
+	 * The formating of comments can be disabled in a selective manner, by starting the comment by
+	 * "(*|" instead of just "(*". This allows the user to keep source code in a comment, or draw
+	 * some ASCII-art.
 	 * 
 	 * @return true if the loop must jump back to continue formatting
 	 */
 	private boolean formatComment() {
 
+		if (!preferenceFormatComments)
+			return false;
+
 		/* The list of remaining words to continue on the next line */
 		LinkedList<String> commentWords = new LinkedList<String>();
 
-		// TODO preferences
-		int maxLineLength = 78;
+		int maxLineLength = OcamlPlugin.getInstance().getPreferenceStore().getInt(
+				PreferenceConstants.P_FORMATTER_COMMENT_WIDTH);
 
 		int nCommentLine = currentLine;
 
@@ -664,9 +694,9 @@ public class OcamlFormater {
 			 */
 
 			/*
-			 * Count the number of comments on the line, because patternWholeLineComment matches several
-			 * comments in a single match. If there are several comments on the same line, then we leave them
-			 * as is.
+			 * Count the number of comments on the line, because patternWholeLineComment matches
+			 * several comments in a single match. If there are several comments on the same line,
+			 * then we leave them as is.
 			 */
 			Matcher matcherComment = patternComment.matcher(trimmed2);
 			boolean bMoreThanOneComment = matcherComment.find() && matcherComment.find();
@@ -674,8 +704,8 @@ public class OcamlFormater {
 			if (!bMoreThanOneComment) {
 
 				/*
-				 * Read all the words (anything separated by spaces) of this comment, and add them to the
-				 * list.
+				 * Read all the words (anything separated by spaces) of this comment, and add them
+				 * to the list.
 				 */
 				Matcher matcherWholeLineComment = patternWholeLineComment.matcher(trimmed2);
 
@@ -760,7 +790,10 @@ public class OcamlFormater {
 					currentOffset += word.length() + 1;
 				}
 
-				/* if the word doesn't fit on the remaining space on the line, then we create a new line */
+				/*
+				 * if the word doesn't fit on the remaining space on the line, then we create a new
+				 * line
+				 */
 				else {
 					nCommentLines++;
 
@@ -781,8 +814,8 @@ public class OcamlFormater {
 			}
 
 			/*
-			 * if there are several comment lines, we put the ending "*)" against the margin, so that the
-			 * comment endings are all aligned
+			 * if there are several comment lines, we put the ending "*)" against the margin, so
+			 * that the comment endings are all aligned
 			 */
 			if (nCommentLines != 1)
 				while (currentOffset++ < maxLineLength - 3)
@@ -791,8 +824,8 @@ public class OcamlFormater {
 			result.append("*)\n");
 
 			/*
-			 * We're done with this comment: analyze the remaining lines: continue at i (the +1 is done by the
-			 * loop)
+			 * We're done with this comment: analyze the remaining lines: continue at i (the +1 is
+			 * done by the loop)
 			 */
 			currentLine = nLastCommentLine;
 			// true means: jump back
@@ -816,12 +849,13 @@ public class OcamlFormater {
 			int offset = matcher.start();
 
 			/*
-			 * if the spaces (or tabs) are at the beginning of a line or before a comment, then we keep them
+			 * if the spaces (or tabs) are at the beginning of a line or before a comment, then we
+			 * keep them
 			 */
 			/*
 			 * Matcher matcherSpacesBeforeComment = patternSpacesBeforeComment.matcher(line); if
-			 * (matcherSpacesBeforeComment.find()) { if (offset < matcherSpacesBeforeComment.end()) continue
-			 * remSpaces; }
+			 * (matcherSpacesBeforeComment.find()) { if (offset < matcherSpacesBeforeComment.end())
+			 * continue remSpaces; }
 			 */
 
 			// if the spaces are before a comment, then we keep them
@@ -850,8 +884,8 @@ public class OcamlFormater {
 
 			// we put a limit, just in case we would get into an infinite loop
 			if (limit++ > 10000) {
-				OcamlPlugin.logError("Infinite loop detected in formatter during spacing (1): <<" + oldLine
-						+ ">>");
+				OcamlPlugin.logError("Infinite loop detected in formatter during spacing (1): <<"
+						+ oldLine + ">>");
 				break;
 			}
 
@@ -869,7 +903,10 @@ public class OcamlFormater {
 			else
 				patternSpacing = patternSpacingLeft;
 
-			/* We put a limit to the number of replacements, just in case we would get into an infinite loop */
+			/*
+			 * We put a limit to the number of replacements, just in case we would get into an
+			 * infinite loop
+			 */
 			limit = 0;
 			// add spaces before some characters
 			matcher = patternSpacing.matcher(line);
@@ -880,7 +917,7 @@ public class OcamlFormater {
 
 				int offset = matcher.start() + 1;
 				if (offset > line.length() - 1 || offset < 0) {
-					ocaml.OcamlPlugin.logError("OcamlIndenter:format :  position invalide");
+					ocaml.OcamlPlugin.logError("OcamlIndenter:format : invalid position");
 					break;
 				}
 
@@ -903,8 +940,9 @@ public class OcamlFormater {
 				// we have to reset the matcher, because we modified the line
 				matcher = patternSpacing.matcher(line);
 				if (limit++ > 10000) {
-					OcamlPlugin.logError("Infinite loop detected in formatter during spacing (2): <<"
-							+ oldLine + ">>");
+					OcamlPlugin
+							.logError("Infinite loop detected in formatter during spacing (2): <<"
+									+ oldLine + ">>");
 					break;
 				}
 			}
@@ -944,10 +982,10 @@ public class OcamlFormater {
 
 	/**
 	 * Do the parsing of the "if", "then", and "else" keywords.<br>
-	 * The stackIfThenElcse variable is global because it is modified by parsePair to manage the "if without
-	 * else" special case.<br>
-	 * We are using a stack of indentation levels for the 'if' so that we can align the corresponding "then"
-	 * and "else" correctly.
+	 * The stackIfThenElcse variable is global because it is modified by parsePair to manage the "if
+	 * without else" special case.<br>
+	 * We are using a stack of indentation levels for the 'if' so that we can align the
+	 * corresponding "then" and "else" correctly.
 	 * 
 	 */
 	private int parseIfThenElse(Pattern patternIfThenElse, Pattern patternIf, Pattern patternThen,
@@ -964,16 +1002,17 @@ public class OcamlFormater {
 
 			/*
 			 * We found a "if": keep the indentation of its line in the 'stackIfThenElse' stack.
-			 * "ifNestingLevel" is the nesting level of this "if". As soon as we get out of the current
-			 * lexical scope, we will remove the indentation of this "if" from the stack (in parsePair).
+			 * "ifNestingLevel" is the nesting level of this "if". As soon as we get out of the
+			 * current lexical scope, we will remove the indentation of this "if" from the stack (in
+			 * parsePair).
 			 */
 			if (matcherIf.find()) {
 				ifNestingLevel.addLast(nestingLevel);
 				stackIfThenElse.addLast(newIndent);
 			}
 			/*
-			 * We found a "then": if the "then" keyword is the first of the line, then the indentation of the
-			 * line will be the same as that of the corresponding "if".
+			 * We found a "then": if the "then" keyword is the first of the line, then the
+			 * indentation of the line will be the same as that of the corresponding "if".
 			 */
 			else if (matcherThen.find() && !stackIfThenElse.isEmpty()) {
 				int i = stackIfThenElse.getLast();
@@ -981,8 +1020,8 @@ public class OcamlFormater {
 					newIndent = i;
 			}
 			/*
-			 * We found an "else": if it's the first keyword on the line then we indent it; and we remove it
-			 * from the stack (an "if" has only one corresponding "else").
+			 * We found an "else": if it's the first keyword on the line then we indent it; and we
+			 * remove it from the stack (an "if" has only one corresponding "else").
 			 */
 			else if (!stackIfThenElse.isEmpty()) {
 				int i = stackIfThenElse.removeLast();
@@ -994,9 +1033,12 @@ public class OcamlFormater {
 		return newIndent;
 	}
 
-	/** Parse the "try with" and remove the "with" associated with a "match" (they are managed in another rule) */
-	private int parseTryMatchWith(Pattern patternTryMatchWith, Pattern patternTry, Pattern patternMatch,
-			String str, LinkedList<Integer> stack, int indent) {
+	/**
+	 * Parse the "try with" and remove the "with" associated with a "match" (they are managed in
+	 * another rule)
+	 */
+	private int parseTryMatchWith(Pattern patternTryMatchWith, Pattern patternTry,
+			Pattern patternMatch, String str, LinkedList<Integer> stack, int indent) {
 		str = "$" + str + "$";
 
 		int newIndent = indent;
@@ -1014,8 +1056,8 @@ public class OcamlFormater {
 			} else if (!stack.isEmpty()) {
 				int i = stack.removeLast();
 				/*
-				 * if the indentation in the stack has the special value "-999" then this with is associated
-				 * with a "match" and not a "try", so we skip it.
+				 * if the indentation in the stack has the special value "-999" then this with is
+				 * associated with a "match" and not a "try", so we skip it.
 				 */
 				if (matcherTryWith.start() == 0 && i != -999)
 					newIndent = i;
@@ -1026,15 +1068,19 @@ public class OcamlFormater {
 		return newIndent;
 	}
 
-	/** If the last definition is a type (instead of a "let"), then we don't manage the "and" in the same way */
+	/**
+	 * If the last definition is a type (instead of a "let"), then we don't manage the "and" in the
+	 * same way
+	 */
 	private boolean bLastDefIsType = false;
 
 	/** The indentation of the last "type" encountered. */
 	private int lastTypeIndent = 0;
 
 	/** Do the parsing of the "let", "type", "and", and "in" keywords */
-	private int parseLetTypeAndIn(Pattern patternLetTypeAndIn, Pattern patternLet, Pattern patternType,
-			Pattern patternAnd, String str, LinkedList<Integer> stack, int indent) {
+	private int parseLetTypeAndIn(Pattern patternLetTypeAndIn, Pattern patternLet,
+			Pattern patternType, Pattern patternAnd, String str, LinkedList<Integer> stack,
+			int indent) {
 		str = "$" + str + "$";
 
 		int newIndent = indent;
@@ -1073,7 +1119,8 @@ public class OcamlFormater {
 	}
 
 	/**
-	 * Parse a pair of delimiters (begin-end, do-done) and return the indentation of the current line.
+	 * Parse a pair of delimiters (begin-end, do-done) and return the indentation of the current
+	 * line.
 	 */
 	private int parsePair(Pattern patternBeginOrEnd, Pattern patternBegin, String str,
 			LinkedList<Integer> stack, int indent) {
@@ -1083,8 +1130,9 @@ public class OcamlFormater {
 		Matcher matcherBeginEnd = patternBeginOrEnd.matcher(str);
 
 		/*
-		 * We use an index for the matcher, because of the "\W" surrounding keywords. If we didn't use this
-		 * index, "begin(" would only match once (it should match twice: once for "begin" and once for "(" ).
+		 * We use an index for the matcher, because of the "\W" surrounding keywords. If we didn't
+		 * use this index, "begin(" would only match once (it should match twice: once for "begin"
+		 * and once for "(" ).
 		 */
 		int matcherIndex = 0;
 

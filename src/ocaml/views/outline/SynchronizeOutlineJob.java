@@ -13,7 +13,10 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-/** This Job is used to synchronize the selection in the outline with the current line in the editor, in a low priority thread. */
+/**
+ * This Job is used to synchronize the selection in the outline with the current line in the editor,
+ * in a low priority thread.
+ */
 public class SynchronizeOutlineJob extends Job {
 
 	private OcamlEditor editor;
@@ -37,12 +40,13 @@ public class SynchronizeOutlineJob extends Job {
 	 */
 	@Override
 	protected synchronized IStatus run(IProgressMonitor monitor) {
-		
-		Display.getDefault().asyncExec(new Runnable() {
+
+		// let the outline finish its Job before we synchronize it
+		while (outlineJob != null && outlineJob.getState() == Job.RUNNING)
+			Thread.yield();
+
+		Display.getDefault().syncExec(new Runnable() {
 			public void run() {
-				// let the outline finish its Job before we synchronize it
-				while (outlineJob != null && outlineJob.getState() == Job.RUNNING)
-					Thread.yield();
 
 				if (editor.getOutline() == null)
 					return;
@@ -61,7 +65,7 @@ public class SynchronizeOutlineJob extends Job {
 							OcamlPlugin.logError("ocaml plugin error", e);
 							return;
 						}
-						
+
 						editor.getOutline().synchronizeWithEditor(line, column);
 					}
 				}

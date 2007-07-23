@@ -42,7 +42,7 @@ public class OcamlCommentRule implements IPredicateRule {
 					if (ch == -1)
 						return token;
 
-					if (ch == ')') {
+					else if (ch == ')') {
 						if (bStar) {
 							nestingLevel--;
 							if (nestingLevel <= 0)
@@ -52,11 +52,34 @@ public class OcamlCommentRule implements IPredicateRule {
 						bPar = false;
 					}
 
-					if (ch == '*') {
+					else if (ch == '*') {
 						if (bPar)
 							nestingLevel++;
 						bStar = true;
-					} else
+					} 
+					
+					/* parse a string inside the comment (strings must be terminated in ocaml comments) */
+					else if(ch == '"'){
+						boolean bEscape = false;
+						bStar = false;
+						while (true) {
+							ch = scanner.read();
+							nRead++;
+							if (ch == ICharacterScanner.EOF)
+								return token;
+
+							if (ch == '"' && !bEscape)
+								break;
+
+							if (ch == '\\')
+								bEscape = !bEscape;
+							else
+								bEscape = false;
+						}
+					}
+
+					
+					else
 						bStar = false;
 
 					bPar = (ch == '(');

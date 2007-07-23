@@ -157,11 +157,13 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		} else {
 			def = lookForDefinitionUp(searchedDef.name, searchedDef, interfacesDefinitionsRoot,
 					new String[] { searchedDef.name }, true);
-
+			
 			// if we didn't find it, look in Pervasives (which is always opened by default)
-			String[] pervasivesPath = new String[] { "Pervasives", searchedDef.name };
-			if(openDefInInterfaces(0, pervasivesPath, interfacesDefinitionsRoot))
-				return null;
+			if(def == null){
+				String[] pervasivesPath = new String[] { "Pervasives", searchedDef.name };
+				if(openDefInInterfaces(0, pervasivesPath, interfacesDefinitionsRoot))
+					return null;
+			}
 		}
 
 		return def;
@@ -342,7 +344,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 						};
 
 						job.setPriority(Job.DECORATE);
-						job.schedule(50);
+						job.schedule();
 
 					}
 
@@ -406,6 +408,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	 *            manage the non-rec definitions)
 	 */
 	private Def isDef(String name, Def node, boolean bIn, boolean otherBranch) {
+		
+		//System.out.println(node.name);
 
 		if (node.name.equals(name)) {
 			switch (node.type) {

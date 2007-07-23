@@ -40,7 +40,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_BOLD_KEYWORDS, true);
 			store.setDefault(PreferenceConstants.P_BOLD_NUMBERS, false);
 			store.setDefault(PreferenceConstants.P_BOLD_STRINGS, false);
-			
+
 			// set the defaults for the editor
 			store.setDefault(PreferenceConstants.P_EDITOR_DISABLE_AUTOFORMAT, false);
 			store.setDefault(PreferenceConstants.P_EDITOR_TABS, 2);
@@ -58,15 +58,41 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_EDITOR_COLON_COLON_TAB, true);
 			store.setDefault(PreferenceConstants.P_EDITOR_FN_TAB, true);
 			store.setDefault(PreferenceConstants.P_EDITOR_TAB_ARROW, true);
-			
-			
+
 			String os = Platform.getOS();
 			boolean windows = os.equals(Platform.OS_WIN32);
 			store.setDefault(PreferenceConstants.P_DISABLE_UNICODE_CHARS, windows);
-			
+
 			store.setDefault(PreferenceConstants.P_SHOW_TYPES_IN_OUTLINE, true);
 			store.setDefault(PreferenceConstants.P_SHOW_TYPES_IN_POPUPS, true);
 			store.setDefault(PreferenceConstants.P_SHOW_TYPES_IN_STATUS_BAR, true);
+
+			// set the defaults for the formatter
+			store.setDefault(PreferenceConstants.P_FORMATTER_INDENT_IN, false);
+			store.setDefault(PreferenceConstants.P_FORMATTER_INDENT_IN_LETS, false);
+			store.setDefault(PreferenceConstants.P_FORMATTER_COMMENT_WIDTH, 78);
+			store.setDefault(PreferenceConstants.P_FORMATTER_MAX_BLANK_LINES, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_FORMAT_COMMENTS, true);
+
+			// set the default for the outline
+			store.setDefault(PreferenceConstants.P_OUTLINE_LET_MINIMUM_CHARS, 0);
+			store.setDefault(PreferenceConstants.P_OUTLINE_LET_IN_MINIMUM_CHARS, 0);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_CLASS, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_CLASSTYPE, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_EXCEPTION, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_EXTERNAL, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_INCLUDE, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_INITIALIZER, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_LET, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_LET_IN, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_METHOD, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_MODULE, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_MODULE_TYPE, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_OPEN, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_RECORD_CONS, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_TYPE, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_VAL, true);
+			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_VARIANT_CONS, true);
 
 			String ocamlLibPath = "";
 			String ocaml = "";
@@ -83,9 +109,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			String which = "";
 
 			/*
-			 * If the operating system is Linux, then we search in the most common install directories. Then,
-			 * if we couldn't find the executables in this way, we use the "which" command (if it is
-			 * available)
+			 * If the operating system is Linux, then we search in the most common install
+			 * directories. Then, if we couldn't find the executables this way, we use the "which"
+			 * command (if it is available)
 			 */
 			if (OcamlPlugin.runningOnLinuxCompatibleSystem()) {
 
@@ -196,11 +222,11 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 				 * !file.isDirectory()) { file = new java.io.File("/lib/ocaml"); if (!file.exists() ||
 				 * !file.isDirectory()) file = new java.io.File("/usr/local/lib/ocaml"); }
 				 * 
-				 * if (file.exists() && file.isDirectory()) { for (String s : file.list()) { java.io.File dir =
-				 * new java.io.File(file.getAbsolutePath() + "/" + s); if (dir.isDirectory()) { for (String s2 :
-				 * dir.list()) { java.io.File f = new java.io.File(s2); if
-				 * (f.getName().equals("pervasives.mli")) { try { ocamlLibPath = dir.getCanonicalPath(); }
-				 * catch (IOException e) { ocamlLibPath = ""; } } } } } }
+				 * if (file.exists() && file.isDirectory()) { for (String s : file.list()) {
+				 * java.io.File dir = new java.io.File(file.getAbsolutePath() + "/" + s); if
+				 * (dir.isDirectory()) { for (String s2 : dir.list()) { java.io.File f = new
+				 * java.io.File(s2); if (f.getName().equals("pervasives.mli")) { try { ocamlLibPath =
+				 * dir.getCanonicalPath(); } catch (IOException e) { ocamlLibPath = ""; } } } } } }
 				 */
 
 				CommandRunner commandRunner;
@@ -209,10 +235,12 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
 					if (ocamlc.equals("")) {
 						try {
-							commandRunner = new CommandRunner(new String[] { which, "ocamlc.opt" }, "/");
+							commandRunner = new CommandRunner(new String[] { which, "ocamlc.opt" },
+									"/");
 							ocamlc = commandRunner.getStdout().trim();
 							if (ocamlc.equals("")) {
-								commandRunner = new CommandRunner(new String[] { which, "ocamlc" }, "/");
+								commandRunner = new CommandRunner(new String[] { which, "ocamlc" },
+										"/");
 								ocamlc = commandRunner.getStdout().trim();
 							}
 						} catch (Exception e) {
@@ -221,10 +249,12 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 					}
 					if (ocamlopt.equals("")) {
 						try {
-							commandRunner = new CommandRunner(new String[] { which, "ocamlopt.opt" }, "/");
+							commandRunner = new CommandRunner(
+									new String[] { which, "ocamlopt.opt" }, "/");
 							ocamlopt = commandRunner.getStdout().trim();
 							if (ocamlopt.equals("")) {
-								commandRunner = new CommandRunner(new String[] { which, "ocamlopt" }, "/");
+								commandRunner = new CommandRunner(
+										new String[] { which, "ocamlopt" }, "/");
 								ocamlopt = commandRunner.getStdout().trim();
 							}
 						} catch (Exception e) {
@@ -241,7 +271,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 					}
 					if (ocamldep.equals("")) {
 						try {
-							commandRunner = new CommandRunner(new String[] { which, "ocamldep" }, "/");
+							commandRunner = new CommandRunner(new String[] { which, "ocamldep" },
+									"/");
 							ocamldep = commandRunner.getStdout().trim();
 						} catch (Exception e) {
 							OcamlPlugin.logError("ocaml plugin error", e);
@@ -250,7 +281,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 					if (ocamllex.equals("")) {
 
 						try {
-							commandRunner = new CommandRunner(new String[] { which, "ocamllex" }, "/");
+							commandRunner = new CommandRunner(new String[] { which, "ocamllex" },
+									"/");
 							ocamllex = commandRunner.getStdout().trim();
 						} catch (Exception e) {
 							OcamlPlugin.logError("ocaml plugin error", e);
@@ -259,7 +291,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 					if (ocamlyacc.equals("")) {
 
 						try {
-							commandRunner = new CommandRunner(new String[] { which, "ocamlyacc" }, "/");
+							commandRunner = new CommandRunner(new String[] { which, "ocamlyacc" },
+									"/");
 							ocamlyacc = commandRunner.getStdout().trim();
 						} catch (Exception e) {
 							OcamlPlugin.logError("ocaml plugin error", e);
@@ -268,7 +301,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 					if (ocamldoc.equals("")) {
 
 						try {
-							commandRunner = new CommandRunner(new String[] { which, "ocamldoc" }, "/");
+							commandRunner = new CommandRunner(new String[] { which, "ocamldoc" },
+									"/");
 							ocamldoc = commandRunner.getStdout().trim();
 						} catch (Exception e) {
 							OcamlPlugin.logError("ocaml plugin error", e);
@@ -277,7 +311,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 					if (ocamldebug.equals("")) {
 
 						try {
-							commandRunner = new CommandRunner(new String[] { which, "ocamldebug" }, "/");
+							commandRunner = new CommandRunner(new String[] { which, "ocamldebug" },
+									"/");
 							ocamldebug = commandRunner.getStdout().trim();
 						} catch (Exception e) {
 							OcamlPlugin.logError("ocaml plugin error", e);
@@ -316,7 +351,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			// on Windows:
 			else if (Platform.getOS().equals(Platform.OS_WIN32)) {
 				/*
-				 * Since we can't access the register, we take the O'Caml installer's default install directory
+				 * Since we can't access the register, we take the O'Caml installer's default
+				 * install directory
 				 */
 
 				String basepath = "C:\\Program Files\\Objective Caml";

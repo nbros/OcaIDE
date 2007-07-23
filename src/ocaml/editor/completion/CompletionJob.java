@@ -15,6 +15,7 @@ import ocaml.util.Misc;
 import ocaml.util.OcamlPaths;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -100,19 +101,29 @@ public class CompletionJob extends Job {
 			String[] paths = ocamlPaths.getPaths();
 			// for each path in the project
 			for (String path : paths) {
-				String strProjectPath = "";
-				IPath projectPath = project.getLocation();
-				if (projectPath != null)
-					strProjectPath = projectPath.toOSString();
 
-				if (path.equals("."))
-					path = strProjectPath;
+				if (path.equals(".")){
+					IPath projectPath = project.getLocation();
+					if (projectPath != null)
+						path = projectPath.toOSString();
+					else{
+						OcamlPlugin.logError("Error in CompletionJob:buildDefinitionsTree : project location is null");
+						continue;
+					}
+						
+				}
 
 				// try with a path relative to the project location
-				File dir = new File(strProjectPath + File.separatorChar + path);
-
+				// Go through the IResources API to follow possibly linked resources.
+				IFolder folder = project.getFolder(path);
+				IPath location = folder.getLocation();
+				File dir = null;
+				if(location != null)
+					dir = new File(location.toOSString());				
+				
+				
 				// try with an absolute path
-				if (!(dir.exists() && dir.isDirectory())) {
+				if (!(dir != null && dir.exists() && dir.isDirectory())) {
 					dir = new File(path);
 				}
 

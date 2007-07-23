@@ -2,6 +2,7 @@ package ocaml.views.outline;
 
 import java.io.File;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
@@ -24,19 +25,22 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
 /**
- * This job is used to rebuild the outline in a low-priority thread, so as to not slow down everything else.
+ * This job is used to rebuild the outline in a low-priority thread, so as to not slow down
+ * everything else.
  * <p>
- * Note: even if the outline is not displayed (the user closed the view), its content must be computed,
- * because it is also used by the completion (TODO:refactor this).
+ * Note: even if the outline is not displayed (the user closed the view), its content must be
+ * computed, because it is also used by the completion and hyperlinks (TODO:refactor this).
  */
 public class OutlineJob extends Job {
-	
+
 	public OutlineJob(String name) {
 		super(name);
 	}
@@ -66,12 +70,17 @@ public class OutlineJob extends Job {
 	 */
 	@Override
 	protected synchronized IStatus run(IProgressMonitor monitor) {
+		
+		//System.err.println("outline job");
 
-		//long before = System.currentTimeMillis();
+		// long before = System.currentTimeMillis();
 
 		String strDocument = doc.get();
 
-		/* "Sanitize" the document by replacing extended characters, which otherwise would crash the parser */
+		/*
+		 * "Sanitize" the document by replacing extended characters, which otherwise would crash the
+		 * parser
+		 */
 		StringBuilder str = new StringBuilder();
 		for (int i = 0; i < strDocument.length(); i++) {
 			char c = strDocument.charAt(i);
@@ -99,12 +108,15 @@ public class OutlineJob extends Job {
 		} catch (Throwable e) {
 			// OcamlPlugin.logError("error while parsing", e);
 			// System.out.println("unrecoverable syntax error");
-			//e.printStackTrace();
+			// e.printStackTrace();
 		}
+		
+		//for(long i = 0; i < 1000000000l; i++);
 
-		// recover pieces from the AST (which couldn't be built completely because of an unrecoverable error)
+		// recover pieces from the AST (which couldn't be built completely because of an
+		// unrecoverable error)
 		if (root == null || !parser.errorReporting.errors.isEmpty()) {
-			//System.err.println("recovering AST");
+			// System.err.println("recovering AST");
 			root = new Def("root", Def.Type.Root, 0, 0);
 
 			for (Def def : parser.recoverDefs)
@@ -114,10 +126,12 @@ public class OutlineJob extends Job {
 
 		final IFile file = editor.getFileBeingEdited();
 		/*
-		 * if the source hasn't been modified since the last compilation, try to get the types inferred by the
-		 * compiler (in a ".annot" file)
+		 * if the source hasn't been modified since the last compilation, try to get the types
+		 * inferred by the compiler (in a ".annot" file)
 		 */
-		if (!editor.isDirty() && OcamlPlugin.getInstance().getPreferenceStore().getBoolean(PreferenceConstants.P_SHOW_TYPES_IN_OUTLINE))
+		if (!editor.isDirty()
+				&& OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+						PreferenceConstants.P_SHOW_TYPES_IN_OUTLINE))
 			addTypes(file, root);
 
 		if (root != null) {
@@ -129,6 +143,12 @@ public class OutlineJob extends Job {
 		final OcamlOutlineControl outline = this.outline;
 		final Def definitions = root;
 
+		final Def outlineDefinitions = definitions.cleanCopy();
+
+		// remove the definitions the user has chosen not to display
+		initPreferences();
+		cleanOutline(outlineDefinitions);
+
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 
@@ -136,7 +156,8 @@ public class OutlineJob extends Job {
 				if (file != null) {
 					try {
 						// delete the previous error markers
-						file.deleteMarkers("Ocaml.ocamlSyntaxErrorMarker", false, IResource.DEPTH_ZERO);
+						file.deleteMarkers("Ocaml.ocamlSyntaxErrorMarker", false,
+								IResource.DEPTH_ZERO);
 					} catch (Throwable e) {
 						OcamlPlugin.logError("error deleting error markers", e);
 					}
@@ -147,16 +168,37 @@ public class OutlineJob extends Job {
 							try {
 								Hashtable<String, Integer> attributes = new Hashtable<String, Integer>();
 								MarkerUtilities.setMessage(attributes, error.message);
-								attributes.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_ERROR));
+								attributes.put(IMarker.SEVERITY,
+										new Integer(IMarker.SEVERITY_ERROR));
 
 								int lineOffset = doc.getLineOffset(error.lineStart);
 
-								MarkerUtilities.setCharStart(attributes, lineOffset + error.columnStart);
-								MarkerUtilities.setCharEnd(attributes, lineOffset + error.columnEnd + 1);
-								MarkerUtilities.setLineNumber(attributes, error.lineStart + 1);
+								int offsetStart = lineOffset + error.columnStart;
+								int offsetEnd = lineOffset + error.columnEnd + 1;
+								int lineNumber = error.lineStart + 1;
 
-								MarkerUtilities
-										.createMarker(file, attributes, "Ocaml.ocamlSyntaxErrorMarker");
+								if ("unexpected token \"end-of-file\"".equals(error.message)) {
+									// find the last non-blank character
+									int offset = 0;
+									for (offset = doc.getLength() - 1; offset >= 0; offset--)
+										if (!Character.isWhitespace(doc.getChar(offset)))
+											break;
+
+									lineNumber = doc.getLineOfOffset(offset);
+									offsetStart = offset;
+									offsetEnd = offset + 1;
+									if (offsetEnd > doc.getLength())
+										offsetEnd = doc.getLength();
+									MarkerUtilities
+											.setMessage(attributes, "unexpected end of file");
+								}
+
+								MarkerUtilities.setCharStart(attributes, offsetStart);
+								MarkerUtilities.setCharEnd(attributes, offsetEnd);
+								MarkerUtilities.setLineNumber(attributes, lineNumber);
+
+								MarkerUtilities.createMarker(file, attributes,
+										"Ocaml.ocamlSyntaxErrorMarker");
 
 							} catch (Throwable e) {
 								OcamlPlugin.logError("error creating error markers", e);
@@ -164,32 +206,30 @@ public class OutlineJob extends Job {
 						}
 					}
 				}
-				
-				Def outlineDefinitions = definitions.cleanCopy();
 
 				// give the definitions tree to the editor
 				editor.setDefinitionsTree(definitions);
 				editor.setOutlineDefinitionsTree(outlineDefinitions);
 
-				// to notify the hyperlink detector that the outline is available 
-				synchronized(editor.outlineSignal){
+				// to notify the hyperlink detector that the outline is available
+				synchronized (editor.outlineSignal) {
 					editor.outlineSignal.notifyAll();
 				}
 
 				if (outline != null) {
 					outline.setInput(outlineDefinitions);
-					//outline.setInput(definitions);
+					// outline.setInput(definitions);
 					editor.synchronizeOutline();
 				}
-				
+
 			}
 		});
 
-		//long after = System.currentTimeMillis();
+		// long after = System.currentTimeMillis();
 		// root.clean();
 		// root.print(0);
 
-		//System.out.println("parsed file in " + (after - before) + " ms");
+		// System.out.println("parsed file in " + (after - before) + " ms");
 		// if(parser.errorReporting.bErrors)
 		// System.out.println("Syntax errors reported");
 
@@ -274,11 +314,11 @@ public class OutlineJob extends Job {
 
 		// collapse the <structure> or <signature> node if it is the child of a module or moduletype
 		if (def.type == Def.Type.Module || def.type == Def.Type.ModuleType) {
-			for(int i = 0; i < def.children.size(); i++){
+			for (int i = 0; i < def.children.size(); i++) {
 				Def child = def.children.get(i);
-				
-				if (child.type == Def.Type.Struct || child.type == Def.Type.Sig){
-					for(Def child2 : child.children)
+
+				if (child.type == Def.Type.Struct || child.type == Def.Type.Sig) {
+					for (Def child2 : child.children)
 						def.children.add(child2);
 					def.children.remove(i);
 				}
@@ -287,11 +327,11 @@ public class OutlineJob extends Job {
 
 		// collapse the <object> node if it is the child of a class or classtype
 		if (def.type == Def.Type.Class || def.type == Def.Type.ClassType) {
-			for(int i = 0; i < def.children.size(); i++){
+			for (int i = 0; i < def.children.size(); i++) {
 				Def child = def.children.get(i);
-				
-				if (child.type == Def.Type.Object){
-					for(Def child2 : child.children)
+
+				if (child.type == Def.Type.Object) {
+					for (Def child2 : child.children)
 						def.children.add(child2);
 					def.children.remove(i);
 				}
@@ -301,4 +341,106 @@ public class OutlineJob extends Job {
 		for (Def child : def.children)
 			cleanTree(child);
 	}
+
+	private boolean showLet;
+	private boolean showLetIn;
+	private boolean showType;
+	private boolean showModule;
+	private boolean showModuleType;
+	private boolean showException;
+	private boolean showExternal;
+	private boolean showClass;
+	private boolean showOpen;
+	private boolean showMethod;
+	private boolean showInclude;
+	private boolean showVal;
+	private boolean showInitializer;
+	private boolean showClassType;
+	private boolean showVariantCons;
+	private boolean showRecordCons;
+	private int letMinChars;
+	private int letInMinChars;
+
+	private void initPreferences() {
+		final IPreferenceStore ps = OcamlPlugin.getInstance().getPreferenceStore();
+		showLet = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_LET);
+		showLetIn = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_LET_IN);
+		showType = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_TYPE);
+		showModule = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_MODULE);
+		showModuleType = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_MODULE_TYPE);
+		showException = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_EXCEPTION);
+		showExternal = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_EXTERNAL);
+		showClass = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_CLASS);
+		showOpen = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_OPEN);
+		showMethod = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_METHOD);
+		showInclude = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_INCLUDE);
+		showVal = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_VAL);
+		showInitializer = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_INITIALIZER);
+		showClassType = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_CLASSTYPE);
+		showVariantCons = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_VARIANT_CONS);
+		showRecordCons = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_RECORD_CONS);
+		
+		letMinChars = ps.getInt(PreferenceConstants.P_OUTLINE_LET_MINIMUM_CHARS);
+		letInMinChars = ps.getInt(PreferenceConstants.P_OUTLINE_LET_IN_MINIMUM_CHARS);
+
+	}
+
+	private boolean showDef(Def def) {
+		
+		switch (def.type) {
+		case Let:
+			return showLet && def.name.length() >= letMinChars;
+		case LetIn:
+			return showLetIn && def.name.length() >= letInMinChars;
+		case Type:
+			return showType;
+		case Module:
+			return showModule;
+		case ModuleType:
+			return showModuleType;
+		case Exception:
+			return showException;
+		case External:
+			return showExternal;
+		case Class:
+			return showClass;
+		case Open:
+			return showOpen;
+		case Method:
+			return showMethod;
+		case Include:
+			return showInclude;
+		case Val:
+			return showVal;
+		case Initializer:
+			return showInitializer;
+		case ClassType:
+			return showClassType;
+		case TypeConstructor:
+			return showVariantCons;
+		case RecordTypeConstructor:
+			return showRecordCons;
+		default:
+			return true;
+		}
+	}
+
+	/** Remove the definitions the user doesn't want to see (outline preference page) */
+
+	private void cleanOutline(Def def) {
+		if (def == null)
+			return;
+
+		ArrayList<Def> newChildren = new ArrayList<Def>();
+
+		for (Def child : def.children) {
+			if (showDef(child))
+				newChildren.add(child);
+
+			cleanOutline(child);
+		}
+
+		def.children = newChildren;
+	}
+
 }

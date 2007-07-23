@@ -57,13 +57,21 @@ public class OcamlMakefilePaths {
 				OcamlPlugin.getOcamldepFullPath(), OcamlPlugin.getOcamldocFullPath(),
 				OcamlPlugin.getOcamlFullPath(), OcamlPlugin.getOcamllexFullPath(),
 				OcamlPlugin.getOcamloptFullPath(), OcamlPlugin.getOcamlyaccFullPath(), 
-				OcamlPlugin.getLibFullPath(), OcamlPlugin.getMakeFullPath()};
+				OcamlPlugin.getMakeFullPath()};
 
 		for (String toolPath : strToolsPaths) {
 			IPath path = new Path(toolPath);
 			path = path.removeLastSegments(1);
 			paths.add(path.toOSString());
 		}
+		
+		if(OcamlPlugin.runningOnLinuxCompatibleSystem()){
+			File dir = new File("/bin");
+			if(dir.exists())
+				paths.add("/bin");
+		}
+		
+		paths.add(OcamlPlugin.getLibFullPath());
 
 		this.setPaths(paths.toArray(new String[paths.size()]));
 	}

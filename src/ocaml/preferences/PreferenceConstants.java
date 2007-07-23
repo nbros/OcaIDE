@@ -57,4 +57,30 @@ public class PreferenceConstants
 	public static final String P_SHOW_TYPES_IN_STATUS_BAR = "ocamlShowTypesInStatusBar";
 	public static final String P_SHOW_TYPES_IN_POPUPS = "ocamlShowTypesInPopups";
 	
+	public static final String P_FORMATTER_INDENT_IN = "ocamlFormatterIndentIn";
+	public static final String P_FORMATTER_COMMENT_WIDTH = "ocamlFormatterCommentWidth";
+	public static final String P_FORMATTER_MAX_BLANK_LINES = "ocamlFormatterMaxBlankLines";
+	public static final String P_FORMATTER_FORMAT_COMMENTS = "ocamlFormatterFormatComments";
+	public static final String P_FORMATTER_INDENT_IN_LETS = "ocamlFormatterIndentInLets";
+	
+	public static final String P_OUTLINE_SHOW_LET = "ocamlOutlineShowLet";
+	public static final String P_OUTLINE_SHOW_LET_IN = "ocamlOutlineShowLetIn";
+	public static final String P_OUTLINE_SHOW_TYPE = "ocamlOutlineShowType";
+	public static final String P_OUTLINE_SHOW_MODULE = "ocamlOutlineShowModule";
+	public static final String P_OUTLINE_SHOW_MODULE_TYPE = "ocamlOutlineShowModuleType";
+	public static final String P_OUTLINE_SHOW_EXCEPTION = "ocamlOutlineShowException";
+	public static final String P_OUTLINE_SHOW_EXTERNAL = "ocamlOutlineShowExternal";
+	public static final String P_OUTLINE_SHOW_CLASS = "ocamlOutlineShowClass";
+	public static final String P_OUTLINE_SHOW_OPEN = "ocamlOutlineShowOpen";
+	public static final String P_OUTLINE_SHOW_METHOD = "ocamlOutlineShowMethod";
+	public static final String P_OUTLINE_SHOW_INCLUDE = "ocamlOutlineShowInclude";
+	public static final String P_OUTLINE_SHOW_VAL = "ocamlOutlineShowVal";
+	public static final String P_OUTLINE_SHOW_INITIALIZER = "ocamlOutlineShowInitializer";
+	public static final String P_OUTLINE_SHOW_CLASSTYPE = "ocamlOutlineShowClassType";
+	public static final String P_OUTLINE_SHOW_VARIANT_CONS = "ocamlOutlineShowVariantCons";
+	public static final String P_OUTLINE_SHOW_RECORD_CONS = "ocamlOutlineShowRecordCons";
+	
+	public static final String P_OUTLINE_LET_MINIMUM_CHARS = "ocamlOutlineLetMinChars";
+	public static final String P_OUTLINE_LET_IN_MINIMUM_CHARS = "ocamlOutlineLetInMinChars";
+	
 }

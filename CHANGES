@@ -1,0 +1,29 @@
+* 1.0.0:
+	* First public release (version 1.0.0)
+
+* 1.0.1:
+    * fixed some bugs
+    * added a compatibility option (in the preferences) to disable Unicode characters which can cause problems on some systems (namely Windows...)
+    * added options to enable or disable displaying of types in the outline, editor popups, and editor's status bar.
+    * modified the install to unpack the plug-in's jar after installation, because Windows couldn't find some image resources in the jar file (although this worked on other systems)
+    * changed the generated "makefile" file in Makefile Projects to "Makefile" (capitalized) 
+    
+* 1.0.2:
+    * Plug-in is compiled with Java 1.5 compatibility options again (I forgot it in 1.0.1, sorry!). This should fix "Bad version number in .class file" errors.
+    * Toplevel process now inherits parent environment
+    * Fixed a bug in "Load in Toplevel" action under Windows 
+    
+* 1.0.3:
+    * This update fixes (hopefully!) the Java 1.5 compatibility problems. The previous version still wasn't compatible with Java 1.5 due to a bug (feature?) in the Eclipse plug-in build system: the plug-in was always built using the general settings instead of the project-specific ones.
+    * The plug-in is no longer unpacked on install, since the bug which prevented loading of icons from the jar on Windows has been fixed. 
+
+* 1.0.4
+	* Fixed a bug with hyperlinks that happened when a definition had the same name as one in Pervasives
+	* Completion proposals can now look in linked resources (patch submitted by Gregory)
+	* Syntax coloring now works correctly with comments inside strings inside comments and ocamldoc comments (strings must be terminated inside comments in Ocaml)
+	* "unexpected end of line" syntax error now appears at the end of the file instead of the beginning
+	* changed the formatter so that it doesn't add a space before a colon, since that can cause naming labels to become incorrect ("~a:1" became "~a : 1")
+	* added a preference page for the formatter
+	* added a preference page for filtering the contents of the outline
+	* added "/bin" (on a Unix system, if it exists) and the Ocaml library path to the makefile paths of a new makefile project
+	* fixed a bug that caused the whole interface to freeze while the outline was being rebuilt 

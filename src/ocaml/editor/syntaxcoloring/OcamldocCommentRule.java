@@ -5,7 +5,7 @@ import org.eclipse.jface.text.rules.IPredicateRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.Token;
 
-/** Matches ocamldoc comments : (**......*)  */
+/** Matches ocamldoc comments : (**......*) */
 public class OcamldocCommentRule implements IPredicateRule {
 
 	/** The token we return if the rule matched on the input */
@@ -17,7 +17,6 @@ public class OcamldocCommentRule implements IPredicateRule {
 
 	public IToken evaluate(ICharacterScanner scanner, boolean resume) {
 
-		
 		// must start by '(' unless we are resuming
 		int ch = scanner.read();
 		int nRead = 1;
@@ -34,39 +33,59 @@ public class OcamldocCommentRule implements IPredicateRule {
 					// anything but a star
 					ch = scanner.read();
 					nRead++;
-					
-					if(ch != '*')
-					{
+
+					if (ch != '*') {
 						boolean bStar = false;
 						int codeNestingLevel = 0;
 						boolean bEscapeNextChar = false;
-						
-						while(true){
+
+						while (true) {
 							ch = scanner.read();
 							nRead++;
-							
+
 							// end of file
-							if(ch == -1)
+							if (ch == -1)
 								return token;
-							
-							if(ch == '[' && !bEscapeNextChar)
-								codeNestingLevel ++;
-							else if(ch == ']' && !bEscapeNextChar)
-								codeNestingLevel --;
-							
+
+							if (ch == '[' && !bEscapeNextChar)
+								codeNestingLevel++;
+							else if (ch == ']' && !bEscapeNextChar)
+								codeNestingLevel--;
+
 							bEscapeNextChar = false;
-							
-							if(ch == '*' && codeNestingLevel == 0)
+
+							if (ch == '*' && codeNestingLevel == 0)
 								bStar = true;
-							else if(ch == '\\')
+							else if (ch == '\\')
 								bEscapeNextChar = true;
-							else if(ch == ')' && bStar)
+							else if (ch == ')' && bStar)
 								return token;
-							else
+							/*
+							 * parse a string inside the comment (strings must be terminated in
+							 * ocaml comments)
+							 */
+							else if (ch == '"') {
+								boolean bEscape = false;
 								bStar = false;
-								
-						} 
-						
+								while (true) {
+									ch = scanner.read();
+									nRead++;
+									if (ch == ICharacterScanner.EOF)
+										return token;
+
+									if (ch == '"' && !bEscape)
+										break;
+
+									if (ch == '\\')
+										bEscape = !bEscape;
+									else
+										bEscape = false;
+								}
+							} else
+								bStar = false;
+
+						}
+
 					}
 				}
 			}

@@ -217,13 +217,17 @@ public class OcamlEditor extends TextEditor {
 
 		if (synchronizeOutlineJob == null)
 			synchronizeOutlineJob = new SynchronizeOutlineJob("Synchronizing outline with editor");
+		else if(synchronizeOutlineJob.getState() == SynchronizeOutlineJob.RUNNING)
+			return;
+		// only one job at a time
+		else
+			synchronizeOutlineJob.cancel();
+
 
 		synchronizeOutlineJob.setPriority(CompletionJob.DECORATE);
 		synchronizeOutlineJob.setEditor(this);
 		synchronizeOutlineJob.setOutlineJob(outlineJob);
-		// only one job at a time
-		synchronizeOutlineJob.cancel();
-		synchronizeOutlineJob.schedule(100);
+		synchronizeOutlineJob.schedule(50);
 	}
 
 	public IContainer getWorkingLocation() {
@@ -322,12 +326,17 @@ public class OcamlEditor extends TextEditor {
 
 		if (outlineJob == null)
 			outlineJob = new OutlineJob("Rebuilding outline");
-
+		else if(outlineJob.getState() == OutlineJob.RUNNING)
+			return;
+		// only one Job at a time
+		else
+			outlineJob.cancel();
+		
 		outlineJob.setPriority(CompletionJob.DECORATE);
 		outlineJob.setOutline(this.outline);
 		outlineJob.setDoc(document);
 		outlineJob.setEditor(this);
-		outlineJob.cancel();
+		
 		outlineJob.schedule(delay);
 	}
 
