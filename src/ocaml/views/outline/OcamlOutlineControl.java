@@ -1,9 +1,20 @@
 package ocaml.views.outline;
 
+import java.util.Random;
+
 import ocaml.OcamlPlugin;
 import ocaml.editors.OcamlEditor;
 import ocaml.parser.Def;
+import ocaml.preferences.PreferenceConstants;
+import ocaml.util.ImageRepository;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.preference.BooleanPropertyAction;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -17,6 +28,9 @@ import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 /** Implements the outline view for the O'Caml editor */
@@ -26,6 +40,15 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 
 	protected OcamlEditor editor;
 
+	/** Whether to always expand modules in the outline */
+	private boolean expandModules;
+
+	/** Whether to always expand classes in the outline */
+	private boolean expandClasses;
+
+	/** Whether to always fully expand the outline */
+	private boolean expandAll;
+
 	/**
 	 * Creates a content outline page using the given provider and the given editor.
 	 */
@@ -33,7 +56,32 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 		super();
 		this.editor = editor;
 	}
+	
+	@Override
+	public void init(IPageSite pageSite) {
+		super.init(pageSite);
 
+		
+		/* Create an action in the outline toolbar to switch between "expand all" mode and normal mode */
+		IToolBarManager toolBarManager = pageSite.getActionBars().getToolBarManager();
+		
+		ImageDescriptor iconExpandAll = ImageRepository.getImageDescriptor(ImageRepository.ICON_EXPAND_ALL);
+		
+		final OcamlOutlineControl outline = this;
+		Action actionExpandAll = new BooleanPropertyAction("Expand All", OcamlPlugin.getInstance().getPreferenceStore(), PreferenceConstants.P_OUTLINE_EXPAND_ALL){
+			@Override
+			public void run() {
+				super.run();
+				outline.update();
+			}
+		};
+		
+		actionExpandAll.setImageDescriptor(iconExpandAll);
+		
+		toolBarManager.add(actionExpandAll);
+		
+	}
+	
 	/** Install the content provider and label provider */
 	@Override
 	public void createControl(Composite parent) {
@@ -105,6 +153,12 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 				// to avoid flicker
 				tree.setRedraw(false);
 				viewer.setInput(this.input);
+				
+				lookPreferences();
+				if(expandAll)
+					viewer.expandAll();
+				else
+					expandChosenElements(viewer);
 				tree.setRedraw(true);
 			}
 		}
@@ -127,7 +181,14 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 					 * This caused a bug on Windows which created an infinite loop.
 					 */
 					viewer.removeSelectionChangedListener(this);
-					viewer.collapseAll();
+					
+					lookPreferences();
+					if(expandAll)
+						viewer.expandAll();
+					else{
+						viewer.collapseAll();
+						expandChosenElements(viewer);
+					}
 					viewer.addSelectionChangedListener(this);
 					TreePath treePath = new TreePath(new Object[] { element });
 					viewer.setSelection(new TreeSelection(treePath), true);
@@ -135,6 +196,30 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 				}
 			}
 		}
+	}
+
+
+	/** Expands some elements the user has chosen to always expand in the outline */
+	private void expandChosenElements(TreeViewer viewer) {
+		if(editor == null)
+			return;
+		
+		Def root = editor.getOutlineDefinitionsTree();
+		
+		expandChosenElementsAux(viewer, root);
+		
+	}
+
+	/** Recursive helper function */
+	private void expandChosenElementsAux(TreeViewer viewer, Def def) {
+		if(def.type == Def.Type.Module && expandModules)
+			viewer.expandToLevel(def, 1);
+		
+		else if(def.type == Def.Type.Class && expandClasses)
+			viewer.expandToLevel(def, 1);
+		
+		for(Def child: def.children)
+			expandChosenElementsAux(viewer, child);
 	}
 
 	/**
@@ -154,5 +239,15 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 		}
 
 		return null;
+	}
+	
+	/** Set the boolean variables from the user preferences */
+	private void lookPreferences() {
+		IPreferenceStore preferenceStore = OcamlPlugin.getInstance().getPreferenceStore();
+		
+		expandAll = preferenceStore.getBoolean(PreferenceConstants.P_OUTLINE_EXPAND_ALL);
+		expandModules = preferenceStore.getBoolean(PreferenceConstants.P_OUTLINE_EXPAND_MODULES);
+		expandClasses = preferenceStore.getBoolean(PreferenceConstants.P_OUTLINE_EXPAND_CLASSES);
+		
 	}
 }

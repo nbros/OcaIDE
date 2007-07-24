@@ -99,11 +99,11 @@ public class OutlineJob extends Job {
 		try {
 			String extension = editor.getFileBeingEdited().getFullPath().getFileExtension();
 
-			if ("ml".equals(extension) || "mlp".equals(extension))
+			if ("ml".equals(extension))
 				root = (Def) parser.parse(scanner);
 			else if ("mli".equals(extension))
 				root = (Def) parser.parse(scanner, OcamlParser.AltGoals.interfaces);
-			else
+			else if(!("ml4".equals(extension) || "mlp".equals(extension)))
 				OcamlPlugin.logError(extension + " file extension has no associated parser.");
 		} catch (Throwable e) {
 			// OcamlPlugin.logError("error while parsing", e);
@@ -218,7 +218,7 @@ public class OutlineJob extends Job {
 
 				if (outline != null) {
 					outline.setInput(outlineDefinitions);
-					// outline.setInput(definitions);
+					//outline.setInput(definitions);
 					editor.synchronizeOutline();
 				}
 

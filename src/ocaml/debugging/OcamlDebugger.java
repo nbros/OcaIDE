@@ -37,8 +37,8 @@ import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.part.FileEditorInput;
 
 /**
- * Main class of the debugger. Manages the debugger state in a finite state automaton. Communicates with the
- * O'Caml debugger through its standard input and output.
+ * Main class of the debugger. Manages the debugger state in a finite state automaton. Communicates
+ * with the O'Caml debugger through its standard input and output.
  */
 public class OcamlDebugger implements IExecEvents {
 
@@ -84,7 +84,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	/** The index in <code>watchVariables</code> of the next variable to display */
 	private int iCurrentWatchVariable;
-	
+
 	/** whether checkpoints are activated */
 	private boolean checkpoints;
 
@@ -187,8 +187,8 @@ public class OcamlDebugger implements IExecEvents {
 	public synchronized void reverse() {
 		if (!checkStarted())
 			return;
-		
-		if(!checkpoints){
+
+		if (!checkpoints) {
 			message("You cannot go back when checkpoints are disabled");
 			return;
 		}
@@ -203,7 +203,7 @@ public class OcamlDebugger implements IExecEvents {
 		if (!checkStarted())
 			return;
 
-		if(!checkpoints){
+		if (!checkpoints) {
 			message("You cannot go back when checkpoints are disabled");
 			return;
 		}
@@ -230,7 +230,7 @@ public class OcamlDebugger implements IExecEvents {
 		if (!checkStarted())
 			return;
 
-		if(!checkpoints){
+		if (!checkpoints) {
 			message("You cannot go back when checkpoints are disabled");
 			return;
 		}
@@ -255,7 +255,7 @@ public class OcamlDebugger implements IExecEvents {
 		if (!checkStarted())
 			return;
 
-		if(!checkpoints){
+		if (!checkpoints) {
 			message("You cannot go back when checkpoints are disabled");
 			return;
 		}
@@ -280,7 +280,7 @@ public class OcamlDebugger implements IExecEvents {
 		if (!checkStarted())
 			return;
 
-		if(!checkpoints){
+		if (!checkpoints) {
 			message("You cannot go back when checkpoints are disabled");
 			return;
 		}
@@ -353,8 +353,8 @@ public class OcamlDebugger implements IExecEvents {
 	private String displayExpression = "";
 
 	/**
-	 * Ask the debugger to analyze the expression and return its value. This function is synchronous, so it is
-	 * blocking until the debugger answers back, or 2000ms ellapsed.
+	 * Ask the debugger to analyze the expression and return its value. This function is
+	 * synchronous, so it is blocking until the debugger answers back, or 2000ms ellapsed.
 	 */
 	public synchronized String display(String expression) {
 		if (!checkStarted())
@@ -367,8 +367,9 @@ public class OcamlDebugger implements IExecEvents {
 
 			try {
 				/*
-				 * The debugger thread will put the value in 'displayExpression' and call "notify()" as soon
-				 * as it receives the value. Timeout after 2000ms (it means the debugger is stuck or busy)
+				 * The debugger thread will put the value in 'displayExpression' and call "notify()"
+				 * as soon as it receives the value. Timeout after 2000ms (it means the debugger is
+				 * stuck or busy)
 				 */
 				wait(2000);
 			} catch (InterruptedException e) {
@@ -408,7 +409,7 @@ public class OcamlDebugger implements IExecEvents {
 	Pattern patternLostConnection = Pattern.compile("Lost connection with process \\d+");
 
 	public synchronized void processNewError(String error) {
-		 System.err.print(error);
+		//System.err.print(error);
 
 		if (bDebuggingInfoMessage) {
 			if (error.endsWith("has no debugging info.\n")) {
@@ -431,14 +432,16 @@ public class OcamlDebugger implements IExecEvents {
 
 		/* If the debugger lost the connection with its process, then we stop the debugger */
 		Matcher matcher = patternLostConnection.matcher(error);
-		if (matcher.find())
-			quit();
-
+		if (matcher.find()) {
+			message("Lost connection with the debugged process.");
+			if (isStarted())
+				kill();
+		}
 	}
 
 	public synchronized void processNewInput(String input) {
 
-		 System.out.print(input);
+		//System.out.print(input);
 
 		debuggerOutput.append(input);
 
@@ -490,25 +493,29 @@ public class OcamlDebugger implements IExecEvents {
 			} else if (state.equals(State.Starting1a)) {
 				debuggerOutput.setLength(0);
 				state = State.Starting1b;
-				checkpoints = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(PreferenceConstants.P_DEBUGGER_CHECKPOINTS);
-				if(checkpoints)
+				checkpoints = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+						PreferenceConstants.P_DEBUGGER_CHECKPOINTS);
+				if (checkpoints)
 					send("set checkpoints on");
 				else
 					send("set checkpoints off");
 			} else if (state.equals(State.Starting1b)) {
 				debuggerOutput.setLength(0);
 				state = State.Starting1c;
-				int smallstep = OcamlPlugin.getInstance().getPreferenceStore().getInt(PreferenceConstants.P_DEBUGGER_SMALL_STEP);
+				int smallstep = OcamlPlugin.getInstance().getPreferenceStore().getInt(
+						PreferenceConstants.P_DEBUGGER_SMALL_STEP);
 				send("set smallstep " + smallstep);
 			} else if (state.equals(State.Starting1c)) {
 				debuggerOutput.setLength(0);
 				state = State.Starting1d;
-				int bigstep = OcamlPlugin.getInstance().getPreferenceStore().getInt(PreferenceConstants.P_DEBUGGER_BIG_STEP);
+				int bigstep = OcamlPlugin.getInstance().getPreferenceStore().getInt(
+						PreferenceConstants.P_DEBUGGER_BIG_STEP);
 				send("set bigstep " + bigstep);
 			} else if (state.equals(State.Starting1d)) {
 				debuggerOutput.setLength(0);
 				state = State.Starting2;
-				int processcount = OcamlPlugin.getInstance().getPreferenceStore().getInt(PreferenceConstants.P_DEBUGGER_PROCESS_COUNT);
+				int processcount = OcamlPlugin.getInstance().getPreferenceStore().getInt(
+						PreferenceConstants.P_DEBUGGER_PROCESS_COUNT);
 				send("set processcount " + processcount);
 			} else if (state.equals(State.Starting2)) {
 				debuggerOutput.setLength(0);
@@ -569,8 +576,8 @@ public class OcamlDebugger implements IExecEvents {
 				state = State.Idle;
 			}
 			/*
-			 * This case happens only if there is no breakpoint to delete (and so the confirmation message
-			 * isn't displayed)
+			 * This case happens only if there is no breakpoint to delete (and so the confirmation
+			 * message isn't displayed)
 			 */
 			else if (state.equals(State.RemovingBreakpoints)) {
 				debuggerOutput.setLength(0);
@@ -627,8 +634,8 @@ public class OcamlDebugger implements IExecEvents {
 			public void run() {
 				try {
 
-					final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-							.getActivePage();
+					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
+							.getActiveWorkbenchWindow().getActivePage();
 					OcamlBreakpointsView breakpointsview = (OcamlBreakpointsView) activePage
 							.findView(OcamlBreakpointsView.ID);
 
@@ -647,8 +654,8 @@ public class OcamlDebugger implements IExecEvents {
 			public void run() {
 				try {
 
-					final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-							.getActivePage();
+					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
+							.getActiveWorkbenchWindow().getActivePage();
 					OcamlCallStackView callstackview = (OcamlCallStackView) activePage
 							.findView(OcamlCallStackView.ID);
 
@@ -727,8 +734,8 @@ public class OcamlDebugger implements IExecEvents {
 								.findView(OcamlBreakpointsView.ID);
 
 						if (breakpointsview != null)
-							breakpointsview
-									.addBreakpoint(number, address, filename, line, charBegin, charEnd);
+							breakpointsview.addBreakpoint(number, address, filename, line,
+									charBegin, charEnd);
 
 					} catch (Throwable e) {
 						OcamlPlugin.logError("ocaml plugin error", e);
@@ -737,7 +744,8 @@ public class OcamlDebugger implements IExecEvents {
 			});
 
 		} else
-			OcamlPlugin.logError("ocamldebugger: couldn't parse breakpoint information:\n" + output);
+			OcamlPlugin
+					.logError("ocamldebugger: couldn't parse breakpoint information:\n" + output);
 	}
 
 	Pattern patternFrame = Pattern.compile("\\A#\\d+  Pc : \\d+  (\\w+) char (\\d+)");
@@ -763,15 +771,16 @@ public class OcamlDebugger implements IExecEvents {
 			public void run() {
 				try {
 
-					final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-							.getActivePage();
+					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
+							.getActiveWorkbenchWindow().getActivePage();
 					OcamlCallStackView stackview = (OcamlCallStackView) activePage
 							.findView(OcamlCallStackView.ID);
 					if (stackview != null) {
 
 						String[] elements = output.split("\\n");
 						/*
-						 * Remove the first and last line. The first is "Backtrace:" and the last is "(ocd)".
+						 * Remove the first and last line. The first is "Backtrace:" and the last is
+						 * "(ocd)".
 						 */
 						if (elements.length >= 2) {
 							String[] backtrace = new String[elements.length - 2];
@@ -826,7 +835,8 @@ public class OcamlDebugger implements IExecEvents {
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
 
-						IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+						IWorkbenchWindow window = PlatformUI.getWorkbench()
+								.getActiveWorkbenchWindow();
 						if (window != null) {
 							IWorkbenchPage page = window.getActivePage();
 							if (page != null) {
@@ -837,7 +847,8 @@ public class OcamlDebugger implements IExecEvents {
 									if (part instanceof OcamlEditor) {
 										OcamlEditor editor = (OcamlEditor) part;
 
-										DebugMarkers.getInstance().setCurrentPosition(filename, offset);
+										DebugMarkers.getInstance().setCurrentPosition(filename,
+												offset);
 										editor.redraw();
 										editor.highlightLineAtOffset(offset);
 									}
@@ -867,8 +878,8 @@ public class OcamlDebugger implements IExecEvents {
 
 		/*
 		 * try { IEditorDescriptor descriptor = IDE.getEditorDescriptor(file); // descriptor.
-		 * System.err.println(descriptor); } catch (PartInitException e) { OcamlPlugin.logError("ocaml plugin
-		 * error", e); }
+		 * System.err.println(descriptor); } catch (PartInitException e) {
+		 * OcamlPlugin.logError("ocaml plugin error", e); }
 		 */
 
 	}
@@ -913,7 +924,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	private synchronized void send(String command) {
 		try {
-			 System.out.println("[" + command + "]");
+			//System.out.println("[" + command + "]");
 			debuggerProcess.sendLine(command);
 		} catch (IOException e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
@@ -946,9 +957,10 @@ public class OcamlDebugger implements IExecEvents {
 			public void run() {
 				try {
 
-					final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-							.getActivePage();
-					OcamlWatchView watchview = (OcamlWatchView) activePage.findView(OcamlWatchView.ID);
+					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
+							.getActiveWorkbenchWindow().getActivePage();
+					OcamlWatchView watchview = (OcamlWatchView) activePage
+							.findView(OcamlWatchView.ID);
 
 					if (watchview != null)
 						watchview.setVariables(watchVariablesResult.toArray(new String[0]));
@@ -968,9 +980,10 @@ public class OcamlDebugger implements IExecEvents {
 			public void run() {
 				try {
 
-					final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-							.getActivePage();
-					OcamlWatchView watchview = (OcamlWatchView) activePage.findView(OcamlWatchView.ID);
+					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
+							.getActiveWorkbenchWindow().getActivePage();
+					OcamlWatchView watchview = (OcamlWatchView) activePage
+							.findView(OcamlWatchView.ID);
 
 					if (watchview != null)
 						watchview.clearVariables();

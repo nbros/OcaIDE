@@ -67,7 +67,7 @@
 			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
 			id="ocaml.editors.mliEditor">
 		</editor>
-		<editor name="mlpEditor" icon="icons/mlp.gif" extensions="mlp"
+		<editor name="mlpEditor" icon="icons/mlp.gif" extensions="mlp,ml4"
 			class="ocaml.editors.OcamlEditor"
 			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
 			id="ocaml.editors.mlpEditor">
@@ -231,6 +231,10 @@
       <fileTypes extension="cmxa" type="binary"/>
       <fileTypes
             extension="mlp"
+            type="text">
+      </fileTypes>
+      <fileTypes
+            extension="ml4"
             type="text">
       </fileTypes>
    </extension>
@@ -478,7 +482,7 @@
 	
 	<extension point="org.eclipse.core.filebuffers.documentSetup">
 		<participant class="ocaml.editors.OcamlDocumentSetupParticipant"
-			extensions="ml,mli,mlp"/>
+			extensions="ml,mli,mlp,ml4"/>
 		<participant class="ocaml.editors.lex.OcamllexDocumentSetupParticipant"
 			extensions="mll"/>
 		<participant class="ocaml.editors.yacc.OcamlyaccDocumentSetupParticipant"

@@ -1,18 +1,30 @@
 package ocaml.preferences;
 
+import java.io.File;
+
 import ocaml.OcamlPlugin;
 
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
- * Implements a preference page (Windows->Preferences->OCaml->Paths) that allows the user to parameter the
- * paths of the O'Caml tools (compilers, toplevel, documentation generator...)
+ * Implements a preference page (Windows->Preferences->OCaml->Paths) that allows the user to
+ * parameter the paths of the O'Caml tools (compilers, toplevel, documentation generator...)
  */
-public class PathsPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+public class PathsPreferencePage extends FieldEditorPreferencePage implements
+		IWorkbenchPreferencePage {
 
 	public PathsPreferencePage() {
 		super(FieldEditorPreferencePage.GRID);
@@ -20,34 +32,200 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements IW
 		this.setDescription("Please fill in all fields with the correct paths on your system");
 	}
 
+	FileFieldEditor ocamlField;
+	FileFieldEditor ocamlcField;
+	FileFieldEditor ocamloptField;
+	FileFieldEditor ocamldepField;
+	FileFieldEditor ocamllexField;
+	FileFieldEditor ocamlyaccField;
+	FileFieldEditor ocamldocField;
+	FileFieldEditor ocamldebugField;
+	FileFieldEditor camlp4Field;
+	
+	Text pathText;
+
 	@Override
 	public void createFieldEditors() {
-		this.addField(new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAML, "oca&ml:", this
-				.getFieldEditorParent()));
-		this.addField(new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLC, "ocaml&c:", this
-				.getFieldEditorParent()));
-		this.addField(new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLOPT, "ocaml&opt:", this
-				.getFieldEditorParent()));
-		this.addField(new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLDEP, "ocaml&dep:", this
-				.getFieldEditorParent()));
-		this.addField(new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLLEX, "ocamlle&x:", this
-				.getFieldEditorParent()));
-		this.addField(new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLYACC, "ocaml&yacc:", this
-				.getFieldEditorParent()));
-		this.addField(new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLDOC, "oc&amldoc:", this
-				.getFieldEditorParent()));
-		this.addField(new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLDEBUG, "ocamldebu&g:", this
-				.getFieldEditorParent()));
-		this.addField(new FileFieldEditor(PreferenceConstants.P_PATH_CAMLP4, "camlp4:", this
-				.getFieldEditorParent()));
+		
+		ocamlField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAML, "oca&ml:", this
+				.getFieldEditorParent());
+		this.addField(ocamlField);
+
+		ocamlcField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLC, "ocaml&c:",
+				this.getFieldEditorParent());
+		this.addField(ocamlcField);
+
+		ocamloptField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLOPT,
+				"ocaml&opt:", this.getFieldEditorParent());
+		this.addField(ocamloptField);
+
+		ocamldepField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLDEP,
+				"ocaml&dep:", this.getFieldEditorParent());
+		this.addField(ocamldepField);
+
+		ocamllexField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLLEX,
+				"ocamlle&x:", this.getFieldEditorParent());
+		this.addField(ocamllexField);
+
+		ocamlyaccField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLYACC,
+				"ocaml&yacc:", this.getFieldEditorParent());
+		this.addField(ocamlyaccField);
+
+		ocamldocField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLDOC,
+				"oc&amldoc:", this.getFieldEditorParent());
+		this.addField(ocamldocField);
+
+		ocamldebugField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLDEBUG,
+				"ocamldebu&g:", this.getFieldEditorParent());
+		this.addField(ocamldebugField);
+
+		camlp4Field = new FileFieldEditor(PreferenceConstants.P_PATH_CAMLP4, "camlp4:", this
+				.getFieldEditorParent());
+		this.addField(camlp4Field);
+
 		this.addField(new FileFieldEditor(PreferenceConstants.P_MAKE_PATH, "make:", this
 				.getFieldEditorParent()));
-		this.addField(new DirectoryFieldEditor(PreferenceConstants.P_LIB_PATH, "OCaml &lib path:", this
-				.getFieldEditorParent()));
-		// this.addField(new DirectoryFieldEditor(PreferenceConstants.P_INCLUDE_PATH, "&Include lib path:",
-		// this.getFieldEditorParent()));
+		this.addField(new DirectoryFieldEditor(PreferenceConstants.P_LIB_PATH, "OCaml &lib path:",
+				this.getFieldEditorParent()));
+		
+		Composite group = new Composite(getFieldEditorParent(), SWT.BORDER);
+		GridLayout layout = new GridLayout();
+		layout.numColumns = 2;
+		group.setLayout(layout);
+		GridData data = new GridData();
+		data.verticalAlignment = GridData.FILL;
+		data.horizontalAlignment = GridData.FILL;
+		data.horizontalSpan = 3;
+		group.setLayoutData(data);
+
+		// group.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+
+		final Button applyPath = new Button(group, SWT.PUSH);
+		applyPath.setText("Apply prefix path");
+		pathText = new Text(group, SWT.SINGLE | SWT.BORDER);
+		pathText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, true));
+
+		applyPath.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				applyPathPrefix();
+			}
+
+		});		
+		
 	}
 
 	public void init(IWorkbench workbench) {
+	}
+
+	private void applyPathPrefix() {
+		String path = pathText.getText().trim();
+		if (!path.endsWith(File.separator))
+			path = path + File.separator;
+
+		String filename;
+
+		// ocaml
+		filename = path + "ocaml";
+		if (new File(filename).exists())
+			ocamlField.setStringValue(path + "ocaml");
+		else
+			ocamlField.setStringValue(path);
+
+		// ocamlc(.opt)
+		filename = path + "ocamlc.opt";
+		if (new File(filename).exists())
+			ocamlcField.setStringValue(path + "ocamlc.opt");
+		else {
+			filename = path + "ocamlc";
+			if (new File(filename).exists())
+				ocamlcField.setStringValue(path + "ocamlc");
+			else
+				ocamlcField.setStringValue(path);
+		}
+		
+		// ocamlopt(.opt)
+		filename = path + "ocamlopt.opt";
+		if (new File(filename).exists())
+			ocamloptField.setStringValue(path + "ocamlopt.opt");
+		else {
+			filename = path + "ocamlopt";
+			if (new File(filename).exists())
+				ocamloptField.setStringValue(path + "ocamlopt");
+			else
+				ocamloptField.setStringValue(path);
+		}
+		
+		// ocamldep(.opt)
+		filename = path + "ocamldep.opt";
+		if (new File(filename).exists())
+			ocamldepField.setStringValue(path + "ocamldep.opt");
+		else {
+			filename = path + "ocamldep";
+			if (new File(filename).exists())
+				ocamldepField.setStringValue(path + "ocamldep");
+			else
+				ocamldepField.setStringValue(path);
+		}
+		
+		// ocamllex(.opt)
+		filename = path + "ocamllex.opt";
+		if (new File(filename).exists())
+			ocamllexField.setStringValue(path + "ocamllex.opt");
+		else {
+			filename = path + "ocamldep";
+			if (new File(filename).exists())
+				ocamllexField.setStringValue(path + "ocamllex");
+			else
+				ocamllexField.setStringValue(path);
+		}
+
+		// ocamlyacc(.opt)
+		filename = path + "ocamlyacc.opt";
+		if (new File(filename).exists())
+			ocamlyaccField.setStringValue(path + "ocamlyacc.opt");
+		else {
+			filename = path + "ocamldep";
+			if (new File(filename).exists())
+				ocamlyaccField.setStringValue(path + "ocamlyacc");
+			else
+				ocamlyaccField.setStringValue(path);
+		}
+
+		// ocamldoc(.opt)
+		filename = path + "ocamldoc.opt";
+		if (new File(filename).exists())
+			ocamldocField.setStringValue(path + "ocamldoc.opt");
+		else {
+			filename = path + "ocamldep";
+			if (new File(filename).exists())
+				ocamldocField.setStringValue(path + "ocamldoc");
+			else
+				ocamldocField.setStringValue(path);
+		}
+
+		// ocamldebug(.opt)
+		filename = path + "ocamldebug.opt";
+		if (new File(filename).exists())
+			ocamldebugField.setStringValue(path + "ocamldebug.opt");
+		else {
+			filename = path + "ocamldep";
+			if (new File(filename).exists())
+				ocamldebugField.setStringValue(path + "ocamldebug");
+			else
+				ocamldebugField.setStringValue(path);
+		}
+
+		// camlp4(.opt)
+		filename = path + "camlp4.opt";
+		if (new File(filename).exists())
+			camlp4Field.setStringValue(path + "camlp4.opt");
+		else {
+			filename = path + "ocamldep";
+			if (new File(filename).exists())
+				camlp4Field.setStringValue(path + "camlp4");
+			else
+				camlp4Field.setStringValue(path);
+		}
 	}
 }

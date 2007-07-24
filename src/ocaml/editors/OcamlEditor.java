@@ -44,12 +44,15 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 /**
- * Configures the O'Caml editor, and manages the events raised by this editor, by overloading methods of the
- * TextEditor class.
+ * Configures the O'Caml editor, and manages the events raised by this editor, by overloading
+ * methods of the TextEditor class.
  */
 public class OcamlEditor extends TextEditor {
-	
-	/** used to notify that the outline job is finished (notified by OutlineJob to OcamlHyperlinkDetector) */
+
+	/**
+	 * used to notify that the outline job is finished (notified by OutlineJob to
+	 * OcamlHyperlinkDetector)
+	 */
 	public Object outlineSignal = new Object();
 
 	private OcamlOutlineControl outline;
@@ -72,21 +75,20 @@ public class OcamlEditor extends TextEditor {
 	/** The debug cursor (as a red I-beam) */
 	private DebugVisuals caret;
 
-	public ITextViewer getTextViewer(){
+	public ITextViewer getTextViewer() {
 		return this.getSourceViewer();
 	}
-	
+
 	@Override
 	protected void createActions() {
 		super.createActions();
-		
-		
 
 		try {
 			paintManager = new PaintManager(getSourceViewer());
 			matchingCharacterPainter = new MatchingCharacterPainter(getSourceViewer(),
 					new OcamlCharacterPairMatcher());
-			matchingCharacterPainter.setColor(new Color(Display.getCurrent(), new RGB(160, 160, 160)));
+			matchingCharacterPainter.setColor(new Color(Display.getCurrent(),
+					new RGB(160, 160, 160)));
 			paintManager.addPainter(matchingCharacterPainter);
 
 			/*
@@ -130,7 +132,7 @@ public class OcamlEditor extends TextEditor {
 		this.getSourceViewer().addTextListener(new ITextListener() {
 
 			public void textChanged(TextEvent event) {
-				if(event.getDocumentEvent() != null)
+				if (event.getDocumentEvent() != null)
 					rebuildOutline(500);
 			}
 		});
@@ -170,6 +172,10 @@ public class OcamlEditor extends TextEditor {
 	@Override
 	public Object getAdapter(Class required) {
 		if (IContentOutlinePage.class.equals(required)) {
+			if ("mlp".equals(this.getFileBeingEdited().getFileExtension())
+					|| "ml4".equals(this.getFileBeingEdited().getFileExtension()))
+				return null;
+
 			if (this.outline == null)
 				this.outline = new OcamlOutlineControl(this);
 			rebuildOutline(100);
@@ -190,7 +196,8 @@ public class OcamlEditor extends TextEditor {
 	}
 
 	public static int getTabSize() {
-		return OcamlPlugin.getInstance().getPreferenceStore().getInt(PreferenceConstants.P_EDITOR_TABS);
+		return OcamlPlugin.getInstance().getPreferenceStore().getInt(
+				PreferenceConstants.P_EDITOR_TABS);
 	}
 
 	public void redraw() {
@@ -217,12 +224,11 @@ public class OcamlEditor extends TextEditor {
 
 		if (synchronizeOutlineJob == null)
 			synchronizeOutlineJob = new SynchronizeOutlineJob("Synchronizing outline with editor");
-		else if(synchronizeOutlineJob.getState() == SynchronizeOutlineJob.RUNNING)
+		else if (synchronizeOutlineJob.getState() == SynchronizeOutlineJob.RUNNING)
 			return;
 		// only one job at a time
 		else
 			synchronizeOutlineJob.cancel();
-
 
 		synchronizeOutlineJob.setPriority(CompletionJob.DECORATE);
 		synchronizeOutlineJob.setEditor(this);
@@ -294,8 +300,8 @@ public class OcamlEditor extends TextEditor {
 		}
 
 		/*
-		 * If this project is a makefile project, then we compile manually each time the user saves (because
-		 * the automatic compiling provided by Eclipse is disabled on makefile projects)
+		 * If this project is a makefile project, then we compile manually each time the user saves
+		 * (because the automatic compiling provided by Eclipse is disabled on makefile projects)
 		 */
 		if (bMakefileNature) {
 			IWorkspace ws = ResourcesPlugin.getWorkspace();
@@ -309,13 +315,14 @@ public class OcamlEditor extends TextEditor {
 	 * @Override protected void editorContextMenuAboutToShow(IMenuManager menu) { IFile file =
 	 * this.getFileBeingEdited(); super.editorContextMenuAboutToShow(menu);
 	 * 
-	 * MenuManager ocamlGroup = new MenuManager("OCaml"); menu.add(new Separator()); menu.add(ocamlGroup);
-	 * ocamlGroup.add(new GenDocAction("GenDoc", file)); }
+	 * MenuManager ocamlGroup = new MenuManager("OCaml"); menu.add(new Separator());
+	 * menu.add(ocamlGroup); ocamlGroup.add(new GenDocAction("GenDoc", file)); }
 	 */
 
 	/*
-	 * public OcamlOutlineControl getOutlinePage() { if (this.fOutlinePage == null) this.fOutlinePage = new
-	 * OcamlOutlineControl(this.getDocumentProvider(), this); return this.fOutlinePage; }
+	 * public OcamlOutlineControl getOutlinePage() { if (this.fOutlinePage == null)
+	 * this.fOutlinePage = new OcamlOutlineControl(this.getDocumentProvider(), this); return
+	 * this.fOutlinePage; }
 	 */
 
 	public void rebuildOutline(int delay) {
@@ -326,17 +333,17 @@ public class OcamlEditor extends TextEditor {
 
 		if (outlineJob == null)
 			outlineJob = new OutlineJob("Rebuilding outline");
-		else if(outlineJob.getState() == OutlineJob.RUNNING)
+		else if (outlineJob.getState() == OutlineJob.RUNNING)
 			return;
 		// only one Job at a time
 		else
 			outlineJob.cancel();
-		
+
 		outlineJob.setPriority(CompletionJob.DECORATE);
 		outlineJob.setOutline(this.outline);
 		outlineJob.setDoc(document);
 		outlineJob.setEditor(this);
-		
+
 		outlineJob.schedule(delay);
 	}
 
@@ -346,15 +353,17 @@ public class OcamlEditor extends TextEditor {
 		super.handleCursorPositionChanged();
 		synchronizeOutline();
 
-		if(OcamlPlugin.getInstance().getPreferenceStore().getBoolean(PreferenceConstants.P_SHOW_TYPES_IN_STATUS_BAR)){
-			final String annot = OcamlTextHover.getAnnotAt(this, (TextViewer) this.getSourceViewer(), this.getCaretOffset()).trim();
+		if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+				PreferenceConstants.P_SHOW_TYPES_IN_STATUS_BAR)) {
+			final String annot = OcamlTextHover.getAnnotAt(this,
+					(TextViewer) this.getSourceViewer(), this.getCaretOffset()).trim();
 			final OcamlEditor editor = this;
 			Display.getCurrent().asyncExec(new Runnable() {
-			
+
 				public void run() {
-					if(editor == null)
+					if (editor == null)
 						return;
-					if(!annot.equals(""))
+					if (!annot.equals(""))
 						editor.setStatusLineMessage(annot);
 					else
 						editor.setStatusLineMessage(null); // clear
@@ -373,7 +382,7 @@ public class OcamlEditor extends TextEditor {
 
 	public void setOutlineDefinitionsTree(Def outlineDefinitions) {
 		this.codeOutlineDefinitionsTree = outlineDefinitions;
-		
+
 	}
 
 	/** Return the last definitions tree computed, or null if none */
@@ -405,6 +414,5 @@ public class OcamlEditor extends TextEditor {
 	public OcamlOutlineControl getOutline() {
 		return outline;
 	}
-
 
 }

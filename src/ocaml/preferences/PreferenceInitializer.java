@@ -93,7 +93,13 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_TYPE, true);
 			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_VAL, true);
 			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_VARIANT_CONS, true);
+			
+			store.setDefault(PreferenceConstants.P_OUTLINE_EXPAND_ALL, false);
+			store.setDefault(PreferenceConstants.P_OUTLINE_EXPAND_MODULES, false);
+			store.setDefault(PreferenceConstants.P_OUTLINE_EXPAND_CLASSES, false);
 
+			
+			// set the defaults for the debugger
 			store.setDefault(PreferenceConstants.P_DEBUGGER_CHECKPOINTS, true);
 			store.setDefault(PreferenceConstants.P_DEBUGGER_SMALL_STEP, 1000);
 			store.setDefault(PreferenceConstants.P_DEBUGGER_BIG_STEP, 10000);

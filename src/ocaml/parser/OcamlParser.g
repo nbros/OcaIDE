@@ -659,20 +659,11 @@ class_expr=
   			let.bRec = rec.bRec;
   		}
   		
-	  		
-  		// put the "in" expression in the 'a' node or in the last
-  		// node from the "and" list
-  		if(da.type == Def.Type.Let || da.type == Def.Type.LetIn){
-  			da.add(b);
-  			da.collapse();
-  			backup(da);
-  			return a;
-  		}
-  		else if(da.type == Def.Type.Dummy && da.children.size() == 2){
-  			Def last = da.children.get(1); 
+  		if(lets.size() > 0){
+  			Def last = lets.get(lets.size() - 1);
   			last.add(b);
   			last.collapse();
-  			backup(da);
+  			backup(last);
   			return a;
   		}
 
@@ -1116,23 +1107,15 @@ expr=
   			let.type = Def.Type.LetIn;
   			let.bRec = rec.bRec;
   		}
-	  		
-  		// put the "in" expression in the 'a' node or in the last
-  		// node from the "and" list
-  		if(da.type == Def.Type.Let || da.type == Def.Type.LetIn){
-  			da.add(b);
-  			da.collapse();
-  			backup(da);
-  			return a;
-  		}
-  		else if(da.type == Def.Type.Dummy && da.children.size() == 2){
-  			Def last = da.children.get(1); 
+  		
+  		if(lets.size() > 0){
+  			Def last = lets.get(lets.size() - 1);
   			last.add(b);
   			last.collapse();
-  			backup(da);
+  			backup(last);
   			return a;
   		}
-  		
+	  		
   		return Def.root(a,b); 
   	:}
   | LET MODULE UIDENT.id module_binding.a IN seq_expr.b

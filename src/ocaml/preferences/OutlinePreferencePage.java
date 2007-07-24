@@ -28,6 +28,18 @@ public class OutlinePreferencePage extends FieldEditorPreferencePage implements
 				"Show the O'Caml types after each element in the outline", this
 						.getFieldEditorParent()));
 
+		this.addField(new BooleanFieldEditor(PreferenceConstants.P_OUTLINE_EXPAND_MODULES,
+				"Always expand modules in the outline", this
+						.getFieldEditorParent()));
+
+		this.addField(new BooleanFieldEditor(PreferenceConstants.P_OUTLINE_EXPAND_CLASSES,
+				"Always expand classes in the outline", this
+						.getFieldEditorParent()));
+
+		this.addField(new BooleanFieldEditor(PreferenceConstants.P_OUTLINE_EXPAND_ALL,
+				"Always completely expand the outline", this
+						.getFieldEditorParent()));
+
 		this.addField(new IntegerFieldEditor(PreferenceConstants.P_OUTLINE_LET_MINIMUM_CHARS,
 				"Show 'let' definitions with an identifier with at least (nb of characters)", this.getFieldEditorParent()));
 

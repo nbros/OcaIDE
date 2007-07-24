@@ -100,6 +100,8 @@ public final class ImageRepository {
 
 	public static String ICON_LETIN = "letin.gif";
 
+	public static final String ICON_EXPAND_ALL = "expandall.gif";
+
 	public static String[] all = { ICON_BINARY, ICON_BUILDALL, ICON_BYTECODE, ICON_BYTECODE, ICON_CAML16,
 			ICON_CAML32, ICON_NATURE, ICON_PURPLECAML16, ICON_YACC, ICON_LEX, ICON_LIBRARY, ICON_MODULE,
 			ICON_INTERFACE, ICON_F, ICON_C, ICON_LIB, ICON_VALUE, ICON_OPEN, ICON_EXCEPTION, ICON_TYPE,
