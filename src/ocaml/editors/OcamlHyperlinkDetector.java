@@ -146,7 +146,11 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				Def firstPart = lookForDefinitionUp(parts[0], searchedDef, interfacesDefinitionsRoot, parts,
 						true);
 				if (firstPart != null) {
-					return findDefFromPath(1, parts, firstPart, null);
+					Def defFromPath = findDefFromPath(1, parts, firstPart, null);
+					if(defFromPath != null)
+						return defFromPath;
+					else
+						return firstPart;
 				}
 
 				// if we didn't find it in the current module, look in the other ones
@@ -436,6 +440,12 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			case Module:
 				return node;
 			case Exception:
+				return node;
+			case ModuleType:
+				return node;
+			case External:
+				return node;
+			case Class:
 				return node;
 			default:
 				return null;
