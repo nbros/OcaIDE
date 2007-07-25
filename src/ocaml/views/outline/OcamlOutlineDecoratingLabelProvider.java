@@ -27,11 +27,11 @@ public class OcamlOutlineDecoratingLabelProvider extends DecoratingLabelProvider
 
 	Color blue = Display.getCurrent().getSystemColor(SWT.COLOR_BLUE);
 
-	// Color red = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
+	Color red = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
 
 	// Color magenta = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_MAGENTA);
 	
-	Color green = Display.getCurrent().getSystemColor(SWT.COLOR_GREEN);
+	// Color green = Display.getCurrent().getSystemColor(SWT.COLOR_GREEN);
 
 	@Override
 	public Color getForeground(Object element) {
@@ -41,13 +41,13 @@ public class OcamlOutlineDecoratingLabelProvider extends DecoratingLabelProvider
 			//if (def.bRec)
 			//	return green;
 
-			/*
+			
 			 
-			 if (def.type == Def.Type.Parameter && def.bAnd)
-				return magenta;
+			//if (def.type == Def.Type.Parameter && def.bAnd)
+				//return magenta;
 			if (def.type == Def.Type.Parameter)
 				return red;
-			*/
+			
 
 			
 			if (def.bAnd)

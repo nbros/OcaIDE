@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Display;
@@ -69,11 +68,11 @@ public class OutlineJob extends Job {
 	 * at any moment.
 	 */
 	@Override
-	protected synchronized IStatus run(IProgressMonitor monitor) {
+	public synchronized IStatus run(IProgressMonitor monitor) {
 		
-		//System.err.println("outline job");
+		//System.err.println("outline job" + nJob++);
 
-		// long before = System.currentTimeMillis();
+		 //long before = System.currentTimeMillis();
 
 		String strDocument = doc.get();
 
@@ -124,16 +123,6 @@ public class OutlineJob extends Job {
 					root.children.add(def);
 		}
 
-		final IFile file = editor.getFileBeingEdited();
-		/*
-		 * if the source hasn't been modified since the last compilation, try to get the types
-		 * inferred by the compiler (in a ".annot" file)
-		 */
-		if (!editor.isDirty()
-				&& OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
-						PreferenceConstants.P_SHOW_TYPES_IN_OUTLINE))
-			addTypes(file, root);
-
 		if (root != null) {
 			root.buildParents();
 			root.buildSiblingOffsets();
@@ -143,11 +132,29 @@ public class OutlineJob extends Job {
 		final OcamlOutlineControl outline = this.outline;
 		final Def definitions = root;
 
-		final Def outlineDefinitions = definitions.cleanCopy();
-
+		Def outlineDefinitions = definitions.cleanCopy();
 		// remove the definitions the user has chosen not to display
 		initPreferences();
 		cleanOutline(outlineDefinitions);
+		
+
+		final IFile file = editor.getFileBeingEdited();
+		/*
+		 * if the source hasn't been modified since the last compilation, try to get the types
+		 * inferred by the compiler (in a ".annot" file)
+		 */
+		if (!editor.isDirty()
+				&& OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+						PreferenceConstants.P_SHOW_TYPES_IN_OUTLINE))
+			addTypes(file, outlineDefinitions);		
+		
+		
+		if(OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+						PreferenceConstants.P_OUTLINE_UNNEST_IN))
+			outlineDefinitions.unnestIn(null, 0);
+		
+		final Def fOutlineDefinitions = outlineDefinitions;
+
 
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
@@ -209,7 +216,7 @@ public class OutlineJob extends Job {
 
 				// give the definitions tree to the editor
 				editor.setDefinitionsTree(definitions);
-				editor.setOutlineDefinitionsTree(outlineDefinitions);
+				editor.setOutlineDefinitionsTree(fOutlineDefinitions);
 
 				// to notify the hyperlink detector that the outline is available
 				synchronized (editor.outlineSignal) {
@@ -217,19 +224,22 @@ public class OutlineJob extends Job {
 				}
 
 				if (outline != null) {
-					outline.setInput(outlineDefinitions);
-					//outline.setInput(definitions);
+					if(OcamlOutlineControl.bOutlineDebugButton && OcamlPlugin.getInstance().getPreferenceStore().getBoolean(PreferenceConstants.P_OUTLINE_DEBUG_MODE))
+						outline.setInput(definitions);
+					else
+						outline.setInput(fOutlineDefinitions);
+					
 					editor.synchronizeOutline();
 				}
 
 			}
 		});
 
-		// long after = System.currentTimeMillis();
+		 //long after = System.currentTimeMillis();
 		// root.clean();
 		// root.print(0);
 
-		// System.out.println("parsed file in " + (after - before) + " ms");
+		 //System.out.println("built outline in " + (after - before) + " ms");
 		// if(parser.errorReporting.bErrors)
 		// System.out.println("Syntax errors reported");
 

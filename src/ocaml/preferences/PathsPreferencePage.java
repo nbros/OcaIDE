@@ -4,17 +4,23 @@ import java.io.File;
 
 import ocaml.OcamlPlugin;
 
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -41,67 +47,41 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 	FileFieldEditor ocamldocField;
 	FileFieldEditor ocamldebugField;
 	FileFieldEditor camlp4Field;
-	
-	Text pathText;
 
+	Text pathText;
+	private Label warningLabel;
+	
 	@Override
 	public void createFieldEditors() {
+
+		warningLabel = new Label(getFieldEditorParent(), SWT.NONE);
+		warningLabel.setText("You must manually recompile your projects after changing paths");
 		
-		ocamlField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAML, "oca&ml:", this
-				.getFieldEditorParent());
-		this.addField(ocamlField);
 
-		ocamlcField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLC, "ocaml&c:",
-				this.getFieldEditorParent());
-		this.addField(ocamlcField);
-
-		ocamloptField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLOPT,
-				"ocaml&opt:", this.getFieldEditorParent());
-		this.addField(ocamloptField);
-
-		ocamldepField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLDEP,
-				"ocaml&dep:", this.getFieldEditorParent());
-		this.addField(ocamldepField);
-
-		ocamllexField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLLEX,
-				"ocamlle&x:", this.getFieldEditorParent());
-		this.addField(ocamllexField);
-
-		ocamlyaccField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLYACC,
-				"ocaml&yacc:", this.getFieldEditorParent());
-		this.addField(ocamlyaccField);
-
-		ocamldocField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLDOC,
-				"oc&amldoc:", this.getFieldEditorParent());
-		this.addField(ocamldocField);
-
-		ocamldebugField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLDEBUG,
-				"ocamldebu&g:", this.getFieldEditorParent());
-		this.addField(ocamldebugField);
-
-		camlp4Field = new FileFieldEditor(PreferenceConstants.P_PATH_CAMLP4, "camlp4:", this
-				.getFieldEditorParent());
-		this.addField(camlp4Field);
-
-		this.addField(new FileFieldEditor(PreferenceConstants.P_MAKE_PATH, "make:", this
-				.getFieldEditorParent()));
-		this.addField(new DirectoryFieldEditor(PreferenceConstants.P_LIB_PATH, "OCaml &lib path:",
-				this.getFieldEditorParent()));
-		
-		Composite group = new Composite(getFieldEditorParent(), SWT.BORDER);
-		GridLayout layout = new GridLayout();
-		layout.numColumns = 2;
-		group.setLayout(layout);
+		Group toolsGroup = new Group(getFieldEditorParent(), SWT.BORDER);
 		GridData data = new GridData();
 		data.verticalAlignment = GridData.FILL;
 		data.horizontalAlignment = GridData.FILL;
 		data.horizontalSpan = 3;
-		group.setLayoutData(data);
+		toolsGroup.setLayoutData(data);
+
+		toolsGroup
+				.setText("Ocaml tools (click on \"Change Ocaml bin folder\" to change all these paths at once)");
+
+		Composite group = new Composite(toolsGroup, SWT.NONE);
+		GridLayout layout = new GridLayout();
+		layout.numColumns = 2;
+		group.setLayout(layout);
+		GridData gdata = new GridData();
+		gdata.verticalAlignment = GridData.FILL;
+		gdata.horizontalAlignment = GridData.FILL;
+		gdata.horizontalSpan = 3;
+		group.setLayoutData(gdata);
 
 		// group.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 
 		final Button applyPath = new Button(group, SWT.PUSH);
-		applyPath.setText("Apply prefix path");
+		applyPath.setText("Change Ocaml bin folder");
 		pathText = new Text(group, SWT.SINGLE | SWT.BORDER);
 		pathText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, true));
 
@@ -111,14 +91,67 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 				applyPathPrefix();
 			}
 
-		});		
-		
+		});
+
+		IPath path = new Path(OcamlPlugin.getOcamlcFullPath());
+		path = path.removeLastSegments(1);
+		pathText.setText(path.toOSString());
+
+		ocamlField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAML, "oca&ml:",
+				toolsGroup);
+		this.addField(ocamlField);
+
+		ocamlcField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLC, "ocaml&c:",
+				toolsGroup);
+		this.addField(ocamlcField);
+
+		ocamloptField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLOPT,
+				"ocaml&opt:", toolsGroup);
+		this.addField(ocamloptField);
+
+		ocamldepField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLDEP,
+				"ocaml&dep:", toolsGroup);
+		this.addField(ocamldepField);
+
+		ocamllexField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLLEX,
+				"ocamlle&x:", toolsGroup);
+		this.addField(ocamllexField);
+
+		ocamlyaccField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLYACC,
+				"ocaml&yacc:", toolsGroup);
+		this.addField(ocamlyaccField);
+
+		ocamldocField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLDOC,
+				"oc&amldoc:", toolsGroup);
+		this.addField(ocamldocField);
+
+		ocamldebugField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAMLDEBUG,
+				"ocamldebu&g:", toolsGroup);
+		this.addField(ocamldebugField);
+
+		camlp4Field = new FileFieldEditor(PreferenceConstants.P_PATH_CAMLP4, "camlp4:", toolsGroup);
+		this.addField(camlp4Field);
+
+		Group otherGroup = new Group(getFieldEditorParent(), SWT.BORDER);
+		GridData odata = new GridData();
+		odata.verticalAlignment = GridData.FILL;
+		odata.horizontalAlignment = GridData.FILL;
+		odata.horizontalSpan = 3;
+		otherGroup.setLayoutData(odata);
+
+		this.addField(new FileFieldEditor(PreferenceConstants.P_MAKE_PATH, "make:", otherGroup));
+		this.addField(new DirectoryFieldEditor(PreferenceConstants.P_LIB_PATH, "OCaml &lib path:",
+				otherGroup));
+
 	}
 
 	public void init(IWorkbench workbench) {
 	}
 
 	private void applyPathPrefix() {
+		
+		warningLabel.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
+		
 		String path = pathText.getText().trim();
 		if (!path.endsWith(File.separator))
 			path = path + File.separator;
@@ -143,7 +176,7 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 			else
 				ocamlcField.setStringValue(path);
 		}
-		
+
 		// ocamlopt(.opt)
 		filename = path + "ocamlopt.opt";
 		if (new File(filename).exists())
@@ -155,7 +188,7 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 			else
 				ocamloptField.setStringValue(path);
 		}
-		
+
 		// ocamldep(.opt)
 		filename = path + "ocamldep.opt";
 		if (new File(filename).exists())
@@ -167,7 +200,7 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 			else
 				ocamldepField.setStringValue(path);
 		}
-		
+
 		// ocamllex(.opt)
 		filename = path + "ocamllex.opt";
 		if (new File(filename).exists())

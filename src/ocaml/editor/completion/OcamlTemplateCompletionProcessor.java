@@ -95,7 +95,15 @@ public class OcamlTemplateCompletionProcessor extends TemplateCompletionProcesso
 			new Template("match", "match with", "ocamltemplatecontext",
 				"match ${name} with\n" + indent(indent+1) + "| ", true);
 
-		return new Template[] { t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11};
+		Template t12 =
+			new Template("while", "while", "ocamltemplatecontext",
+				"while ${condition} do\n" + indent(indent+1) + "${expression}" + "\n" + indent(indent) + "done\n", true);
+
+		Template t13 =
+			new Template("begin end", "begin end block", "ocamltemplatecontext",
+				"begin\n" + indent(indent+1) + "${}\n" + indent(indent) + "end\n", true);
+
+		return new Template[] { t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13};
 	}
 
 	/** return a string containing <code>count</code> tabulations */

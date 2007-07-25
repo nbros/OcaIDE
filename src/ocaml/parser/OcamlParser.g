@@ -661,7 +661,10 @@ class_expr=
   		
   		if(lets.size() > 0){
   			Def last = lets.get(lets.size() - 1);
-  			last.add(b);
+  			Def in = new Def("<in>", Def.Type.In, 0, 0);
+  			in.add(b);
+  			in.collapse();
+  			last.children.add(0, in);
   			last.collapse();
   			backup(last);
   			return a;
@@ -1110,7 +1113,10 @@ expr=
   		
   		if(lets.size() > 0){
   			Def last = lets.get(lets.size() - 1);
-  			last.add(b);
+  			Def in = new Def("<in>", Def.Type.In, 0, 0);
+  			in.add(b);
+  			in.collapse();
+  			last.children.add(0, in);
   			last.collapse();
   			backup(last);
   			return a;

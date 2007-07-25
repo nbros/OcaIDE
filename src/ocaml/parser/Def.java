@@ -10,6 +10,8 @@ public class Def extends beaver.Symbol {
 	public enum Type {
 		/** a dummy node: only used to build the AST, but discarded afterwards */
 		Dummy,
+		/** The 'in' part of a 'let in' definition: appears as the first child of a 'let in' */
+		In,
 		/** the root of the definitions tree (module implementation) */
 		Root,
 		/** a variable name, with its position */
@@ -32,8 +34,8 @@ public class Def extends beaver.Symbol {
 	public Type type;
 
 	/**
-	 * The type inferred by the OCaml compiler for this definition (this is retrieved and displayed in the
-	 * outline when a ".annot" file is present and up-to-date)
+	 * The type inferred by the OCaml compiler for this definition (this is retrieved and displayed
+	 * in the outline when a ".annot" file is present and up-to-date)
 	 */
 	public String ocamlType;
 
@@ -51,16 +53,15 @@ public class Def extends beaver.Symbol {
 	public boolean bAnd = false;
 
 	/**
-	 * This is used by the error recovery mechanism. If true, then this node will appear at the root of the
-	 * outline. If false, it is a child of an element whose bTop=true and so it will not appear itself at the
-	 * root of the outline
+	 * This is used by the error recovery mechanism. If true, then this node will appear at the root
+	 * of the outline. If false, it is a child of an element whose bTop=true and so it will not
+	 * appear itself at the root of the outline
 	 */
 	public boolean bTop = true;
 
 	/** Use alternative icon (indicating a special property, such as private, mutable, ...) */
 	public boolean bAlt = false;
-	
-	
+
 	/** Is this definition recursive? */
 	public boolean bRec = false;
 
@@ -72,8 +73,8 @@ public class Def extends beaver.Symbol {
 		children = new ArrayList<Def>();
 		this.name = null;
 		this.type = Type.Dummy;
-		this.posStart = -1;
-		this.posEnd = -1;
+		this.posStart = 0;
+		this.posEnd = 0;
 	}
 
 	/** Create a definition node: let, type,... */
@@ -164,8 +165,8 @@ public class Def extends beaver.Symbol {
 	}
 
 	/**
-	 * Collapse all dummy nodes up to the next real nodes, so that <code>realNode</code> will become the
-	 * root of all the immediately following real nodes.
+	 * Collapse all dummy nodes up to the next real nodes, so that <code>realNode</code> will
+	 * become the root of all the immediately following real nodes.
 	 */
 	public void collapse() {
 
@@ -270,12 +271,37 @@ public class Def extends beaver.Symbol {
 
 	private void findRealChildren(Def node, ArrayList<Def> nodes, boolean root) {
 		if (node.type == Type.Dummy || node.type == Type.Identifier || node.type == Type.Parameter
-				|| node.type == Type.Sig || node.type == Type.Object || node.type == Type.Struct || root) {
+				|| node.type == Type.Sig || node.type == Type.Object || node.type == Type.Struct
+				|| node.type == Type.In || root) {
 			for (Def d : node.children)
 				findRealChildren(d, nodes, false);
 		} else {
 			nodes.add(node);
 		}
+	}
+
+	/** Unnest the 'in' definitions */
+	public void unnestIn(Def parent, int index) {
+		
+		for(int i = 0; i < children.size(); i++){
+			Def child = children.get(i);
+			child.unnestIn(this, i);
+		}
+		
+		ArrayList<Def> newChildren = new ArrayList<Def>();
+
+		int j = 1;
+		for(int i = 0; i < children.size(); i++){
+			Def child = children.get(i);
+			
+			if(type == Type.LetIn && child.type == Type.LetIn){
+				parent.children.add(index + j++, child);
+			}else
+				newChildren.add(child);
+			
+		}
+		
+		children = newChildren;
 	}
 
 }

@@ -1,7 +1,5 @@
 package ocaml.views.outline;
 
-import java.util.Random;
-
 import ocaml.OcamlPlugin;
 import ocaml.editors.OcamlEditor;
 import ocaml.parser.Def;
@@ -9,8 +7,6 @@ import ocaml.preferences.PreferenceConstants;
 import ocaml.util.ImageRepository;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.BooleanPropertyAction;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -28,8 +24,6 @@ import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
@@ -48,6 +42,8 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 
 	/** Whether to always fully expand the outline */
 	private boolean expandAll;
+	
+	public static final boolean bOutlineDebugButton = true;
 
 	/**
 	 * Creates a content outline page using the given provider and the given editor.
@@ -80,6 +76,19 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 		
 		toolBarManager.add(actionExpandAll);
 		
+
+		if(bOutlineDebugButton){
+			/* Create an action in the outline toolbar to switch between debug mode and normal mode */
+			Action actionDebug = new BooleanPropertyAction("Debug", OcamlPlugin.getInstance().getPreferenceStore(), PreferenceConstants.P_OUTLINE_DEBUG_MODE){
+				@Override
+				public void run() {
+					super.run();
+					editor.rebuildOutline(0);
+					outline.update();
+				}
+			};
+			toolBarManager.add(actionDebug);
+		}
 	}
 	
 	/** Install the content provider and label provider */

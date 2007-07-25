@@ -40,6 +40,10 @@ public class OutlinePreferencePage extends FieldEditorPreferencePage implements
 				"Always completely expand the outline", this
 						.getFieldEditorParent()));
 
+		this.addField(new BooleanFieldEditor(PreferenceConstants.P_OUTLINE_UNNEST_IN,
+				"Unnest 'let in' definitions in outline", this
+						.getFieldEditorParent()));
+
 		this.addField(new IntegerFieldEditor(PreferenceConstants.P_OUTLINE_LET_MINIMUM_CHARS,
 				"Show 'let' definitions with an identifier with at least (nb of characters)", this.getFieldEditorParent()));
 

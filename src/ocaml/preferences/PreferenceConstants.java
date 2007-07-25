@@ -86,10 +86,16 @@ public class PreferenceConstants
 	public static final String P_OUTLINE_EXPAND_MODULES = "ocamlOutlineExpandModules";
 	public static final String P_OUTLINE_EXPAND_CLASSES = "ocamlOutlineExpandClasses";
 	public static final String P_OUTLINE_EXPAND_ALL = "ocamlOutlineExpandAll";
+	
+	public static final String P_OUTLINE_UNNEST_IN = "ocamlOutlineUnnestIn";
 
 	public static final String P_DEBUGGER_CHECKPOINTS = "ocamlDebuggerCheckpoints";
 	public static final String P_DEBUGGER_SMALL_STEP = "ocamlDebuggerSmallStep";
 	public static final String P_DEBUGGER_BIG_STEP = "ocamlDebuggerBigStep";
 	public static final String P_DEBUGGER_PROCESS_COUNT = "ocamlDebuggerProcessCount";
+	
+	/** debug mode for the outline */
+	public static final String P_OUTLINE_DEBUG_MODE = "ocamlOutlineDebugMode";
+	
 	
 }
