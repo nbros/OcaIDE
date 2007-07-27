@@ -89,6 +89,7 @@ public class PreferenceConstants
 	public static final String P_OUTLINE_EXPAND_ALL = "ocamlOutlineExpandAll";
 	
 	public static final String P_OUTLINE_UNNEST_IN = "ocamlOutlineUnnestIn";
+	public static final String P_OUTLINE_AND_BLUE = "ocamlOutlineAndBlue";
 
 	public static final String P_DEBUGGER_CHECKPOINTS = "ocamlDebuggerCheckpoints";
 	public static final String P_DEBUGGER_SMALL_STEP = "ocamlDebuggerSmallStep";

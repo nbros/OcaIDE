@@ -57,6 +57,8 @@
 	* If the debugger doesn't want to exit after clicking on "terminate", a second click on the "terminate" button will kill it, together with the debugged process
 	* Added an option (for the editor) to automatically add the closing double-quote
 	* "Convert revised syntax to standard syntax" and "Format with camlp4" actions now display the potential error message
+	* Definitions cache now uses soft references
+	* Added an option to not display 'and' definitions in blue in the outline
 	
 	
 	

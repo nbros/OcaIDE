@@ -1,6 +1,8 @@
 package ocaml.views.outline;
 
+import ocaml.OcamlPlugin;
 import ocaml.parser.Def;
+import ocaml.preferences.PreferenceConstants;
 
 import org.eclipse.jface.viewers.DecoratingLabelProvider;
 import org.eclipse.jface.viewers.ILabelDecorator;
@@ -12,6 +14,8 @@ import org.eclipse.swt.widgets.Display;
 public class OcamlOutlineDecoratingLabelProvider extends DecoratingLabelProvider {
 
 	// private final Font recFont;
+	
+	public static boolean bAndBlue = true;
 
 	public OcamlOutlineDecoratingLabelProvider(ILabelProvider provider, ILabelDecorator decorator) {
 		super(provider, decorator);
@@ -23,6 +27,8 @@ public class OcamlOutlineDecoratingLabelProvider extends DecoratingLabelProvider
 		else
 			recFont = new Font(Display.getDefault(), "", 10, SWT.BOLD);
 		*/
+		
+		bAndBlue = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(PreferenceConstants.P_OUTLINE_AND_BLUE);
 	}
 
 	Color blue = Display.getCurrent().getSystemColor(SWT.COLOR_BLUE);
@@ -50,7 +56,7 @@ public class OcamlOutlineDecoratingLabelProvider extends DecoratingLabelProvider
 			
 
 			
-			if (def.bAnd)
+			if (def.bAnd && bAndBlue)
 				return blue;
 		}
 

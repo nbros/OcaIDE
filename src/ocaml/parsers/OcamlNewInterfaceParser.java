@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
@@ -43,7 +44,7 @@ public class OcamlNewInterfaceParser {
 	}
 
 	/** The cache of module definitions */
-	private LinkedList<CachedDef> cache = new LinkedList<CachedDef>();
+	private LinkedList<SoftReference<CachedDef>> cache = new LinkedList<SoftReference<CachedDef>>();
 
 	/**
 	 * ocamldoc section comment. We retrieve them and put them at the beginning of the following
@@ -93,8 +94,9 @@ public class OcamlNewInterfaceParser {
 		Def found = null;
 
 		// First, see if the informations are in the cache
-		for (CachedDef def : cache) {
-			if (def.sameAs(interfaceFile)) {
+		for (SoftReference<CachedDef> ref : cache) {
+			CachedDef def = ref.get();
+			if (def != null && def.sameAs(interfaceFile)) {
 				// The entry is in the cache, and is still valid
 				if (def.isMoreRecentThan(interfaceFile))
 					found = def.getDefinition();
@@ -103,14 +105,21 @@ public class OcamlNewInterfaceParser {
 				 * from the cache
 				 */
 				else {
+					if(def == null)
+						System.err.println("info: weak reference has been GC'd");
 					toRemove.add(def);
 				}
 			}
+			
+			def = null;
 		}
 
 		// remove the stale entries from the cache
-		for (CachedDef def : toRemove)
+		for (CachedDef def : toRemove){
 			cache.remove(def);
+			def = null;
+		}
+		
 		// return the cache entry (if we found one)
 		if (found != null) {
 			return found;
@@ -173,16 +182,16 @@ public class OcamlNewInterfaceParser {
 			 * def.setComment("The parsing of this module lead to the following error: " +
 			 * e.toString());
 			 */
-			cache.addFirst(new CachedDef(interfaceFile, def));
+			cache.addFirst(new SoftReference<CachedDef>(new CachedDef(interfaceFile, def)));
 			return def;
 		}
-
+		
 		definition.setBody("module " + moduleName);
 
 		setFilenames(definition, filename);
 
 		// put the entry into the cache
-		cache.addFirst(new CachedDef(interfaceFile, definition));
+		cache.addFirst(new SoftReference<CachedDef>(new CachedDef(interfaceFile, definition)));
 
 		// definition.print(0);
 		/*

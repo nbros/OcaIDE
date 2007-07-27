@@ -1,6 +1,7 @@
 package ocaml.preferences;
 
 import ocaml.OcamlPlugin;
+import ocaml.views.outline.OcamlOutlineDecoratingLabelProvider;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
@@ -14,6 +15,8 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  */
 public class OutlinePreferencePage extends FieldEditorPreferencePage implements
 		IWorkbenchPreferencePage {
+
+	private BooleanFieldEditor andBlue;
 
 	public OutlinePreferencePage() {
 		super(FieldEditorPreferencePage.GRID);
@@ -36,10 +39,6 @@ public class OutlinePreferencePage extends FieldEditorPreferencePage implements
 				"Always expand classes in the outline", this
 						.getFieldEditorParent()));
 
-		this.addField(new BooleanFieldEditor(PreferenceConstants.P_OUTLINE_EXPAND_ALL,
-				"Always completely expand the outline", this
-						.getFieldEditorParent()));
-
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_OUTLINE_UNNEST_IN,
 				"Unnest 'let in' definitions in outline", this
 						.getFieldEditorParent()));
@@ -50,8 +49,18 @@ public class OutlinePreferencePage extends FieldEditorPreferencePage implements
 		this.addField(new IntegerFieldEditor(PreferenceConstants.P_OUTLINE_LET_IN_MINIMUM_CHARS,
 				"Show 'let in' definitions with an identifier with at least (nb of characters)", this.getFieldEditorParent()));
 
+		andBlue = new BooleanFieldEditor(PreferenceConstants.P_OUTLINE_AND_BLUE,
+				"Display \"and\" definitions in blue", this.getFieldEditorParent());
+				this.addField(andBlue);
+
 	}
 
 	public void init(IWorkbench workbench) {
+	}
+	
+	@Override
+	public boolean performOk() {
+		OcamlOutlineDecoratingLabelProvider.bAndBlue = andBlue.getBooleanValue();
+		return super.performOk();
 	}
 }
