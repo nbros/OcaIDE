@@ -11,7 +11,6 @@ import ocaml.exec.CommandRunner;
 import ocaml.exec.ExecHelper;
 import ocaml.exec.IExecEvents;
 
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;

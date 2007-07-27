@@ -17,10 +17,17 @@
 	public ArrayList<Def> recoverDefs = new ArrayList<Def>();
 	
 	/** backup a node, so as to be able to later recover from a parsing error */
-	public void backup(Def def){
+	private void backup(Def def){
 		recoverDefs.add(def);
 		for(Def child: def.children)
-			child.bTop = false;
+			//child.bTop = false;
+			unsetTop(child);
+	}
+	
+	private void unsetTop(Def def){
+		def.bTop = false;
+		for(Def child: def.children)
+			unsetTop(child);
 	}
 	
 	/** Can this variable name be a parameter? (that is, it starts with a lowercase letter) */
@@ -333,7 +340,7 @@ structure_tail=
 ;
 
 structure_item=
-    LET rec_flag.r let_bindings.a 
+    LET.l rec_flag.r let_bindings.a 
 	{: 
 		Def da = (Def)a;
 		Def rec = (Def)r;
@@ -343,7 +350,7 @@ structure_item=
   		da.findLets(lets);
   		for(Def let: lets)
   			let.bRec = rec.bRec;
-
+  			
 		return a; 
 	:}
   | EXTERNAL val_ident_colon.i core_type.a EQUAL primitive_declaration.b
@@ -489,82 +496,117 @@ signature=
    	{: return Def.root(a,b); :}
 ;
 signature_item=
-    VAL val_ident_colon.id core_type.a
+    VAL.v val_ident_colon.id core_type.a
     {: 
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.Let, ident.posStart, ident.posEnd);
     	def.add(a);
     	def.collapse();
+  		
+  		// add the start position of the definition
+  		def.defPosStart = v.getStart();
+    	
     	backup(def);
     	return def;
     :}
-  | EXTERNAL val_ident_colon.id core_type.a EQUAL primitive_declaration.b
+  | EXTERNAL.e val_ident_colon.id core_type.a EQUAL primitive_declaration.b
     {: 
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.External, ident.posStart, ident.posEnd);
+  		def.defPosStart = e.getStart();
     	def.add(a);
     	def.add(b);
     	def.collapse();
     	backup(def);
     	return def;
     :}
-  | TYPE type_declarations.a
-  	{: return a; :}
-  | EXCEPTION UIDENT.id constructor_arguments.a
+  | TYPE.t type_declarations.a
+  	{: 
+  		Def da = (Def)a;
+  		Def first = da.findFirstOfType(Def.Type.Type);
+  		first.defPosStart = t.getStart();
+  		
+  		return a; 
+  	:}
+  | EXCEPTION.e UIDENT.id constructor_arguments.a
     {: 
     	Def def = new Def((String)id.value, Def.Type.Exception, id.getStart(), id.getEnd());
+    	def.defPosStart = e.getStart();
     	def.add(a);
     	def.collapse();
     	backup(def);
     	return def;
     :}
-  | MODULE UIDENT.id module_declaration.a
+  | MODULE.m UIDENT.id module_declaration.a
     {: 
     	Def def = new Def((String)id.value, Def.Type.Module, id.getStart(), id.getEnd());
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
     	backup(def);
     	return def;
     :}
-  | MODULE REC module_rec_declarations.a
-  	{: return a; :}
-  | MODULE TYPE ident.id
+  | MODULE.m REC module_rec_declarations.a
+  	{: 
+  		Def da = (Def)a;
+  		Def first = da.findFirstOfType(Def.Type.Module);
+  		first.defPosStart = m.getStart();
+  	
+  		return a; 
+  	:}
+  | MODULE.m TYPE ident.id
     {: 
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.ModuleType, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
     	backup(def);
     	return def;
     :}
-  | MODULE TYPE ident.id EQUAL module_type.a
+  | MODULE.m TYPE ident.id EQUAL module_type.a
     {: 
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.ModuleType, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
     	backup(def);
     	return def;
     :}
-  | OPEN mod_longident.id
+  | OPEN.o mod_longident.id
     {: 
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.Open, ident.posStart, ident.posEnd);
+    	def.defPosStart = o.getStart();
     	backup(def);
     	return def;
     :}
-  | INCLUDE module_type.id
+  | INCLUDE.i module_type.id
     {: 
     	Def ident = (Def)id;
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Include, ident.posStart, ident.posEnd);
+    		def.defPosStart = i.getStart();
     		backup(def);
 	    	return def;
 	    }
 	    return new Def();
     :}
-  | CLASS class_descriptions.a
-  	{: return a; :}
-  | CLASS TYPE class_type_declarations.a
-  	{: return a; :}
+  | CLASS.c class_descriptions.a
+  	{: 
+  		Def da = (Def)a;
+  		Def first = da.findFirstOfType(Def.Type.Class);
+  		first.defPosStart = c.getStart();
+  	
+  		return a; 
+  	:}
+  | CLASS.c TYPE class_type_declarations.a
+  	{: 
+  		Def da = (Def)a;
+  		Def first = da.findFirstOfType(Def.Type.ClassType);
+  		first.defPosStart = c.getStart();
+  	
+  		return a; 
+  	:}
 //  | error
 //  	{: return new Def(); :}
 ;
@@ -578,9 +620,10 @@ module_declaration=
 module_rec_declarations=
     module_rec_declaration.a
     {: return a; :}
-  | module_rec_declarations.a AND module_rec_declaration.b
+  | module_rec_declarations.a AND.n module_rec_declaration.b
   	{: 
   		Def db = (Def)b;
+  		db.defPosStart = n.getStart();
 		db.bAnd = true;
   		return Def.root(a,b); 
   	:}
@@ -662,9 +705,10 @@ class_expr=
   		if(lets.size() > 0){
   			Def last = lets.get(lets.size() - 1);
   			Def in = new Def("<in>", Def.Type.In, 0, 0);
+
   			in.add(b);
   			in.collapse();
-  			last.children.add(0, in);
+  			last.children.add(in);
   			last.collapse();
   			backup(last);
   			return a;
@@ -715,21 +759,23 @@ class_fields=
     {: return new Def(); :}
   | class_fields.a INHERIT class_expr.b parent_binder.c
   	{: return Def.root(a,b,c); :}
-  | class_fields.a VAL virtual_value.id
+  | class_fields.a VAL.v virtual_value.id
     {: 
     	Def ident = (Def)id;
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
+    		def.defPosStart = v.getStart(); 
     		backup(def);
 	    	return Def.root(a, def);
 	    }
 	    return Def.root(a,id);
     :}
-  | class_fields.a VAL value.id
+  | class_fields.a VAL.v value.id
     {: 
     	Def ident = (Def)id;
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
+    		def.defPosStart = v.getStart();
     		backup(def);
 	    	return Def.root(a, def);
 	    }
@@ -750,6 +796,7 @@ class_fields=
   | class_fields.a INITIALIZER.i seq_expr.b
     {: 
     	Def def = new Def("initializer", Def.Type.Initializer, i.getStart(), i.getEnd());
+    	def.defPosStart = i.getStart();
     	def.add(b);
     	def.collapse();
     	backup(def);
@@ -765,22 +812,24 @@ parent_binder=
   	{: return new Def(); :}
 ;
 virtual_value=
-    MUTABLE VIRTUAL label.id COLON core_type.a
+    MUTABLE.m VIRTUAL label.id COLON core_type.a
     {: 
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
     	def.bAlt = true;
     	backup(def);
 	    return def;
     :}
-  | VIRTUAL mutable_flag.m label.id COLON core_type.a
+  | VIRTUAL.v mutable_flag.m label.id COLON core_type.a
     {: 
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
+    	def.defPosStart = v.getStart();
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)m).bAlt;
@@ -794,6 +843,8 @@ value=
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
+    	int pos = ((Def)m).posStart;
+    	def.defPosStart = (pos != 0 ? pos : ident.posStart);
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)m).bAlt;
@@ -805,6 +856,8 @@ value=
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
+    	int pos = ((Def)m).posStart;
+    	def.defPosStart = (pos != 0 ? pos : ident.posStart);
     	def.add(a);
     	def.add(b);
     	def.collapse();
@@ -814,22 +867,24 @@ value=
     :}
 ;
 virtual_method=
-    METHOD PRIVATE VIRTUAL label.id COLON poly_type.a
+    METHOD.m PRIVATE VIRTUAL label.id COLON poly_type.a
     {: 
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
     	def.bAlt = true;
     	backup(def);
 	    return def;
     :}
-  | METHOD VIRTUAL private_flag.p label.id COLON poly_type.a
+  | METHOD.m VIRTUAL private_flag.p label.id COLON poly_type.a
     {: 
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)p).bAlt;
@@ -838,22 +893,24 @@ virtual_method=
     :}
 ;
 concrete_method =
-    METHOD private_flag.p label.id strict_binding.a
+    METHOD.m private_flag.p label.id strict_binding.a
     {: 
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)p).bAlt;
     	backup(def);
 	    return def;
     :}
-  | METHOD private_flag.p label.id COLON poly_type.a EQUAL seq_expr.b
+  | METHOD.m private_flag.p label.id COLON poly_type.a EQUAL seq_expr.b
     {: 
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.add(b);
     	def.collapse();
@@ -861,9 +918,10 @@ concrete_method =
     	backup(def);
 	    return def;
     :}
-  | METHOD private_flag.p LABEL.id poly_type.a EQUAL seq_expr.b
+  | METHOD.m private_flag.p LABEL.id poly_type.a EQUAL seq_expr.b
     {: 
     	Def def = new Def((String)id.value, Def.Type.Method, id.getStart(), id.getEnd());
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.add(b);
     	def.collapse();
@@ -878,15 +936,15 @@ concrete_method =
 
 class_type=
     class_signature.s
-    {: return Def.root(s); :}
-  | QUESTION LIDENT COLON simple_core_type_or_tuple MINUSGREATER class_type
-  	{: return new Def(); :}
-  | OPTLABEL simple_core_type_or_tuple MINUSGREATER class_type
-  	{: return new Def(); :}
-  | LIDENT COLON simple_core_type_or_tuple MINUSGREATER class_type
-  	{: return new Def(); :}
-  | simple_core_type_or_tuple MINUSGREATER class_type
-  	{: return new Def(); :}
+    {: return s; :}
+  | QUESTION LIDENT COLON simple_core_type_or_tuple MINUSGREATER class_type.c
+  	{: return c; :}
+  | OPTLABEL simple_core_type_or_tuple MINUSGREATER class_type.c
+  	{: return c; :}
+  | LIDENT COLON simple_core_type_or_tuple MINUSGREATER class_type.c
+  	{: return c; :}
+  | simple_core_type_or_tuple MINUSGREATER class_type.c
+  	{: return c; :}
 ;
 class_signature=
     LBRACKET core_type_comma_list RBRACKET clty_longident
@@ -919,8 +977,12 @@ class_sig_fields=
     {: return new Def(); :}
   | class_sig_fields.s INHERIT class_signature.a    /*{ Pctf_inher $3 :: $1 }*/
   	{: return Def.root(s,a); :}
-  | class_sig_fields.s VAL value_type.a             /*{ Pctf_val   $3 :: $1 }*/
-  	{: return Def.root(s,a); :}
+  | class_sig_fields.s VAL.v value_type.a             /*{ Pctf_val   $3 :: $1 }*/
+  	{: 
+  		Def da = (Def)a;
+  		da.defPosStart = v.getStart();
+  		return Def.root(s,a); 
+  	:}
   | class_sig_fields.s virtual_method.a             /*{ Pctf_virt  $2 :: $1 }*/
   	{: return Def.root(s,a); :}
   | class_sig_fields.s method_type.a                /*{ Pctf_meth  $2 :: $1 }*/
@@ -963,11 +1025,12 @@ value_type=
     :}
 ;
 method_type=
-    METHOD private_flag label.id COLON poly_type.a
+    METHOD.m private_flag label.id COLON poly_type.a
     {: 
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart(); 
 	    def.add(a);
 	    def.collapse();
 	    backup(def);
@@ -979,9 +1042,10 @@ constrain=
 	{: return Def.root(a,b); :}
 ;
 class_descriptions=
-    class_descriptions.a AND class_description.b
+    class_descriptions.a AND.n class_description.b
   	{: 
   		Def db = (Def)b;
+  		db.defPosStart = n.getStart();
 		db.bAnd = true;
   		return Def.root(a,b); 
   	:}
@@ -999,9 +1063,10 @@ class_description=
     :}
 ;
 class_type_declarations=
-    class_type_declarations.a AND class_type_declaration.b
+    class_type_declarations.a AND.n class_type_declaration.b
   	{: 
   		Def db = (Def)b;
+  		db.defPosStart = n.getStart();
 		db.bAnd = true;
   		return Def.root(a,b); 
   	:}
@@ -1114,9 +1179,10 @@ expr=
   		if(lets.size() > 0){
   			Def last = lets.get(lets.size() - 1);
   			Def in = new Def("<in>", Def.Type.In, 0, 0);
+  			
   			in.add(b);
   			in.collapse();
-  			last.children.add(0, in);
+  			last.children.add(in);
   			last.collapse();
   			backup(last);
   			return a;
@@ -1711,10 +1777,11 @@ primitive_declaration=
 type_declarations=
     type_declaration.a                            /*{ [$1] }*/
     {: return a; :}
-  | type_declarations.a AND type_declaration.b      /*{ $3 :: $1 }*/
+  | type_declarations.a AND.n type_declaration.b      /*{ $3 :: $1 }*/
   	{: 
   		Def db = (Def)b;
 		db.bAnd = true;
+		db.defPosStart = n.getStart();
   		return Def.root(a,b); 
   	:}
 ;
@@ -1808,11 +1875,14 @@ label_declarations=
 	{: return Def.root(a,b); :}    
 ;
 label_declaration=
-    mutable_flag label.a COLON poly_type 
+    mutable_flag.m label.a COLON poly_type 
 	{: 
 		// transform the generic identifier into a type constructor 
 		Def def = (Def) a;
-		return new Def(def.name, Def.Type.RecordTypeConstructor, def.posStart, def.posEnd); 
+		Def da = new Def(def.name, Def.Type.RecordTypeConstructor, def.posStart, def.posEnd);
+    	int pos = ((Def)m).posStart;
+    	da.defPosStart = (pos != 0 ? pos : def.posStart);
+		return da;
 	:}    
 
 ;
@@ -2094,7 +2164,11 @@ operator=
 ;
 constr_ident=
     UIDENT.id                                      /*{ $1 }*/
-    {: return new Def((String)id.value, Def.Type.TypeConstructor, id.getStart(), id.getEnd()); :}
+    {: 
+    	Def def = new Def((String)id.value, Def.Type.TypeConstructor, id.getStart(), id.getEnd());
+    	def.defPosStart = id.getStart(); 
+    	return def; 
+    :}
   | LPAREN.a RPAREN.b                               /*{ "()" }*/
     {: return new Def("()", Def.Type.TypeConstructor, a.getStart(), b.getEnd()); :}
   | COLONCOLON.a                                  /*{ "::" }*/
@@ -2240,20 +2314,20 @@ direction_flag=
 private_flag=
     /* empty */                                 /*{ Public }*/
     {: return new Def(); :}
-  | PRIVATE                                     /*{ Private }*/
-    {: Def def = new Def(); def.bAlt=true; return def; :}
+  | PRIVATE.p                                     /*{ Private }*/
+    {: Def def = new Def(); def.bAlt=true; def.posStart = p.getStart(); return def; :}
 ;
 mutable_flag=
     /* empty */                                 /*{ Immutable }*/
     {: return new Def(); :}
-  | MUTABLE                                     /*{ Mutable }*/
-    {: Def def = new Def(); def.bAlt=true; return def; :}
+  | MUTABLE.m                                     /*{ Mutable }*/
+    {: Def def = new Def(); def.bAlt=true; def.posStart = m.getStart(); return def; :}
 ;
 virtual_flag=
     /* empty */                                 /*{ Concrete }*/
     {: return new Def(); :}
-  | VIRTUAL                                     /*{ Virtual }*/
-    {: return new Def(); :}
+  | VIRTUAL.v                                   /*{ Virtual }*/
+    {: Def def = new Def(); def.bAlt=true; def.posStart = v.getStart(); return def; :}
 ;
 opt_bar=
     /* empty */                                 /*{ () }*/

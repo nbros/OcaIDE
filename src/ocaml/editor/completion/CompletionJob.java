@@ -9,8 +9,8 @@ import java.util.regex.Pattern;
 
 import ocaml.OcamlPlugin;
 import ocaml.editors.OcamlEditor;
-import ocaml.parsers.OcamlDefinition;
-import ocaml.parsers.OcamlInterfaceParser;
+import ocaml.parser.Def;
+import ocaml.parsers.OcamlNewInterfaceParser;
 import ocaml.util.Misc;
 import ocaml.util.OcamlPaths;
 
@@ -58,7 +58,7 @@ public class CompletionJob extends Job {
 	// we cache the definitions "super-tree" for a short time
 	private static long lastTime = 0;
 
-	private static OcamlDefinition lastDefinitionsRoot = null;
+	private static Def lastDefinitionsRoot = null;
 
 	private static IProject lastProject = null;
 
@@ -74,8 +74,8 @@ public class CompletionJob extends Job {
 	 * includes the O'Caml standard library). This method is defined in class CompletionJob, but it is not a
 	 * job, it is executed in the same thread as the caller.
 	 */
-	public static OcamlDefinition buildDefinitionsTree(IProject project, boolean bUsingEditor) {
-		OcamlDefinition definitionsRoot = null;
+	public static Def buildDefinitionsTree(IProject project, boolean bUsingEditor) {
+		Def definitionsRoot = null;
 
 		/*
 		 * We use the super-tree in cache instead of rebuilding it if the last completion dates from less
@@ -93,9 +93,9 @@ public class CompletionJob extends Job {
 			 * The root of this super-tree contains all the modules accessible from the project + the members
 			 * of opened modules ("Pervasives" being always opened by default)
 			 */
-			definitionsRoot = new OcamlDefinition(OcamlDefinition.Type.DefModule);
-			OcamlInterfaceParser parser = OcamlInterfaceParser.getInstance();
-
+			definitionsRoot = new Def("<root>", Def.Type.Root, 0, 0);
+			OcamlNewInterfaceParser parser = OcamlNewInterfaceParser.getInstance();
+			
 			OcamlPaths ocamlPaths = new OcamlPaths(project);
 
 			String[] paths = ocamlPaths.getPaths();
@@ -136,8 +136,8 @@ public class CompletionJob extends Job {
 				// for each mli file
 				for (String mliFile : mliFiles) {
 					File file = new File(dir.getAbsolutePath() + File.separatorChar + mliFile);
-					OcamlDefinition def = parser.parseFile(file);
-					definitionsRoot.addChild(def);
+					Def def = parser.parseFile(file);
+					definitionsRoot.children.add(def);
 				}
 			}
 
@@ -170,18 +170,17 @@ public class CompletionJob extends Job {
 
 				if (openModules != null) {
 					for (String module : openModules) {
-						OcamlDefinition defModule = null;
+						Def defModule = null;
 
-						for (OcamlDefinition def : definitionsRoot.getChildren())
-							if (def.getName().equals(module)
-									&& def.getType().equals(OcamlDefinition.Type.DefModule)) {
+						for (Def def : definitionsRoot.children)
+							if (def.type == Def.Type.Module && def.name.equals(module)){
 								defModule = def;
 								break;
 							}
 
 						if (defModule != null) {
-							for (OcamlDefinition def : defModule.getChildren())
-								definitionsRoot.addChild(def);
+							for (Def def : defModule.children)
+								definitionsRoot.children.add(def);
 						}
 					}
 				}
@@ -222,7 +221,7 @@ public class CompletionJob extends Job {
 	protected IStatus run(IProgressMonitor monitor) {
 		try {
 
-			OcamlInterfaceParser parser = OcamlInterfaceParser.getInstance();
+			OcamlNewInterfaceParser parser = OcamlNewInterfaceParser.getInstance();
 
 			// get all the mli files from the directory
 			String[] mliFiles = null;

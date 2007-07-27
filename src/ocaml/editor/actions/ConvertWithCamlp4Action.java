@@ -65,10 +65,11 @@ public class ConvertWithCamlp4Action implements IWorkbenchWindowActionDelegate {
 
 						CommandRunner cmd = new CommandRunner(command, null);
 						String result = cmd.getStdout();
+						String errors = cmd.getStderr();
 						
 						/* If the result is an empty string, then camlp4 couldn't format correctly */
 						if(result.trim().equals("")){
-							MessageDialog.openInformation(null, "Ocaml Plugin", "Couldn't convert because of syntax errors");
+							MessageDialog.openInformation(null, "Ocaml Plugin", "Couldn't convert because of syntax errors\n" + errors);
 							return;
 						}
 

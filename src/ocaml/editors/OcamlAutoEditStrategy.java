@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 
 import ocaml.OcamlPlugin;
 import ocaml.editor.formatting.OcamlFormater;
+import ocaml.editor.syntaxcoloring.OcamlPartitionScanner;
 import ocaml.preferences.PreferenceConstants;
 
 import org.eclipse.jface.text.BadLocationException;
@@ -12,6 +13,7 @@ import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TextUtilities;
 
 /**
@@ -81,13 +83,72 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 		int offsetInLine = command.offset - lineRegion.getOffset();
 
 		String beforeCursor = line.substring(0, offsetInLine).trim();
+		String afterCursor = line.substring(offsetInLine, line.length()).trim();
+		
+		try {
+			ITypedRegion region = document.getPartition(offsetInLine);
+			if(OcamlPartitionScanner.OCAML_DOCUMENTATION_COMMENT.equals(region.getType())||
+					OcamlPartitionScanner.OCAML_MULTILINE_COMMENT.equals(region.getType()))
+				return;
+		} catch (BadLocationException e) {
+			OcamlPlugin.logError("bad location in OcamlAutoEditStrategy", e);
+			return;
+		}
+		
+		// automatically add the second '"'
+		if (command.text.equals("\"") && OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+				PreferenceConstants.P_EDITOR_DOUBLEQUOTES)) {
+			//document.getPartition(offsetInLine) == OcamlPartitionScanner.OCAML_MULTILINE_COMMENT)
+			
+			if(beforeCursor.length() > 0){
+				char lastChar = beforeCursor.charAt(beforeCursor.length() - 1);
+				if(lastChar == '\\' || lastChar == '\'')
+					return;
+			}
+			
+			// if there is already one " then keep it and don't add a second one
+			if(line.length() > offsetInLine){
+				char nextChar = line.charAt(offsetInLine);
+				if(nextChar == '"'){
+					command.text = "";
+					command.shiftsCaret = false;
+	                command.caretOffset = command.offset + 1;
+	                return;
+				}
+					
+			}
+			
+			// only complete " when there is nothing after it 
+			if(!"".equals(afterCursor))
+				return;
+			
+			
+			// determine whether this is the end of a string or a new string
+			boolean bOpen = false;
+			boolean bEscape = false;
+			for(int i = 0; i < beforeCursor.length(); i++){
+				if(beforeCursor.charAt(i) == '"' && !bEscape)
+					bOpen = !bOpen;
+				
+				bEscape = (beforeCursor.charAt(i) == '\\');
+			}
+			
+			if(!bOpen){
+				// transform the single " into two ""
+				command.text = "\"\"";
+				command.shiftsCaret = false;
+                command.caretOffset = command.offset + 1;
+                return;
+			}
+		}
+		
 
 		/*
 		 * <enter> : parse the line to determine the logical indentation of the next line, and to add some
 		 * O'Caml language constructs automatically
 		 */
 
-		if (command.text.equals(eol)) {
+		else if (command.text.equals(eol)) {
 
 			/*
 			 * A comment opened at the beginning of the line: if it is not closed, we close it and we open it

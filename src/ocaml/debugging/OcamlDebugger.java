@@ -56,6 +56,9 @@ public class OcamlDebugger implements IExecEvents {
 	/** The debugger process, to which we send messages through its command line interface */
 	private ExecHelper debuggerProcess;
 
+	/** The debugged process */
+	private Process process;
+
 	/** The singleton instance of the ocaml debugger */
 	private static OcamlDebugger instance;
 
@@ -169,6 +172,11 @@ public class OcamlDebugger implements IExecEvents {
 		if (debuggerProcess != null) {
 			debuggerProcess.kill();
 			debuggerProcess = null;
+		}
+
+		if (process != null) {
+			process.destroy();
+			process = null;
 		}
 
 		state = State.NotStarted;
@@ -327,9 +335,14 @@ public class OcamlDebugger implements IExecEvents {
 	public synchronized void quit() {
 		if (!checkStarted())
 			return;
-
-		state = State.Quitting;
-		send("quit");
+		
+		if(state == State.Quitting){
+			// the user clicked twice on the "quit" button
+			kill();
+		}else{
+			state = State.Quitting;
+			send("quit");
+		}
 	}
 
 	public synchronized void displayWatchVars() {
@@ -409,7 +422,7 @@ public class OcamlDebugger implements IExecEvents {
 	Pattern patternLostConnection = Pattern.compile("Lost connection with process \\d+");
 
 	public synchronized void processNewError(String error) {
-		//System.err.print(error);
+		// System.err.print(error);
 
 		if (bDebuggingInfoMessage) {
 			if (error.endsWith("has no debugging info.\n")) {
@@ -441,7 +454,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	public synchronized void processNewInput(String input) {
 
-		//System.out.print(input);
+		// System.out.print(input);
 
 		debuggerOutput.append(input);
 
@@ -590,7 +603,11 @@ public class OcamlDebugger implements IExecEvents {
 				notify();
 				debuggerOutput.setLength(0);
 				state = State.Idle;
-			} else {
+			} 
+			else if (state.equals(State.Quitting)) {
+				// do nothing
+			}
+			else {
 				OcamlPlugin.logError("debugger: incoherent state (" + state + ")");
 				// System.err.println("###other###");
 				message("debugger internal error (incoherent state)");
@@ -614,7 +631,6 @@ public class OcamlDebugger implements IExecEvents {
 		System.arraycopy(args, 0, commandLine, 1, args.length);
 
 		File workingDir = exeFile.getParentFile(); // project.getLocation().toFile();
-		Process process;
 		try {
 			process = DebugPlugin.exec(commandLine, workingDir, envp);
 			IProcess iProcess = DebugPlugin.newProcess(launch, process, exeFile.getName());
@@ -924,7 +940,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	private synchronized void send(String command) {
 		try {
-			//System.out.println("[" + command + "]");
+			// System.out.println("[" + command + "]");
 			debuggerProcess.sendLine(command);
 		} catch (IOException e) {
 			OcamlPlugin.logError("ocaml plugin error", e);

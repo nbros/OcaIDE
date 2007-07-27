@@ -9,7 +9,6 @@ import ocaml.editors.OcamlEditor;
 import ocaml.editors.lex.OcamllexEditor;
 import ocaml.editors.yacc.OcamlyaccEditor;
 import ocaml.parser.Def;
-import ocaml.parsers.OcamlDefinition;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.BadLocationException;
@@ -107,8 +106,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		 * on a network file system for example).
 		 */
 		if (CompletionJob.isParsingFinished()) {
-			OcamlDefinition definitionsRoot = CompletionJob
-					.buildDefinitionsTree(this.project, true);
+			Def definitionsRoot = CompletionJob.buildDefinitionsTree(this.project, true);
 			proposals = findCompletionProposals(completion, definitionsRoot, documentOffset);
 		} else {
 			proposals = new OcamlCompletionProposal[0];
@@ -181,7 +179,8 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		Def.Type type = def.type;
 
 		if (name.startsWith(completion) && !name.equals("") && !name.equals("()")
-				&& !name.equals("_") && !type.equals(Def.Type.Open) && !type.equals(Def.Type.Root)
+				&& !name.equals("_") && !type.equals(Def.Type.Open)
+				&& !type.equals(Def.Type.Include) && !type.equals(Def.Type.Root)
 				&& !type.equals(Def.Type.LetIn))
 			proposals.add(new SimpleCompletionProposal(def, name, offset - length, length, name
 					.length()));
@@ -197,34 +196,53 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	 * @return the completions found
 	 */
 	private OcamlCompletionProposal[] findCompletionProposals(String completion,
-			OcamlDefinition definitionsRoot, int offset) {
+			Def definitionsRoot, int offset) {
 
-		OcamlDefinition[] definitions = definitionsRoot.getChildren();
+		ArrayList<Def> definitions = definitionsRoot.children;
 
 		ArrayList<OcamlCompletionProposal> proposals = new ArrayList<OcamlCompletionProposal>();
 
-		// chercher dans le module avant le point ce qu'il y a après le point
+		// look in the module before the dot what's after the dot
 		if (completion.contains(".")) {
 			int index = completion.indexOf('.');
 			String prefix = completion.substring(0, index);
 			String suffix = completion.substring(index + 1);
 
-			for (OcamlDefinition def : definitions) {
-				if (def.getName().equals(prefix))
+			for (Def def : definitions) {
+				if (def.name.equals(prefix))
 					return findCompletionProposals(suffix, def, offset);
 			}
 		}
 		// find elements starting by <completion> in the list of elements
 		else {
 
-			for (OcamlDefinition def : definitions) {
-				if (def.getName().startsWith(completion))
+			for (Def def : definitions) {
+				if (def.name.startsWith(completion) && isCompletionDef(def))
 					proposals.add(new OcamlCompletionProposal(def, offset, completion.length()));
 
 			}
 		}
 
 		return proposals.toArray(new OcamlCompletionProposal[0]);
+	}
+
+	private boolean isCompletionDef(Def def) {
+		switch (def.type) {
+		case Parameter:
+		case Object:
+		case LetIn:
+		case Open:
+		case Include:
+		case In:
+		case Identifier:
+		case Dummy:
+		case Root:
+		case Sig:
+		case Struct:
+			return false;
+		default:
+			return true;
+		}
 	}
 
 	/** Return the last pointed expression before the caret (at documentOffset). */
@@ -365,8 +383,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		IContextInformation[] infos;
 		if (CompletionJob.isParsingFinished()) {
-			OcamlDefinition definitionsRoot = CompletionJob
-					.buildDefinitionsTree(this.project, true);
+			Def definitionsRoot = CompletionJob.buildDefinitionsTree(this.project, true);
 
 			String expression = expressionAtOffset(viewer, documentOffset);
 
@@ -382,10 +399,9 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	 * Find the element "expression" in the tree rooted in "definitionsRoot", and return the
 	 * corresponding context informations.
 	 */
-	private IContextInformation[] findContextInformation(String expression,
-			OcamlDefinition definitionsRoot) {
+	private IContextInformation[] findContextInformation(String expression, Def definitionsRoot) {
 
-		OcamlDefinition[] definitions = definitionsRoot.getChildren();
+		ArrayList<Def> definitions = definitionsRoot.children;
 
 		ArrayList<IContextInformation> infos = new ArrayList<IContextInformation>();
 
@@ -395,8 +411,8 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			String prefix = expression.substring(0, index);
 			String suffix = expression.substring(index + 1);
 
-			for (OcamlDefinition def : definitions) {
-				if (def.getName().equals(prefix)) {
+			for (Def def : definitions) {
+				if (def.name.equals(prefix)) {
 					IContextInformation[] informations = findContextInformation(suffix, def);
 					for (IContextInformation i : informations)
 						infos.add(i);
@@ -408,33 +424,33 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		// search in the list of non-doted names
 		else {
 
-			for (OcamlDefinition def : definitions) {
+			for (Def def : definitions) {
 				/*
 				 * trick: the character '\u00A0' is a non-breakable space. It is used as a delimiter
 				 * between parts.
 				 */
 
-				if (def.getName().equals(expression)) {
-					String body = def.getBody();
-					if (!def.getParentName().equals(""))
-						body = body + " (constructor of type " + def.getParentName() + ")";
+				if (def.name.equals(expression)) {
+					String body = def.body;
+					// if (!def.getParentName().equals(""))
+					// body = body + " (constructor of type " + def.getParentName() + ")";
 
 					String message = body + "\u00A0";
-					String comment = def.getComment();
+					String comment = def.comment;
 					if (!comment.equals(""))
 						message = "\n" + message + "\n" + comment;
-					String section = def.getSectionComment();
+					String section = def.sectionComment;
 					if (!section.equals(""))
 						message = message + "\n\u00A0\nSection:\n" + section;
 					else
 						message = message + "\u00A0";
 
-					String filename = def.getFilename();
+					String filename = def.filename;
 					message = message + "\u00A0\n\n" + filename;
 
 					message = message.trim();
 					if (!message.equals("")) {
-						String context = def.getFilename() + " : " + def.getBody();
+						String context = def.filename + " : " + def.body;
 						infos.add(new ContextInformation(context, message));
 					}
 				}

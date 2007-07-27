@@ -58,6 +58,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_EDITOR_COLON_COLON_TAB, true);
 			store.setDefault(PreferenceConstants.P_EDITOR_FN_TAB, true);
 			store.setDefault(PreferenceConstants.P_EDITOR_TAB_ARROW, true);
+			store.setDefault(PreferenceConstants.P_EDITOR_DOUBLEQUOTES, true);
 
 			String os = Platform.getOS();
 			boolean windows = os.equals(Platform.OS_WIN32);

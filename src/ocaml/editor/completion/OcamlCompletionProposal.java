@@ -1,9 +1,8 @@
 package ocaml.editor.completion;
 
 import ocaml.OcamlPlugin;
-import ocaml.parsers.OcamlDefinition;
-import ocaml.util.ImageRepository;
-import ocaml.util.Misc;
+import ocaml.parser.Def;
+import ocaml.views.outline.OcamlOutlineLabelProvider;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
@@ -23,7 +22,7 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 
 	private final int replacementOffset;
 
-	private final OcamlDefinition definition;
+	private final Def definition;
 
 	private int typedLength;
 
@@ -35,7 +34,7 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 	 * @param typedWordLength
 	 *            the typed word length before the completion was triggered
 	 */
-	public OcamlCompletionProposal(OcamlDefinition definition, int replacementOffset, int typedWordLength) {
+	public OcamlCompletionProposal(Def definition, int replacementOffset, int typedWordLength) {
 		if (replacementOffset < 0)
 			replacementOffset = 0;
 
@@ -46,7 +45,7 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 	}
 
 	public void apply(IDocument document) {
-		String name = this.definition.getName();
+		String name = this.definition.name;
 
 		try {
 			document.replace(this.replacementOffset - typedLength, typedLength, name);
@@ -56,26 +55,26 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 	}
 
 	public Point getSelection(IDocument document) {
-		return new Point(this.replacementOffset + this.definition.getName().length() - typedLength, 0);
+		return new Point(this.replacementOffset + this.definition.name.length() - typedLength, 0);
 	}
 
 	public IContextInformation getContextInformation() {
-		OcamlDefinition.Type type = definition.getType();
+		Def.Type type = definition.type;
 		/*
 		 * We display context information only for functions (to help the user with the types of the expected
 		 * arguments), an exception with arguments, or a constructor with arguments.
 		 */
-		boolean bArrow = definition.getBody().contains("->") || definition.getBody().contains("\u2192");
-		boolean bFun = type.equals(OcamlDefinition.Type.DefVal) && bArrow;
-		boolean bExtFun = type.equals(OcamlDefinition.Type.DefExternal) && bArrow;
-		boolean bExceptionArgs = type.equals(OcamlDefinition.Type.DefException)
-				&& definition.getBody().contains(" of ");
-		boolean bConstructorArgs = type.equals(OcamlDefinition.Type.DefConstructor)
-				&& definition.getBody().contains(" of ");
+		boolean bArrow = definition.body.contains("->") || definition.body.contains("\u2192");
+		boolean bFun = type.equals(Def.Type.Let) && bArrow;
+		boolean bExtFun = type.equals(Def.Type.External) && bArrow;
+		boolean bExceptionArgs = type.equals(Def.Type.Exception)
+				&& definition.body.contains(" of ");
+		boolean bConstructorArgs = type.equals(Def.Type.TypeConstructor)
+				&& definition.body.contains(" of ");
 		if (!(bFun || bExtFun || bExceptionArgs || bConstructorArgs))
 			return null;
 
-		final String body = definition.getBody();
+		final String body = definition.body;
 		if (body.trim().equals(""))
 			return null;
 
@@ -103,28 +102,12 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 
 	public Image getImage() {
 		
-		switch(definition.getType()){
-		case DefClass:
-			return ImageRepository.getImage(ImageRepository.ICON_CLASS);
-		case DefConstructor:
-			return ImageRepository.getImage(ImageRepository.ICON_C);
-		case DefException:
-			return ImageRepository.getImage(ImageRepository.ICON_EXCEPTION);
-		case DefExternal:
-			return ImageRepository.getImage(ImageRepository.ICON_EXTERNAL);
-		case DefModule:
-			return ImageRepository.getImage(ImageRepository.ICON_LIBRARY);
-		case DefType:
-			return ImageRepository.getImage(ImageRepository.ICON_TYPE);
-		case DefVal:
-			return ImageRepository.getImage(ImageRepository.ICON_VALUE);
-		}
-		
-		return null;
+		// use the same image as in the outline
+		return OcamlOutlineLabelProvider.retrieveImage(definition);
 	}
 
 	public String getDisplayString() {
-		return definition.getName();
+		return definition.name;
 	}
 
 	/** @deprecated replaced by the same name function in ICompletionProposalExtension5 */
@@ -138,9 +121,9 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 		 * encodes as a string the informations that will be read back by OcamlInformationPresenter to format
 		 * them
 		 */
-		return definition.getParentName() + " $@| " + definition.getBody() + " $@| "
-				+ definition.getSectionComment() + " $@| " + definition.getComment() + " $@| "
-				+ definition.getFilename();
+		return definition.parentName + " $@| " + definition.body + " $@| "
+				+ definition.sectionComment + " $@| " + definition.comment + " $@| "
+				+ definition.filename;
 	}
 
 }

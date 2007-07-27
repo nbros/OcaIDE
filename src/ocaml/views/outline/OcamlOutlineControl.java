@@ -11,10 +11,8 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.BooleanPropertyAction;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -43,7 +41,7 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 	/** Whether to always fully expand the outline */
 	private boolean expandAll;
 	
-	public static final boolean bOutlineDebugButton = true;
+	public static final boolean bOutlineDebugButton = false;
 
 	/**
 	 * Creates a content outline page using the given provider and the given editor.
@@ -117,21 +115,16 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 				OcamlEditor editor = ((OcamlEditor) this.editor);
 				IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
 
-				IRegion region = null;
-				try {
-					int start = document.getLineOffset(Def.getLine(def.posStart)) + Def.getColumn(def.posStart);
-					int length = Def.getColumn(def.posEnd) - Def.getColumn(def.posStart) + 1;
-					region = new Region(start, length);
-				} catch (BadLocationException e) {
-					OcamlPlugin.logError("ocaml plugin error (bad location)", e);
-				}
-
+				IRegion region = def.getRegion(document);
+				
 				if (region != null) {
 					ISelection editorSel = editor.getSelectionProvider().getSelection();
 					if (editorSel instanceof TextSelection) {
 						TextSelection editorSelection = (TextSelection) editorSel;
 
 						int offset = editorSelection.getOffset();
+						
+						
 						
 						/*
 						 * If the editor is already at the right offset, we do nothing. Otherwise, we would
@@ -141,6 +134,16 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 						 */
 						if(offset < region.getOffset() || offset > region.getOffset() + region.getLength())
 							editor.selectAndReveal(region.getOffset(), region.getLength());
+						
+						// XXX DEBUG
+						//if(offset < region.getOffset() || offset > region.getOffset() + region.getLength())
+						
+						//IRegion region2 = def.getFullRegion(document);
+						//if(def.defPosStart != 0)
+						//editor.selectAndReveal(def.defOffsetStart, def.defOffsetEnd - def.defOffsetStart);
+						//System.err.println("-*-*-*-*-*\n" + def.comment);
+						//System.err.println("-+-+-+-+\n" + def.sectionComment);
+						//editor.selectAndReveal(def.defOffsetStart, 1);
 					}
 				}
 			}

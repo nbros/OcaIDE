@@ -5,10 +5,10 @@ import java.io.FilenameFilter;
 import java.util.ArrayList;
 
 import ocaml.OcamlPlugin;
-import ocaml.parsers.OcamlDefinition;
-import ocaml.parsers.OcamlInterfaceParser;
-import ocaml.parsers.OcamlDefinition.Type;
+import ocaml.parser.Def;
+import ocaml.parsers.OcamlNewInterfaceParser;
 import ocaml.util.ImageRepository;
+import ocaml.views.outline.OcamlOutlineLabelProvider;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
@@ -18,7 +18,6 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -67,11 +66,11 @@ public class OcamlBrowserView extends ViewPart {
 		for (int i = 0; i < mliFiles.length; i++)
 			mliFiles[i] = dir.getAbsolutePath() + File.separatorChar + mliFiles[i];
 
-		OcamlInterfaceParser parser = OcamlInterfaceParser.getInstance();
+		OcamlNewInterfaceParser parser = OcamlNewInterfaceParser.getInstance();
 
 		for (String mliFile : mliFiles) {
 			File file = new File(mliFile);
-			OcamlDefinition definition = parser.parseFile(file);
+			Def definition = parser.parseFile(file);
 
 			TreeItem item = new TreeItem(tree, SWT.NONE);
 
@@ -92,12 +91,12 @@ public class OcamlBrowserView extends ViewPart {
 
 	}
 
-	private void buildBranch(TreeItem item, OcamlDefinition definition) {
-		for (OcamlDefinition childDefinition : definition.getChildren()) {
+	private void buildBranch(TreeItem item, Def definition) {
+		for (Def childDefinition : definition.children) {
 			TreeItem childItem = new TreeItem(item, SWT.NONE);
-			childItem.setText(childDefinition.getName());
+			childItem.setText(childDefinition.name);
 			childItem.setData(childDefinition);
-			childItem.setImage(findImage(childDefinition));
+			childItem.setImage(OcamlOutlineLabelProvider.retrieveImage(childDefinition));
 
 			buildBranch(childItem, childDefinition);
 
@@ -105,7 +104,7 @@ public class OcamlBrowserView extends ViewPart {
 		}
 	}
 
-	private Image findImage(OcamlDefinition definition) {
+	/*private Image findImage(Def definition) {
 		Type type = definition.getType();
 
 		if (type.equals(Type.DefVal))
@@ -126,7 +125,7 @@ public class OcamlBrowserView extends ViewPart {
 			return ImageRepository.getImage(ImageRepository.ICON_C);
 
 		return null;
-	}
+	}*/
 
 	/**
 	 * Create the components in the view
@@ -182,19 +181,19 @@ public class OcamlBrowserView extends ViewPart {
 		// retrieve the definition associated with the selected element
 		Object data = item.getData();
 
-		if (data instanceof OcamlDefinition) {
-			OcamlDefinition def = (OcamlDefinition) data;
+		if (data instanceof Def) {
+			Def def = (Def) data;
 			addFormatedText(text, def);
 		}
 	}
 
-	private void addFormatedText(StyledText text, OcamlDefinition def) {
-		String body = def.getBody();
-		String comment = def.getComment();
-		String filename = def.getFilename();
+	private void addFormatedText(StyledText text, Def def) {
+		String body = def.body;
+		String comment = def.comment;
+		String filename = def.filename;
 		// String name = def.getName();
-		String parentName = def.getParentName();
-		String sectionComment = def.getSectionComment();
+		String parentName = def.parentName;
+		String sectionComment = def.sectionComment;
 
 		try {
 

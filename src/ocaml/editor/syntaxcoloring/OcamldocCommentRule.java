@@ -38,10 +38,18 @@ public class OcamldocCommentRule implements IPredicateRule {
 						boolean bStar = false;
 						int codeNestingLevel = 0;
 						boolean bEscapeNextChar = false;
+						
+						boolean firstChar = true;
 
 						while (true) {
-							ch = scanner.read();
-							nRead++;
+							
+							// the first char is already read
+							if(firstChar)
+								firstChar = false;
+							else{
+								ch = scanner.read();
+								nRead++;
+							}
 
 							// end of file
 							if (ch == -1)
@@ -51,6 +59,7 @@ public class OcamldocCommentRule implements IPredicateRule {
 								codeNestingLevel++;
 							else if (ch == ']' && !bEscapeNextChar)
 								codeNestingLevel--;
+								
 
 							bEscapeNextChar = false;
 

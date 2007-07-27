@@ -699,10 +699,17 @@ public class OcamlParser extends Parser {
 	public ArrayList<Def> recoverDefs = new ArrayList<Def>();
 	
 	/** backup a node, so as to be able to later recover from a parsing error */
-	public void backup(Def def){
+	private void backup(Def def){
 		recoverDefs.add(def);
 		for(Def child: def.children)
-			child.bTop = false;
+			//child.bTop = false;
+			unsetTop(child);
+	}
+	
+	private void unsetTop(Def def){
+		def.bTop = false;
+		for(Def child: def.children)
+			unsetTop(child);
 	}
 	
 	/** Can this variable name be a parameter? (that is, it starts with a lowercase letter) */
@@ -961,8 +968,9 @@ public class OcamlParser extends Parser {
 					 return new Def();
 				}
 			},
-			new Action() {	// [38] structure_item = LET rec_flag.r let_bindings.a
+			new Action() {	// [38] structure_item = LET.l rec_flag.r let_bindings.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol l = _symbols[offset + 1];
 					final Symbol r = _symbols[offset + 2];
 					final Symbol a = _symbols[offset + 3];
 					 
@@ -974,7 +982,7 @@ public class OcamlParser extends Parser {
   		da.findLets(lets);
   		for(Def let: lets)
   			let.bRec = rec.bRec;
-
+  			
 		return a;
 				}
 			},
@@ -1213,8 +1221,9 @@ public class OcamlParser extends Parser {
 					 return Def.root(a,b);
 				}
 			},
-			new Action() {	// [66] signature_item = VAL val_ident_colon.id core_type.a
+			new Action() {	// [66] signature_item = VAL.v val_ident_colon.id core_type.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol v = _symbols[offset + 1];
 					final Symbol id = _symbols[offset + 2];
 					final Symbol a = _symbols[offset + 3];
 					 
@@ -1222,18 +1231,24 @@ public class OcamlParser extends Parser {
     	Def def = new Def(ident.name, Def.Type.Let, ident.posStart, ident.posEnd);
     	def.add(a);
     	def.collapse();
+  		
+  		// add the start position of the definition
+  		def.defPosStart = v.getStart();
+    	
     	backup(def);
     	return def;
 				}
 			},
-			new Action() {	// [67] signature_item = EXTERNAL val_ident_colon.id core_type.a EQUAL primitive_declaration.b
+			new Action() {	// [67] signature_item = EXTERNAL.e val_ident_colon.id core_type.a EQUAL primitive_declaration.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol e = _symbols[offset + 1];
 					final Symbol id = _symbols[offset + 2];
 					final Symbol a = _symbols[offset + 3];
 					final Symbol b = _symbols[offset + 5];
 					 
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.External, ident.posStart, ident.posEnd);
+  		def.defPosStart = e.getStart();
     	def.add(a);
     	def.add(b);
     	def.collapse();
@@ -1241,98 +1256,134 @@ public class OcamlParser extends Parser {
     	return def;
 				}
 			},
-			new Action() {	// [68] signature_item = TYPE type_declarations.a
+			new Action() {	// [68] signature_item = TYPE.t type_declarations.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol t = _symbols[offset + 1];
 					final Symbol a = _symbols[offset + 2];
-					 return a;
+					 
+  		Def da = (Def)a;
+  		Def first = da.findFirstOfType(Def.Type.Type);
+  		first.defPosStart = t.getStart();
+  		
+  		return a;
 				}
 			},
-			new Action() {	// [69] signature_item = EXCEPTION UIDENT.id constructor_arguments.a
+			new Action() {	// [69] signature_item = EXCEPTION.e UIDENT.id constructor_arguments.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol e = _symbols[offset + 1];
 					final Symbol id = _symbols[offset + 2];
 					final Symbol a = _symbols[offset + 3];
 					 
     	Def def = new Def((String)id.value, Def.Type.Exception, id.getStart(), id.getEnd());
+    	def.defPosStart = e.getStart();
     	def.add(a);
     	def.collapse();
     	backup(def);
     	return def;
 				}
 			},
-			new Action() {	// [70] signature_item = MODULE UIDENT.id module_declaration.a
+			new Action() {	// [70] signature_item = MODULE.m UIDENT.id module_declaration.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol m = _symbols[offset + 1];
 					final Symbol id = _symbols[offset + 2];
 					final Symbol a = _symbols[offset + 3];
 					 
     	Def def = new Def((String)id.value, Def.Type.Module, id.getStart(), id.getEnd());
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
     	backup(def);
     	return def;
 				}
 			},
-			new Action() {	// [71] signature_item = MODULE REC module_rec_declarations.a
+			new Action() {	// [71] signature_item = MODULE.m REC module_rec_declarations.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol m = _symbols[offset + 1];
 					final Symbol a = _symbols[offset + 3];
-					 return a;
+					 
+  		Def da = (Def)a;
+  		Def first = da.findFirstOfType(Def.Type.Module);
+  		first.defPosStart = m.getStart();
+  	
+  		return a;
 				}
 			},
-			new Action() {	// [72] signature_item = MODULE TYPE ident.id
+			new Action() {	// [72] signature_item = MODULE.m TYPE ident.id
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol m = _symbols[offset + 1];
 					final Symbol id = _symbols[offset + 3];
 					 
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.ModuleType, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
     	backup(def);
     	return def;
 				}
 			},
-			new Action() {	// [73] signature_item = MODULE TYPE ident.id EQUAL module_type.a
+			new Action() {	// [73] signature_item = MODULE.m TYPE ident.id EQUAL module_type.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol m = _symbols[offset + 1];
 					final Symbol id = _symbols[offset + 3];
 					final Symbol a = _symbols[offset + 5];
 					 
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.ModuleType, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
     	backup(def);
     	return def;
 				}
 			},
-			new Action() {	// [74] signature_item = OPEN mod_longident.id
+			new Action() {	// [74] signature_item = OPEN.o mod_longident.id
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol o = _symbols[offset + 1];
 					final Symbol id = _symbols[offset + 2];
 					 
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.Open, ident.posStart, ident.posEnd);
+    	def.defPosStart = o.getStart();
     	backup(def);
     	return def;
 				}
 			},
-			new Action() {	// [75] signature_item = INCLUDE module_type.id
+			new Action() {	// [75] signature_item = INCLUDE.i module_type.id
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol i = _symbols[offset + 1];
 					final Symbol id = _symbols[offset + 2];
 					 
     	Def ident = (Def)id;
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Include, ident.posStart, ident.posEnd);
+    		def.defPosStart = i.getStart();
     		backup(def);
 	    	return def;
 	    }
 	    return new Def();
 				}
 			},
-			new Action() {	// [76] signature_item = CLASS class_descriptions.a
+			new Action() {	// [76] signature_item = CLASS.c class_descriptions.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol c = _symbols[offset + 1];
 					final Symbol a = _symbols[offset + 2];
-					 return a;
+					 
+  		Def da = (Def)a;
+  		Def first = da.findFirstOfType(Def.Type.Class);
+  		first.defPosStart = c.getStart();
+  	
+  		return a;
 				}
 			},
-			new Action() {	// [77] signature_item = CLASS TYPE class_type_declarations.a
+			new Action() {	// [77] signature_item = CLASS.c TYPE class_type_declarations.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol c = _symbols[offset + 1];
 					final Symbol a = _symbols[offset + 3];
-					 return a;
+					 
+  		Def da = (Def)a;
+  		Def first = da.findFirstOfType(Def.Type.ClassType);
+  		first.defPosStart = c.getStart();
+  	
+  		return a;
 				}
 			},
 			new Action() {	// [78] module_declaration = COLON module_type.a
@@ -1354,12 +1405,14 @@ public class OcamlParser extends Parser {
 					 return a;
 				}
 			},
-			new Action() {	// [81] module_rec_declarations = module_rec_declarations.a AND module_rec_declaration.b
+			new Action() {	// [81] module_rec_declarations = module_rec_declarations.a AND.n module_rec_declaration.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol n = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
   		Def db = (Def)b;
+  		db.defPosStart = n.getStart();
 		db.bAnd = true;
   		return Def.root(a,b);
 				}
@@ -1490,9 +1543,10 @@ public class OcamlParser extends Parser {
   		if(lets.size() > 0){
   			Def last = lets.get(lets.size() - 1);
   			Def in = new Def("<in>", Def.Type.In, 0, 0);
+
   			in.add(b);
   			in.collapse();
-  			last.children.add(0, in);
+  			last.children.add(in);
   			last.collapse();
   			backup(last);
   			return a;
@@ -1592,28 +1646,32 @@ public class OcamlParser extends Parser {
 					 return Def.root(a,b,c);
 				}
 			},
-			new Action() {	// [111] class_fields = class_fields.a VAL virtual_value.id
+			new Action() {	// [111] class_fields = class_fields.a VAL.v virtual_value.id
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol v = _symbols[offset + 2];
 					final Symbol id = _symbols[offset + 3];
 					 
     	Def ident = (Def)id;
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
+    		def.defPosStart = v.getStart(); 
     		backup(def);
 	    	return Def.root(a, def);
 	    }
 	    return Def.root(a,id);
 				}
 			},
-			new Action() {	// [112] class_fields = class_fields.a VAL value.id
+			new Action() {	// [112] class_fields = class_fields.a VAL.v value.id
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol v = _symbols[offset + 2];
 					final Symbol id = _symbols[offset + 3];
 					 
     	Def ident = (Def)id;
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
+    		def.defPosStart = v.getStart();
     		backup(def);
 	    	return Def.root(a, def);
 	    }
@@ -1654,6 +1712,7 @@ public class OcamlParser extends Parser {
 					final Symbol b = _symbols[offset + 3];
 					 
     	Def def = new Def("initializer", Def.Type.Initializer, i.getStart(), i.getEnd());
+    	def.defPosStart = i.getStart();
     	def.add(b);
     	def.collapse();
     	backup(def);
@@ -1672,14 +1731,16 @@ public class OcamlParser extends Parser {
 					 return new Def();
 				}
 			},
-			new Action() {	// [119] virtual_value = MUTABLE VIRTUAL label.id COLON core_type.a
+			new Action() {	// [119] virtual_value = MUTABLE.m VIRTUAL label.id COLON core_type.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol m = _symbols[offset + 1];
 					final Symbol id = _symbols[offset + 3];
 					final Symbol a = _symbols[offset + 5];
 					 
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
     	def.bAlt = true;
@@ -1687,8 +1748,9 @@ public class OcamlParser extends Parser {
 	    return def;
 				}
 			},
-			new Action() {	// [120] virtual_value = VIRTUAL mutable_flag.m label.id COLON core_type.a
+			new Action() {	// [120] virtual_value = VIRTUAL.v mutable_flag.m label.id COLON core_type.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol v = _symbols[offset + 1];
 					final Symbol m = _symbols[offset + 2];
 					final Symbol id = _symbols[offset + 3];
 					final Symbol a = _symbols[offset + 5];
@@ -1696,6 +1758,7 @@ public class OcamlParser extends Parser {
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
+    	def.defPosStart = v.getStart();
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)m).bAlt;
@@ -1712,6 +1775,8 @@ public class OcamlParser extends Parser {
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
+    	int pos = ((Def)m).posStart;
+    	def.defPosStart = (pos != 0 ? pos : ident.posStart);
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)m).bAlt;
@@ -1729,6 +1794,8 @@ public class OcamlParser extends Parser {
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
+    	int pos = ((Def)m).posStart;
+    	def.defPosStart = (pos != 0 ? pos : ident.posStart);
     	def.add(a);
     	def.add(b);
     	def.collapse();
@@ -1737,14 +1804,16 @@ public class OcamlParser extends Parser {
 	    return def;
 				}
 			},
-			new Action() {	// [123] virtual_method = METHOD PRIVATE VIRTUAL label.id COLON poly_type.a
+			new Action() {	// [123] virtual_method = METHOD.m PRIVATE VIRTUAL label.id COLON poly_type.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol m = _symbols[offset + 1];
 					final Symbol id = _symbols[offset + 4];
 					final Symbol a = _symbols[offset + 6];
 					 
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
     	def.bAlt = true;
@@ -1752,8 +1821,9 @@ public class OcamlParser extends Parser {
 	    return def;
 				}
 			},
-			new Action() {	// [124] virtual_method = METHOD VIRTUAL private_flag.p label.id COLON poly_type.a
+			new Action() {	// [124] virtual_method = METHOD.m VIRTUAL private_flag.p label.id COLON poly_type.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol m = _symbols[offset + 1];
 					final Symbol p = _symbols[offset + 3];
 					final Symbol id = _symbols[offset + 4];
 					final Symbol a = _symbols[offset + 6];
@@ -1761,6 +1831,7 @@ public class OcamlParser extends Parser {
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)p).bAlt;
@@ -1768,8 +1839,9 @@ public class OcamlParser extends Parser {
 	    return def;
 				}
 			},
-			new Action() {	// [125] concrete_method = METHOD private_flag.p label.id strict_binding.a
+			new Action() {	// [125] concrete_method = METHOD.m private_flag.p label.id strict_binding.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol m = _symbols[offset + 1];
 					final Symbol p = _symbols[offset + 2];
 					final Symbol id = _symbols[offset + 3];
 					final Symbol a = _symbols[offset + 4];
@@ -1777,6 +1849,7 @@ public class OcamlParser extends Parser {
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)p).bAlt;
@@ -1784,8 +1857,9 @@ public class OcamlParser extends Parser {
 	    return def;
 				}
 			},
-			new Action() {	// [126] concrete_method = METHOD private_flag.p label.id COLON poly_type.a EQUAL seq_expr.b
+			new Action() {	// [126] concrete_method = METHOD.m private_flag.p label.id COLON poly_type.a EQUAL seq_expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol m = _symbols[offset + 1];
 					final Symbol p = _symbols[offset + 2];
 					final Symbol id = _symbols[offset + 3];
 					final Symbol a = _symbols[offset + 5];
@@ -1794,6 +1868,7 @@ public class OcamlParser extends Parser {
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.add(b);
     	def.collapse();
@@ -1802,14 +1877,16 @@ public class OcamlParser extends Parser {
 	    return def;
 				}
 			},
-			new Action() {	// [127] concrete_method = METHOD private_flag.p LABEL.id poly_type.a EQUAL seq_expr.b
+			new Action() {	// [127] concrete_method = METHOD.m private_flag.p LABEL.id poly_type.a EQUAL seq_expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol m = _symbols[offset + 1];
 					final Symbol p = _symbols[offset + 2];
 					final Symbol id = _symbols[offset + 3];
 					final Symbol a = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 6];
 					 
     	Def def = new Def((String)id.value, Def.Type.Method, id.getStart(), id.getEnd());
+    	def.defPosStart = m.getStart();
     	def.add(a);
     	def.add(b);
     	def.collapse();
@@ -1821,27 +1898,31 @@ public class OcamlParser extends Parser {
 			new Action() {	// [128] class_type = class_signature.s
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol s = _symbols[offset + 1];
-					 return Def.root(s);
+					 return s;
 				}
 			},
-			new Action() {	// [129] class_type = QUESTION LIDENT COLON simple_core_type_or_tuple MINUSGREATER class_type
+			new Action() {	// [129] class_type = QUESTION LIDENT COLON simple_core_type_or_tuple MINUSGREATER class_type.c
 				public Symbol reduce(Symbol[] _symbols, int offset) {
-					 return new Def();
+					final Symbol c = _symbols[offset + 6];
+					 return c;
 				}
 			},
-			new Action() {	// [130] class_type = OPTLABEL simple_core_type_or_tuple MINUSGREATER class_type
+			new Action() {	// [130] class_type = OPTLABEL simple_core_type_or_tuple MINUSGREATER class_type.c
 				public Symbol reduce(Symbol[] _symbols, int offset) {
-					 return new Def();
+					final Symbol c = _symbols[offset + 4];
+					 return c;
 				}
 			},
-			new Action() {	// [131] class_type = LIDENT COLON simple_core_type_or_tuple MINUSGREATER class_type
+			new Action() {	// [131] class_type = LIDENT COLON simple_core_type_or_tuple MINUSGREATER class_type.c
 				public Symbol reduce(Symbol[] _symbols, int offset) {
-					 return new Def();
+					final Symbol c = _symbols[offset + 5];
+					 return c;
 				}
 			},
-			new Action() {	// [132] class_type = simple_core_type_or_tuple MINUSGREATER class_type
+			new Action() {	// [132] class_type = simple_core_type_or_tuple MINUSGREATER class_type.c
 				public Symbol reduce(Symbol[] _symbols, int offset) {
-					 return new Def();
+					final Symbol c = _symbols[offset + 3];
+					 return c;
 				}
 			},
 			new Action() {	// [133] class_signature = LBRACKET core_type_comma_list RBRACKET clty_longident
@@ -1901,11 +1982,15 @@ public class OcamlParser extends Parser {
 					 return Def.root(s,a);
 				}
 			},
-			new Action() {	// [142] class_sig_fields = class_sig_fields.s VAL value_type.a
+			new Action() {	// [142] class_sig_fields = class_sig_fields.s VAL.v value_type.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol s = _symbols[offset + 1];
+					final Symbol v = _symbols[offset + 2];
 					final Symbol a = _symbols[offset + 3];
-					 return Def.root(s,a);
+					 
+  		Def da = (Def)a;
+  		da.defPosStart = v.getStart();
+  		return Def.root(s,a);
 				}
 			},
 			new Action() {	// [143] class_sig_fields = class_sig_fields.s virtual_method.a
@@ -1974,14 +2059,16 @@ public class OcamlParser extends Parser {
 	    return def;
 				}
 			},
-			new Action() {	// [149] method_type = METHOD private_flag label.id COLON poly_type.a
+			new Action() {	// [149] method_type = METHOD.m private_flag label.id COLON poly_type.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol m = _symbols[offset + 1];
 					final Symbol id = _symbols[offset + 3];
 					final Symbol a = _symbols[offset + 5];
 					 
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart(); 
 	    def.add(a);
 	    def.collapse();
 	    backup(def);
@@ -1995,12 +2082,14 @@ public class OcamlParser extends Parser {
 					 return Def.root(a,b);
 				}
 			},
-			new Action() {	// [151] class_descriptions = class_descriptions.a AND class_description.b
+			new Action() {	// [151] class_descriptions = class_descriptions.a AND.n class_description.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol n = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
   		Def db = (Def)b;
+  		db.defPosStart = n.getStart();
 		db.bAnd = true;
   		return Def.root(a,b);
 				}
@@ -2023,12 +2112,14 @@ public class OcamlParser extends Parser {
 	    return def;
 				}
 			},
-			new Action() {	// [154] class_type_declarations = class_type_declarations.a AND class_type_declaration.b
+			new Action() {	// [154] class_type_declarations = class_type_declarations.a AND.n class_type_declaration.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol n = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
   		Def db = (Def)b;
+  		db.defPosStart = n.getStart();
 		db.bAnd = true;
   		return Def.root(a,b);
 				}
@@ -2220,9 +2311,10 @@ public class OcamlParser extends Parser {
   		if(lets.size() > 0){
   			Def last = lets.get(lets.size() - 1);
   			Def in = new Def("<in>", Def.Type.In, 0, 0);
+  			
   			in.add(b);
   			in.collapse();
-  			last.children.add(0, in);
+  			last.children.add(in);
   			last.collapse();
   			backup(last);
   			return a;
@@ -3414,13 +3506,15 @@ public class OcamlParser extends Parser {
 					 return a;
 				}
 			},
-			new Action() {	// [325] type_declarations = type_declarations.a AND type_declaration.b
+			new Action() {	// [325] type_declarations = type_declarations.a AND.n type_declaration.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol n = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
   		Def db = (Def)b;
 		db.bAnd = true;
+		db.defPosStart = n.getStart();
   		return Def.root(a,b);
 				}
 			},
@@ -3584,13 +3678,17 @@ public class OcamlParser extends Parser {
 					 return Def.root(a,b);
 				}
 			},
-			new Action() {	// [354] label_declaration = mutable_flag label.a COLON poly_type
+			new Action() {	// [354] label_declaration = mutable_flag.m label.a COLON poly_type
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol m = _symbols[offset + 1];
 					final Symbol a = _symbols[offset + 2];
 					 
 		// transform the generic identifier into a type constructor 
 		Def def = (Def) a;
-		return new Def(def.name, Def.Type.RecordTypeConstructor, def.posStart, def.posEnd);
+		Def da = new Def(def.name, Def.Type.RecordTypeConstructor, def.posStart, def.posEnd);
+    	int pos = ((Def)m).posStart;
+    	da.defPosStart = (pos != 0 ? pos : def.posStart);
+		return da;
 				}
 			},
 			new Action() {	// [355] with_constraints = with_constraint
@@ -4121,7 +4219,10 @@ public class OcamlParser extends Parser {
 			new Action() {	// [454] constr_ident = UIDENT.id
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol id = _symbols[offset + 1];
-					 return new Def((String)id.value, Def.Type.TypeConstructor, id.getStart(), id.getEnd());
+					 
+    	Def def = new Def((String)id.value, Def.Type.TypeConstructor, id.getStart(), id.getEnd());
+    	def.defPosStart = id.getStart(); 
+    	return def;
 				}
 			},
 			new Action() {	// [455] constr_ident = LPAREN.a RPAREN.b
@@ -4371,9 +4472,10 @@ public class OcamlParser extends Parser {
 					 return new Def();
 				}
 			},
-			new Action() {	// [493] private_flag = PRIVATE
+			new Action() {	// [493] private_flag = PRIVATE.p
 				public Symbol reduce(Symbol[] _symbols, int offset) {
-					 Def def = new Def(); def.bAlt=true; return def;
+					final Symbol p = _symbols[offset + 1];
+					 Def def = new Def(); def.bAlt=true; def.posStart = p.getStart(); return def;
 				}
 			},
 			new Action() {	// [494] mutable_flag = 
@@ -4381,9 +4483,10 @@ public class OcamlParser extends Parser {
 					 return new Def();
 				}
 			},
-			new Action() {	// [495] mutable_flag = MUTABLE
+			new Action() {	// [495] mutable_flag = MUTABLE.m
 				public Symbol reduce(Symbol[] _symbols, int offset) {
-					 Def def = new Def(); def.bAlt=true; return def;
+					final Symbol m = _symbols[offset + 1];
+					 Def def = new Def(); def.bAlt=true; def.posStart = m.getStart(); return def;
 				}
 			},
 			new Action() {	// [496] virtual_flag = 
@@ -4391,9 +4494,10 @@ public class OcamlParser extends Parser {
 					 return new Def();
 				}
 			},
-			new Action() {	// [497] virtual_flag = VIRTUAL
+			new Action() {	// [497] virtual_flag = VIRTUAL.v
 				public Symbol reduce(Symbol[] _symbols, int offset) {
-					 return new Def();
+					final Symbol v = _symbols[offset + 1];
+					 Def def = new Def(); def.bAlt=true; def.posStart = v.getStart(); return def;
 				}
 			},
 			new Action() {	// [498] opt_bar = 

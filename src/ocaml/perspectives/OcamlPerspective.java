@@ -1,15 +1,14 @@
 package ocaml.perspectives;
 
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.ui.IFolderLayout;
-import org.eclipse.ui.IPageLayout;
-import org.eclipse.ui.IPerspectiveFactory;
-import org.eclipse.ui.console.IConsoleConstants;
-
 import ocaml.OcamlPlugin;
 import ocaml.views.OcamlBrowserView;
 import ocaml.views.OcamlCompilerOutput;
 import ocaml.views.toplevel.OcamlToplevelView;
+
+import org.eclipse.ui.IFolderLayout;
+import org.eclipse.ui.IPageLayout;
+import org.eclipse.ui.IPerspectiveFactory;
+import org.eclipse.ui.console.IConsoleConstants;
 
 /**
  * Configures the default positioning of views inside the O'Caml main perspective, associates the debug

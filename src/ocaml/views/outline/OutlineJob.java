@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
@@ -80,7 +81,7 @@ public class OutlineJob extends Job {
 		 * "Sanitize" the document by replacing extended characters, which otherwise would crash the
 		 * parser
 		 */
-		StringBuilder str = new StringBuilder();
+		final StringBuilder str = new StringBuilder();
 		for (int i = 0; i < strDocument.length(); i++) {
 			char c = strDocument.charAt(i);
 
@@ -119,8 +120,10 @@ public class OutlineJob extends Job {
 			root = new Def("root", Def.Type.Root, 0, 0);
 
 			for (Def def : parser.recoverDefs)
-				if (def.bTop && def.name != null && !"".equals(def.name.trim()))
+				if (def.bTop && def.name != null && !"".equals(def.name.trim())){
+					def.bTop = false;
 					root.children.add(def);
+				}
 		}
 
 		if (root != null) {
@@ -132,6 +135,8 @@ public class OutlineJob extends Job {
 		final OcamlOutlineControl outline = this.outline;
 		final Def definitions = root;
 
+		definitions.setInInAttribute();
+		
 		Def outlineDefinitions = definitions.cleanCopy();
 		// remove the definitions the user has chosen not to display
 		initPreferences();
@@ -224,8 +229,18 @@ public class OutlineJob extends Job {
 				}
 
 				if (outline != null) {
-					if(OcamlOutlineControl.bOutlineDebugButton && OcamlPlugin.getInstance().getPreferenceStore().getBoolean(PreferenceConstants.P_OUTLINE_DEBUG_MODE))
+					if(OcamlOutlineControl.bOutlineDebugButton && OcamlPlugin.getInstance().getPreferenceStore().getBoolean(PreferenceConstants.P_OUTLINE_DEBUG_MODE)){
+						// XXX DEBUG
+//						OcamlNewInterfaceParser newParser = OcamlNewInterfaceParser.getInstance();
+//						try {
+//							Def definitions = newParser.parseModule(str.toString(), "<<<DEBUG>>>", true);
+//							outline.setInput(definitions);
+//						} catch (Throwable e) {
+//							
+//							e.printStackTrace();
+//						}
 						outline.setInput(definitions);
+					}
 					else
 						outline.setInput(fOutlineDefinitions);
 					
@@ -281,16 +296,10 @@ public class OutlineJob extends Job {
 
 	private void addTypeRec(TypeAnnotation[] annotations, Def def, boolean root) {
 		if (!root) {
-			int lineOffset;
-			try {
-				lineOffset = doc.getLineOffset(Def.getLine(def.posStart));
-			} catch (BadLocationException e) {
-				OcamlPlugin.logError("adding types in outline", e);
-				return;
-			}
+			IRegion region = def.getRegion(doc);
 
-			int startOffset = lineOffset + Def.getColumn(def.posStart);
-			int endOffset = lineOffset + Def.getColumn(def.posEnd);
+			int startOffset = region.getOffset();
+			int endOffset = startOffset + region.getLength() - 1;
 
 			TypeAnnotation key = new TypeAnnotation(startOffset, endOffset + 1, "");
 			int index = Arrays.binarySearch(annotations, key, new AnnotationsComparator());
@@ -318,12 +327,13 @@ public class OutlineJob extends Job {
 
 	}
 
-	private void cleanTree(Def def) {
+	/** Collapse the "structure", "signature" and "object" nodes */
+	public static void cleanTree(Def def) {
 		if (def == null)
 			return;
 
 		// collapse the <structure> or <signature> node if it is the child of a module or moduletype
-		if (def.type == Def.Type.Module || def.type == Def.Type.ModuleType) {
+		if (def.type == Def.Type.Module || def.type == Def.Type.ModuleType || def.type == Def.Type.Functor) {
 			for (int i = 0; i < def.children.size(); i++) {
 				Def child = def.children.get(i);
 

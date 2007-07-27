@@ -51,6 +51,7 @@ public class PreferenceConstants
 	public static final String P_EDITOR_COLON_COLON_TAB = "ocamlEditorColonColonTab";
 	public static final String P_EDITOR_FN_TAB = "ocamlEditorFnTab";
 	public static final String P_EDITOR_TAB_ARROW = "ocamlEditorTabArrow";
+	public static final String P_EDITOR_DOUBLEQUOTES = "ocamlEditorDoubleQuotes";
 	
 	public static final String P_DISABLE_UNICODE_CHARS = "ocamlDisableUnicodeChars";
 	public static final String P_SHOW_TYPES_IN_OUTLINE = "ocamlShowTypesInOutline";
@@ -96,6 +97,5 @@ public class PreferenceConstants
 	
 	/** debug mode for the outline */
 	public static final String P_OUTLINE_DEBUG_MODE = "ocamlOutlineDebugMode";
-	
 	
 }

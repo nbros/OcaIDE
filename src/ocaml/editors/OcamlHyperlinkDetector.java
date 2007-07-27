@@ -6,7 +6,6 @@ import java.io.FilenameFilter;
 import ocaml.OcamlPlugin;
 import ocaml.editor.completion.CompletionJob;
 import ocaml.parser.Def;
-import ocaml.parsers.OcamlDefinition;
 import ocaml.util.OcamlPaths;
 
 import org.eclipse.core.resources.IFile;
@@ -14,19 +13,12 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
@@ -56,7 +48,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		 * get the definitions from all the mli files in the project paths (which should include the
 		 * ocaml standard library)
 		 */
-		final OcamlDefinition interfacesDefinitionsRoot = CompletionJob.buildDefinitionsTree(editor
+		final Def interfacesDefinitionsRoot = CompletionJob.buildDefinitionsTree(editor
 				.getProject(), false);
 
 		/* Find which definition in the tree is at the hovered offset */
@@ -85,18 +77,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 					if (target == null)
 						return;
 
-					int lineOffset = 0;
-					try {
-						lineOffset = textViewer.getDocument().getLineOffset(
-								Def.getLine(target.posStart));
-					} catch (BadLocationException e) {
-						OcamlPlugin.logError("offset error", e);
-						return;
-					}
-
-					int startOffset = lineOffset + Def.getColumn(target.posStart);
-					int endOffset = lineOffset + Def.getColumn(target.posEnd);
-					editor.selectAndReveal(startOffset, endOffset - startOffset + 1);
+					IRegion region = target.getRegion(textViewer.getDocument());
+					editor.selectAndReveal(region.getOffset(), region.getLength());
 				}
 
 				public String getTypeLabel() {
@@ -108,19 +90,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				}
 
 				public IRegion getHyperlinkRegion() {
-					int lineOffset = 0;
-					try {
-						lineOffset = textViewer.getDocument().getLineOffset(
-								Def.getLine(searchedDef.posStart));
-					} catch (BadLocationException e) {
-						OcamlPlugin.logError("offset error", e);
-						return null;
-					}
-
-					int startOffset = lineOffset + Def.getColumn(searchedDef.posStart);
-					int endOffset = lineOffset + Def.getColumn(searchedDef.posEnd);
-
-					return new Region(startOffset, endOffset - startOffset + 1);
+					return searchedDef.getRegion(textViewer.getDocument());
 				}
 
 			}
@@ -137,7 +107,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	 * and in <code>interfacesDefinitionsRoot</code>
 	 */
 	private Def findDefinitionOf(Def searchedDef, Def modulesDefinitionsRoot,
-			OcamlDefinition interfacesDefinitionsRoot) {
+			Def interfacesDefinitionsRoot) {
 
 		Def def = null;
 
@@ -187,9 +157,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				return null;
 
 		for (Def child : def.children) {
-			/* skip the "false" nodes and enter the types to find the constructors */
-			if (child.type == Def.Type.Sig || child.type == Def.Type.Struct
-					|| child.type == Def.Type.Type) {
+			/* skip the "false" nodes */
+			if (child.type == Def.Type.Sig || child.type == Def.Type.Struct) {
 				Def test = findDefFromPath(index, path, child, null);
 				if (test != null)
 					return test;
@@ -221,8 +190,14 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	 *            is used to manage the non-rec definitions)
 	 */
 	private Def lookForDefinitionUp(Def searchedNode, String name, Def node,
-			OcamlDefinition interfacesDefinitionsRoot, String[] fullpath, boolean otherBranch) {
+			Def interfacesDefinitionsRoot, String[] fullpath, boolean otherBranch) {
 		Def test = null;
+		
+		if(node.type == Def.Type.In){
+			/* If this is an 'in' node (in a 'let in'), go directly to the parent */
+			return lookForDefinitionUp(searchedNode, name, node.parent, interfacesDefinitionsRoot,
+					fullpath, false);
+		}
 
 		// is it this node?
 		test = isDef(searchedNode, name, node, true, otherBranch);
@@ -292,11 +267,11 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	 * look for a definition (defined by its "path": A.B.c) in the interfaces found in the project
 	 * paths, and open and highlight it in an editor if it was found
 	 */
-	private boolean openDefInInterfaces(int index, final String[] path, OcamlDefinition interfaceDef) {
+	private boolean openDefInInterfaces(int index, final String[] path, Def interfaceDef) {
 
 		if (index == path.length) {
 			try {
-				String filename = interfaceDef.getFilename();
+				String filename = interfaceDef.filename;
 
 				// open the file containing the definition
 				IProject project = editor.getProject();
@@ -320,48 +295,15 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 					if (part instanceof OcamlEditor) {
 						final OcamlEditor editor = (OcamlEditor) part;
+						
+						
+						ITextViewer textViewer = editor.getTextViewer();
 
-						Job job = new Job("highlighting definition for hyperlink") {
-
-							@Override
-							protected IStatus run(IProgressMonitor monitor) {
-								try {
-									/* wait until the outline building thread is done */
-									if (editor.getDefinitionsTree() == null)
-										synchronized (editor.outlineSignal) {
-											editor.outlineSignal.wait(5000);
-										}
-								} catch (InterruptedException e) {
-								}
-
-								Display.getDefault().asyncExec(new Runnable() {
-
-									public void run() {
-										if (editor == null) {
-											return;
-										}
-
-										Def root = editor.getDefinitionsTree();
-
-										if (root != null) {
-											/*
-											 * if the definition was found in a module, then the
-											 * first element of the path was consumed, hence "1".
-											 */
-											highlightDefInEditor(1, path, root, editor);
-										}
-									}
-
-								});
-								return Status.OK_STATUS;
-							}
-						};
-
-						job.setPriority(Job.DECORATE);
-						job.schedule();
-
+						if (interfaceDef != null) {
+							IRegion region = interfaceDef.getRegion(textViewer.getDocument());
+							editor.selectAndReveal(region.getOffset(), region.getLength());
+						}
 					}
-
 					return true;
 				}
 			} catch (Throwable e) {
@@ -371,8 +313,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			return false;
 		}
 
-		for (OcamlDefinition child : interfaceDef.getChildren()) {
-			if (child.getName().equals(path[index]))
+		for (Def child : interfaceDef.children) {
+			if (child.name.equals(path[index]))
 				if (openDefInInterfaces(index + 1, path, child))
 					return true;
 		}
@@ -386,33 +328,6 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				return true;
 
 		return false;
-	}
-
-	/**
-	 * find the definition (from its path) in the editor, by using the definitions tree built for
-	 * the outline
-	 */
-	private void highlightDefInEditor(int index, String[] path, Def root, OcamlEditor editor) {
-
-		ITextViewer textViewer = editor.getTextViewer();
-
-		Def def = findDefFromPath(index, path, root, null);
-
-		if (def != null) {
-			int lineOffset = 0;
-			try {
-				lineOffset = textViewer.getDocument().getLineOffset(Def.getLine(def.posStart));
-			} catch (BadLocationException e) {
-				OcamlPlugin.logError("offset error", e);
-				return;
-			}
-
-			int startOffset = lineOffset + Def.getColumn(def.posStart);
-			int endOffset = lineOffset + Def.getColumn(def.posEnd);
-
-			editor.selectAndReveal(startOffset, endOffset - startOffset + 1);
-		}
-
 	}
 
 	/**
@@ -501,16 +416,10 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		if (def == null || doc == null)
 			return null;
 
-		int lineOffset = 0;
-		try {
-			lineOffset = doc.getLineOffset(Def.getLine(def.posStart));
-		} catch (BadLocationException e) {
-			OcamlPlugin.logError("offset error", e);
-			return null;
-		}
+		IRegion region = def.getRegion(doc);
 
-		int startOffset = lineOffset + Def.getColumn(def.posStart);
-		int endOffset = lineOffset + Def.getColumn(def.posEnd);
+		int startOffset = region.getOffset();
+		int endOffset = startOffset + region.getLength() - 1;
 
 		if (startOffset <= offset && endOffset >= offset
 				&& (def.type == Def.Type.Identifier || def.type == Def.Type.Open))
@@ -528,7 +437,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	/**
 	 * make an hyperlink for an open directive (to open the interface in an editor)
 	 */
-	private IHyperlink[] makeOpenHyperlink(final ITextViewer textViewer, final Def searchedDef, final OcamlDefinition interfacesDefinitionsRoot) {
+	private IHyperlink[] makeOpenHyperlink(final ITextViewer textViewer, final Def searchedDef, final Def interfacesDefinitionsRoot) {
 
 		return new IHyperlink[] {
 
@@ -621,19 +530,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			}
 
 			public IRegion getHyperlinkRegion() {
-				int lineOffset = 0;
-				try {
-					lineOffset = textViewer.getDocument().getLineOffset(
-							Def.getLine(searchedDef.posStart));
-				} catch (BadLocationException e) {
-					OcamlPlugin.logError("offset error", e);
-					return null;
-				}
-
-				int startOffset = lineOffset + Def.getColumn(searchedDef.posStart);
-				int endOffset = lineOffset + Def.getColumn(searchedDef.posEnd);
-
-				return new Region(startOffset, endOffset - startOffset + 1);
+				return searchedDef.getRegion(textViewer.getDocument());
 			}
 
 		}

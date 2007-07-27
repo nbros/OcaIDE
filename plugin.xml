@@ -32,6 +32,12 @@
         name="Outline">
   </page>
   <page
+        category="ocaml.preferences.OutlinePreferencePage"
+        class="ocaml.preferences.OutlineFiltersPreferencePage"
+        id="ocaml.preferences.OutlineFiltersPreferencePage"
+        name="Filters">
+  </page>
+  <page
         category="ocaml.preferences.RootPreferencePage"
         class="ocaml.preferences.DebuggerPreferencePage"
         id="ocaml.preferences.DebuggerPreferencePage"
