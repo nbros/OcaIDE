@@ -33,6 +33,7 @@ public class OcamlCommentRule implements IPredicateRule {
 
 				boolean bStar = false;
 				boolean bPar = false;
+				boolean bQuote = false;
 
 				while (ch != -1) {
 
@@ -59,7 +60,7 @@ public class OcamlCommentRule implements IPredicateRule {
 					} 
 					
 					/* parse a string inside the comment (strings must be terminated in ocaml comments) */
-					else if(ch == '"'){
+					else if(ch == '"' && !bQuote){
 						boolean bEscape = false;
 						bStar = false;
 						while (true) {
@@ -82,6 +83,7 @@ public class OcamlCommentRule implements IPredicateRule {
 					else
 						bStar = false;
 
+					bQuote = (ch == '\'');
 					bPar = (ch == '(');
 
 				}
