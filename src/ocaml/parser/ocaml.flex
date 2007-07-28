@@ -174,6 +174,7 @@ Float_literal = [0-9][0-9\_]*("."[0-9\_]*)?([eE][+-]?[0-9][0-9\_]*)?
     
     "(*" { stackStringsComments.push(eStringsComments.IN_INITIAL); yybegin(COMMENT); }
     
+    "#" [ \t]* [0-9]+ [ \t]* ("\"" [^\010\013\"] "\"")? [^\010\013]* {Newline} {}
   
    "#"  { return new Symbol(Terminals.SHARP, yyline, yycolumn, yytext().length(), yytext()); }
    "&"  { return new Symbol(Terminals.AMPERSAND, yyline, yycolumn, yytext().length(), yytext()); }

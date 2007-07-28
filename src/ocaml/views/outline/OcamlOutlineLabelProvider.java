@@ -22,8 +22,13 @@ public class OcamlOutlineLabelProvider extends LabelProvider /* implements IStru
 					return ImageRepository.getImage(ImageRepository.ICON_VAL_MUTABLE);
 				else
 					return ImageRepository.getImage(ImageRepository.ICON_VALUE);
-			if (type.equals(Def.Type.LetIn))
-				return ImageRepository.getImage(ImageRepository.ICON_LETIN);
+			if (type.equals(Def.Type.LetIn)) {
+				if (def.parent != null
+						&& (def.parent.type == Def.Type.Let || def.parent.type == Def.Type.LetIn))
+					return ImageRepository.getImage(ImageRepository.ICON_VALUE);
+				else
+					return ImageRepository.getImage(ImageRepository.ICON_LETIN);
+			}
 			if (type.equals(Def.Type.Type))
 				return ImageRepository.getImage(ImageRepository.ICON_TYPE);
 			if (type.equals(Def.Type.Class))
@@ -57,6 +62,8 @@ public class OcamlOutlineLabelProvider extends LabelProvider /* implements IStru
 				return ImageRepository.getImage(ImageRepository.ICON_FUNCTOR);
 			if (type.equals(Def.Type.Initializer))
 				return ImageRepository.getImage(ImageRepository.ICON_INITIALIZER);
+			if (type.equals(Def.Type.ParserError))
+				return ImageRepository.getImage(ImageRepository.ICON_MODULE_PARSER_ERROR);
 
 		}
 

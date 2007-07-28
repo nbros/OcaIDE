@@ -3,6 +3,7 @@ package ocaml.editor.completion;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,21 +27,21 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 
 /**
- * This Eclipse Job is used to parse the O'Caml library files in the background with a progress indicator, so
- * that the first completion is fast (the following ones are always going to be fast, because we cache the
- * results).
+ * This Eclipse Job is used to parse the O'Caml library files in the background with a progress
+ * indicator, so that the first completion is fast (the following ones are always going to be fast,
+ * because we cache the results).
  * 
  * <p>
- * This class is also used in a static way to immediately compute completions (without running another
- * thread).
+ * This class is also used in a static way to immediately compute completions (without running
+ * another thread).
  */
 public class CompletionJob extends Job {
 
 	private static boolean bParsingInterfacesDone = false;
 
-	private static FilenameFilter mliFilter = new FilenameFilter() {
+	private static FilenameFilter mlmliFilter = new FilenameFilter() {
 		public boolean accept(File dir, String name) {
-			return name.endsWith(".mli");
+			return name.endsWith(".mli") || name.endsWith(".ml");
 		}
 	};
 
@@ -63,24 +64,26 @@ public class CompletionJob extends Job {
 	private static IProject lastProject = null;
 
 	/**
-	 * The duration in milliseconds during which the definitions super-tree is kept in memory. If another
-	 * completion is asked during this time the search won't get executed, and so the completion box will
-	 * appear immediately but without the latest modifications done during this duration.
+	 * The duration in milliseconds during which the definitions super-tree is kept in memory. If
+	 * another completion is asked during this time the search won't get executed, and so the
+	 * completion box will appear immediately but without the latest modifications done during this
+	 * duration.
 	 */
 	private static final int cacheTime = 2000;
 
 	/**
-	 * Build the super-tree of all definitions found in mli files in the project directories (this normally
-	 * includes the O'Caml standard library). This method is defined in class CompletionJob, but it is not a
-	 * job, it is executed in the same thread as the caller.
+	 * Build the super-tree of all definitions found in mli files in the project directories (this
+	 * normally includes the O'Caml standard library). This method is defined in class
+	 * CompletionJob, but it is not a job, it is executed in the same thread as the caller.
 	 */
 	public static Def buildDefinitionsTree(IProject project, boolean bUsingEditor) {
 		Def definitionsRoot = null;
 
 		/*
-		 * We use the super-tree in cache instead of rebuilding it if the last completion dates from less
-		 * than a few seconds. This allows us to speed up typing in the completion box (if we didn't do this,
-		 * the super-tree would be rebuilt for each character typed in the completion box)
+		 * We use the super-tree in cache instead of rebuilding it if the last completion dates from
+		 * less than a few seconds. This allows us to speed up typing in the completion box (if we
+		 * didn't do this, the super-tree would be rebuilt for each character typed in the
+		 * completion box)
 		 */
 
 		if (lastDefinitionsRoot != null && project.equals(lastProject)
@@ -89,28 +92,29 @@ public class CompletionJob extends Job {
 		else {
 			// System.err.println("building definitions tree");
 			/*
-			 * Build a super-tree from all the definitions trees so as to be able to use a recursive function.
-			 * The root of this super-tree contains all the modules accessible from the project + the members
-			 * of opened modules ("Pervasives" being always opened by default)
+			 * Build a super-tree from all the definitions trees so as to be able to use a recursive
+			 * function. The root of this super-tree contains all the modules accessible from the
+			 * project + the members of opened modules ("Pervasives" being always opened by default)
 			 */
 			definitionsRoot = new Def("<root>", Def.Type.Root, 0, 0);
 			OcamlNewInterfaceParser parser = OcamlNewInterfaceParser.getInstance();
-			
+
 			OcamlPaths ocamlPaths = new OcamlPaths(project);
 
 			String[] paths = ocamlPaths.getPaths();
 			// for each path in the project
 			for (String path : paths) {
 
-				if (path.equals(".")){
+				if (path.equals(".")) {
 					IPath projectPath = project.getLocation();
 					if (projectPath != null)
 						path = projectPath.toOSString();
-					else{
-						OcamlPlugin.logError("Error in CompletionJob:buildDefinitionsTree : project location is null");
+					else {
+						OcamlPlugin
+								.logError("Error in CompletionJob:buildDefinitionsTree : project location is null");
 						continue;
 					}
-						
+
 				}
 
 				// try with a path relative to the project location
@@ -118,10 +122,9 @@ public class CompletionJob extends Job {
 				IFolder folder = project.getFolder(path);
 				IPath location = folder.getLocation();
 				File dir = null;
-				if(location != null)
-					dir = new File(location.toOSString());				
-				
-				
+				if (location != null)
+					dir = new File(location.toOSString());
+
 				// try with an absolute path
 				if (!(dir != null && dir.exists() && dir.isDirectory())) {
 					dir = new File(path);
@@ -130,12 +133,18 @@ public class CompletionJob extends Job {
 				if (!(dir.exists() && dir.isDirectory()))
 					continue;
 
-				// get all the mli files from the directory
-				String[] mliFiles = dir.list(mliFilter);
+				// get all the ml and mli files from the directory
+				String[] mlmliFiles = dir.list(mlmliFilter);
+				
+				/*
+				 * keep all the mli files, and discard the ml files when there is a mli file
+				 * with the same name
+				 */
+				String[] files = filterInterfaces(mlmliFiles);
 
-				// for each mli file
-				for (String mliFile : mliFiles) {
-					File file = new File(dir.getAbsolutePath() + File.separatorChar + mliFile);
+				// for each file
+				for (String mlmlifile : files) {
+					File file = new File(dir.getAbsolutePath() + File.separatorChar + mlmlifile);
 					Def def = parser.parseFile(file);
 					definitionsRoot.children.add(def);
 				}
@@ -143,7 +152,8 @@ public class CompletionJob extends Job {
 
 			if (bUsingEditor) {
 
-				// find all the opened modules and add their definitions tree to the root of the super-tree
+				// find all the opened modules and add their definitions tree to the root of the
+				// super-tree
 				String[] openModules = null;
 				try {
 
@@ -161,7 +171,8 @@ public class CompletionJob extends Job {
 						}
 
 						// get the text of the document currently opened in the editor
-						String doc = editor.getDocumentProvider().getDocument(editor.getEditorInput()).get();
+						String doc = editor.getDocumentProvider().getDocument(
+								editor.getEditorInput()).get();
 						openModules = findOpenModules(doc, moduleName);
 					}
 				} catch (Exception e) {
@@ -173,7 +184,7 @@ public class CompletionJob extends Job {
 						Def defModule = null;
 
 						for (Def def : definitionsRoot.children)
-							if (def.type == Def.Type.Module && def.name.equals(module)){
+							if (def.type == Def.Type.Module && def.name.equals(module)) {
 								defModule = def;
 								break;
 							}
@@ -193,6 +204,30 @@ public class CompletionJob extends Job {
 		lastProject = project;
 
 		return definitionsRoot;
+	}
+
+	private static String[] filterInterfaces(String[] mlmliFiles) {
+		ArrayList<String> listFiles = new ArrayList<String>();
+
+		Arrays.sort(mlmliFiles);
+
+		for (int i = 0; i < mlmliFiles.length; i++) {
+			String filename = mlmliFiles[i];
+			String next;
+			if (i + 1 < mlmliFiles.length)
+				next = mlmliFiles[i + 1];
+			else
+				next = "";
+
+			if (filename.endsWith(".mli"))
+				listFiles.add(filename);
+			if (filename.endsWith(".ml") && !next.endsWith(".mli"))
+				listFiles.add(filename);
+
+		}
+
+		String[] files = listFiles.toArray(new String[listFiles.size()]);
+		return files;
 	}
 
 	static final Pattern patternOpen = Pattern.compile("(\\A|\\n) *open +(\\w*)");
@@ -234,7 +269,7 @@ public class CompletionJob extends Job {
 					return Status.CANCEL_STATUS;
 				}
 
-				mliFiles = dir.list(mliFilter);
+				mliFiles = filterInterfaces(dir.list(mlmliFilter));
 				for (int i = 0; i < mliFiles.length; i++)
 					mliFiles[i] = dir.getAbsolutePath() + File.separatorChar + mliFiles[i];
 

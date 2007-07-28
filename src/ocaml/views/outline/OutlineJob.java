@@ -158,6 +158,8 @@ public class OutlineJob extends Job {
 						PreferenceConstants.P_OUTLINE_UNNEST_IN))
 			outlineDefinitions.unnestIn(null, 0);
 		
+		outlineDefinitions.buildParents();
+		
 		final Def fOutlineDefinitions = outlineDefinitions;
 
 

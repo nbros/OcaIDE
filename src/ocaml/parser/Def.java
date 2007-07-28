@@ -27,7 +27,10 @@ public class Def extends beaver.Symbol {
 
 		Open, Object, Method, Struct, Functor, Include, Val, Constraint, Initializer,
 
-		ClassType, TypeConstructor, RecordTypeConstructor, Parameter
+		ClassType, TypeConstructor, RecordTypeConstructor, Parameter,
+		
+		/** This type signals a parser error */
+		ParserError
 
 	};
 
@@ -453,6 +456,9 @@ public class Def extends beaver.Symbol {
 	}
 	
 	public void setComment(String text){
+		if (text.equals("/*"))
+			return;
+		
 		this.comment = clean(text);		
 	}
 

@@ -132,7 +132,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			allProposals.add(proposals[j]);
 
 		// get the definitions from the file being edited
-		if (!completion.contains(".") && this.ocamlEditor != null) {
+		/*if (!completion.contains(".") && this.ocamlEditor != null) {
 			Def def = ocamlEditor.getOutlineDefinitionsTree();
 			if (def != null) {
 				ICompletionProposal[] moduleCompletionProposals = findModuleCompletionProposals(
@@ -143,13 +143,13 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			} else
 				OcamlPlugin
 						.logError("OcamlCompletionProcessor:computeCompletionProposals : module definitions=null");
-		}
+		}*/
 
 		/*
 		 * If a definition appears twice, remove the second one so that the user needn't press enter
 		 * to enter it
 		 */
-		if (allProposals.size() == 2) {
+		/*if (allProposals.size() == 2) {
 			ICompletionProposal prop1 = allProposals.get(0);
 			ICompletionProposal prop2 = allProposals.get(1);
 
@@ -157,7 +157,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 					&& prop2 instanceof SimpleCompletionProposal
 					&& prop1.getDisplayString().equals(prop2.getDisplayString()))
 				allProposals.remove(1);
-		}
+		}*/
 
 		return allProposals.toArray(new ICompletionProposal[] {});
 	}

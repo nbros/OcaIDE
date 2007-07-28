@@ -73,7 +73,7 @@ public class OcamldocCommentRule implements IPredicateRule {
 							 * parse a string inside the comment (strings must be terminated in
 							 * ocaml comments)
 							 */
-							else if (ch == '"') {
+							else if (ch == '"' && codeNestingLevel == 0) {
 								boolean bEscape = false;
 								bStar = false;
 								while (true) {

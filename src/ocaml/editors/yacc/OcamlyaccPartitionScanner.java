@@ -1,5 +1,6 @@
 package ocaml.editors.yacc;
 
+import ocaml.editor.syntaxcoloring.OcamlCommentRule;
 import ocaml.editor.syntaxcoloring.OcamlStringRule;
 
 import org.eclipse.jface.text.rules.IPredicateRule;
@@ -31,7 +32,7 @@ public class OcamlyaccPartitionScanner extends RuleBasedPartitionScanner {
 		IToken stringToken = new Token(OCAMLYACC_STRING);
 
 		// a multi-line comment
-		IPredicateRule commentRule = new MultiLineRule("(*", "*)", commentToken, (char) 0, true); //$NON-NLS-1$ //$NON-NLS-2$
+		IPredicateRule commentRule = new OcamlCommentRule(commentToken);
 		// a multi-line C comment
 		IPredicateRule cstyleCommentRule = new MultiLineRule("/*", "*/", cstyleCommentToken, (char) 0, true); //$NON-NLS-1$ //$NON-NLS-2$
 

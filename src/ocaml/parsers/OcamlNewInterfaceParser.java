@@ -105,21 +105,19 @@ public class OcamlNewInterfaceParser {
 				 * from the cache
 				 */
 				else {
-					if(def == null)
-						System.err.println("info: weak reference has been GC'd");
 					toRemove.add(def);
 				}
 			}
-			
+
 			def = null;
 		}
 
 		// remove the stale entries from the cache
-		for (CachedDef def : toRemove){
+		for (CachedDef def : toRemove) {
 			cache.remove(def);
 			def = null;
 		}
-		
+
 		// return the cache entry (if we found one)
 		if (found != null) {
 			return found;
@@ -173,19 +171,23 @@ public class OcamlNewInterfaceParser {
 		Def definition = null;
 		// parse the .mli interface file or the .ml module file
 		try {
+			//System.err.println("parsing:" + filename);
 			definition = parseModule(lines, moduleName, bInterface);
 		} catch (Throwable e) {
 			// if there was a parsing error, we log it and we continue on to the next file
-			//OcamlPlugin.logError("Error parsing '" + moduleName + "'", e);
-			Def def = new Def("<parser error:" + moduleName + ">", Def.Type.Module, 0, 0);
-			/*
-			 * def.setComment("The parsing of this module lead to the following error: " +
-			 * e.toString());
-			 */
+			// OcamlPlugin.logError("Error parsing '" + moduleName + "'", e);
+			Def def = new Def(moduleName, Def.Type.ParserError, 0, 0);
+			def.filename = filename;
+
+			def.setComment("ERROR: The parser encountered an error while parsing this file.\n\n"
+					+ "Please make sure that it is syntactically correct.\n\n");
+			
+			//System.err.println("ERROR:" + filename);
+
 			cache.addFirst(new SoftReference<CachedDef>(new CachedDef(interfaceFile, def)));
 			return def;
 		}
-		
+
 		definition.setBody("module " + moduleName);
 
 		setFilenames(definition, filename);
@@ -234,7 +236,7 @@ public class OcamlNewInterfaceParser {
 			root = (Def) parser.parse(scanner);
 
 		root = root.cleanCopy();
-		
+
 		root.name = moduleName;
 
 		// set the start offset from the packed (line, column) positions
@@ -242,34 +244,42 @@ public class OcamlNewInterfaceParser {
 		computeDefinitionsStartOffset(root);
 
 		// parse the comments and remove them from the text
-		doc = parseComments(doc);
+		if (parseInterface) {
+			doc = parseComments(doc);
 
-		// find the end of each definition (the parser only gives us the start)
-		root.defOffsetEnd = doc.length();
-		findDefinitionsEnd(root, doc, 0, null);
+			// find the end of each definition (the parser only gives us the start)
+			root.defOffsetEnd = doc.length();
+			findDefinitionsEnd(root, doc, 0, null);
 
-		attachComments(root, root, doc);
+			attachComments(root, root, doc);
 
-		setBodies(root, doc);
+			
+		}
 		
+		setBodies(root, doc, parseInterface);
+
 		root.unnestTypes(null, 0);
-		
+
 		root.type = Def.Type.Module;
-		
+
 		// associate the module comment
-		if(comments.size() > 0)
+		if (comments.size() > 0 && parseInterface)
 			root.setComment(comments.get(0).text);
-		
+
 		return root;
 	}
 
-	private void setBodies(Def def, String doc) {
+	private void setBodies(Def def, String doc, boolean parseInterface) {
 		if (def.type != Def.Type.Root) {
-			def.setBody(doc.substring(def.defOffsetStart, def.defOffsetEnd));
+			if(parseInterface)
+				def.setBody(doc.substring(def.defOffsetStart, def.defOffsetEnd));
+			else{
+				def.setBody(def.name);
+			}
 		}
 
 		for (Def child : def.children)
-			setBodies(child, doc);
+			setBodies(child, doc, parseInterface);
 
 	}
 
