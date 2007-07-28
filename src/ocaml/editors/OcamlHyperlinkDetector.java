@@ -36,6 +36,11 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		this.editor = editor;
 	}
 
+	/** Caching to speed up consecutive lookups */
+	private long lastTime = 0;
+	private int lastOffset = -1;
+	private Def lastDef = null;
+
 	// private final String chars =
 	// "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890'";
 
@@ -51,9 +56,16 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		final Def interfacesDefinitionsRoot = CompletionJob.buildDefinitionsTree(editor
 				.getProject(), false);
 
+		long time = System.currentTimeMillis();
+
 		/* Find which definition in the tree is at the hovered offset */
-		final Def searchedDef = findIdentAt(modulesDefinitionsRoot, region.getOffset(), textViewer
-				.getDocument());
+		final Def searchedDef = (time - lastTime < 1000 && lastOffset == region.getOffset() && lastDef != null) ? lastDef
+				: findIdentAt(modulesDefinitionsRoot, region.getOffset(), textViewer.getDocument());
+		
+		lastTime = time;
+
+		lastOffset = region.getOffset();
+		lastDef = searchedDef;
 
 		if (searchedDef != null) {
 
@@ -192,8 +204,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	private Def lookForDefinitionUp(Def searchedNode, String name, Def node,
 			Def interfacesDefinitionsRoot, String[] fullpath, boolean otherBranch) {
 		Def test = null;
-		
-		if(node.type == Def.Type.In){
+
+		if (node.type == Def.Type.In) {
 			/* If this is an 'in' node (in a 'let in'), go directly to the parent */
 			return lookForDefinitionUp(searchedNode, name, node.parent, interfacesDefinitionsRoot,
 					fullpath, false);
@@ -205,7 +217,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			return test;
 
 		// if it is an "open" node, look inside the interface of this module
-		if (node.type == Def.Type.Open) {
+		if (node.type == Def.Type.Open || node.type == Def.Type.Include) {
 			String[] path = new String[fullpath.length + 1];
 			System.arraycopy(fullpath, 0, path, 1, fullpath.length);
 			path[0] = node.name;
@@ -242,9 +254,9 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				bAnd = false;
 			if (!before.bAnd)
 				bStopAndAtNext = true;
-
+			
 			// if it is an "open" node, look inside the interface of this module
-			if (before.type == Def.Type.Open) {
+			if (before.type == Def.Type.Open || before.type == Def.Type.Include) {
 				String[] path = new String[fullpath.length + 1];
 				System.arraycopy(fullpath, 0, path, 1, fullpath.length);
 				path[0] = before.name;
@@ -295,8 +307,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 					if (part instanceof OcamlEditor) {
 						final OcamlEditor editor = (OcamlEditor) part;
-						
-						
+
 						ITextViewer textViewer = editor.getTextViewer();
 
 						if (interfaceDef != null) {
@@ -367,7 +378,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				 * If the node is a direct parent of the searched node, then it means it is not in
 				 * the 'in' child
 				 */
-				if(!node.bRec && node.children.contains(searchedNode))
+				if (!node.bRec && node.children.contains(searchedNode))
 					return null;
 				return node;
 
@@ -422,7 +433,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		int endOffset = startOffset + region.getLength() - 1;
 
 		if (startOffset <= offset && endOffset >= offset
-				&& (def.type == Def.Type.Identifier || def.type == Def.Type.Open))
+				&& (def.type == Def.Type.Identifier || def.type == Def.Type.Open || def.type == Def.Type.Include))
 			return def;
 
 		for (Def d : def.children) {
@@ -437,7 +448,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	/**
 	 * make an hyperlink for an open directive (to open the interface in an editor)
 	 */
-	private IHyperlink[] makeOpenHyperlink(final ITextViewer textViewer, final Def searchedDef, final Def interfacesDefinitionsRoot) {
+	private IHyperlink[] makeOpenHyperlink(final ITextViewer textViewer, final Def searchedDef,
+			final Def interfacesDefinitionsRoot) {
 
 		return new IHyperlink[] {
 
@@ -446,18 +458,17 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			public void open() {
 
 				try {
-					
+
 					// extract the first part of a multipart name (A.B.C)
 					String[] fragments = searchedDef.name.split("\\.");
-					
-					if(fragments.length < 1)
+
+					if (fragments.length < 1)
 						return;
-					else if(fragments.length > 1){
+					else if (fragments.length > 1) {
 						openDefInInterfaces(0, fragments, interfacesDefinitionsRoot);
 						return;
 					}
-					
-					
+
 					String searchedName = fragments[0];
 
 					IProject project = editor.getProject();
