@@ -65,7 +65,8 @@
 	* Corrected a rare bug with syntax-coloring of ocamldoc comments
 	* Now, a different (red) icon appears in completion results for modules that couldn't be parsed
 	* Changed the 'let in' icon in the outline: now, the (+) icon only appears when the definition is at toplevel
-	* The integrated lexer now supports linenum directives   
+	* The integrated lexer now supports linenum directives
+	* Added an outline for ocamlyacc files (showing non-terminals)   
 	
 	
 	
