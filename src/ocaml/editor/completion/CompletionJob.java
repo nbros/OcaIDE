@@ -75,6 +75,8 @@ public class CompletionJob extends Job {
 	 * Build the super-tree of all definitions found in mli files in the project directories (this
 	 * normally includes the O'Caml standard library). This method is defined in class
 	 * CompletionJob, but it is not a job, it is executed in the same thread as the caller.
+	 * 
+	 * @param bUsingEditor use the editor to add opened modules to the definitions tree
 	 */
 	public static Def buildDefinitionsTree(IProject project, boolean bUsingEditor) {
 		Def definitionsRoot = null;
@@ -119,26 +121,32 @@ public class CompletionJob extends Job {
 
 				// try with a path relative to the project location
 				// Go through the IResources API to follow possibly linked resources.
-				IFolder folder = project.getFolder(path);
-				IPath location = folder.getLocation();
 				File dir = null;
-				if (location != null)
-					dir = new File(location.toOSString());
+				try {
+					IFolder folder = project.getFolder(path);
+					IPath location = folder.getLocation();
+					if (location != null)
+						dir = new File(location.toOSString());
+				} catch (Throwable e) {
+					OcamlPlugin.logError("Error trying relative path in completion job", e);
+				}
 
 				// try with an absolute path
 				if (!(dir != null && dir.exists() && dir.isDirectory())) {
 					dir = new File(path);
 				}
 
-				if (!(dir.exists() && dir.isDirectory()))
+				if (!(dir.exists() && dir.isDirectory())){
+					OcamlPlugin.logError("Wrong path:" + dir.toString() + " (in project:" + project.getName() + ")");
 					continue;
+				}
 
 				// get all the ml and mli files from the directory
 				String[] mlmliFiles = dir.list(mlmliFilter);
-				
+
 				/*
-				 * keep all the mli files, and discard the ml files when there is a mli file
-				 * with the same name
+				 * keep all the mli files, and discard the ml files when there is a mli file with
+				 * the same name
 				 */
 				String[] files = filterInterfaces(mlmliFiles);
 

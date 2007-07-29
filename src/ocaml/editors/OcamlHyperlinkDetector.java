@@ -46,7 +46,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 	public IHyperlink[] detectHyperlinks(final ITextViewer textViewer, final IRegion region,
 			boolean canShowMultipleHyperlinks) {
-
+		
 		// get the definitions from the current module
 		final Def modulesDefinitionsRoot = editor.getDefinitionsTree();
 		/*
@@ -374,11 +374,9 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			case LetIn:
 				if (!bIn)
 					return null;
-				/*
-				 * If the node is a direct parent of the searched node, then it means it is not in
-				 * the 'in' child
-				 */
-				if (!node.bRec && node.children.contains(searchedNode))
+				if (node.bRec)
+					return node;
+				else if(!searchedNode.bInIn)
 					return null;
 				return node;
 
@@ -428,6 +426,9 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			return null;
 
 		IRegion region = def.getRegion(doc);
+		
+		if(region == null)
+			return null;
 
 		int startOffset = region.getOffset();
 		int endOffset = startOffset + region.getLength() - 1;

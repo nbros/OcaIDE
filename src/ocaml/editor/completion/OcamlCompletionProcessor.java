@@ -28,7 +28,7 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
  */
 public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
-	private final OcamlEditor ocamlEditor;
+	//private final OcamlEditor ocamlEditor;
 
 	private final IProject project;
 
@@ -36,19 +36,19 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	private final String partitionType;
 
 	public OcamlCompletionProcessor(OcamlEditor edit, String regionType) {
-		this.ocamlEditor = edit;
+		//this.ocamlEditor = edit;
 		this.partitionType = regionType;
 		this.project = edit.getProject();
 	}
 
 	public OcamlCompletionProcessor(OcamllexEditor edit, String regionType) {
-		this.ocamlEditor = null;
+		//this.ocamlEditor = null;
 		this.partitionType = regionType;
 		this.project = edit.getProject();
 	}
 
 	public OcamlCompletionProcessor(OcamlyaccEditor edit, String regionType) {
-		this.ocamlEditor = null;
+		//this.ocamlEditor = null;
 		this.partitionType = regionType;
 		this.project = edit.getProject();
 	}

@@ -155,8 +155,9 @@ public class OutlineJob extends Job {
 		
 		
 		if(OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
-						PreferenceConstants.P_OUTLINE_UNNEST_IN))
-			outlineDefinitions.unnestIn(null, 0);
+						PreferenceConstants.P_OUTLINE_UNNEST_IN)){
+			outlineDefinitions.unnestIn();
+		}
 		
 		outlineDefinitions.buildParents();
 		
@@ -411,9 +412,9 @@ public class OutlineJob extends Job {
 		
 		switch (def.type) {
 		case Let:
-			return showLet && def.name.length() >= letMinChars;
+			return showLet && def.name != null && def.name.length() >= letMinChars;
 		case LetIn:
-			return showLetIn && def.name.length() >= letInMinChars;
+			return showLetIn && def.name != null && def.name.length() >= letInMinChars;
 		case Type:
 			return showType;
 		case Module:
@@ -456,7 +457,7 @@ public class OutlineJob extends Job {
 		ArrayList<Def> newChildren = new ArrayList<Def>();
 
 		for (Def child : def.children) {
-			if (showDef(child))
+			if (child != null && showDef(child))
 				newChildren.add(child);
 
 			cleanOutline(child);

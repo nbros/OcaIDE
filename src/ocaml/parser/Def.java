@@ -360,7 +360,7 @@ public class Def extends beaver.Symbol {
 	 */
 
 	/** Whether this definition is in the 'in' branch of its parent */
-	boolean bInIn = false;
+	public boolean bInIn = false;
 
 	/** Apply the 'in in' attribute (before the 'in' nodes are lost in the outline) */
 	public void setInInAttribute() {
@@ -370,70 +370,14 @@ public class Def extends beaver.Symbol {
 		}
 	}
 
-	// /** Call this function on a 'Let' node to get a list of all the 'in' nodes in it to collapse
-	// */
-	// private void retrieveInInBranch(ArrayList<Def> inNodes, ArrayList<Def> otherNodes, Def def,
-	// boolean root) {
-	//
-	// ArrayList<Def> newChildren = new ArrayList<Def>();
-	//
-	// for (Def child : def.children) {
-	// // if(parent.type == Type.LetIn){
-	// if (child.bInIn && def.type == Type.LetIn) {
-	// child.bInIn = false;
-	// if(inNodes != null)
-	// inNodes.add(child);
-	// retrieveInInBranch(inNodes, null, child);
-	// /*}
-	// else if (def.parent != null && (def.parent.type == Type.LetIn || def.parent.type ==
-	// Type.Let)) {
-	// newChildren.add(child);
-	// retrieveInInBranch(inNodes, null, child);
-	// */
-	// } else {
-	// if(otherNodes != null)
-	// otherNodes.add(child);
-	// newChildren.add(child);
-	// }
-	//
-	// }
-	//
-	// def.children = newChildren;
-	// }
-
-	// /** Unnest the 'in' definitions */
-	// public void unnestIn(Def def) {
-	// if (false)
-	// return;
-	//
-	// ArrayList<Def> inNodes = new ArrayList<Def>();
-	// ArrayList<Def> otherNodes = new ArrayList<Def>();
-	//
-	// retrieveInInBranch(inNodes, otherNodes, def);
-	//
-	// // ArrayList<Def> newChildren = new ArrayList<Def>();
-	//
-	// /*
-	// * for (int i = 0; i < otherNodes.size(); i++) { Def child = otherNodes.get(i);
-	// * newChildren.add(child); }
-	// */
-	//
-	// for (int i = 0; i < inNodes.size(); i++) {
-	// Def child = inNodes.get(i);
-	// def.children.add(child);
-	// }
-	//
-	// for (Def child : otherNodes)
-	// unnestIn(child);
-	//
-	// // children = newChildren;
-	// }
-
-	/** Unnest the 'in' definitions */
-	public void unnestIn(Def parent, int index) {
+	/**
+	 * Unnest the 'in' definitions by removing definitions from the 'in' branch of a 'let in' node
+	 * and adding it to the parent, right after the 'let in' node
+	 */
+	public void unnestIn() {
 		if (false)
 			return;
-		
+
 		ArrayList<Def> newChildren = new ArrayList<Def>();
 		ArrayList<Def> recChildren = new ArrayList<Def>();
 
@@ -442,64 +386,32 @@ public class Def extends beaver.Symbol {
 			Def child = children.get(i);
 
 			if (type == Type.LetIn && child.type == Type.LetIn && child.bInIn) {
-				parent.children.add(index + j, child);
-				child.siblingsOffset = index + j;
+				parent.children.add(siblingsOffset + j, child);
+				child.siblingsOffset = siblingsOffset + j;
 				j++;
 				child.parent = parent;
-			} else{
+			} else {
 				newChildren.add(child);
 				child.siblingsOffset = newChildren.size() - 1;
 				child.parent = this;
 			}
-			
+
 			child.bInIn = false;
 			recChildren.add(child);
 		}
 
+		// recompute the new offsets after adding new children to the parent
+		if (parent != null)
+			parent.buildSiblingOffsets();
+
 		children = newChildren;
 
-		//ArrayList<Def> children2 = new ArrayList<Def>();
-		//children2.addAll(this.children);
 		for (int i = 0; i < recChildren.size(); i++) {
 			Def child = recChildren.get(i);
-			child.unnestIn(child.parent, child.siblingsOffset);
+			child.unnestIn();
 		}
 
-		/*for (int i = 0; i < newChildren.size(); i++) {
-			Def child = newChildren.get(i);
-			child.unnestIn(child.parent, child.siblingsOffset);
-		}*/
-
 	}
-
-	/** Unnest the 'in' definitions */
-	// public void unnestIn(Def parent, int index) {
-	// if (false)
-	// return;
-	//
-	// ArrayList<Def> children2 = new ArrayList<Def>();
-	// children2.addAll(this.children);
-	// for (int i = 0; i < children2.size(); i++) {
-	// Def child = children2.get(i);
-	// child.unnestIn(this, i);
-	// }
-	//
-	// ArrayList<Def> newChildren = new ArrayList<Def>();
-	//
-	// int j = 1;
-	// for (int i = 0; i < children.size(); i++) {
-	// Def child = children.get(i);
-	//
-	// if (type == Type.LetIn && child.type == Type.LetIn && child.bInIn) {
-	// parent.children.add(index + j++, child);
-	// } else
-	// newChildren.add(child);
-	//
-	// child.bInIn = false;
-	// }
-	//
-	// children = newChildren;
-	// }
 
 	/** Unnest the constructors from the types */
 	public void unnestTypes(Def parent, int index) {
