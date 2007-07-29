@@ -28,7 +28,7 @@ public class Def extends beaver.Symbol {
 		Open, Object, Method, Struct, Functor, Include, Val, Constraint, Initializer,
 
 		ClassType, TypeConstructor, RecordTypeConstructor, Parameter,
-		
+
 		/** This type signals a parser error */
 		ParserError
 
@@ -322,7 +322,7 @@ public class Def extends beaver.Symbol {
 			def.sectionComment = d.sectionComment;
 			def.filename = d.filename;
 			def.body = d.body;
-			
+
 			newNode.add(def);
 		}
 
@@ -370,31 +370,136 @@ public class Def extends beaver.Symbol {
 		}
 	}
 
+	// /** Call this function on a 'Let' node to get a list of all the 'in' nodes in it to collapse
+	// */
+	// private void retrieveInInBranch(ArrayList<Def> inNodes, ArrayList<Def> otherNodes, Def def,
+	// boolean root) {
+	//
+	// ArrayList<Def> newChildren = new ArrayList<Def>();
+	//
+	// for (Def child : def.children) {
+	// // if(parent.type == Type.LetIn){
+	// if (child.bInIn && def.type == Type.LetIn) {
+	// child.bInIn = false;
+	// if(inNodes != null)
+	// inNodes.add(child);
+	// retrieveInInBranch(inNodes, null, child);
+	// /*}
+	// else if (def.parent != null && (def.parent.type == Type.LetIn || def.parent.type ==
+	// Type.Let)) {
+	// newChildren.add(child);
+	// retrieveInInBranch(inNodes, null, child);
+	// */
+	// } else {
+	// if(otherNodes != null)
+	// otherNodes.add(child);
+	// newChildren.add(child);
+	// }
+	//
+	// }
+	//
+	// def.children = newChildren;
+	// }
+
+	// /** Unnest the 'in' definitions */
+	// public void unnestIn(Def def) {
+	// if (false)
+	// return;
+	//
+	// ArrayList<Def> inNodes = new ArrayList<Def>();
+	// ArrayList<Def> otherNodes = new ArrayList<Def>();
+	//
+	// retrieveInInBranch(inNodes, otherNodes, def);
+	//
+	// // ArrayList<Def> newChildren = new ArrayList<Def>();
+	//
+	// /*
+	// * for (int i = 0; i < otherNodes.size(); i++) { Def child = otherNodes.get(i);
+	// * newChildren.add(child); }
+	// */
+	//
+	// for (int i = 0; i < inNodes.size(); i++) {
+	// Def child = inNodes.get(i);
+	// def.children.add(child);
+	// }
+	//
+	// for (Def child : otherNodes)
+	// unnestIn(child);
+	//
+	// // children = newChildren;
+	// }
+
 	/** Unnest the 'in' definitions */
 	public void unnestIn(Def parent, int index) {
 		if (false)
 			return;
-
-		for (int i = 0; i < children.size(); i++) {
-			Def child = children.get(i);
-			child.unnestIn(this, i);
-		}
-
+		
 		ArrayList<Def> newChildren = new ArrayList<Def>();
+		ArrayList<Def> recChildren = new ArrayList<Def>();
 
 		int j = 1;
 		for (int i = 0; i < children.size(); i++) {
 			Def child = children.get(i);
 
 			if (type == Type.LetIn && child.type == Type.LetIn && child.bInIn) {
-				parent.children.add(index + j++, child);
-			} else
+				parent.children.add(index + j, child);
+				child.siblingsOffset = index + j;
+				j++;
+				child.parent = parent;
+			} else{
 				newChildren.add(child);
-
+				child.siblingsOffset = newChildren.size() - 1;
+				child.parent = this;
+			}
+			
+			child.bInIn = false;
+			recChildren.add(child);
 		}
 
 		children = newChildren;
+
+		//ArrayList<Def> children2 = new ArrayList<Def>();
+		//children2.addAll(this.children);
+		for (int i = 0; i < recChildren.size(); i++) {
+			Def child = recChildren.get(i);
+			child.unnestIn(child.parent, child.siblingsOffset);
+		}
+
+		/*for (int i = 0; i < newChildren.size(); i++) {
+			Def child = newChildren.get(i);
+			child.unnestIn(child.parent, child.siblingsOffset);
+		}*/
+
 	}
+
+	/** Unnest the 'in' definitions */
+	// public void unnestIn(Def parent, int index) {
+	// if (false)
+	// return;
+	//
+	// ArrayList<Def> children2 = new ArrayList<Def>();
+	// children2.addAll(this.children);
+	// for (int i = 0; i < children2.size(); i++) {
+	// Def child = children2.get(i);
+	// child.unnestIn(this, i);
+	// }
+	//
+	// ArrayList<Def> newChildren = new ArrayList<Def>();
+	//
+	// int j = 1;
+	// for (int i = 0; i < children.size(); i++) {
+	// Def child = children.get(i);
+	//
+	// if (type == Type.LetIn && child.type == Type.LetIn && child.bInIn) {
+	// parent.children.add(index + j++, child);
+	// } else
+	// newChildren.add(child);
+	//
+	// child.bInIn = false;
+	// }
+	//
+	// children = newChildren;
+	// }
 
 	/** Unnest the constructors from the types */
 	public void unnestTypes(Def parent, int index) {
@@ -402,8 +507,8 @@ public class Def extends beaver.Symbol {
 			Def child = children.get(i);
 			child.unnestTypes(this, i);
 		}
-		
-		if(type != Type.Type)
+
+		if (type != Type.Type)
 			return;
 
 		int j = 1;
@@ -411,7 +516,7 @@ public class Def extends beaver.Symbol {
 			Def child = children.get(i);
 			parent.children.add(index + j++, child);
 		}
-		
+
 		children = new ArrayList<Def>();
 	}
 
@@ -454,16 +559,16 @@ public class Def extends beaver.Symbol {
 	public void setSectionComment(String text) {
 		this.sectionComment = clean(text);
 	}
-	
-	public void setComment(String text){
+
+	public void setComment(String text) {
 		if (text.equals("/*"))
 			return;
-		
-		this.comment = clean(text);		
+
+		this.comment = clean(text);
 	}
 
-	public void setBody(String text){
-		this.body = Misc.beautify(clean(text));		
+	public void setBody(String text) {
+		this.body = Misc.beautify(clean(text));
 	}
 
 	private static String clean(String str) {
@@ -494,7 +599,6 @@ public class Def extends beaver.Symbol {
 	 * int startOffset = firstLineOffset + getColumn(defPosStart); int endOffset = lastLineOffset +
 	 * getColumn(defPosEnd);
 	 * 
-	 * return new Region(startOffset, endOffset - startOffset + 1);
-	 *  }
+	 * return new Region(startOffset, endOffset - startOffset + 1); }
 	 */
 }
