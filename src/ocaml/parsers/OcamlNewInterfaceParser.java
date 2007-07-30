@@ -234,7 +234,7 @@ public class OcamlNewInterfaceParser {
 			root = (Def) parser.parse(scanner, OcamlParser.AltGoals.interfaces);
 		else
 			root = (Def) parser.parse(scanner);
-
+		
 		root = root.cleanCopy();
 
 		root.name = moduleName;
@@ -260,7 +260,11 @@ public class OcamlNewInterfaceParser {
 
 		root.unnestTypes(null, 0);
 
-		root.type = Def.Type.Module;
+		
+		if(parser.errorReporting.errors.size() != 0)
+			root.type = Def.Type.ParserError;
+		else
+			root.type = Def.Type.Module;
 
 		// associate the module comment
 		if (comments.size() > 0 && parseInterface)

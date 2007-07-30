@@ -99,4 +99,7 @@ public class PreferenceConstants
 	/** debug mode for the outline */
 	public static final String P_OUTLINE_DEBUG_MODE = "ocamlOutlineDebugMode";
 	
+	/** The paths encoded as a list of strings separated by newlines */
+	public static final String P_BROWSER_PATHS = "ocamlBrowserPaths";
+	
 }

@@ -103,6 +103,8 @@ public final class ImageRepository {
 	public static final String ICON_EXPAND_ALL = "expandall.gif";
 
 	public static final String ICON_MODULE_PARSER_ERROR = "moduleParserError.gif";
+	
+	public static final String ICON_BROWSE = "browse.gif";
 
 	public static String[] all = { ICON_BINARY, ICON_BUILDALL, ICON_BYTECODE, ICON_BYTECODE,
 			ICON_CAML16, ICON_CAML32, ICON_NATURE, ICON_PURPLECAML16, ICON_YACC, ICON_LEX,
@@ -111,7 +113,7 @@ public final class ImageRepository {
 			ICON_OCAML_MODULE, ICON_METHOD, ICON_OBJECT, ICON_ADD, ICON_HELP,
 			ICON_OCAML_MODULE_TYPE, ICON_METHOD_PRIVATE, ICON_INCLUDE, ICON_CLASS_TYPE,
 			ICON_VAL_MUTABLE, ICON_FUNCTOR, ICON_RECORD_TYPE_CONSTRUCTOR, ICON_INITIALIZER,
-			ICON_LETIN, ICON_MODULE_PARSER_ERROR };
+			ICON_LETIN, ICON_MODULE_PARSER_ERROR, ICON_BROWSE };
 
 	static {
 		init();

@@ -69,6 +69,9 @@
 	* Added an outline for ocamlyacc files (showing non-terminals) 
 	* Fixed a bug with non-rec definitions that would act as rec in hyperlinks
 	* Corrected some bugs with the 'unnest let in definitions' option in outline
+	
+* 1.0.9
+	* Big change in Ocaml Browser: now you can add new locations (right-click on tree), and the loading and parsing is done lazily (when you expand a node)      
 	 
 	
 	
