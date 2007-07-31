@@ -209,7 +209,7 @@ public class OcamlNewInterfaceParser {
 			setFilenames(child, filename);
 	}
 
-	public Def parseModule(String doc, String moduleName, boolean parseInterface) throws Throwable {
+	private Def parseModule(String doc, String moduleName, boolean parseInterface) throws Throwable {
 		/*
 		 * "Sanitize" the document by replacing extended characters, which otherwise would crash the
 		 * parser
@@ -261,8 +261,11 @@ public class OcamlNewInterfaceParser {
 		root.unnestTypes(null, 0);
 
 		
-		if(parser.errorReporting.errors.size() != 0)
+		if(parser.errorReporting.errors.size() != 0){
 			root.type = Def.Type.ParserError;
+			root.setComment("ERROR: The parser encountered an error while parsing this file.\n\n"
+					+ "Please make sure that it is syntactically correct.\n\n");
+		}
 		else
 			root.type = Def.Type.Module;
 

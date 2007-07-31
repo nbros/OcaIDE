@@ -70,8 +70,13 @@
 	* Fixed a bug with non-rec definitions that would act as rec in hyperlinks
 	* Corrected some bugs with the 'unnest let in definitions' option in outline
 	
-* 1.0.9
-	* Big change in Ocaml Browser: now you can add new locations (right-click on tree), and the loading and parsing is done lazily (when you expand a node)      
+* 1.0.9 (July 31 2007)
+	* Big change in Ocaml Browser: now you can add new locations (right-click on tree), and the loading and parsing is done lazily (when you expand a node)
+	* Fixed yet another bug with hyperlinks  
+	* Fixed a bug in the lexer (with line labels)   
+	* Fixed another bug in the lexer with the '"' character inside comments    
+	* Added separate color preferences for 'let','in' and 'fun','function' keywords
+	* Corrected a bug in the paths preference page on Windows 
 	 
 	
 	

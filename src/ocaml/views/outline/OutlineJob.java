@@ -1,6 +1,7 @@
 package ocaml.views.outline;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import ocaml.parser.Def;
 import ocaml.parser.ErrorReporting;
 import ocaml.parser.OcamlParser;
 import ocaml.parser.OcamlScanner;
+import ocaml.parser.OcamlParser.Terminals;
 import ocaml.preferences.PreferenceConstants;
 import ocaml.typeHovers.OcamlAnnotParser;
 import ocaml.typeHovers.TypeAnnotation;
@@ -31,6 +33,9 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.texteditor.MarkerUtilities;
+
+import beaver.Symbol;
+import beaver.Scanner.Exception;
 
 /**
  * This job is used to rebuild the outline in a low-priority thread, so as to not slow down
@@ -93,6 +98,31 @@ public class OutlineJob extends Job {
 
 		final StringReader in = new StringReader(str.toString());
 		final OcamlScanner scanner = new OcamlScanner(in);
+		
+		/*Symbol s;
+		while(true)
+			{
+				
+			try {
+				s = scanner.nextToken();
+				if(s.getId() == Terminals.EOF)
+					break;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				break;
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				break;
+			}
+			System.err.println(OcamlParser.Terminals.NAMES[s.getId()]);
+			
+			}*/
+		
+		//if(true)
+		//return Status.OK_STATUS;
+		
 		final OcamlParser parser = new OcamlParser();
 
 		Def root = null;

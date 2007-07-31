@@ -25,6 +25,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_COMMENT_COLOR, "63,127,95");
 			store.setDefault(PreferenceConstants.P_STRING_COLOR, "42,0,255");
 			store.setDefault(PreferenceConstants.P_KEYWORD_COLOR, "127,0,85");
+			store.setDefault(PreferenceConstants.P_LETIN_COLOR, "127,0,85");
+			store.setDefault(PreferenceConstants.P_FUN_COLOR, "127,0,85");
 			store.setDefault(PreferenceConstants.P_CONSTANT_COLOR, "150,0,50");
 			store.setDefault(PreferenceConstants.P_INTEGER_COLOR, "0,128,128");
 			store.setDefault(PreferenceConstants.P_DECIMAL_COLOR, "192,64,0");
@@ -32,6 +34,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_DOC_COMMENT_COLOR, "63,95,191");
 			store.setDefault(PreferenceConstants.P_DOC_ANNOTATION_COLOR, "127,159,191");
 			store.setDefault(PreferenceConstants.P_YACC_DEFINITION_COLOR, "191,63,63");
+			store.setDefault(PreferenceConstants.P_PUNCTUATION_COLOR, "0,0,0");
 
 			// set the default syntax coloring bold attributes
 			store.setDefault(PreferenceConstants.P_BOLD_CHARACTERS, false);

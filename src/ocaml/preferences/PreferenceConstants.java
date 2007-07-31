@@ -20,11 +20,14 @@ public class PreferenceConstants
 	public static final String P_DOC_ANNOTATION_COLOR = "ocamlPluginDocAnnotationColorPreference";
 	public static final String P_STRING_COLOR = "ocamlPluginstringColorPreference";
 	public static final String P_KEYWORD_COLOR = "ocamlPluginkeywordColorPreference";
+	public static final String P_LETIN_COLOR = "ocamlPluginletinColorPreference";
+	public static final String P_FUN_COLOR = "ocamlPluginfunColorPreference";
 	public static final String P_CONSTANT_COLOR = "ocamlPluginconstantColorPreference";
 	public static final String P_INTEGER_COLOR = "ocamlPluginintegerColorPreference";
 	public static final String P_DECIMAL_COLOR = "ocamlPlugindecimalColorPreference";
 	public static final String P_CHARACTER_COLOR = "ocamlPlugincharacterColorPreference";
 	public static final String P_YACC_DEFINITION_COLOR = "ocamlPluginyaccDefinitionColorPreference";
+	public static final String P_PUNCTUATION_COLOR = "ocamlPluginPunctuationColorPreference";
 	
 	public static final String P_BOLD_KEYWORDS = "ocamlPluginboldKeywordsFormattingPreference";
 	public static final String P_BOLD_COMMENTS = "ocamlPluginboldCommentsFormattingPreference";

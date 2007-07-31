@@ -376,8 +376,20 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 					return null;
 				if (node.bRec)
 					return node;
-				else if(!searchedNode.bInIn)
-					return null;
+				else if(!searchedNode.bInIn){
+					// see if there is an 'in' on the branch from this node to its parent
+					Def d = searchedNode;
+					boolean inin = false;
+					while(d.parent != null && d != node){
+						if(d.type == Def.Type.In){
+							inin = true;
+							break;
+						}
+						d = d.parent; 
+					}
+					if(!inin)
+						return null;
+				}
 				return node;
 
 			case Parameter:

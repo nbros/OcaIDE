@@ -31,6 +31,7 @@ public class OcamlPerspective implements IPerspectiveFactory {
 		layout.addNewWizardShortcut("ocaml.wizards.OcamlNewInterfaceWizard");
 		layout.addNewWizardShortcut("ocaml.wizards.OcamlNewYaccWizard");
 		layout.addNewWizardShortcut("ocaml.wizards.OcamlNewLexWizard");
+		//layout.addNewWizardShortcut("ocaml.wizards.OcamlNewOcamlbuildProjectWizard");
 		layout.addNewWizardShortcut("ocaml.wizards.OcamlNewProjectWizard");
 		
 		

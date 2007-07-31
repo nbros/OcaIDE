@@ -41,6 +41,8 @@ public class OcamldocCommentRule implements IPredicateRule {
 						
 						boolean firstChar = true;
 
+						int prevChar = 0;
+						
 						while (true) {
 							
 							// the first char is already read
@@ -55,10 +57,10 @@ public class OcamldocCommentRule implements IPredicateRule {
 							if (ch == -1)
 								return token;
 
-							if (ch == '[' && !bEscapeNextChar)
+							/*if (ch == '[' && !bEscapeNextChar)
 								codeNestingLevel++;
 							else if (ch == ']' && !bEscapeNextChar)
-								codeNestingLevel--;
+								codeNestingLevel--;*/
 								
 
 							bEscapeNextChar = false;
@@ -73,7 +75,7 @@ public class OcamldocCommentRule implements IPredicateRule {
 							 * parse a string inside the comment (strings must be terminated in
 							 * ocaml comments)
 							 */
-							else if (ch == '"' && codeNestingLevel == 0) {
+							else if (ch == '"' && codeNestingLevel == 0 && prevChar != '\'') {
 								boolean bEscape = false;
 								bStar = false;
 								while (true) {
@@ -92,6 +94,9 @@ public class OcamldocCommentRule implements IPredicateRule {
 								}
 							} else
 								bStar = false;
+							
+							
+							prevChar = ch;
 
 						}
 

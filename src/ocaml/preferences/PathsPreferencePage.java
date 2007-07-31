@@ -6,6 +6,7 @@ import ocaml.OcamlPlugin;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
@@ -48,13 +49,12 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 
 	Text pathText;
 	private Label warningLabel;
-	
+
 	@Override
 	public void createFieldEditors() {
 
 		warningLabel = new Label(getFieldEditorParent(), SWT.NONE);
 		warningLabel.setText("You must manually recompile your projects after changing paths");
-		
 
 		Group toolsGroup = new Group(getFieldEditorParent(), SWT.BORDER);
 		GridData data = new GridData();
@@ -149,12 +149,24 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 	}
 
 	private void applyPathPrefix() {
-		
+
 		warningLabel.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
-		
+
 		String path = pathText.getText().trim();
 		if (!path.endsWith(File.separator))
 			path = path + File.separator;
+
+		if (Platform.getOS().equals(Platform.OS_WIN32)) {
+			ocamlField.setStringValue(path + "ocaml.exe");
+			ocamlcField.setStringValue(path + "ocamlc.exe");
+			ocamloptField.setStringValue(path + "ocamlopt.exe");
+			ocamldepField.setStringValue(path + "ocamldep.exe");
+			ocamllexField.setStringValue(path + "ocamllex.exe");
+			ocamlyaccField.setStringValue(path + "ocamlyacc.exe");
+			ocamldocField.setStringValue(path + "ocamldoc.exe");
+			camlp4Field.setStringValue(path + "camlp4.exe");
+			return;
+		}
 
 		String filename;
 

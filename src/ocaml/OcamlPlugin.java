@@ -311,6 +311,17 @@ public class OcamlPlugin extends AbstractUIPlugin {
 		return string2RGB(instance.getPreferenceStore().getString(PreferenceConstants.P_KEYWORD_COLOR));
 	}
 
+	/** Returns the 'let' and 'in' keywords color from the preferences */
+	public static RGB getLetInColor() {
+		return string2RGB(instance.getPreferenceStore().getString(PreferenceConstants.P_LETIN_COLOR));
+	}
+
+	/** Returns the 'fun' and 'function' keywords color from the preferences */
+	public static RGB getFunColor() {
+		return string2RGB(instance.getPreferenceStore().getString(PreferenceConstants.P_FUN_COLOR));
+	}
+
+
 	/** Returns the strings color from the preferences */
 	public static RGB getStringColor() {
 		return string2RGB(instance.getPreferenceStore().getString(PreferenceConstants.P_STRING_COLOR));
@@ -336,6 +347,12 @@ public class OcamlPlugin extends AbstractUIPlugin {
 		return string2RGB(instance.getPreferenceStore()
 				.getString(PreferenceConstants.P_YACC_DEFINITION_COLOR));
 	}
+	
+	public static RGB getPunctuationColor() {
+		return string2RGB(instance.getPreferenceStore()
+				.getString(PreferenceConstants.P_PUNCTUATION_COLOR));
+	}
+	
 
 	/** Returns whether comments should appear in bold (from the user preferences) */
 	public static boolean getCommentIsBold() {
@@ -447,5 +464,6 @@ public class OcamlPlugin extends AbstractUIPlugin {
 			debugger.kill();
 
 	}
+
 
 }

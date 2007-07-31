@@ -21,6 +21,10 @@ public class SyntaxColoringPreferencePage extends FieldEditorPreferencePage impl
 	}
 
 	private ColorFieldEditor colorFieldKeywords;
+	
+	private ColorFieldEditor colorFieldLetinKeywords;
+	
+	private ColorFieldEditor colorFieldFunFunctionKeywords;
 
 	private ColorFieldEditor colorFieldComment;
 
@@ -39,10 +43,16 @@ public class SyntaxColoringPreferencePage extends FieldEditorPreferencePage impl
 	private ColorFieldEditor colorFieldAnnotationComment;
 
 	private ColorFieldEditor colorFieldYaccDefinition;
+	
+	private ColorFieldEditor colorFieldPunctuation;
 
 	@Override
 	public void createFieldEditors() {
-		colorFieldKeywords = new ColorFieldEditor(PreferenceConstants.P_KEYWORD_COLOR, "&Keyword Color:",
+		colorFieldLetinKeywords = new ColorFieldEditor(PreferenceConstants.P_LETIN_COLOR, "'let' and 'in' Color:",
+				this.getFieldEditorParent());
+		colorFieldFunFunctionKeywords = new ColorFieldEditor(PreferenceConstants.P_FUN_COLOR, "'fun' and 'function' Color:",
+				this.getFieldEditorParent());
+		colorFieldKeywords = new ColorFieldEditor(PreferenceConstants.P_KEYWORD_COLOR, "All other &keywords Color:",
 				this.getFieldEditorParent());
 		colorFieldComment = new ColorFieldEditor(PreferenceConstants.P_COMMENT_COLOR, "&Comment Color:", this
 				.getFieldEditorParent());
@@ -65,7 +75,12 @@ public class SyntaxColoringPreferencePage extends FieldEditorPreferencePage impl
 		colorFieldYaccDefinition = new ColorFieldEditor(PreferenceConstants.P_YACC_DEFINITION_COLOR,
 				"&Yacc Definition Color:", this.getFieldEditorParent());
 
+		colorFieldPunctuation = new ColorFieldEditor(PreferenceConstants.P_PUNCTUATION_COLOR,
+				"Punctuation Color:", this.getFieldEditorParent());
+
 		this.addField(colorFieldKeywords);
+		this.addField(colorFieldLetinKeywords);
+		this.addField(colorFieldFunFunctionKeywords);
 		this.addField(colorFieldComment);
 		this.addField(colorFieldDocComment);
 		this.addField(colorFieldAnnotationComment);
@@ -75,6 +90,8 @@ public class SyntaxColoringPreferencePage extends FieldEditorPreferencePage impl
 		this.addField(colorFieldDecimal);
 		this.addField(colorFieldCharacter);
 		this.addField(colorFieldYaccDefinition);
+		this.addField(colorFieldPunctuation);
+		
 
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_BOLD_KEYWORDS, "Bold k&eywords", this
 				.getFieldEditorParent()));

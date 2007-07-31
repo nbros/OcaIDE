@@ -190,6 +190,22 @@
 			
 			<description> Create an OCaml project </description>
 		</wizard>
+
+		<!--
+		<wizard name="OCaml Project" 
+			category="ocaml.wizards.Category"
+			class="ocaml.wizards.OcamlNewOcamlbuildProjectWizard"
+			icon="icons/caml16x16.gif"
+			preferredPerspectives="ocaml.perspectives.OcamlPerspective"
+			finalPerspective="ocaml.perspectives.OcamlPerspective" project="true"
+			id="ocaml.wizards.OcamlNewOcamlbuildProjectWizard">
+			<selection class="org.eclipse.core.resources.IResource">
+			</selection>
+			
+			<description> Create an OCaml project (with Ocamlbuild) </description>
+		</wizard>
+		-->
+		
 	</extension>
 	
 	<extension point="org.eclipse.ui.ide.resourceFilters">
@@ -202,6 +218,7 @@
 		<filter selected="true" pattern="*.cma"/>		
 		<filter selected="true" pattern="*.cmxa"/>
 		<filter pattern="*.o" selected="true"/>
+		<filter pattern="*.obj" selected="true"/>
 		<filter pattern=".settings" selected="true"/>
 		<filter pattern=".paths" selected="true"/>
 		<filter pattern="._d" selected="true"/>
@@ -465,13 +482,24 @@
 		<builder id="Ocaml.ocamlMakefileBuilder"/>
 	</extension>
 	
+	<extension id="ocaml.ocamlbuildnature" name="OCamlbuild Nature"
+		point="org.eclipse.core.resources.natures">
+		<runtime>
+			<run class="ocaml.natures.OcamlbuildNature"/>
+		</runtime>
+		<builder id="Ocaml.ocamlbuildBuilder"/>
+	</extension>
+	
 	<extension point="org.eclipse.ui.ide.projectNatureImages">
 		<image icon="icons/camlNature.gif" natureId="ocaml.ocamlnature"
 			id="ocamlNatureImage">
 		</image>
 		<image icon="icons/camlNatureMakefile.gif" id="ocamlMakefileNatureImage"
 			natureId="ocaml.ocamlnatureMakefile"/>
+		<image icon="icons/camlNature.gif" id="ocamlbuildNatureImage"
+			natureId="ocaml.ocamlbuildnature"/>
 	</extension>
+
 	<extension id="ocamlbuilder" name="Ocaml Builder"
 		point="org.eclipse.core.resources.builders">
 		<builder hasNature="false" isConfigurable="true">
@@ -486,7 +514,17 @@
 		</builder>
 	</extension>
 	
-	<extension point="org.eclipse.core.filebuffers.documentSetup">
+	<extension id="ocamlbuildBuilder" name="Ocamlbuild Builder"
+		point="org.eclipse.core.resources.builders">
+		<builder
+        callOnEmptyDelta="false"
+        hasNature="true"
+        isConfigurable="true">
+			<run class="ocaml.build.ocamlbuild.OcamlbuildBuilder"/>
+		</builder>
+	</extension>
+
+   	<extension point="org.eclipse.core.filebuffers.documentSetup">
 		<participant class="ocaml.editors.OcamlDocumentSetupParticipant"
 			extensions="ml,mli,mlp,ml4"/>
 		<participant class="ocaml.editors.lex.OcamllexDocumentSetupParticipant"

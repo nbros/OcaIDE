@@ -12,6 +12,7 @@ import ocaml.preferences.PreferenceConstants;
 import ocaml.util.ImageRepository;
 import ocaml.views.outline.OcamlOutlineLabelProvider;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
@@ -35,10 +36,12 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.part.ViewPart;
 
 /**
- * Implements the O'Caml browser view, which allows the user to browse O'Caml libraries, and see
- * all the definitions found in the library mli files.<p>
+ * Implements the O'Caml browser view, which allows the user to browse O'Caml libraries, and see all
+ * the definitions found in the library mli files.
+ * <p>
  * The creation of nodes is done lazily by using a virtual tree. When a node becomes visible, the
- * tree requests information, which triggers a parsing of the corresponding file if it is not already done
+ * tree requests information, which triggers a parsing of the corresponding file if it is not
+ * already done
  */
 public class OcamlBrowserView extends ViewPart {
 
@@ -139,18 +142,14 @@ public class OcamlBrowserView extends ViewPart {
 
 	}
 
-	/*private void buildBranch(TreeItem item, Def definition) {
-		for (Def childDefinition : definition.children) {
-			TreeItem childItem = new TreeItem(item, SWT.NONE);
-			childItem.setText(childDefinition.name);
-			childItem.setData(childDefinition);
-			childItem.setImage(OcamlOutlineLabelProvider.retrieveImage(childDefinition));
-
-			buildBranch(childItem, childDefinition);
-
-			// childItem.setExpanded(true);
-		}
-	}*/
+	/*
+	 * private void buildBranch(TreeItem item, Def definition) { for (Def childDefinition :
+	 * definition.children) { TreeItem childItem = new TreeItem(item, SWT.NONE);
+	 * childItem.setText(childDefinition.name); childItem.setData(childDefinition);
+	 * childItem.setImage(OcamlOutlineLabelProvider.retrieveImage(childDefinition));
+	 * 
+	 * buildBranch(childItem, childDefinition); // childItem.setExpanded(true); } }
+	 */
 
 	/*
 	 * private Image findImage(Def definition) { Type type = definition.getType();
@@ -218,6 +217,12 @@ public class OcamlBrowserView extends ViewPart {
 						String mliFile = dirItemData.paths[index];
 						File file = new File(mliFile);
 						Def definition = parser.parseFile(file);
+						
+						if(definition == null){
+							item.setText("<Parsing error>");
+							item.setImage(ImageRepository
+									.getImage(ImageRepository.ICON_MODULE_PARSER_ERROR));
+						}
 
 						// remove the ".mli" extension
 						String name = file.getName();
@@ -254,6 +259,7 @@ public class OcamlBrowserView extends ViewPart {
 		Menu browserPopupMenu = new Menu(this.tree.getShell(), SWT.POP_UP);
 		MenuItem itemAdd = new MenuItem(browserPopupMenu, SWT.PUSH);
 		itemAdd.setText("Add a location");
+		itemAdd.setImage(ImageRepository.getImage(ImageRepository.ICON_ADD));
 		itemAdd.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -274,10 +280,22 @@ public class OcamlBrowserView extends ViewPart {
 
 		MenuItem itemRemove = new MenuItem(browserPopupMenu, SWT.PUSH);
 		itemRemove.setText("Remove selected location(s)");
+		itemRemove.setImage(ImageRepository.getImage(ImageRepository.ICON_DELETE));
 		itemRemove.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				removeLocation();
+			}
+
+		});
+
+		MenuItem itemRefresh = new MenuItem(browserPopupMenu, SWT.PUSH);
+		itemRefresh.setText("Refresh");
+		itemRefresh.setImage(ImageRepository.getImage(ImageRepository.ICON_REFRESH_TREE));
+		itemRefresh.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				buildTree(tree);
 			}
 
 		});
@@ -362,7 +380,7 @@ public class OcamlBrowserView extends ViewPart {
 					paths.add(dir.getPath());
 
 				String[] all = dir.list();
-				if(all == null)
+				if (all == null)
 					return;
 				for (String f : all) {
 					File d = new File(dir.getAbsolutePath() + File.separatorChar + f);
@@ -376,7 +394,15 @@ public class OcamlBrowserView extends ViewPart {
 
 	/** Remove a path in the browser tree */
 	protected void removeLocation() {
+		boolean removed = false;
 		TreeItem[] items = this.tree.getSelection();
+		
+		if(items.length == 0){
+			MessageDialog.openInformation(this.tree.getShell(), "Nothing selected",
+			"Please select the locations you want to remove first.");
+			return;
+		}
+		
 		for (TreeItem item : items) {
 			if (item.getParent() == this.tree) {
 				String path = item.getText();
@@ -386,14 +412,20 @@ public class OcamlBrowserView extends ViewPart {
 					File d = new File(p);
 					if (dir.equals(d)) {
 						this.paths.remove(p);
+						removed = true;
 						break;
 					}
 				}
 			}
 		}
 
-		savePaths();
-		buildTree(tree);
+		if (removed) {
+			savePaths();
+			buildTree(tree);
+		} else {
+			MessageDialog.openInformation(this.tree.getShell(), "Can only remove locations",
+					"You can only remove locations from the tree, not random elements");
+		}
 	}
 
 	protected void treeItemSelected() {

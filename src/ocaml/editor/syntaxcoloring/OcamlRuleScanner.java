@@ -19,6 +19,15 @@ public class OcamlRuleScanner extends RuleBasedScanner implements ILanguageWords
 
 		IToken keyword =
 				new Token(new TextAttribute(OcamlEditorColors.getKeywordColor(), null, styleKeyword));
+		IToken letin =
+			new Token(new TextAttribute(OcamlEditorColors.getLetInColor(), null, styleKeyword));
+		IToken fun =
+			new Token(new TextAttribute(OcamlEditorColors.getFunColor(), null, styleKeyword));
+
+		IToken punctuation =
+			new Token(new TextAttribute(OcamlEditorColors.getPunctuationColor()));
+
+		
 		IToken character =
 				new Token(
 						new TextAttribute(OcamlEditorColors.getCharacterColor(), null, styleCharacter));
@@ -32,7 +41,8 @@ public class OcamlRuleScanner extends RuleBasedScanner implements ILanguageWords
 		
 		rules.add(new CharacterRule(character));
 		rules.add(new OcamlNumberRule(integer, decimal));
-		rules.add(new SimpleWordRule(keywords, keyword));
+		rules.add(new PunctuationRule(punctuation));
+		rules.add(new SimpleWordRule(keywords, keyword, letin, fun));
 		
 		this.setRules(rules.toArray(new IRule[] {}));
 	}

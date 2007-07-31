@@ -154,7 +154,8 @@ public class CompletionJob extends Job {
 				for (String mlmlifile : files) {
 					File file = new File(dir.getAbsolutePath() + File.separatorChar + mlmlifile);
 					Def def = parser.parseFile(file);
-					definitionsRoot.children.add(def);
+					if(def != null)
+						definitionsRoot.children.add(def);
 				}
 			}
 

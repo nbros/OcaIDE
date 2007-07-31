@@ -10,12 +10,15 @@ public class OcamlEditorColors {
 	private static Color DOC_COMMENT_COLOR;
 	private static Color DOC_ANNOTATION_COLOR;
 	private static Color KEYWORD_COLOR;
+	private static Color LETIN_COLOR;
+	private static Color FUN_COLOR;
 	private static Color CONSTANT_COLOR;
 	private static Color STRING_COLOR;
 	private static Color INTEGER_COLOR;
 	private static Color DECIMAL_COLOR;
 	private static Color CHARACTER_COLOR;
 	private static Color YACC_DEFINITION_COLOR;
+	private static Color PUNCTUATION_COLOR;
 	
 	private static boolean initialized = false;
 
@@ -32,6 +35,9 @@ public class OcamlEditorColors {
 		DECIMAL_COLOR = new Color(display, OcamlPlugin.getDecimalColor());
 		CHARACTER_COLOR = new Color(display, OcamlPlugin.getCharacterColor());
 		YACC_DEFINITION_COLOR = new Color(display, OcamlPlugin.getYaccDefinitionColor());
+		LETIN_COLOR = new Color(display, OcamlPlugin.getLetInColor());
+		FUN_COLOR = new Color(display, OcamlPlugin.getFunColor());
+		PUNCTUATION_COLOR = new Color(display, OcamlPlugin.getPunctuationColor());
 		
 		initialized = true;
 	}
@@ -100,5 +106,23 @@ public class OcamlEditorColors {
 		if(!initialized)
 			init();
 		return CHARACTER_COLOR;
+	}
+
+	public static Color getLetInColor() {
+		if(!initialized)
+			init();
+		return LETIN_COLOR;
+	}
+
+	public static Color getFunColor() {
+		if(!initialized)
+			init();
+		return FUN_COLOR;
+	}
+
+	public static Color getPunctuationColor() {
+		if(!initialized)
+			init();
+		return PUNCTUATION_COLOR;
 	}
 }

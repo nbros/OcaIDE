@@ -105,7 +105,7 @@ public class Def extends beaver.Symbol {
 	public Def() {
 		super();
 		children = new ArrayList<Def>();
-		this.name = null;
+		this.name = "";
 		this.type = Type.Dummy;
 		this.posStart = 0;
 		this.posEnd = 0;
