@@ -191,7 +191,6 @@
 			<description> Create an OCaml project </description>
 		</wizard>
 
-		<!--
 		<wizard name="OCaml Project" 
 			category="ocaml.wizards.Category"
 			class="ocaml.wizards.OcamlNewOcamlbuildProjectWizard"
@@ -204,7 +203,6 @@
 			
 			<description> Create an OCaml project (with Ocamlbuild) </description>
 		</wizard>
-		-->
 		
 	</extension>
 	
@@ -239,6 +237,9 @@
   <filter
         pattern=".HyperlinksLinkedFiles"
         selected="true"/>
+  <filter
+        pattern="_build"
+        selected="false"/>
 	</extension>
 	
    <extension point="org.eclipse.team.core.fileTypes">
@@ -264,40 +265,52 @@
 	
 	
 	<extension point="org.eclipse.ui.propertyPages">
-		<page objectClass="org.eclipse.core.resources.IProject"
+		<page 
 			name="Ocaml Project" class="ocaml.properties.OcamlProjectProperties"
 			id="ocaml.properties.OcamlProjectProperties">
+			<enabledWhen>
+				<instanceof value="org.eclipse.core.resources.IProject"/>
+			</enabledWhen>
 			<filter name="nature" value="ocaml.ocamlnature"/>
 		</page>
 		<page class="ocaml.properties.OcamlFileProperties"
 			id="ocaml.properties.OcamlFileProperties" name="Ocaml Module"
-			nameFilter="*.ml" objectClass="org.eclipse.core.resources.IFile">
+			nameFilter="*.ml">
 			<enabledWhen>
-				<test forcePluginActivation="true" property="Ocaml.isInNature"
-					value="ocaml.ocamlnature"/>
+				<and>
+					<instanceof value="org.eclipse.core.resources.IFile"/>
+					<test forcePluginActivation="true" property="Ocaml.isInNature"
+						value="ocaml.ocamlnature"/>
+				</and>
 			</enabledWhen>
 		</page>
 		<page class="ocaml.properties.OcamlProjectPathsProperties"
-			id="Ocaml.properties.projectpaths" name="Project Paths"
-			objectClass="org.eclipse.core.resources.IProject">
+			id="Ocaml.properties.projectpaths" name="Project Paths">
+			<enabledWhen>
+				<instanceof value="org.eclipse.core.resources.IProject"/>
+			</enabledWhen>
 			<filter name="nature" value="ocaml.ocamlnature"/>
 		</page>
 		<page class="ocaml.properties.OcamlMakefileProjectProperties"
-			id="ocaml.properties.OcamlMakefileProjectProperties" name="Makefile"
-			objectClass="org.eclipse.core.resources.IProject">
+			id="ocaml.properties.OcamlMakefileProjectProperties" name="Makefile">
+			<enabledWhen>
+				<instanceof value="org.eclipse.core.resources.IProject"/>
+			</enabledWhen>
 			<filter name="nature" value="ocaml.ocamlnatureMakefile"/>
 		</page>
 		<page class="ocaml.properties.OcamlMakefilePathsProperties"
-			id="ocaml.properties.OcamlMakefilePathsProperties" name="Makefile Paths"
-			objectClass="org.eclipse.core.resources.IProject">
+			id="ocaml.properties.OcamlMakefilePathsProperties" name="Makefile Paths">
+			<enabledWhen>
+				<instanceof value="org.eclipse.core.resources.IProject"/>
+			</enabledWhen>
 			<filter name="nature" value="ocaml.ocamlnatureMakefile"/>
 		</page>
 		<page class="ocaml.properties.LinkedFilesProperties"
 			id="ocaml.properties.LinkedFilesProperties"
-			name="Ocaml External File"
-			objectClass="org.eclipse.core.resources.IFile">
+			name="Ocaml External File">
 			<enabledWhen>
 				<and>
+		      		<instanceof value="org.eclipse.core.resources.IFile"/>
 					<test forcePluginActivation="true"
 						property="Ocaml.isLinkedFile" value="true"/>
 					<test forcePluginActivation="true" property="Ocaml.isInNature"
@@ -307,16 +320,40 @@
 		</page>
 		<page class="ocaml.properties.OcamlProjectFlagsProperties"
 			id="ocaml.properties.OcamlProjectFlagsProperties"
-			name="Ocaml Build Flags"
-			objectClass="org.eclipse.core.resources.IProject">
+			name="Ocaml Build Flags">
+		   <enabledWhen>
+		      <instanceof
+		            value="org.eclipse.core.resources.IProject">
+		      </instanceof>
+		   </enabledWhen>
 			<filter name="nature" value="ocaml.ocamlnature"/>
 		</page>
-	</extension>
-	<extension point="org.eclipse.ui.propertyPages">
 		<page class="ocaml.properties.OcamlProjectPathsProperties"
-			id="Ocaml.properties.projectpathsMakefile" name="Project Paths"
-			objectClass="org.eclipse.core.resources.IProject">
+			id="Ocaml.properties.projectpathsMakefile" name="Project Paths">
+			<enabledWhen>
+				<instanceof
+		            value="org.eclipse.core.resources.IProject">
+				</instanceof>
+			</enabledWhen>
 			<filter name="nature" value="ocaml.ocamlnatureMakefile"/>
+		</page>
+		<page class="ocaml.properties.OcamlbuildProjectProperties"
+			id="Ocaml.properties.ocamlbuild" name="Project">
+		   <enabledWhen>
+		      <instanceof
+		            value="org.eclipse.core.resources.IProject">
+		      </instanceof>
+		   </enabledWhen>
+			<filter name="nature" value="ocaml.ocamlbuildnature"/>
+		</page>
+		<page class="ocaml.properties.OcamlProjectPathsProperties"
+			id="Ocaml.properties.projectpathsOcamlbuild" name="Project Paths">
+			<filter name="nature" value="ocaml.ocamlbuildnature"/>
+		   <enabledWhen>
+		      <instanceof
+		            value="org.eclipse.core.resources.IProject">
+		      </instanceof>
+		   </enabledWhen>
 		</page>
 	</extension>
 	
@@ -527,8 +564,12 @@
    	<extension point="org.eclipse.core.filebuffers.documentSetup">
 		<participant class="ocaml.editors.OcamlDocumentSetupParticipant"
 			extensions="ml,mli,mlp,ml4"/>
+	</extension>
+   	<extension point="org.eclipse.core.filebuffers.documentSetup">
 		<participant class="ocaml.editors.lex.OcamllexDocumentSetupParticipant"
 			extensions="mll"/>
+	</extension>
+   	<extension point="org.eclipse.core.filebuffers.documentSetup">
 		<participant class="ocaml.editors.yacc.OcamlyaccDocumentSetupParticipant"
 			extensions="mly"/>
 	</extension>
@@ -840,16 +881,21 @@
 		</objectContribution>
 		<objectContribution adaptable="true" id="ocaml.fileContribution"
 			nameFilter="*.ml" objectClass="org.eclipse.core.resources.IFile">
-			<action class="ocaml.popup.actions.GenMliAction" enablesFor="1"
-				icon="icons/interfFile.gif" id="ocaml.popup.actions.GenMliAction"
-				label="Generate Interface" menubarPath="additions"/>
-			
+			<action
+	         class="ocaml.popup.actions.GenMliAction"
+	         enablesFor="1"
+	         icon="icons/interfFile.gif"
+	         id="ocaml.popup.actions.GenMliAction"
+	         label="Generate Interface"
+	         menubarPath="additions">
+		   </action>
 			<enablement>
-				<!-- Ce warning correspond à un bug dans eclipse 3.2, l'élément "test" existe bel et bien -->
+				<!-- This warning is a bug in Eclipse PDE. The 'test' element does exist! -->
 				<test forcePluginActivation="true" property="Ocaml.isInNature"
 					value="ocaml.ocamlnatureMakefile"/>
 			</enablement>
 		</objectContribution>
+
 		<objectContribution adaptable="true" id="Ocaml.LoadInToplevelContribution"
 			nameFilter="*.ml" objectClass="org.eclipse.core.resources.IFile">
 			<action class="ocaml.popup.actions.LoadInToplevelAction"

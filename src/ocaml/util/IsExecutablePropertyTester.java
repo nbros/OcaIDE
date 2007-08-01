@@ -1,6 +1,7 @@
 package ocaml.util;
 
 import ocaml.OcamlPlugin;
+import ocaml.build.OcamlBuilder;
 import ocaml.exec.CommandRunner;
 
 import org.eclipse.core.resources.IFile;
@@ -18,6 +19,10 @@ public class IsExecutablePropertyTester extends org.eclipse.core.expressions.Pro
 		if (property.equals("isExecutable")) {
 			if (receiver instanceof IFile) {
 				IFile file = (IFile) receiver;
+				
+				String mode = Misc.getFileProperty(file, OcamlBuilder.COMPIL_MODE);
+				if(mode.equals(OcamlBuilder.BYTE_CODE) || mode.equals(OcamlBuilder.NATIVE))
+					return true;
 
 				if (Misc.isOCamlSourceFile(file))
 					return false;

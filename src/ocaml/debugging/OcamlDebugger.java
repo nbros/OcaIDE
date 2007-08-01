@@ -426,8 +426,9 @@ public class OcamlDebugger implements IExecEvents {
 
 		if (bDebuggingInfoMessage) {
 			if (error.endsWith("has no debugging info.\n")) {
-				message("This executable has no debugging information, so it cannot be debugged.\n"
-						+ "To add debugging information, compile with the '-g' switch");
+				message("This executable has no debugging information, so it cannot be debugged. "
+						+ "To add debugging information, compile with the '-g' switch, " +
+								"or use a .d.byte target with ocamlbuild.");
 				bDebuggingInfoMessage = false;
 				state = State.Quitting;
 				send("quit");

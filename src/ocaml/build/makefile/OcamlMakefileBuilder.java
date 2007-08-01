@@ -218,16 +218,25 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 
 	}
 
+	private final Object signal = new Object();
+	private boolean refreshed = true;
+
 	protected void makefileFinished(final String output, final IProject project) {
 		try {
+			refreshed = false;
 			/*
 			 * Refresh the project to see modifications. This is executed asynchronously because the refresh
 			 * operation is waiting for the completion of the build() method to run.
 			 */
+			final Object signal = new Object();
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
 					try {
 						project.refreshLocal(IProject.DEPTH_INFINITE, null);
+						synchronized (signal) {
+							refreshed = true;
+							signal.notifyAll();
+						}
 					} catch (CoreException e1) {
 						OcamlPlugin.logError("ocaml plugin error", e1);
 					}
@@ -240,6 +249,11 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 				protected IStatus run(IProgressMonitor monitor) {
 
 					try {
+						synchronized (signal) {
+							while (!refreshed && !monitor.isCanceled()) {
+								signal.wait(1000);
+							}
+						}
 
 						IFile[] files = Misc.getProjectFiles(project);
 
