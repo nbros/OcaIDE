@@ -13,8 +13,23 @@
 
 <p>
 
-For <b>OCaml Makefile Projects</b>, the makefile determines how to create executables.
-Here, we explain how to create executables in <b>OCaml Managed Projects</b>.
+For <b>OCaml Makefile Projects</b>, the makefile determines how to create executables.<br>
+
+<p>
+
+For <b>Ocamlbuild Projects</b>, specify a target (in the project properties)
+ with the same base name as your module file, and with
+one of the following extensions:
+<ul>
+<li> <b>.byte</b> to generate a byte-code executable without debugging information
+<li> <b>.d.byte</b> to generate a byte-code executable with debugging information
+<li> <b>.native</b> to generate a native executable
+<li> <b>.p.native</b> to generate a native executable with profiling information (not supported by OcaIDE)
+</ul>
+
+<p>
+
+The rest of this page explains how to create executables in <b>OCaml Managed Projects</b>.
 
 <p> 
 
