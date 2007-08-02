@@ -46,6 +46,7 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 	FileFieldEditor ocamldocField;
 	FileFieldEditor ocamldebugField;
 	FileFieldEditor camlp4Field;
+	FileFieldEditor ocamlbuildField;
 
 	Text pathText;
 	private Label warningLabel;
@@ -131,6 +132,9 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 		camlp4Field = new FileFieldEditor(PreferenceConstants.P_PATH_CAMLP4, "camlp4:", toolsGroup);
 		this.addField(camlp4Field);
 
+		ocamlbuildField = new FileFieldEditor(PreferenceConstants.P_PATH_OCAMLBUILD, "ocamlbuild:", toolsGroup);
+		this.addField(ocamlbuildField);
+
 		Group otherGroup = new Group(getFieldEditorParent(), SWT.BORDER);
 		GridData odata = new GridData();
 		odata.verticalAlignment = GridData.FILL;
@@ -165,6 +169,7 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 			ocamlyaccField.setStringValue(path + "ocamlyacc.exe");
 			ocamldocField.setStringValue(path + "ocamldoc.exe");
 			camlp4Field.setStringValue(path + "camlp4.exe");
+			ocamlbuildField.setStringValue(path + "ocamlbuild.exe");
 			return;
 		}
 
@@ -260,6 +265,13 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 			else
 				ocamldebugField.setStringValue(path);
 		}
+
+		// ocamlbuild
+		filename = path + "ocamlbuild";
+		if (new File(filename).exists())
+			ocamlbuildField.setStringValue(path + "ocamlbuild");
+		else
+			ocamlbuildField.setStringValue(path);
 
 		// camlp4(.opt)
 		filename = path + "camlp4.opt";

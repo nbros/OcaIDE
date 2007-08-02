@@ -6,6 +6,7 @@ import java.io.FilenameFilter;
 import ocaml.OcamlPlugin;
 import ocaml.editor.completion.CompletionJob;
 import ocaml.parser.Def;
+import ocaml.util.Misc;
 import ocaml.util.OcamlPaths;
 
 import org.eclipse.core.resources.IFile;
@@ -290,7 +291,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 				IPath location = new Path(filename);
 
-				IFolder folder = project.getFolder(".HyperlinksLinkedFiles");
+				IFolder folder = project.getFolder(Misc.HYPERLINKSDIR);
 				if (!folder.exists())
 					folder.create(true, true, null);
 

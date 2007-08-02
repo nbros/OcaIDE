@@ -57,8 +57,10 @@ public class OcamlbuildProjectProperties extends PropertyPage {
 		txtTargets.setText(ocamlbuildFlags.getTargets());
 		
 		Label lblLibs = new Label(composite, SWT.NONE);
-		lblLibs.setText("Libraries (-libs)");
+		lblLibs.setText("Libraries (-libs)  (ex: bigarray, dynlink, graphics, nums, str, unix, ...)");
+		lblLibs.setToolTipText("Put the names of the libraries needed by your project. Ex: nums,unix");
 		lblLibs.setLayoutData(newGridDataLabel());
+
 		
 		txtLibs = new Text(composite, SWT.BORDER | SWT.MULTI);
 		txtLibs.setTextLimit(2000);
@@ -67,6 +69,7 @@ public class OcamlbuildProjectProperties extends PropertyPage {
 
 		Label lblCFlags = new Label(composite, SWT.NONE);
 		lblCFlags.setText("Compiler flags (-cflags)");
+		lblCFlags.setToolTipText("Compiler flags that must be applied to each source file in your project.");
 		lblCFlags.setLayoutData(newGridDataLabel());
 		
 		txtCFlags = new Text(composite, SWT.BORDER | SWT.MULTI);
@@ -76,6 +79,7 @@ public class OcamlbuildProjectProperties extends PropertyPage {
 		
 		
 		Label lblLFlags = new Label(composite, SWT.NONE);
+		lblLFlags.setToolTipText("Linker flags that must be applied while linking object files in your project.");
 		lblLFlags.setText("Linker flags (-lflags)");
 		lblLFlags.setLayoutData(newGridDataLabel());
 		

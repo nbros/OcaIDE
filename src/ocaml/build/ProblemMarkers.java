@@ -21,8 +21,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
 /**
- * Parse error messages returned by the O'Caml compiler, and create error markers for the corresponding
- * resources in the project.
+ * Parse error messages returned by the O'Caml compiler, and create error markers for the
+ * corresponding resources in the project.
  */
 public class ProblemMarkers {
 
@@ -75,7 +75,8 @@ public class ProblemMarkers {
 			if (matcher.find()) {
 
 				if (!currentMessage.equals("")) {
-					writeProblemMarker(filename, lineNumber, charStart, charEnd, currentMessage.trim());
+					writeProblemMarker(filename, lineNumber, charStart, charEnd, currentMessage
+							.trim());
 					currentMessage = "";
 				}
 
@@ -113,9 +114,11 @@ public class ProblemMarkers {
 		boolean skip = true;
 
 		for (String line : lines) {
-			if (line.matches("^-?(?:make|o?caml|rm |mkdir |cp |mv |cd |for |if |gcc |/|\\.).*")) {
+			if (line
+					.matches("^-?(?:make|o?caml|rm |mkdir |cp |mv |cd |for |if |gcc |/|\\.|Command exited ).*")) {
 				if (!currentMessage.trim().equals("")) {
-					writeProblemMarker(filename, lineNumber, charStart, charEnd, currentMessage.trim());
+					writeProblemMarker(filename, lineNumber, charStart, charEnd, currentMessage
+							.trim());
 					currentMessage = "";
 				}
 				skip = true;
@@ -126,7 +129,8 @@ public class ProblemMarkers {
 				skip = false;
 
 				if (!currentMessage.trim().equals("")) {
-					writeProblemMarker(filename, lineNumber, charStart, charEnd, currentMessage.trim());
+					writeProblemMarker(filename, lineNumber, charStart, charEnd, currentMessage
+							.trim());
 					currentMessage = "";
 				}
 
@@ -143,7 +147,8 @@ public class ProblemMarkers {
 				skip = false;
 
 				if (!currentMessage.trim().equals("")) {
-					writeProblemMarker(filename, lineNumber, charStart, charEnd, currentMessage.trim());
+					writeProblemMarker(filename, lineNumber, charStart, charEnd, currentMessage
+							.trim());
 					currentMessage = "";
 				}
 				filename = matcher.group(1);
@@ -151,6 +156,10 @@ public class ProblemMarkers {
 				charStart = Integer.parseInt(matcher.group(3));
 				charEnd = Integer.parseInt(matcher.group(4));
 
+			} else if (line.startsWith("Error while linking")) {
+				if (!currentMessage.equals(""))
+					writeProblemMarker("", 0, 0, 0, currentMessage.trim());
+				currentMessage = line;
 			} else if (!skip) {
 				currentMessage = currentMessage + "\n" + line;
 			}
@@ -162,13 +171,13 @@ public class ProblemMarkers {
 	}
 
 	/**
-	 * Write a problem marker for the file <code>fullProjectRelativeFilePath</code> that generated the error
-	 * message <code>msg</code> on the line <code>lineNumber</code> that starts at character
-	 * <code>charStart</code> and ends at character <code>charEnd</code>.
+	 * Write a problem marker for the file <code>fullProjectRelativeFilePath</code> that generated
+	 * the error message <code>msg</code> on the line <code>lineNumber</code> that starts at
+	 * character <code>charStart</code> and ends at character <code>charEnd</code>.
 	 * 
 	 */
-	private void writeProblemMarker(String fullWorkspaceRelativePath, int lineNumber, int charStart,
-			int charEnd, String msg) {
+	private void writeProblemMarker(String fullWorkspaceRelativePath, int lineNumber,
+			int charStart, int charEnd, String msg) {
 
 		String projectRelativePath;
 
@@ -201,8 +210,8 @@ public class ProblemMarkers {
 		IResource fileAsResource = project.findMember(projectRelativePath);
 		if ((fileAsResource == null) || (fileAsResource.getType() != IResource.FILE)) {
 			/*
-			 * If the resource wasn't found. This is certainly because the makefile changed the directory. So,
-			 * we have to search for the file among all the project files.
+			 * If the resource wasn't found. This is certainly because the makefile changed the
+			 * directory. So, we have to search for the file among all the project files.
 			 */
 
 			// only keep the filename
@@ -218,7 +227,8 @@ public class ProblemMarkers {
 			}
 
 			if (fileAsResource == null) {
-				OcamlPlugin.logError("ProblemMarkers:writeProblemMarkers: can't find " + projectRelativePath);
+				OcamlPlugin.logError("ProblemMarkers:writeProblemMarkers: can't find "
+						+ projectRelativePath);
 				return;
 			}
 		}
@@ -252,8 +262,8 @@ public class ProblemMarkers {
 	}
 
 	/**
-	 * Get the absolute position in <code>file</code>, in number of characters from the beginning of line
-	 * <code>lineNumber</code>.
+	 * Get the absolute position in <code>file</code>, in number of characters from the beginning
+	 * of line <code>lineNumber</code>.
 	 */
 	private static int getLineOffset(int lineNumber, IFile file) {
 		BufferedReader in = null;
@@ -344,10 +354,12 @@ public class ProblemMarkers {
 		public int compareTo(Object o) {
 			if (o instanceof WarningFile) {
 				WarningFile file2 = (WarningFile) o;
-				return file.getLocation().toOSString().compareTo(file2.file.getLocation().toOSString());
+				return file.getLocation().toOSString().compareTo(
+						file2.file.getLocation().toOSString());
 			} else if (o instanceof ErrorFile) {
 				ErrorFile file2 = (ErrorFile) o;
-				return file.getLocation().toOSString().compareTo(file2.file.getLocation().toOSString());
+				return file.getLocation().toOSString().compareTo(
+						file2.file.getLocation().toOSString());
 			} else
 				throw new ClassCastException();
 
@@ -378,7 +390,8 @@ public class ProblemMarkers {
 		public int compareTo(Object o) {
 			if (o instanceof ErrorFile) {
 				ErrorFile file2 = (ErrorFile) o;
-				return file.getLocation().toOSString().compareTo(file2.file.getLocation().toOSString());
+				return file.getLocation().toOSString().compareTo(
+						file2.file.getLocation().toOSString());
 			} else
 				throw new ClassCastException();
 

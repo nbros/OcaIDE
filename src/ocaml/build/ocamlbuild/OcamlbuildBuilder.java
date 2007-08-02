@@ -11,6 +11,7 @@ import ocaml.exec.CommandRunner;
 import ocaml.exec.ExecHelper;
 import ocaml.exec.IExecEvents;
 import ocaml.util.Misc;
+import ocaml.util.OcamlPaths;
 import ocaml.views.OcamlCompilerOutput;
 
 import org.eclipse.core.resources.IFile;
@@ -29,10 +30,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 
-// TODO paths
-// TODO annot in _build
-// TODO error parsing
-
 public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 	public static final String ID = "Ocaml.ocamlbuildBuilder";
@@ -43,9 +40,79 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 	public OcamlbuildBuilder() {
 	}
 
+	/**
+	 * Build the ocamlbuild command line which will compile the given project with the flags and
+	 * paths the user defined in the project properties page.
+	 * 
+	 * @param project
+	 *            the project to build
+	 * @param noTargets
+	 *            do not add targets to the build command line
+	 */
+	public static ArrayList<String> buildCommandLine(IProject project, boolean noTargets) {
+		OcamlbuildFlags ocamlbuildFlags = new OcamlbuildFlags(project);
+		ocamlbuildFlags.load();
+
+		// String path = project.getLocation().toOSString();
+
+		ArrayList<String> commandLine = new ArrayList<String>();
+		
+		String ocamlbuild = OcamlPlugin.getOcamlbuildFullPath().trim();
+		if("".equals(ocamlbuild)){
+			OcamlPlugin.logError("ocamlbuild path is not configured");
+			return null;
+		}
+			
+		
+		commandLine.add(ocamlbuild);
+		commandLine.add("-classic-display");
+		commandLine.add("-no-log");
+
+		OcamlPaths ocamlPaths = new OcamlPaths(project);
+		String[] paths = ocamlPaths.getPaths();
+		if (paths.length > 0) {
+			for (String path : paths) {
+				path = path.trim();
+				if (!".".equals(path)) {
+					commandLine.add("-I");
+					commandLine.add("\"" + path + "\"");
+				}
+			}
+		}
+
+		commandLine.add("-tags");
+		commandLine.add("dtypes"); // TODO user preference?
+		// commandLine.add("-log");
+		// commandLine.add("_build" + File.separator + "_log");
+		String libs = ocamlbuildFlags.getLibs();
+		if (!"".equals(libs)) {
+			commandLine.add("-libs");
+			commandLine.add(libs);
+		}
+		String cflags = ocamlbuildFlags.getCFlags();
+		if (!"".equals(cflags)) {
+			commandLine.add("-cflags");
+			commandLine.add(cflags);
+		}
+		String lflags = ocamlbuildFlags.getLFlags();
+		if (!"".equals(lflags)) {
+			commandLine.add("-lflags");
+			commandLine.add(lflags);
+		}
+
+		if (!noTargets) {
+			String[] targets = ocamlbuildFlags.getTargetsAsList();
+			for (String target : targets)
+				commandLine.add(target);
+		}
+
+		return commandLine;
+	}
+
 	@Override
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
 
+		// don't start two builds simultaneously
 		if (building)
 			return null;
 
@@ -70,39 +137,10 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 			buildMonitor.beginTask("Building Project", IProgressMonitor.UNKNOWN);
 
 			final IProject project = this.getProject();
-
-			OcamlbuildFlags ocamlbuildFlags = new OcamlbuildFlags(project);
-			ocamlbuildFlags.load();
-
-			// String path = project.getLocation().toOSString();
-
-			ArrayList<String> commandLine = new ArrayList<String>();
-			commandLine.add("ocamlbuild");
-			commandLine.add("-classic-display");
-			commandLine.add("-tags");
-			commandLine.add("dtypes"); // TODO user preference?
-			//commandLine.add("-log");
-			//commandLine.add("_build" + File.separator + "_log");
-			commandLine.add("-no-log");
-			String libs = ocamlbuildFlags.getLibs();
-			if (!"".equals(libs)) {
-				commandLine.add("-libs");
-				commandLine.add(libs);
-			}
-			String cflags = ocamlbuildFlags.getCFlags();
-			if (!"".equals(cflags)) {
-				commandLine.add("-cflags");
-				commandLine.add(cflags);
-			}
-			String lflags = ocamlbuildFlags.getLFlags();
-			if (!"".equals(lflags)) {
-				commandLine.add("-lflags");
-				commandLine.add(lflags);
-			}
-
-			String[] targets = ocamlbuildFlags.getTargetsAsList();
-			for (String target : targets)
-				commandLine.add(target);
+			
+			ArrayList<String> commandLine = buildCommandLine(project, false);
+			if(commandLine == null)
+				return null;
 
 			String[] strCommandLine = commandLine.toArray(new String[commandLine.size()]);
 
@@ -111,7 +149,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 			IExecEvents events = new IExecEvents() {
 
 				public void processNewInput(final String input) {
-					System.out.println(input);
+					//System.out.println(input);
 					output.append(input);
 					Display.getDefault().asyncExec(new Runnable() {
 						public void run() {
@@ -312,19 +350,21 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 					IPath path = resource.getFullPath();
 
 					// ignore files in the _build directory
-					for(String segment : path.segments())
-						if(segment.equals("_build"))
+					for (String segment : path.segments()) {
+						if (segment.equals("_build") || segment.equals(OcamlPaths.EXTERNAL_SOURCES)
+								|| segment.equals(Misc.HYPERLINKSDIR))
 							return true;
-					
-					if(delta.getKind() == IResourceDelta.REMOVED){
-						System.err.println(resource.getLocation().toOSString() + " removed");
+					}
+
+					if (delta.getKind() == IResourceDelta.REMOVED) {
+						//System.err.println(resource.getLocation().toOSString() + " removed");
 						changed = true;
 						return false;
 					}
 
 					String ext = resource.getFileExtension();
 					if (ext != null && ext.matches("ml|mli|mll|mly")) {
-						System.err.println(resource.getLocation().toOSString() + " changed");
+						//System.err.println(resource.getLocation().toOSString() + " changed");
 						changed = true;
 						return false;
 					}
@@ -345,26 +385,34 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 	@Override
 	protected void clean(IProgressMonitor monitor) {
-		String[] command = {"ocamlbuild", "-clean"}; 
+		String ocamlbuild = OcamlPlugin.getOcamlbuildFullPath().trim();
 		
+		if("".equals(ocamlbuild)){
+			OcamlPlugin.logError("ocamlbuild path is not configured");
+			return;
+		}
+
+		String[] command = { ocamlbuild, "-clean" };
+
 		String path = this.getProject().getLocation().toOSString();
 		CommandRunner commandRunner = new CommandRunner(command, path);
 
-		String out = commandRunner.getStdout();
-		String err = commandRunner.getStderr();
-		
-		OcamlCompilerOutput outputView = OcamlCompilerOutput.get();
-		if (outputView != null){
-			if(!"".equals(out))
-				outputView.append(out);
-			if(!"".equals(err))
-				outputView.append(err);
-		}
-		
+		final String out = commandRunner.getStdout();
+		final String err = commandRunner.getStderr();
+
+
 		// refresh the workspace
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				try {
+					OcamlCompilerOutput outputView = OcamlCompilerOutput.get();
+					if (outputView != null) {
+						if (!"".equals(out))
+							outputView.append(out);
+						if (!"".equals(err))
+							outputView.append(err);
+					}
+
 					getProject().refreshLocal(IProject.DEPTH_INFINITE, null);
 				} catch (CoreException e1) {
 					OcamlPlugin.logError("ocaml plugin error", e1);

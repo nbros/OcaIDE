@@ -70,15 +70,18 @@
 	* Fixed a bug with non-rec definitions that would act as rec in hyperlinks
 	* Corrected some bugs with the 'unnest let in definitions' option in outline
 	
-* 1.1.0 (July 31 2007)
-	* Added support for ocamlbuild projects
+* 1.1.0 (Aug 02 2007)
+	* Added support for ocamlbuild projects (reset the O'Caml perspective to get the project shortcut)
+	* Type annotations are searched first in ml folder, then in _build + ml folder 
 	* Big change in Ocaml Browser: now you can add new locations (right-click on tree), and the loading and parsing is done lazily (when you expand a node)
 	* Fixed yet another bug with hyperlinks  
 	* Fixed a bug in the lexer (with line labels)   
 	* Fixed another bug in the lexer with the '"' character inside comments    
 	* Added separate color preferences for 'let','in' and 'fun','function' keywords
+	* Added optional syntax coloring of punctuation 
 	* Corrected a bug in the paths preference page on Windows
-	* Added '*.obj' in the list of navigator filters 
+	* Added '*.obj' and '_build' in the list of navigator filters 
+	* Hid some resources from versioning system (*.cmo, *.annot, ...). If you ever need to commit these resources, see "Window > Preferences > Team > Ignored Resources".   
 	 
 	
 	

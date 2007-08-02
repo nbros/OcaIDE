@@ -267,9 +267,9 @@ public class OcamlEditor extends TextEditor {
 		return editorInput.getFile();
 	}
 
-	public String getAnnotFileName(String filename) {
+	/*public String getAnnotFileName(String filename) {
 		return filename.substring(0, filename.lastIndexOf(".")) + ".annot";
-	}
+	}*/
 
 	public String getFullPathFileName(String filename) {
 		// String workspaceDir = "";

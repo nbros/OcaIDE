@@ -18,6 +18,7 @@ import ocaml.parser.OcamlParser.Terminals;
 import ocaml.preferences.PreferenceConstants;
 import ocaml.typeHovers.OcamlAnnotParser;
 import ocaml.typeHovers.TypeAnnotation;
+import ocaml.util.Misc;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -70,15 +71,15 @@ public class OutlineJob extends Job {
 	}
 
 	/**
-	 * This method is "synchronized" to ascertain that this Job will never be running more than one instance
-	 * at any moment.
+	 * This method is "synchronized" to ascertain that this Job will never be running more than one
+	 * instance at any moment.
 	 */
 	@Override
 	public synchronized IStatus run(IProgressMonitor monitor) {
-		
-		//System.err.println("outline job" + nJob++);
 
-		 //long before = System.currentTimeMillis();
+		// System.err.println("outline job" + nJob++);
+
+		// long before = System.currentTimeMillis();
 
 		String strDocument = doc.get();
 
@@ -98,31 +99,19 @@ public class OutlineJob extends Job {
 
 		final StringReader in = new StringReader(str.toString());
 		final OcamlScanner scanner = new OcamlScanner(in);
-		
-		/*Symbol s;
-		while(true)
-			{
-				
-			try {
-				s = scanner.nextToken();
-				if(s.getId() == Terminals.EOF)
-					break;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				break;
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				break;
-			}
-			System.err.println(OcamlParser.Terminals.NAMES[s.getId()]);
-			
-			}*/
-		
-		//if(true)
-		//return Status.OK_STATUS;
-		
+
+		/*
+		 * Symbol s; while(true) {
+		 * 
+		 * try { s = scanner.nextToken(); if(s.getId() == Terminals.EOF) break; } catch (IOException
+		 * e) { // TODO Auto-generated catch block e.printStackTrace(); break; } catch (Exception e) { //
+		 * TODO Auto-generated catch block e.printStackTrace(); break; }
+		 * System.err.println(OcamlParser.Terminals.NAMES[s.getId()]);
+		 *  }
+		 */
+
+		// if(true)
+		// return Status.OK_STATUS;
 		final OcamlParser parser = new OcamlParser();
 
 		Def root = null;
@@ -133,15 +122,15 @@ public class OutlineJob extends Job {
 				root = (Def) parser.parse(scanner);
 			else if ("mli".equals(extension))
 				root = (Def) parser.parse(scanner, OcamlParser.AltGoals.interfaces);
-			else if(!("ml4".equals(extension) || "mlp".equals(extension)))
+			else if (!("ml4".equals(extension) || "mlp".equals(extension)))
 				OcamlPlugin.logError(extension + " file extension has no associated parser.");
 		} catch (Throwable e) {
 			// OcamlPlugin.logError("error while parsing", e);
 			// System.out.println("unrecoverable syntax error");
 			// e.printStackTrace();
 		}
-		
-		//for(long i = 0; i < 1000000000l; i++);
+
+		// for(long i = 0; i < 1000000000l; i++);
 
 		// recover pieces from the AST (which couldn't be built completely because of an
 		// unrecoverable error)
@@ -150,7 +139,7 @@ public class OutlineJob extends Job {
 			root = new Def("root", Def.Type.Root, 0, 0);
 
 			for (Def def : parser.recoverDefs)
-				if (def.bTop && def.name != null && !"".equals(def.name.trim())){
+				if (def.bTop && def.name != null && !"".equals(def.name.trim())) {
 					def.bTop = false;
 					root.children.add(def);
 				}
@@ -166,12 +155,11 @@ public class OutlineJob extends Job {
 		final Def definitions = root;
 
 		definitions.setInInAttribute();
-		
+
 		Def outlineDefinitions = definitions.cleanCopy();
 		// remove the definitions the user has chosen not to display
 		initPreferences();
 		cleanOutline(outlineDefinitions);
-		
 
 		final IFile file = editor.getFileBeingEdited();
 		/*
@@ -181,18 +169,16 @@ public class OutlineJob extends Job {
 		if (!editor.isDirty()
 				&& OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 						PreferenceConstants.P_SHOW_TYPES_IN_OUTLINE))
-			addTypes(file, outlineDefinitions);		
-		
-		
-		if(OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
-						PreferenceConstants.P_OUTLINE_UNNEST_IN)){
+			addTypes(file, outlineDefinitions);
+
+		if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+				PreferenceConstants.P_OUTLINE_UNNEST_IN)) {
 			outlineDefinitions.unnestIn();
 		}
-		
-		outlineDefinitions.buildParents();
-		
-		final Def fOutlineDefinitions = outlineDefinitions;
 
+		outlineDefinitions.buildParents();
+
+		final Def fOutlineDefinitions = outlineDefinitions;
 
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
@@ -262,32 +248,35 @@ public class OutlineJob extends Job {
 				}
 
 				if (outline != null) {
-					if(OcamlOutlineControl.bOutlineDebugButton && OcamlPlugin.getInstance().getPreferenceStore().getBoolean(PreferenceConstants.P_OUTLINE_DEBUG_MODE)){
+					if (OcamlOutlineControl.bOutlineDebugButton
+							&& OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+									PreferenceConstants.P_OUTLINE_DEBUG_MODE)) {
 						// XXX DEBUG
-//						OcamlNewInterfaceParser newParser = OcamlNewInterfaceParser.getInstance();
-//						try {
-//							Def definitions = newParser.parseModule(str.toString(), "<<<DEBUG>>>", true);
-//							outline.setInput(definitions);
-//						} catch (Throwable e) {
-//							
-//							e.printStackTrace();
-//						}
+						// OcamlNewInterfaceParser newParser =
+						// OcamlNewInterfaceParser.getInstance();
+						// try {
+						// Def definitions = newParser.parseModule(str.toString(), "<<<DEBUG>>>",
+						// true);
+						// outline.setInput(definitions);
+						// } catch (Throwable e) {
+						//							
+						// e.printStackTrace();
+						// }
 						outline.setInput(definitions);
-					}
-					else
+					} else
 						outline.setInput(fOutlineDefinitions);
-					
+
 					editor.synchronizeOutline();
 				}
 
 			}
 		});
 
-		 //long after = System.currentTimeMillis();
+		// long after = System.currentTimeMillis();
 		// root.clean();
 		// root.print(0);
 
-		 //System.out.println("built outline in " + (after - before) + " ms");
+		// System.out.println("built outline in " + (after - before) + " ms");
 		// if(parser.errorReporting.bErrors)
 		// System.out.println("Syntax errors reported");
 
@@ -299,30 +288,24 @@ public class OutlineJob extends Job {
 		if (file == null || root == null)
 			return;
 
-		IPath filePath = file.getLocation();
+		IPath filePath = file.getFullPath();
+		File annotFile = Misc.getOtherFileFor(file.getProject(), filePath, ".annot");
 
-		String fileName = filePath.lastSegment();
-		if (fileName.endsWith(".ml")) {
-			String annotFilename = fileName.substring(0, fileName.length() - 3) + ".annot";
+		if (annotFile != null && annotFile.exists()) {
+			boolean bUpToDate = filePath.toFile().lastModified() <= annotFile.lastModified();
 
-			File annotFile = filePath.removeLastSegments(1).append(annotFilename).toFile();
-
-			if (annotFile.exists()) {
-				boolean bUpToDate = filePath.toFile().lastModified() <= annotFile.lastModified();
-
-				if (bUpToDate) {
-					TypeAnnotation[] annotations;
-					try {
-						annotations = OcamlAnnotParser.parseFile(annotFile, doc);
-						Arrays.sort(annotations, new AnnotationsComparator());
-					} catch (BadLocationException e) {
-						OcamlPlugin.logError("parsing annot file for adding types in outline", e);
-						return;
-					}
-					if (annotations != null)
-						addTypeRec(annotations, root, true);
-
+			if (bUpToDate) {
+				TypeAnnotation[] annotations;
+				try {
+					annotations = OcamlAnnotParser.parseFile(annotFile, doc);
+					Arrays.sort(annotations, new AnnotationsComparator());
+				} catch (BadLocationException e) {
+					OcamlPlugin.logError("parsing annot file for adding types in outline", e);
+					return;
 				}
+				if (annotations != null)
+					addTypeRec(annotations, root, true);
+
 			}
 		}
 	}
@@ -366,7 +349,8 @@ public class OutlineJob extends Job {
 			return;
 
 		// collapse the <structure> or <signature> node if it is the child of a module or moduletype
-		if (def.type == Def.Type.Module || def.type == Def.Type.ModuleType || def.type == Def.Type.Functor) {
+		if (def.type == Def.Type.Module || def.type == Def.Type.ModuleType
+				|| def.type == Def.Type.Functor) {
 			for (int i = 0; i < def.children.size(); i++) {
 				Def child = def.children.get(i);
 
@@ -432,14 +416,14 @@ public class OutlineJob extends Job {
 		showClassType = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_CLASSTYPE);
 		showVariantCons = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_VARIANT_CONS);
 		showRecordCons = ps.getBoolean(PreferenceConstants.P_OUTLINE_SHOW_RECORD_CONS);
-		
+
 		letMinChars = ps.getInt(PreferenceConstants.P_OUTLINE_LET_MINIMUM_CHARS);
 		letInMinChars = ps.getInt(PreferenceConstants.P_OUTLINE_LET_IN_MINIMUM_CHARS);
 
 	}
 
 	private boolean showDef(Def def) {
-		
+
 		switch (def.type) {
 		case Let:
 			return showLet && def.name != null && def.name.length() >= letMinChars;

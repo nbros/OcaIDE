@@ -3,8 +3,6 @@ package ocaml.preferences;
 /** Constants used by the preference saving system */
 public class PreferenceConstants
 {
-	//public static final String P_INCLUDE_PATH = "libPathPreference";
-	public static final String P_COMPIL_OPTIONS = "ocamlPlugincompilOptionsPreference";
 	public static final String P_LIB_PATH = "ocamlPlugincompilPathLibPreference";
 	public static final String P_COMPIL_PATH_OCAML = "ocamlPathPreference";
 	public static final String P_COMPIL_PATH_OCAMLC = "ocamlcPathPreference";
@@ -15,6 +13,10 @@ public class PreferenceConstants
 	public static final String P_COMPIL_PATH_OCAMLDOC = "ocamldocPathPreference";
 	public static final String P_COMPIL_PATH_OCAMLDEBUG = "ocamldebugPathPreference";
 	public static final String P_MAKE_PATH = "makePathPreference";
+	public static final String P_PATH_CAMLP4 = "camlp4PathPreference";
+	public static final String P_PATH_OCAMLBUILD = "ocamlbuildPathPreference";
+	
+	
 	public static final String P_COMMENT_COLOR = "ocamlPlugincommentColorPreference";
 	public static final String P_DOC_COMMENT_COLOR = "ocamlPluginDocCommentColorPreference";
 	public static final String P_DOC_ANNOTATION_COLOR = "ocamlPluginDocAnnotationColorPreference";
@@ -36,7 +38,6 @@ public class PreferenceConstants
 	public static final String P_BOLD_NUMBERS = "ocamlPluginboldNumbersFormattingPreference";
 	public static final String P_BOLD_CHARACTERS = "ocamlPluginboldCharactersFormattingPreference";
 	public static final String P_DONT_SHOW_MISSING_PATHS_WARNING = "ocamlPluginDontShowMissingPathsWarning";
-	public static final String P_PATH_CAMLP4 = "camlp4PathPreference";
 	
 	public static final String P_EDITOR_DISABLE_AUTOFORMAT = "ocamlEditorDisableAutoformat";
 	public static final String P_EDITOR_TABS = "ocamlEditorTabsWidth";

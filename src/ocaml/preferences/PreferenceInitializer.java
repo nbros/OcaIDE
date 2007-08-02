@@ -122,6 +122,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			String ocamldoc = "";
 			String ocamldebug = "";
 			String camlp4 = "";
+			String ocamlbuild = "";
 			String make = "";
 
 			String which = "";
@@ -220,6 +221,12 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 						file = new File(prefix + "/camlp4");
 						if (file.exists() && file.isFile())
 							camlp4 = file.getPath();
+					}
+
+					if (ocamlbuild.equals("")) {
+						file = new File(prefix + "/ocamlbuild");
+						if (file.exists() && file.isFile())
+							ocamlbuild = file.getPath();
 					}
 
 					if (make.equals("")) {
@@ -336,6 +343,16 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 							OcamlPlugin.logError("ocaml plugin error", e);
 						}
 					}
+					if (ocamlbuild.equals("")) {
+
+						try {
+							commandRunner = new CommandRunner(new String[] { which, "ocamlbuild" },
+									"/");
+							ocamlbuild = commandRunner.getStdout().trim();
+						} catch (Exception e) {
+							OcamlPlugin.logError("ocaml plugin error", e);
+						}
+					}
 					if (camlp4.equals("")) {
 
 						try {
@@ -386,12 +403,12 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 					ocamlyacc = basepath + "\\bin\\ocamlyacc.exe";
 					ocamldoc = basepath + "\\bin\\ocamldoc.exe";
 					camlp4 = basepath + "\\bin\\camlp4.exe";
+					ocamlbuild = basepath + "\\bin\\ocamlbuild.exe";
 					// configure ocamldebug manually under Windows (with cygwin)
 				}
 			}
 
 			// Save all the preferences in the preferences register
-			store.setDefault(PreferenceConstants.P_COMPIL_OPTIONS, "");
 			store.setDefault(PreferenceConstants.P_LIB_PATH, ocamlLibPath);
 			store.setDefault(PreferenceConstants.P_COMPIL_PATH_OCAML, ocaml);
 			store.setDefault(PreferenceConstants.P_COMPIL_PATH_OCAMLC, ocamlc);
@@ -402,6 +419,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_PATH_CAMLP4, camlp4);
 			store.setDefault(PreferenceConstants.P_COMPIL_PATH_OCAMLDOC, ocamldoc);
 			store.setDefault(PreferenceConstants.P_COMPIL_PATH_OCAMLDEBUG, ocamldebug);
+			store.setDefault(PreferenceConstants.P_PATH_OCAMLBUILD, ocamlbuild);
 			store.setDefault(PreferenceConstants.P_MAKE_PATH, make);
 
 		} catch (Throwable e) {

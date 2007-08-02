@@ -50,9 +50,9 @@ public class OcamlyaccRuleScanner extends RuleBasedScanner implements ILanguageW
 		rules.add(new CharacterRule(character));
 		rules.add(new OcamlNumberRule(integer, decimal));
 		rules.add(new OcamlyaccDefinitionRule(definition));
+		rules.add(new OcamlyaccKeywordRule(yacckeywords, keyword));
 		rules.add(new PunctuationRule(punctuation));
 		rules.add(new SimpleWordRule(keywords, keyword, letin, fun));
-		rules.add(new OcamlyaccKeywordRule(yacckeywords, keyword));
 
 		this.setRules(rules.toArray(new IRule[] {}));
 	}

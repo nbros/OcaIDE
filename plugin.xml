@@ -191,7 +191,7 @@
 			<description> Create an OCaml project </description>
 		</wizard>
 
-		<wizard name="OCaml Project" 
+		<wizard name="OCaml Project (ocamlbuild)" 
 			category="ocaml.wizards.Category"
 			class="ocaml.wizards.OcamlNewOcamlbuildProjectWizard"
 			icon="icons/caml16x16.gif"
@@ -222,24 +222,12 @@
 		<filter pattern="._d" selected="true"/>
 		<filter pattern="._bcdi" selected="true"/>
 		<filter pattern="._ncdi" selected="true"/>
-  <filter
-        pattern="*._old"
-        selected="true"/>
-  <filter
-        pattern=".*"
-        selected="false"/>
-  <filter
-        pattern=".DebuggerSourceLookup"
-        selected="true"/>
-  <filter
-        pattern=".makefilepaths"
-        selected="true"/>
-  <filter
-        pattern=".HyperlinksLinkedFiles"
-        selected="true"/>
-  <filter
-        pattern="_build"
-        selected="false"/>
+  		<filter pattern="*._old" selected="true"/>
+  		<filter pattern=".*" selected="false"/>
+  		<filter pattern=".DebuggerSourceLookup" selected="true"/>
+  		<filter pattern=".makefilepaths" selected="true"/>
+  		<filter pattern=".HyperlinksLinkedFiles" selected="true"/>
+  		<filter pattern="_build" selected="false"/>
 	</extension>
 	
    <extension point="org.eclipse.team.core.fileTypes">
@@ -691,6 +679,10 @@
 			<menu id="Ocaml_sourceMenu" label="Ocaml">
 				<separator name="slot1"/>
 			</menu>
+			<action class="ocaml.editor.actions.ConvertSpacesToTabsAction"
+				definitionId="Ocaml.spacesToTabsCommand"
+				id="Ocaml_sourceActions_SpacesToTabs" label="Convert spaces to tabs"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
 			<action class="ocaml.editor.actions.ConvertWithCamlp4Action"
 				definitionId="Ocaml.camlp4convertCommand"
 				id="Ocaml_sourceActions_Camlp4Convert" label="Convert revised syntax to standard syntax"
@@ -769,6 +761,8 @@
 			name="Format with camlp4"/>
 		<command categoryId="Ocaml.commandscategory" id="Ocaml.camlp4convertCommand"
 			name="Convert from revised syntax to standard syntax with camlp4"/>
+		<command categoryId="Ocaml.commandscategory" id="Ocaml.spacesToTabsCommand"
+			name="Convert spaces to tabs"/>
 		<command categoryId="Ocaml.commandscategory"
 			id="Ocaml.gotoMatchingDelimiterCommand"
 			name="Goto Matching Delimiter"/>
@@ -896,6 +890,23 @@
 			</enablement>
 		</objectContribution>
 
+		<objectContribution adaptable="true" id="ocaml.fileContribution2"
+			nameFilter="*.ml" objectClass="org.eclipse.core.resources.IFile">
+			<action
+	         class="ocaml.popup.actions.GenMliOcamlbuildAction"
+	         enablesFor="1"
+	         icon="icons/interfFile.gif"
+	         id="ocaml.popup.actions.GenMliOcamlbuildAction"
+	         label="Generate Interface"
+	         menubarPath="additions">
+		   </action>
+			<enablement>
+				<!-- This warning is a bug in Eclipse PDE. The 'test' element does exist! -->
+				<test forcePluginActivation="true" property="Ocaml.isInNature"
+					value="ocaml.ocamlbuildnature"/>
+			</enablement>
+		</objectContribution>
+
 		<objectContribution adaptable="true" id="Ocaml.LoadInToplevelContribution"
 			nameFilter="*.ml" objectClass="org.eclipse.core.resources.IFile">
 			<action class="ocaml.popup.actions.LoadInToplevelAction"
@@ -958,5 +969,30 @@
           verticalRulerPreferenceKey="syntaxerror.rulers.vertical"
           verticalRulerPreferenceValue="false">
     </specification>
+ </extension>
+ <extension
+       point="org.eclipse.team.core.ignore">
+		<ignore enabled="true" pattern=".project"/>
+		<ignore enabled="true" pattern=".DS_Store"/>		
+		<ignore enabled="true" pattern="*.annot"/>		
+		<ignore enabled="true" pattern="*.cmo"/>		
+		<ignore enabled="true" pattern="*.cmi"/>		
+		<ignore enabled="true" pattern="*.cmx"/>		
+		<ignore enabled="true" pattern="*.cma"/>		
+		<ignore enabled="true" pattern="*.cmxa"/>
+		<ignore pattern="*.o" enabled="true"/>
+		<ignore pattern="*.obj" enabled="true"/>
+		<ignore pattern=".settings" enabled="true"/>
+		<ignore pattern=".paths" enabled="true"/>
+		<ignore pattern="._d" enabled="true"/>
+		<ignore pattern="._bcdi" enabled="true"/>
+		<ignore pattern="._ncdi" enabled="true"/>
+  		<ignore pattern="*._old" enabled="true"/>
+  		<ignore pattern=".DebuggerSourceLookup" enabled="true"/>
+  		<ignore pattern=".makefilepaths" enabled="true"/>
+  		<ignore pattern=".HyperlinksLinkedFiles" enabled="true"/>
+  		<ignore pattern="_build" enabled="true"/>
+  		<ignore pattern="*.byte" enabled="true"/>
+  		<ignore pattern="*.native" enabled="true"/>
  </extension>
 </plugin>

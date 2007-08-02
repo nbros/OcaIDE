@@ -10,6 +10,7 @@ import ocaml.typeHovers.OcamlAnnotParser;
 import ocaml.typeHovers.TypeAnnotation;
 import ocaml.util.Misc;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.text.BadLocationException;
@@ -20,10 +21,10 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextViewer;
 
 /**
- * Choose the message to display in the pop-up that appears when the user hovers over the contents of the
- * editor. Depending on context, we display type informations, the value of the variable under the mouse
- * cursor (if the debugger is active), the error marker if there is one there, or a combination of these
- * elements.
+ * Choose the message to display in the pop-up that appears when the user hovers over the contents
+ * of the editor. Depending on context, we display type informations, the value of the variable
+ * under the mouse cursor (if the debugger is active), the error marker if there is one there, or a
+ * combination of these elements.
  */
 public class OcamlTextHover implements ITextHover {
 	private OcamlEditor ocamlEditor;
@@ -33,11 +34,11 @@ public class OcamlTextHover implements ITextHover {
 	}
 
 	/**
-	 * Returns the string to display in a pop-up which gives informations about the element currently under
-	 * the mouse cursor in the editor
+	 * Returns the string to display in a pop-up which gives informations about the element
+	 * currently under the mouse cursor in the editor
 	 */
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-		
+
 		if (hoverRegion == null) {
 			ocaml.OcamlPlugin.logError("OcamlTextHover:getHoverInfo null region");
 			return "";
@@ -72,61 +73,59 @@ public class OcamlTextHover implements ITextHover {
 				}
 			}
 
-			
-			if(OcamlPlugin.getInstance().getPreferenceStore().getBoolean(PreferenceConstants.P_SHOW_TYPES_IN_POPUPS)){
-				IPath filePath = ocamlEditor.getFileBeingEdited().getLocation();
-	
-				String fileName = filePath.lastSegment();
-				if (fileName.endsWith(".ml")) {
-					String annotFilename = fileName.substring(0, fileName.length() - 3) + ".annot";
-	
-					File annotFile = filePath.removeLastSegments(1).append(annotFilename).toFile();
-	
-					if (annotFile.exists()) {
-						boolean bUpToDate = filePath.toFile().lastModified() <= annotFile.lastModified();
-	
-						if (!ocamlEditor.isDirty() && bUpToDate) {
-							ArrayList<TypeAnnotation> found = new ArrayList<TypeAnnotation>();
-	
-							TypeAnnotation[] annotations = OcamlAnnotParser.parseFile(annotFile, textViewer
-									.getDocument());
-							if (annotations != null) {
-								for (TypeAnnotation annot : annotations)
-									if (annot.getBegin() <= hoverOffset && hoverOffset < annot.getEnd())
-										found.add(annot);
-	
-								/*
-								 * Search for the smallest hovered type annotation
-								 */
-								TypeAnnotation annot = null;
-								int minSize = Integer.MAX_VALUE;
-	
-								for (TypeAnnotation a : found) {
-									int size = a.getEnd() - a.getBegin();
-									if (size < minSize) {
-										annot = a;
-										minSize = size;
-									}
+			if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+					PreferenceConstants.P_SHOW_TYPES_IN_POPUPS)) {
+				IFile file = ocamlEditor.getFileBeingEdited();
+				IPath filePath = file.getFullPath();
+
+				File annotFile = Misc.getOtherFileFor(file.getProject(), filePath, ".annot");
+
+				if (annotFile != null && annotFile.exists()) {
+					boolean bUpToDate = filePath.toFile().lastModified() <= annotFile
+							.lastModified();
+
+					if (!ocamlEditor.isDirty() && bUpToDate) {
+						ArrayList<TypeAnnotation> found = new ArrayList<TypeAnnotation>();
+
+						TypeAnnotation[] annotations = OcamlAnnotParser.parseFile(annotFile,
+								textViewer.getDocument());
+						if (annotations != null) {
+							for (TypeAnnotation annot : annotations)
+								if (annot.getBegin() <= hoverOffset && hoverOffset < annot.getEnd())
+									found.add(annot);
+
+							/*
+							 * Search for the smallest hovered type annotation
+							 */
+							TypeAnnotation annot = null;
+							int minSize = Integer.MAX_VALUE;
+
+							for (TypeAnnotation a : found) {
+								int size = a.getEnd() - a.getBegin();
+								if (size < minSize) {
+									annot = a;
+									minSize = size;
 								}
-	
-								if (annot != null) {
-	
-									String doc = ocamlEditor.getDocumentProvider().getDocument(
-											ocamlEditor.getEditorInput()).get();
-									String expr = doc.substring(annot.getBegin(), annot.getEnd());
-									String[] lines = expr.split("\\n");
-									if (expr.length() < 50 && lines.length <= 6)
-										return (errorMessage + expr + ": " + annot.getType()).trim();
-									else if (lines.length > 6) {
-										int l = lines.length;
-	
-										return (errorMessage + lines[0] + "\n" + lines[1] + "\n" + lines[2]
-												+ "\n" + "..." + (l - 6) + " more lines...\n" + lines[l - 3]
-												+ "\n" + lines[l - 2] + "\n" + lines[l - 1] + "\n:" + annot
-												.getType()).trim();
-									} else
-										return (errorMessage + expr + "\n:" + annot.getType()).trim();
-								}
+							}
+
+							if (annot != null) {
+
+								String doc = ocamlEditor.getDocumentProvider().getDocument(
+										ocamlEditor.getEditorInput()).get();
+								String expr = doc.substring(annot.getBegin(), annot.getEnd());
+								String[] lines = expr.split("\\n");
+								if (expr.length() < 50 && lines.length <= 6)
+									return (errorMessage + expr + ": " + annot.getType()).trim();
+								else if (lines.length > 6) {
+									int l = lines.length;
+
+									return (errorMessage + lines[0] + "\n" + lines[1] + "\n"
+											+ lines[2] + "\n" + "..." + (l - 6)
+											+ " more lines...\n" + lines[l - 3] + "\n"
+											+ lines[l - 2] + "\n" + lines[l - 1] + "\n:" + annot
+											.getType()).trim();
+								} else
+									return (errorMessage + expr + "\n:" + annot.getType()).trim();
 							}
 						}
 					}
@@ -135,7 +134,8 @@ public class OcamlTextHover implements ITextHover {
 
 			return errorMessage.trim();
 			/*
-			 * if (!this.ocamlEditor.isDirty()) return this.ocamlEditor.getTypeInfoAt(hoverOffset).trim();
+			 * if (!this.ocamlEditor.isDirty()) return
+			 * this.ocamlEditor.getTypeInfoAt(hoverOffset).trim();
 			 */
 
 		} catch (Throwable e) {
@@ -230,15 +230,15 @@ public class OcamlTextHover implements ITextHover {
 
 						if (annot != null) {
 
-							String doc = editor.getDocumentProvider().getDocument(editor.getEditorInput())
-									.get();
-							
+							String doc = editor.getDocumentProvider().getDocument(
+									editor.getEditorInput()).get();
+
 							int begin = annot.getBegin();
 							int end = annot.getEnd();
-							
-							if(end >= doc.length())
+
+							if (end >= doc.length())
 								return "";
-							
+
 							String expr = doc.substring(begin, end);
 							String[] lines = expr.split("\\r?\\n");
 
@@ -247,7 +247,8 @@ public class OcamlTextHover implements ITextHover {
 								expr = expr + " " + line;
 
 							if (expr.length() > 30)
-								expr = expr.substring(0, 15) + "..." + expr.substring(expr.length() - 15, expr.length());
+								expr = expr.substring(0, 15) + "..."
+										+ expr.substring(expr.length() - 15, expr.length());
 
 							return (expr + ": " + annot.getType()).trim();
 						}

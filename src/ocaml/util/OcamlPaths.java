@@ -123,12 +123,18 @@ public class OcamlPaths {
 		String projectName = this.project.getName();
 
 		IFolder[] folders = Misc.getProjectFolders(this.project);
-		for (IFolder folder : folders) {
+		mainLoop: for (IFolder folder : folders) {
 			final String folderName = folder.getFullPath().lastSegment();
 			if (!folder.isLinked() && !folderName.equals(".settings")
 					&& Misc.getFolderProperty(folder, Misc.EXTERNAL_SOURCES_FOLDER).equals("")
 					&& !folderName.equals(OcamlBuilder.EXTERNALFILES) && !folderName.equals(Misc.HYPERLINKSDIR)) {
 				IPath path = folder.getFullPath();
+				
+				for(String segment:path.segments()){
+					if("_build".equals(segment))
+						continue mainLoop;
+				}
+				
 				// if the first segment is the project name, we remove it
 				if (path.segmentCount() > 0 && path.segment(0).equals(projectName))
 					paths.add(path.removeFirstSegments(1).toPortableString());

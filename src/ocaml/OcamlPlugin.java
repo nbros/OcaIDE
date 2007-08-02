@@ -271,6 +271,12 @@ public class OcamlPlugin extends AbstractUIPlugin {
 		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLDEBUG);
 	}
 
+	/** Returns ocamlbuild absolute path */
+	public static String getOcamlbuildFullPath() {
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_PATH_OCAMLBUILD);
+		
+	}
+
 	/** Returns camlp4 absolute path */
 	public static String getCamlp4FullPath() {
 		return instance.getPreferenceStore().getString(PreferenceConstants.P_PATH_CAMLP4);
@@ -464,6 +470,5 @@ public class OcamlPlugin extends AbstractUIPlugin {
 			debugger.kill();
 
 	}
-
 
 }

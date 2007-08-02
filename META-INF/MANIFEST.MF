@@ -14,7 +14,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.debug.ui,
  org.eclipse.ui.console,
- org.eclipse.help
+ org.eclipse.help,
+ org.eclipse.team.core
 Eclipse-LazyStart: true
 Bundle-ClassPath: lib/beaver-rt.jar,
  lib/JFlex.jar,

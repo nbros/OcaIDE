@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import ocaml.OcamlPlugin;
+import ocaml.util.Misc;
 import ocaml.views.toplevel.OcamlToplevelView;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -32,16 +34,15 @@ public class LoadInToplevelAction implements IObjectActionDelegate {
 
 	public void run(IAction action) {
 		for (IFile file : files) {
-			File objFile = null;
 
 			try {
-				objFile = file.getLocation().removeFileExtension().addFileExtension("cmo").toFile();
+				IPath filePath = file.getFullPath();
+				File cmoFile = Misc.getOtherFileFor(file.getProject(), filePath, ".cmo");
 
-				if (!objFile.exists()) {
-					objFile = file.getLocation().removeFileExtension().addFileExtension("cmx")
-							.toFile();
-
-					if (objFile.exists()) {
+				if (cmoFile == null || !cmoFile.exists()) {
+					File cmxFile = Misc.getOtherFileFor(file.getProject(), filePath, ".cmx");
+					
+					if (cmxFile != null && cmxFile.exists()) {
 						MessageDialog.openInformation(null, "Cannot load file", file.getName()
 								+ " is compiled in native mode.\n"
 								+ "To be loaded into the toplevel, "
@@ -56,18 +57,10 @@ public class LoadInToplevelAction implements IObjectActionDelegate {
 					continue;
 				}
 
-				if (!objFile.exists()) {
-					MessageDialog.openInformation(null, "Cannot load file", file.getName()
-							+ " doesn't have a corresponding cmo or cmx file.\n"
-							+ "Have you compiled it yet?");
-					continue;
-				}
-
-				
 				// use a double "\" on Windows
 				String separator = ((File.separatorChar == '\\') ? "\\\\" : File.separator); 
 				
-				Path path = new Path(objFile.getParent());
+				Path path = new Path(cmoFile.getParent());
 				path = (Path)path.makeAbsolute();
 				
 				String strPath = path.getDevice();
@@ -81,7 +74,7 @@ public class LoadInToplevelAction implements IObjectActionDelegate {
 				
 					
 				OcamlToplevelView.eval("#cd \"" + strPath + "\";;\n" + "#load \""
-						+ objFile.getName() + "\";;");
+						+ cmoFile.getName() + "\";;");
 
 			} catch (Exception e) {
 				OcamlPlugin.logError("ocaml plugin error", e);
