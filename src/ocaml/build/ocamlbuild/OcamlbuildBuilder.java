@@ -298,6 +298,12 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 					/* Put an "error" property on files that generated at least an error */
 					for (IFile f : problemMarkers.getFilesWithErrors())
 						Misc.setFileProperty(f, OcamlBuilder.COMPILATION_ERRORS, "true");
+					
+					
+					if(problemMarkers.errorsFound())
+						Misc.setProjectProperty(project, OcamlBuilder.COMPILATION_ERRORS, "true");
+					else
+						Misc.setProjectProperty(project, OcamlBuilder.COMPILATION_ERRORS, null);
 
 					Misc.updateDecoratorManager();
 
@@ -332,7 +338,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 		};
 
 		job.setPriority(Job.DECORATE);
-		job.schedule(500);
+		job.schedule(250);
 	}
 
 	/**

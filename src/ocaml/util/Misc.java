@@ -60,7 +60,7 @@ public class Misc {
 	 */
 	public static void updateDecoratorManager() {
 
-		Display.getDefault().syncExec(new Runnable() {
+		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 
 				IDecoratorManager decoratorManager = PlatformUI.getWorkbench()

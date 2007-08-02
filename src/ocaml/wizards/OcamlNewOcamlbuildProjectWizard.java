@@ -4,6 +4,7 @@ import java.net.URL;
 
 import ocaml.OcamlPlugin;
 import ocaml.natures.OcamlbuildNature;
+import ocaml.util.OcamlPaths;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -49,16 +50,8 @@ public class OcamlNewOcamlbuildProjectWizard extends BasicNewProjectResourceWiza
 			
 			project.setDefaultCharset("ISO-8859-1", null);
 			
-			/*OcamlPaths opaths = new OcamlPaths(project);
+			OcamlPaths opaths = new OcamlPaths(project);
 			opaths.restoreDefaults();
-			*/
-			
-			// Associate the default compilation flags list to the Builder
-			/*final List<String> defFlagsAsList = new ArrayList<String>(Misc.defaultProjectFlags.length);
-			for (String flg : Misc.defaultProjectFlags) {
-				defFlagsAsList.add(flg.trim());
-			}
-			OcamlBuilder.setResourceFlags(project, defFlagsAsList);*/
 			
 		} catch (Exception e) {
 			OcamlPlugin.logError("Error in OcamlNewOcamlbuildProjectWizard:performFinish()", e);
