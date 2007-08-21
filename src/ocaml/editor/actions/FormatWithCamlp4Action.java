@@ -42,6 +42,9 @@ public class FormatWithCamlp4Action implements IWorkbenchWindowActionDelegate {
 						return;
 					
 					IFile ifile = editor.getFileBeingEdited();
+					
+					if(ifile == null)
+						return;
 
 					/* Create a temporary file so that we don't have to save the editor */
 					File tempFile = null;

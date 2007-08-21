@@ -16,6 +16,8 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TextUtilities;
 
+//TODO: linked mode
+
 /**
  * Implements a set of automatic edit strategies. These "strategies" are rules for replacing strings by other
  * strings while typing, and we use them in particular to indent automatically while entering code.

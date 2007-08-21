@@ -10,7 +10,7 @@ public interface ILanguageWords {
 					"let", "lor"/*?*/, "lsl"/*?*/, "lsr"/*?*/, "lxor"/*?*/, "match", "method", "mod", "module",
 					"mutable", "new", "object", "of", "open", "or", "private", "rec", "sig",
 					"struct", "then", "to", "true", "try", "type", "val", "virtual", "when",
-					"while", "with" };
+					"while", "with"};
 
 	/*
 	 * String[] keywords = {"sig", "struct", "module", "type", "functor", "with", "and", "let",

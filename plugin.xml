@@ -679,6 +679,10 @@
 			<menu id="Ocaml_sourceMenu" label="Ocaml">
 				<separator name="slot1"/>
 			</menu>
+			<action class="ocaml.editor.actions.OpenIntfImplAction"
+				definitionId="Ocaml.openIntfImplCommand"
+				id="Ocaml_sourceActions_OpenIntfImpl" label="Open interface/implementation"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
 			<action class="ocaml.editor.actions.ConvertSpacesToTabsAction"
 				definitionId="Ocaml.spacesToTabsCommand"
 				id="Ocaml_sourceActions_SpacesToTabs" label="Convert spaces to tabs"
@@ -753,6 +757,8 @@
 		<command categoryId="Ocaml.commandscategory"
 			id="Ocaml.contextInformationCommand"
 			name="Show Tooltip Description"/>
+		<command categoryId="Ocaml.commandscategory" id="Ocaml.openIntfImplCommand"
+			name="Open interface/implementation"/>
 		<command categoryId="Ocaml.commandscategory"
 			id="Ocaml.contentAssistCommand" name="Content Assist"/>
 		<command categoryId="Ocaml.commandscategory" id="Ocaml.formatterCommand"
@@ -829,6 +835,10 @@
 			contextId="Ocaml.editor.context"
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
 			sequence="F6"/>
+		<key commandId="Ocaml.openIntfImplCommand"
+			contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="F7"/>
 	</extension>
 	<extension point="org.eclipse.ui.contexts">
 		<context description="Context for editing Ocaml source"

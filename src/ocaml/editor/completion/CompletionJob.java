@@ -76,9 +76,13 @@ public class CompletionJob extends Job {
 	 * normally includes the O'Caml standard library). This method is defined in class
 	 * CompletionJob, but it is not a job, it is executed in the same thread as the caller.
 	 * 
-	 * @param bUsingEditor use the editor to add opened modules to the definitions tree
+	 * @param bUsingEditor
+	 *            use the editor to add opened modules to the definitions tree
 	 */
 	public static Def buildDefinitionsTree(IProject project, boolean bUsingEditor) {
+		
+		// TODO: use a change listener instead of testing each file for modifications each time
+		
 		Def definitionsRoot = null;
 
 		/*
@@ -128,7 +132,7 @@ public class CompletionJob extends Job {
 					if (location != null)
 						dir = new File(location.toOSString());
 				} catch (Throwable e) {
-					OcamlPlugin.logError("Error trying relative path in completion job", e);
+					OcamlPlugin.logError("Error trying relative path in completion job: " + path, e);
 				}
 
 				// try with an absolute path
@@ -136,8 +140,9 @@ public class CompletionJob extends Job {
 					dir = new File(path);
 				}
 
-				if (!(dir.exists() && dir.isDirectory())){
-					OcamlPlugin.logError("Wrong path:" + dir.toString() + " (in project:" + project.getName() + ")");
+				if (!(dir.exists() && dir.isDirectory())) {
+					OcamlPlugin.logError("Wrong path:" + dir.toString() + " (in project:"
+							+ project.getName() + ")");
 					continue;
 				}
 
@@ -154,7 +159,7 @@ public class CompletionJob extends Job {
 				for (String mlmlifile : files) {
 					File file = new File(dir.getAbsolutePath() + File.separatorChar + mlmlifile);
 					Def def = parser.parseFile(file);
-					if(def != null)
+					if (def != null)
 						definitionsRoot.children.add(def);
 				}
 			}
@@ -171,18 +176,23 @@ public class CompletionJob extends Job {
 					if (editorPart instanceof OcamlEditor) {
 						OcamlEditor editor = (OcamlEditor) editorPart;
 
-						String file = editor.getFileBeingEdited().getName();
-						String moduleName = null;
-						if (file.endsWith(".ml")) {
-							// remove the file extension and change the first character to uppercase
-							moduleName = "" + Character.toUpperCase(file.charAt(0))
-									+ file.substring(1, file.length() - 3);
-						}
+						IFile ifile = editor.getFileBeingEdited();
+						if (ifile != null) {
 
-						// get the text of the document currently opened in the editor
-						String doc = editor.getDocumentProvider().getDocument(
-								editor.getEditorInput()).get();
-						openModules = findOpenModules(doc, moduleName);
+							String file = ifile.getName();
+							String moduleName = null;
+							if (file.endsWith(".ml")) {
+								// remove the file extension and change the first character to
+								// uppercase
+								moduleName = "" + Character.toUpperCase(file.charAt(0))
+										+ file.substring(1, file.length() - 3);
+							}
+
+							// get the text of the document currently opened in the editor
+							String doc = editor.getDocumentProvider().getDocument(
+									editor.getEditorInput()).get();
+							openModules = findOpenModules(doc, moduleName);
+						}
 					}
 				} catch (Exception e) {
 					OcamlPlugin.logError("ocaml plugin error", e);
@@ -215,6 +225,11 @@ public class CompletionJob extends Job {
 		return definitionsRoot;
 	}
 
+	/**
+	 * Keep all the mli files in the list and the ml files when there is no corresponding mli
+	 * 
+	 * @return the mli files and the ml files which don't have a corresponding mli file
+	 */
 	private static String[] filterInterfaces(String[] mlmliFiles) {
 		ArrayList<String> listFiles = new ArrayList<String>();
 
@@ -268,7 +283,7 @@ public class CompletionJob extends Job {
 			OcamlNewInterfaceParser parser = OcamlNewInterfaceParser.getInstance();
 
 			// get all the mli files from the directory
-			String[] mliFiles = null;
+			String[] mlmliFiles = null;
 
 			// no project => parse O'Caml library files
 			if (this.project == null) {
@@ -278,37 +293,40 @@ public class CompletionJob extends Job {
 					return Status.CANCEL_STATUS;
 				}
 
-				mliFiles = filterInterfaces(dir.list(mlmliFilter));
-				for (int i = 0; i < mliFiles.length; i++)
-					mliFiles[i] = dir.getAbsolutePath() + File.separatorChar + mliFiles[i];
+				mlmliFiles = filterInterfaces(dir.list(mlmliFilter));
+				for (int i = 0; i < mlmliFiles.length; i++)
+					mlmliFiles[i] = dir.getAbsolutePath() + File.separatorChar + mlmliFiles[i];
 
 			} else {
-				IFile[] projectMliFiles = Misc.getMliFiles(project);
+				IFile[] projectFiles = Misc.getProjectFiles(project);
+
 				ArrayList<String> strFiles = new ArrayList<String>();
-				for (IFile file : projectMliFiles) {
+				for (IFile file : projectFiles) {
 					IPath path = file.getLocation();
-					if (path != null)
+					String ext = file.getFileExtension();
+					if (path != null && ("ml".equals(ext) || "mli".equals(ext)))
 						strFiles.add(path.toOSString());
 				}
 
-				mliFiles = strFiles.toArray(new String[0]);
+				mlmliFiles = strFiles.toArray(new String[0]);
+				mlmliFiles = filterInterfaces(mlmliFiles);
 			}
 
-			if (mliFiles == null)
+			if (mlmliFiles == null)
 				return Status.CANCEL_STATUS;
 
-			monitor.beginTask("Parsing mli files", mliFiles.length);
+			monitor.beginTask("Parsing mli files", mlmliFiles.length);
 
 			Thread.yield();
 
-			// for each mli file
-			for (String mliFile : mliFiles) {
+			// for each ml or mli file
+			for (String mlmliFile : mlmliFiles) {
 				if (monitor.isCanceled())
 					return Status.CANCEL_STATUS;
 
-				monitor.subTask(mliFile);
+				monitor.subTask(mlmliFile);
 
-				File file = new File(mliFile);
+				File file = new File(mlmliFile);
 				parser.parseFile(file);
 
 				// for(int i = 0; i < 1000000000; i++);

@@ -30,6 +30,8 @@ public final class SimpleWordRule implements IRule {
 		for (String k : keywords)
 			this.words.add(k);
 	}
+	
+	private final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890'";
 
 	/** Return the first token that matches on the input */
 	public IToken evaluate(ICharacterScanner scanner) {
@@ -45,14 +47,14 @@ public final class SimpleWordRule implements IRule {
 		 * the character before the word musn't be an identifier part, or else we are not at the
 		 * beginning of a word
 		 */
-		if (ch <= 0 || !Character.isJavaIdentifierPart((char) ch)) {
+		if (ch <= 0 || !chars.contains(""+(char) ch)) {
 			ch = scanner.read();
-			if (Character.isJavaIdentifierStart((char) ch)) {
+			if (chars.contains(""+(char) ch)) {
 				this.stringBuffer.setLength(0);
 				this.stringBuffer.append((char) ch);
 				for (;;) {
 					ch = scanner.read();
-					if (ch == ICharacterScanner.EOF || !Character.isJavaIdentifierPart((char) ch))
+					if (ch == ICharacterScanner.EOF || !chars.contains(""+(char) ch))
 						break;
 					this.stringBuffer.append((char) ch);
 				}

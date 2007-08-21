@@ -486,13 +486,18 @@ public class Def extends beaver.Symbol {
 	private static String clean(String str) {
 		if (str == null)
 			return "";
+		
 		// remove all redundant spaces
-		str = str.trim().replaceAll("( |\\t)( |\\t)+", " ");
-		// remove the heading space
-		str = str.replaceAll("\\n ", "\n");
-		// remove empty lines
-		str = str.replaceAll("\\n\\s*\\n", "\n");
-		return str;
+		String[] lines = str.split("\\n");
+		StringBuilder stringBuilder = new StringBuilder();
+
+		for (String line : lines) {
+			line = line.trim().replaceAll("( |\\t)( |\\t)+", " ").trim();
+			if (!"".equals(line))
+				stringBuilder.append(line + " ");
+		}
+
+		return stringBuilder.toString().trim();
 	}
 
 	public String body = "";

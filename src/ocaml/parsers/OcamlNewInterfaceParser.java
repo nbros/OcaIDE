@@ -12,6 +12,12 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.text.Document;
+
 import ocaml.OcamlPlugin;
 import ocaml.parser.Def;
 import ocaml.parser.OcamlParser;
@@ -68,19 +74,19 @@ public class OcamlNewInterfaceParser {
 	 * We use a File instead of an IFile because the file can be out of the workspace (O'Caml
 	 * library files, typically)
 	 * 
-	 * @param interfaceFile
-	 *            the interface file to parse
+	 * @param file
+	 *            the file to parse (interface or module)
 	 * @param bInProject
 	 *            This file is it part of the project? (this is used to put a different icon on
 	 *            project modules and standard library modules)
 	 * 
 	 * @return The module definition or <code>null</code> if the file can't be read
 	 */
-	public synchronized Def parseFile(File interfaceFile) {
+	public synchronized Def parseFile(final File file) {
 
 		String filename = "";
 		try {
-			filename = interfaceFile.getCanonicalPath();
+			filename = file.getCanonicalPath();
 		} catch (IOException e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
 			return null;
@@ -96,9 +102,9 @@ public class OcamlNewInterfaceParser {
 		// First, see if the informations are in the cache
 		for (SoftReference<CachedDef> ref : cache) {
 			CachedDef def = ref.get();
-			if (def != null && def.sameAs(interfaceFile)) {
+			if (def != null && def.sameAs(file)) {
 				// The entry is in the cache, and is still valid
-				if (def.isMoreRecentThan(interfaceFile))
+				if (def.isMoreRecentThan(file))
 					found = def.getDefinition();
 				/*
 				 * The cache entry is not valid anymore: we put it in the list of entries to delete
@@ -108,14 +114,14 @@ public class OcamlNewInterfaceParser {
 					toRemove.add(def);
 				}
 			}
-
-			def = null;
+			
+			if(def == null)
+				System.err.println("softref lost!!!");
 		}
 
 		// remove the stale entries from the cache
 		for (CachedDef def : toRemove) {
 			cache.remove(def);
-			def = null;
 		}
 
 		// return the cache entry (if we found one)
@@ -124,12 +130,12 @@ public class OcamlNewInterfaceParser {
 
 		}
 
-		if (!interfaceFile.canRead())
+		if (!file.canRead())
 			return null;
 		final BufferedReader inputStream;
 
 		try {
-			inputStream = new BufferedReader(new FileReader(interfaceFile));
+			inputStream = new BufferedReader(new FileReader(file));
 		} catch (FileNotFoundException e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
 			return null;
@@ -149,10 +155,11 @@ public class OcamlNewInterfaceParser {
 		}
 
 		String lines = sbLines.toString();
+		String unprocessedLines = lines;
 
 		boolean bInterface = false;
 
-		String moduleName = interfaceFile.getName();
+		String moduleName = file.getName();
 		// remove the extension
 		if (moduleName.endsWith(".mli")) {
 			bInterface = true;
@@ -168,10 +175,45 @@ public class OcamlNewInterfaceParser {
 		if (moduleName.length() > 0)
 			moduleName = Character.toUpperCase(moduleName.charAt(0)) + moduleName.substring(1);
 
+		final Camlp4Preprocessor preprocessor = new Camlp4Preprocessor(lines);
+		if (preprocessor.mustPreprocess()) {
+			// preprocess the file with camlp4
+			Job job = new Job("preprocessing " + file.getName()) {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					preprocessor.preprocess(file, monitor);
+					return Status.OK_STATUS;
+				}
+			};
+			
+			job.schedule();
+			try {
+				job.join();
+			} catch (InterruptedException e) {
+				OcamlPlugin.logError("interrupted", e);
+			}
+			
+
+			String errors = preprocessor.getErrorOutput().trim();
+			if (!"".equals(errors)) {
+				Def def = new Def(moduleName, Def.Type.ParserError, 0, 0);
+				def.filename = filename;
+
+				def.setComment("ERROR: The camlp4 preprocessor encountered an error "
+						+ "while parsing this file:\n" + errors);
+
+				cache.addFirst(new SoftReference<CachedDef>(new CachedDef(file, def)));
+				return def;
+			}
+
+			lines = preprocessor.getOutput();
+
+		}
+
 		Def definition = null;
 		// parse the .mli interface file or the .ml module file
 		try {
-			//System.err.println("parsing:" + filename);
+			// System.err.println("parsing:" + filename);
 			definition = parseModule(lines, moduleName, bInterface);
 		} catch (Throwable e) {
 			// if there was a parsing error, we log it and we continue on to the next file
@@ -181,19 +223,35 @@ public class OcamlNewInterfaceParser {
 
 			def.setComment("ERROR: The parser encountered an error while parsing this file.\n\n"
 					+ "Please make sure that it is syntactically correct.\n\n");
-			
-			//System.err.println("ERROR:" + filename);
 
-			cache.addFirst(new SoftReference<CachedDef>(new CachedDef(interfaceFile, def)));
+			// System.err.println("ERROR:" + filename);
+
+			cache.addFirst(new SoftReference<CachedDef>(new CachedDef(file, def)));
 			return def;
 		}
 
 		definition.setBody("module " + moduleName);
 
+		/*
+		 * The source was preprocessed by camlp4: update the identifiers locations using the 'loc'
+		 * comments leaved by camlp4
+		 */
+		if (preprocessor.mustPreprocess()) {
+			// System.err.println("associate locations");
+
+			Document document = new Document(lines);
+			Document oldDocument = new Document(unprocessedLines);
+			ArrayList<Camlp4Preprocessor.Camlp4Location> camlp4Locations = preprocessor
+					.parseCamlp4Locations(oldDocument, document);
+
+			preprocessor.associateCamlp4Locations(oldDocument, unprocessedLines, document,
+					camlp4Locations, definition, null);
+		}
+
 		setFilenames(definition, filename);
 
 		// put the entry into the cache
-		cache.addFirst(new SoftReference<CachedDef>(new CachedDef(interfaceFile, definition)));
+		cache.addFirst(new SoftReference<CachedDef>(new CachedDef(file, definition)));
 
 		// definition.print(0);
 		/*
@@ -210,6 +268,7 @@ public class OcamlNewInterfaceParser {
 	}
 
 	private Def parseModule(String doc, String moduleName, boolean parseInterface) throws Throwable {
+
 		/*
 		 * "Sanitize" the document by replacing extended characters, which otherwise would crash the
 		 * parser
@@ -234,7 +293,7 @@ public class OcamlNewInterfaceParser {
 			root = (Def) parser.parse(scanner, OcamlParser.AltGoals.interfaces);
 		else
 			root = (Def) parser.parse(scanner);
-		
+
 		root = root.cleanCopy();
 
 		root.name = moduleName;
@@ -253,20 +312,17 @@ public class OcamlNewInterfaceParser {
 
 			attachComments(root, root, doc);
 
-			
 		}
-		
+
 		setBodies(root, doc, parseInterface);
 
 		root.unnestTypes(null, 0);
 
-		
-		if(parser.errorReporting.errors.size() != 0){
+		if (parser.errorReporting.errors.size() != 0) {
 			root.type = Def.Type.ParserError;
 			root.setComment("ERROR: The parser encountered an error while parsing this file.\n\n"
 					+ "Please make sure that it is syntactically correct.\n\n");
-		}
-		else
+		} else
 			root.type = Def.Type.Module;
 
 		// associate the module comment
@@ -278,16 +334,15 @@ public class OcamlNewInterfaceParser {
 
 	private void setBodies(Def def, String doc, boolean parseInterface) {
 		if (def.type != Def.Type.Root) {
-			if(parseInterface)
+			if (parseInterface)
 				def.setBody(doc.substring(def.defOffsetStart, def.defOffsetEnd));
-			else{
+			else {
 				def.setBody(def.name);
 			}
 		}
 
 		for (Def child : def.children)
 			setBodies(child, doc, parseInterface);
-
 	}
 
 	ArrayList<Integer> lineOffsets = null;

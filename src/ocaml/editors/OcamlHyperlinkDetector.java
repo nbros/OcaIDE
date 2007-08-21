@@ -13,6 +13,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.IDocument;
@@ -24,6 +26,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
+
+// TODO: refactor hyperlinks : find and number all variable references
 
 /**
  * Creates hyper-links that allow the user to jump in the editor to the definition of the clicked
@@ -47,22 +51,28 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 	public IHyperlink[] detectHyperlinks(final ITextViewer textViewer, final IRegion region,
 			boolean canShowMultipleHyperlinks) {
-		
+
+		IProject project = editor.getProject();
+		if (project == null)
+			return null;
+
 		// get the definitions from the current module
 		final Def modulesDefinitionsRoot = editor.getDefinitionsTree();
 		/*
 		 * get the definitions from all the mli files in the project paths (which should include the
 		 * ocaml standard library)
 		 */
-		final Def interfacesDefinitionsRoot = CompletionJob.buildDefinitionsTree(editor
-				.getProject(), false);
+		 //long before = System.currentTimeMillis();
+		final Def interfacesDefinitionsRoot = CompletionJob.buildDefinitionsTree(project, false);
+		 //long after = System.currentTimeMillis();
+		 //System.err.println("parsing for hyperlinks: " + (after - before) + " ms");
 
 		long time = System.currentTimeMillis();
 
 		/* Find which definition in the tree is at the hovered offset */
 		final Def searchedDef = (time - lastTime < 1000 && lastOffset == region.getOffset() && lastDef != null) ? lastDef
 				: findIdentAt(modulesDefinitionsRoot, region.getOffset(), textViewer.getDocument());
-		
+
 		lastTime = time;
 
 		lastOffset = region.getOffset();
@@ -255,7 +265,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				bAnd = false;
 			if (!before.bAnd)
 				bStopAndAtNext = true;
-			
+
 			// if it is an "open" node, look inside the interface of this module
 			if (before.type == Def.Type.Open || before.type == Def.Type.Include) {
 				String[] path = new String[fullpath.length + 1];
@@ -288,23 +298,47 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 				// open the file containing the definition
 				IProject project = editor.getProject();
-
-				IPath location = new Path(filename);
-
-				IFolder folder = project.getFolder(Misc.HYPERLINKSDIR);
-				if (!folder.exists())
-					folder.create(true, true, null);
-
-				IFile file = folder.getFile(location.lastSegment());
-				// if (file.exists())
-				// file.delete(true, null);
-				file.createLink(location, IResource.REPLACE, null);
+				if (project == null)
+					return false;
 
 				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 						.getActivePage();
+
 				if (page != null) {
-					IEditorPart part = page.openEditor(new FileEditorInput(file),
-							OcamlEditor.ML_EDITOR_ID, true);
+					IPath location = new Path(filename);
+
+					IWorkspace ws = ResourcesPlugin.getWorkspace();
+					IPath workspaceLocation = ws.getRoot().getLocation();
+
+					IEditorPart part = null;
+					IFile file = null;
+
+					// if the file is in the workspace, don't use a hyperlink
+					if (workspaceLocation.isPrefixOf(location)) {
+						location = location.removeFirstSegments(workspaceLocation.segmentCount());
+						IResource resource = ws.getRoot().findMember(location);
+						if (resource instanceof IFile) {
+							file = (IFile) resource;
+						}
+					}
+
+					if (file == null) {
+						IFolder folder = project.getFolder(Misc.HYPERLINKSDIR);
+						if (!folder.exists())
+							folder.create(true, true, null);
+
+						file = folder.getFile(location.lastSegment());
+						file.createLink(location, IResource.REPLACE, null);
+					}
+
+					if (file != null) {
+						if (file.getName().endsWith(".mli"))
+							part = page.openEditor(new FileEditorInput(file),
+									OcamlEditor.MLI_EDITOR_ID, true);
+						else
+							part = page.openEditor(new FileEditorInput(file),
+									OcamlEditor.ML_EDITOR_ID, true);
+					}
 
 					if (part instanceof OcamlEditor) {
 						final OcamlEditor editor = (OcamlEditor) part;
@@ -315,7 +349,9 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 							IRegion region = interfaceDef.getRegion(textViewer.getDocument());
 							editor.selectAndReveal(region.getOffset(), region.getLength());
 						}
-					}
+					}else
+						return false;
+					
 					return true;
 				}
 			} catch (Throwable e) {
@@ -377,18 +413,18 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 					return null;
 				if (node.bRec)
 					return node;
-				else if(!searchedNode.bInIn){
+				else if (!searchedNode.bInIn) {
 					// see if there is an 'in' on the branch from this node to its parent
 					Def d = searchedNode;
 					boolean inin = false;
-					while(d.parent != null && d != node){
-						if(d.type == Def.Type.In){
+					while (d.parent != null && d != node) {
+						if (d.type == Def.Type.In) {
 							inin = true;
 							break;
 						}
-						d = d.parent; 
+						d = d.parent;
 					}
-					if(!inin)
+					if (!inin)
 						return null;
 				}
 				return node;
@@ -439,14 +475,15 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			return null;
 
 		IRegion region = def.getRegion(doc);
-		
-		if(region == null)
+
+		if (region == null)
 			return null;
 
 		int startOffset = region.getOffset();
 		int endOffset = startOffset + region.getLength() - 1;
 
-		if (startOffset <= offset && endOffset >= offset
+		if (startOffset <= offset
+				&& endOffset >= offset
 				&& (def.type == Def.Type.Identifier || def.type == Def.Type.Open || def.type == Def.Type.Include))
 			return def;
 
@@ -486,6 +523,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 					String searchedName = fragments[0];
 
 					IProject project = editor.getProject();
+					if (project == null)
+						return;
 
 					OcamlPaths opaths = new OcamlPaths(project);
 
@@ -498,6 +537,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 						if (!dir.exists())
 							dir = new File(path);
 
+						// TODO: ml files too when there is no mli
 						File[] mliFiles = dir.listFiles(new FilenameFilter() {
 							public boolean accept(File dir, String name) {
 								return name.endsWith(".mli");
@@ -514,9 +554,30 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 										+ moduleName.substring(1);
 
 								if (moduleName.equals(searchedName)) {
-									// create a link to the file in the workspace
+									IWorkbenchPage page = PlatformUI.getWorkbench()
+											.getActiveWorkbenchWindow().getActivePage();
 
+									if (page == null)
+										return;
+
+									// create a link to the file in the workspace
 									IPath location = new Path(mliFile.getAbsolutePath());
+
+									IWorkspace ws = ResourcesPlugin.getWorkspace();
+									IPath workspaceLocation = ws.getRoot().getLocation();
+
+									// if the file is in the workspace, don't use a hyperlink
+									if (workspaceLocation.isPrefixOf(location)) {
+										location = location.removeFirstSegments(workspaceLocation
+												.segmentCount());
+										IResource resource = ws.getRoot().findMember(location);
+										if (resource instanceof IFile) {
+											IFile file = (IFile) resource;
+											page.openEditor(new FileEditorInput(file),
+													OcamlEditor.MLI_EDITOR_ID, true);
+											return;
+										}
+									}
 
 									IFolder folder = project.getFolder(".HyperlinksLinkedFiles");
 									if (!folder.exists())
@@ -526,12 +587,10 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 									ifile.createLink(location, IResource.REPLACE, null);
 
 									// open an editor on the file
-									IWorkbenchPage page = PlatformUI.getWorkbench()
-											.getActiveWorkbenchWindow().getActivePage();
 									if (page != null) {
 										/* IEditorPart part = */page.openEditor(
 												new FileEditorInput(ifile),
-												OcamlEditor.ML_EDITOR_ID, true);
+												OcamlEditor.MLI_EDITOR_ID, true);
 									}
 
 									return;

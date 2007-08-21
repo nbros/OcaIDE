@@ -19,7 +19,7 @@ public class PunctuationRule  implements IRule {
 
 		int ch = scanner.read();
 		
-		if("()[]{}<>&~#|\\_^@=$%,;:?!+-*/`".contains(""+((char)ch)))
+		if("()[]{}<>&~#|\\^@=$%,;:?!+-*/`".contains(""+((char)ch)))
 			return this.token;
 		
 		// put back the unmatched character

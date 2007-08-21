@@ -30,7 +30,7 @@ public class StreamGobbler extends Thread {
 				while ((line = bufferedReader.readLine()) != null) {
 					this.result.append(line + "\n");
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			ocaml.OcamlPlugin.logError("error in StreamGobbler:fillReturnBuffer", e);
 		}
 	}

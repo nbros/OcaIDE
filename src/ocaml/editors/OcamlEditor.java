@@ -12,6 +12,7 @@ import ocaml.views.outline.OcamlOutlineControl;
 import ocaml.views.outline.OutlineJob;
 import ocaml.views.outline.SynchronizeOutlineJob;
 
+import org.eclipse.core.internal.resources.File;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -40,6 +41,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
@@ -66,6 +68,7 @@ public class OcamlEditor extends TextEditor {
 	private SynchronizeOutlineJob synchronizeOutlineJob = null;
 
 	public static final String ML_EDITOR_ID = "ocaml.editors.mlEditor";
+	public static final String MLI_EDITOR_ID = "ocaml.editors.mliEditor";
 
 	public OcamlEditor() {
 		this.setSourceViewerConfiguration(new OcamlSourceViewerConfig(this));
@@ -146,11 +149,21 @@ public class OcamlEditor extends TextEditor {
 
 	@Override
 	public void doSetInput(IEditorInput input) throws CoreException {
-		super.doSetInput(input);
-		rebuildOutline(100);
+		// TODO: this.outline is null here
 
+		super.doSetInput(input);
+
+		if (this.outline != null) {
+			rebuildOutline(100);
+		}
+
+		IProject project = this.getProject();
+		if(project == null)
+			return;
+
+		
 		// parse the project interfaces in a background thread
-		CompletionJob job = new CompletionJob("Parsing ocaml project mli files", this.getProject());
+		CompletionJob job = new CompletionJob("Parsing ocaml project mli files", project);
 		job.setPriority(CompletionJob.DECORATE);
 		job.schedule();
 
@@ -171,8 +184,10 @@ public class OcamlEditor extends TextEditor {
 	 */
 	@Override
 	public Object getAdapter(Class required) {
-		if (IContentOutlinePage.class.equals(required)) {
-			if ("mlp".equals(this.getFileBeingEdited().getFileExtension())
+		IFile file = this.getFileBeingEdited();
+
+		if (file != null && IContentOutlinePage.class.equals(required)) {
+			if ("mlp".equals(file.getFileExtension())
 					|| "ml4".equals(this.getFileBeingEdited().getFileExtension()))
 				return null;
 
@@ -245,11 +260,16 @@ public class OcamlEditor extends TextEditor {
 	}
 
 	public IProject getProject() {
-		FileEditorInput editorInput = (FileEditorInput) this.getEditorInput();
-		if (editorInput == null || editorInput.getFile() == null) {
-			return null;
+		IEditorInput editorInput = this.getEditorInput();
+
+		if (editorInput instanceof FileEditorInput) {
+			FileEditorInput fileEditorInput = (FileEditorInput) editorInput;
+			IFile file = fileEditorInput.getFile();
+			if (file != null)
+				return file.getProject();
 		}
-		return editorInput.getFile().getProject();
+
+		return null;
 	}
 
 	public IFile getFile(String filename) {
@@ -260,16 +280,20 @@ public class OcamlEditor extends TextEditor {
 	}
 
 	public IFile getFileBeingEdited() {
-		FileEditorInput editorInput = (FileEditorInput) this.getEditorInput();
-		if (editorInput == null || editorInput.getFile() == null) {
-			return null;
+		IEditorInput editorInput = this.getEditorInput();
+
+		if (editorInput instanceof FileEditorInput) {
+			FileEditorInput fileEditorInput = (FileEditorInput) editorInput;
+			return fileEditorInput.getFile();
 		}
-		return editorInput.getFile();
+
+		return null;
 	}
 
-	/*public String getAnnotFileName(String filename) {
-		return filename.substring(0, filename.lastIndexOf(".")) + ".annot";
-	}*/
+	/*
+	 * public String getAnnotFileName(String filename) { return filename.substring(0,
+	 * filename.lastIndexOf(".")) + ".annot"; }
+	 */
 
 	public String getFullPathFileName(String filename) {
 		// String workspaceDir = "";
@@ -294,7 +318,9 @@ public class OcamlEditor extends TextEditor {
 
 		boolean bMakefileNature = false;
 		try {
-			bMakefileNature = this.getProject().getNature(OcamlNatureMakefile.ID) != null;
+			IProject project = this.getProject();
+			if (project != null)
+				bMakefileNature = project.getNature(OcamlNatureMakefile.ID) != null;
 		} catch (CoreException e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
 		}
@@ -326,15 +352,19 @@ public class OcamlEditor extends TextEditor {
 	 */
 
 	public void rebuildOutline(int delay) {
-
+		
+		// invalidate previous definitions
+		this.codeDefinitionsTree = null;
+		this.codeOutlineDefinitionsTree = null;
+		
 		IEditorInput input = this.getEditorInput();
 		IDocument document = this.getDocumentProvider().getDocument(input);
 		// String doc = document.get();
 
 		if (outlineJob == null)
 			outlineJob = new OutlineJob("Rebuilding outline");
-		else if (outlineJob.getState() == OutlineJob.RUNNING)
-			return;
+		// else if (outlineJob.getState() == OutlineJob.RUNNING)
+		// return;
 		// only one Job at a time
 		else
 			outlineJob.cancel();

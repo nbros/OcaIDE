@@ -40,8 +40,8 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 
 	/** Whether to always fully expand the outline */
 	private boolean expandAll;
-	
-	public static final boolean bOutlineDebugButton = false;
+
+	public static final boolean bOutlineDebugButton = true;
 
 	/**
 	 * Creates a content outline page using the given provider and the given editor.
@@ -50,34 +50,38 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 		super();
 		this.editor = editor;
 	}
-	
+
 	@Override
 	public void init(IPageSite pageSite) {
 		super.init(pageSite);
 
-		
-		/* Create an action in the outline toolbar to switch between "expand all" mode and normal mode */
+		/*
+		 * Create an action in the outline toolbar to switch between "expand all" mode and normal
+		 * mode
+		 */
 		IToolBarManager toolBarManager = pageSite.getActionBars().getToolBarManager();
-		
-		ImageDescriptor iconExpandAll = ImageRepository.getImageDescriptor(ImageRepository.ICON_EXPAND_ALL);
-		
+
+		ImageDescriptor iconExpandAll = ImageRepository
+				.getImageDescriptor(ImageRepository.ICON_EXPAND_ALL);
+
 		final OcamlOutlineControl outline = this;
-		Action actionExpandAll = new BooleanPropertyAction("Expand All", OcamlPlugin.getInstance().getPreferenceStore(), PreferenceConstants.P_OUTLINE_EXPAND_ALL){
+		Action actionExpandAll = new BooleanPropertyAction("Expand All", OcamlPlugin.getInstance()
+				.getPreferenceStore(), PreferenceConstants.P_OUTLINE_EXPAND_ALL) {
 			@Override
 			public void run() {
 				super.run();
 				outline.update();
 			}
 		};
-		
-		actionExpandAll.setImageDescriptor(iconExpandAll);
-		
-		toolBarManager.add(actionExpandAll);
-		
 
-		if(bOutlineDebugButton){
+		actionExpandAll.setImageDescriptor(iconExpandAll);
+
+		toolBarManager.add(actionExpandAll);
+
+		if (bOutlineDebugButton) {
 			/* Create an action in the outline toolbar to switch between debug mode and normal mode */
-			Action actionDebug = new BooleanPropertyAction("Debug", OcamlPlugin.getInstance().getPreferenceStore(), PreferenceConstants.P_OUTLINE_DEBUG_MODE){
+			Action actionDebug = new BooleanPropertyAction("Debug", OcamlPlugin.getInstance()
+					.getPreferenceStore(), PreferenceConstants.P_OUTLINE_DEBUG_MODE) {
 				@Override
 				public void run() {
 					super.run();
@@ -88,14 +92,15 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 			toolBarManager.add(actionDebug);
 		}
 	}
-	
+
 	/** Install the content provider and label provider */
 	@Override
 	public void createControl(Composite parent) {
 		super.createControl(parent);
 		TreeViewer viewer = this.getTreeViewer();
 		viewer.setContentProvider(new OcamlOutlineContentProvider());
-		viewer.setLabelProvider(new OcamlOutlineDecoratingLabelProvider(new OcamlOutlineLabelProvider(), null));
+		viewer.setLabelProvider(new OcamlOutlineDecoratingLabelProvider(
+				new OcamlOutlineLabelProvider(), null));
 		viewer.addSelectionChangedListener(this);
 		if (this.input != null)
 			viewer.setInput(this.input);
@@ -105,6 +110,11 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 	@Override
 	public void selectionChanged(SelectionChangedEvent event) {
 		super.selectionChanged(event);
+		
+		// the outline is being rebuilt
+		if(editor.getDefinitionsTree() == null)
+			return;
+
 		ISelection selection = event.getSelection();
 		if (!selection.isEmpty()) {
 			IStructuredSelection sel = ((IStructuredSelection) selection);
@@ -112,38 +122,40 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 			if (element instanceof Def) {
 				Def def = (Def) element;
 
-				OcamlEditor editor = ((OcamlEditor) this.editor);
-				IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+				
+				IDocument document = editor.getDocumentProvider().getDocument(
+						editor.getEditorInput());
 
 				IRegion region = def.getRegion(document);
-				
+
 				if (region != null) {
 					ISelection editorSel = editor.getSelectionProvider().getSelection();
 					if (editorSel instanceof TextSelection) {
 						TextSelection editorSelection = (TextSelection) editorSel;
 
 						int offset = editorSelection.getOffset();
-						
-						
-						
+
 						/*
-						 * If the editor is already at the right offset, we do nothing. Otherwise, we would
-						 * enter an infinite loop, because the editor changes selection in the outline every
-						 * time its position changes, and the outline changes the selection in the editor every time
-						 * its selection changes.
+						 * If the editor is already at the right offset, we do nothing. Otherwise,
+						 * we would enter an infinite loop, because the editor changes selection in
+						 * the outline every time its position changes, and the outline changes the
+						 * selection in the editor every time its selection changes.
 						 */
-						if(offset < region.getOffset() || offset > region.getOffset() + region.getLength())
+						if (offset < region.getOffset()
+								|| offset > region.getOffset() + region.getLength())
 							editor.selectAndReveal(region.getOffset(), region.getLength());
-						
+
 						// XXX DEBUG
-						//if(offset < region.getOffset() || offset > region.getOffset() + region.getLength())
-						
-						//IRegion region2 = def.getFullRegion(document);
-						//if(def.defPosStart != 0)
-						//editor.selectAndReveal(def.defOffsetStart, def.defOffsetEnd - def.defOffsetStart);
-						//System.err.println("-*-*-*-*-*\n" + def.comment);
-						//System.err.println("-+-+-+-+\n" + def.sectionComment);
-						//editor.selectAndReveal(def.defOffsetStart, 1);
+						// if(offset < region.getOffset() || offset > region.getOffset() +
+						// region.getLength())
+
+						// IRegion region2 = def.getFullRegion(document);
+						// if(def.defPosStart != 0)
+						// editor.selectAndReveal(def.defOffsetStart, def.defOffsetEnd -
+						// def.defOffsetStart);
+						// System.err.println("-*-*-*-*-*\n" + def.comment);
+						// System.err.println("-+-+-+-+\n" + def.sectionComment);
+						// editor.selectAndReveal(def.defOffsetStart, 1);
 					}
 				}
 			}
@@ -158,6 +170,9 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 
 	/** Update the outline */
 	public void update() {
+		if(editor.getDefinitionsTree() == null)
+			return;
+		
 		TreeViewer viewer = this.getTreeViewer();
 		if (viewer != null) {
 			Tree tree = (Tree) viewer.getControl();
@@ -165,9 +180,9 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 				// to avoid flicker
 				tree.setRedraw(false);
 				viewer.setInput(this.input);
-				
+
 				lookPreferences();
-				if(expandAll)
+				if (expandAll)
 					viewer.expandAll();
 				else
 					expandChosenElements(viewer);
@@ -177,10 +192,13 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 	}
 
 	/**
-	 * Select the node in the tree which corresponds to the line and column selected in the editor (it it
-	 * exists)
+	 * Select the node in the tree which corresponds to the line and column selected in the editor
+	 * (if it exists)
 	 */
 	public void synchronizeWithEditor(int line, int column) {
+		if(editor.getDefinitionsTree() == null)
+			return;
+
 		TreeViewer viewer = this.getTreeViewer();
 		if (viewer != null) {
 			if (this.input instanceof Def) {
@@ -188,49 +206,55 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 
 				Def element = findElementAt(def, line, column);
 				if (element != null) {
-					/*
-					 * We don't want to be notified of a selection change in the outline when we collapse all.
-					 * This caused a bug on Windows which created an infinite loop.
-					 */
-					viewer.removeSelectionChangedListener(this);
-					
 					lookPreferences();
-					if(expandAll)
-						viewer.expandAll();
-					else{
-						viewer.collapseAll();
-						expandChosenElements(viewer);
+
+					Tree tree = (Tree) viewer.getControl();
+					if (tree != null && !tree.isDisposed()) {
+						/*
+						 * We don't want to be notified of a selection change in the outline when we
+						 * collapse all. This caused a bug on Windows which created an infinite loop.
+						 */
+						viewer.removeSelectionChangedListener(this);
+
+						tree.setRedraw(false);
+						if (expandAll)
+							viewer.expandAll();
+						else {
+							viewer.collapseAll();
+							expandChosenElements(viewer);
+						}
+						viewer.addSelectionChangedListener(this);
+
+						TreePath treePath = new TreePath(new Object[] { element });
+						viewer.setSelection(new TreeSelection(treePath), true);
+						
+						tree.setRedraw(true);
 					}
-					viewer.addSelectionChangedListener(this);
-					TreePath treePath = new TreePath(new Object[] { element });
-					viewer.setSelection(new TreeSelection(treePath), true);
-					//viewer.reveal(treePath);
 				}
 			}
 		}
 	}
 
-
 	/** Expands some elements the user has chosen to always expand in the outline */
 	private void expandChosenElements(TreeViewer viewer) {
-		if(editor == null)
+		if (editor == null)
 			return;
-		
+
 		Def root = editor.getOutlineDefinitionsTree();
-		
+
 		expandChosenElementsAux(viewer, root);
-		
+
 	}
 
 	/** Recursive helper function */
 	private void expandChosenElementsAux(TreeViewer viewer, Def def) {
-		if(def.type == Def.Type.Module && expandModules)
+		if (def.type == Def.Type.Module && expandModules)
 			viewer.expandToLevel(def, 1);
-		
-		else if(def.type == Def.Type.Class && expandClasses)
+
+		else if (def.type == Def.Type.Class && expandClasses)
 			viewer.expandToLevel(def, 1);
-		
-		for(Def child: def.children)
+
+		for (Def child : def.children)
 			expandChosenElementsAux(viewer, child);
 	}
 
@@ -252,14 +276,14 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 
 		return null;
 	}
-	
+
 	/** Set the boolean variables from the user preferences */
 	private void lookPreferences() {
 		IPreferenceStore preferenceStore = OcamlPlugin.getInstance().getPreferenceStore();
-		
+
 		expandAll = preferenceStore.getBoolean(PreferenceConstants.P_OUTLINE_EXPAND_ALL);
 		expandModules = preferenceStore.getBoolean(PreferenceConstants.P_OUTLINE_EXPAND_MODULES);
 		expandClasses = preferenceStore.getBoolean(PreferenceConstants.P_OUTLINE_EXPAND_CLASSES);
-		
+
 	}
 }

@@ -143,8 +143,8 @@ public class OcamlyaccEditor extends TextEditor {
 
 		if (outlineJob == null)
 			outlineJob = new YaccOutlineJob("Rebuilding outline for mly editor");
-		else if (outlineJob.getState() == OutlineJob.RUNNING)
-			return;
+		//else if (outlineJob.getState() == OutlineJob.RUNNING)
+		//	return;
 		// only one Job at a time
 		else
 			outlineJob.cancel();

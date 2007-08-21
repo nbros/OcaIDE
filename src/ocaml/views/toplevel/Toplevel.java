@@ -22,7 +22,10 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 
-/** Implements the interaction between the top-level view and the real top-level (the underlying process) */
+/**
+ * Implements the interaction between the top-level view and the real top-level (the underlying
+ * process)
+ */
 public class Toplevel {
 
 	private final OcamlToplevelView view;
@@ -64,14 +67,14 @@ public class Toplevel {
 	ArrayList<String> history = new ArrayList<String>();
 
 	/**
-	 * The currently edited expression (we save it if the user started typing something then decided to recall
-	 * history)
+	 * The currently edited expression (we save it if the user started typing something then decided
+	 * to recall history)
 	 */
 	String currentLine = "";
 
 	/**
-	 * Up to which level did we go back in the history? ( in the interval [-1; history.size()], -1 meaning the
-	 * line currently being edited, and not yet in history.
+	 * Up to which level did we go back in the history? ( in the interval [-1; history.size()], -1
+	 * meaning the line currently being edited, and not yet in history.
 	 */
 	private int iHistory = -1;
 
@@ -102,10 +105,9 @@ public class Toplevel {
 		int defaultSize = 12;
 		Font defaultFont = org.eclipse.jface.resource.JFaceResources.getDefaultFont();
 		FontData[] fontDatas = defaultFont.getFontData();
-		if(fontDatas.length > 0)
+		if (fontDatas.length > 0)
 			defaultSize = fontDatas[0].getHeight();
 
-			
 		Font font = null;
 		if (OcamlPlugin.runningOnLinuxCompatibleSystem())
 			font = new Font(userText.getDisplay(), "monospace", defaultSize, SWT.NONE);
@@ -160,8 +162,8 @@ public class Toplevel {
 	 * Go back in the history of entered commands.
 	 * 
 	 * @param bOnlySingleLine
-	 *            whether we must go back in history only if the currently edited expression is on a single
-	 *            line (this allows us to continue using arrow keys in multi-line commands)
+	 *            whether we must go back in history only if the currently edited expression is on a
+	 *            single line (this allows us to continue using arrow keys in multi-line commands)
 	 */
 	protected void historyPrev(final boolean bOnlySingleLine) {
 		Display.getDefault().asyncExec(new Runnable() {
@@ -185,8 +187,8 @@ public class Toplevel {
 	 * Go forward in history.
 	 * 
 	 * @param bOnlySingleLine
-	 *            whether we must go back in history only if the currently edited expression is on a single
-	 *            line (this allows us to continue using arrow keys in multi-line commands)
+	 *            whether we must go back in history only if the currently edited expression is on a
+	 *            single line (this allows us to continue using arrow keys in multi-line commands)
 	 */
 	protected void historyNext(final boolean bOnlySingleLine) {
 		Display.getDefault().asyncExec(new Runnable() {
@@ -219,6 +221,7 @@ public class Toplevel {
 	protected synchronized void sendText() {
 		synchronized (resultText) {
 			String text = userText.getText();
+			//System.err.println("<< '" + text + "'");
 			if (text.equals("kill" + newline)) {
 				kill();
 				userText.setText("");
@@ -274,7 +277,8 @@ public class Toplevel {
 		int docLength = resultText.getText().length();
 		int length = text.length();
 
-		resultText.setStyleRange(new StyleRange(docLength - length - 1, length, colorUserText, null));
+		resultText
+				.setStyleRange(new StyleRange(docLength - length - 1, length, colorUserText, null));
 	}
 
 	public void help() {
@@ -306,19 +310,21 @@ public class Toplevel {
 		try {
 			if (OcamlPlugin.runningOnLinuxCompatibleSystem()) {
 				/*
-				 * Here, we try to get the pid of our process by comparing the list of pids before and after
-				 * starting it.
+				 * Here, we try to get the pid of our process by comparing the list of pids before
+				 * and after starting it.
 				 */
 
 				// get the pid of the processes before running our process
-				CommandRunner cr = new CommandRunner(new String[] { "ps", "-A", "-o", "pid,ucomm" },
-						OcamlPlugin.getPluginDirectory());
+				CommandRunner cr = new CommandRunner(
+						new String[] { "ps", "-A", "-o", "pid,ucomm" }, OcamlPlugin
+								.getPluginDirectory());
 				String result = cr.getStdout();
 				Integer[] pidsBefore = getOcamlPids(result);
 
 				// start the top-level process
 				try {
-					exec = ExecHelper.execMerge(execEvents, new String[] { OcamlPlugin.getOcamlFullPath() });
+					exec = ExecHelper.execMerge(execEvents, new String[] { OcamlPlugin
+							.getOcamlFullPath() });
 				} catch (Throwable e) {
 					if (exec == null)
 						resultText.append("Error: couldn't start toplevel.\n"
@@ -334,8 +340,8 @@ public class Toplevel {
 					retries++;
 
 					// get the pid of the processes after running our process
-					cr = new CommandRunner(new String[] { "ps", "-A", "-o", "pid,ucomm" }, OcamlPlugin
-							.getPluginDirectory());
+					cr = new CommandRunner(new String[] { "ps", "-A", "-o", "pid,ucomm" },
+							OcamlPlugin.getPluginDirectory());
 					result = cr.getStdout();
 
 					Integer[] pidsAfter = getOcamlPids(result);
@@ -352,19 +358,18 @@ public class Toplevel {
 				}
 			} else {
 				String[] command = { OcamlPlugin.getOcamlFullPath() };
-				if(command[0].trim().equals("")){
+				if (command[0].trim().equals("")) {
 					resultText.append("Error: couldn't start toplevel.\n"
 							+ "Please check its path in the preferences.");
 					return;
 				}
-				
-				
+
 				File dir = new File(OcamlPlugin.getPluginDirectory());
 
 				ProcessBuilder processBuilder = new ProcessBuilder(command);
 				processBuilder.directory(dir);
 				processBuilder.environment().put("OCAMLLIB", OcamlPlugin.getLibFullPath());
-				
+
 				Process process = processBuilder.start();
 				exec = new ExecHelper(execEvents, process);
 			}
@@ -443,16 +448,16 @@ public class Toplevel {
 
 					int length = resultText.getText().length();
 
-					resultText.setStyleRange(new StyleRange(length - error.length(), error.length(),
-							colorErrorText, null));
+					resultText.setStyleRange(new StyleRange(length - error.length(),
+							error.length(), colorErrorText, null));
 
 				}
 			}
 		});
 	}
 
-	Pattern patternErrors = Pattern.compile("Characters (?:\\d+)-(?:\\d+):" + nl + "(.*)" + nl + "(\\s*\\^*)"
-			+ nl);
+	Pattern patternErrors = Pattern.compile("Characters (?:\\d+)-(?:\\d+):" + nl + "(.*)" + nl
+			+ "(\\s*\\^*)" + nl);
 
 	protected synchronized void receiveOutput(final String output) {
 		Display.getDefault().asyncExec(new Runnable() {
@@ -462,6 +467,9 @@ public class Toplevel {
 					return;
 
 				synchronized (resultText) {
+					if ("".equals(output.trim()))
+						return;
+					//System.err.println(">> '" + output + "'");
 					resultText.append(output);
 
 					String doc = resultText.getText();
@@ -482,10 +490,10 @@ public class Toplevel {
 							int rangeStart = start + range.x;
 							int rangeEnd = start + range.y;
 
-							if (start < 0 || start > doc.length() - 1 || end < 0 || end > doc.length() - 1
-									|| end <= start || rangeStart < 0 || rangeEnd < 0
-									|| rangeStart > doc.length() - 1 || rangeEnd > doc.length() - 1
-									|| rangeEnd <= rangeStart) {
+							if (start < 0 || start > doc.length() - 1 || end < 0
+									|| end > doc.length() - 1 || end <= start || rangeStart < 0
+									|| rangeEnd < 0 || rangeStart > doc.length() - 1
+									|| rangeEnd > doc.length() - 1 || rangeEnd <= rangeStart) {
 
 								OcamlPlugin
 										.logError("error : index out of bounds while trying to highlight errors");
@@ -494,8 +502,8 @@ public class Toplevel {
 
 							resultText.replaceTextRange(start, length, line + "\n");
 
-							resultText.setStyleRange(new StyleRange(rangeStart, rangeEnd - rangeStart,
-									colorWhite, colorRed));
+							resultText.setStyleRange(new StyleRange(rangeStart, rangeEnd
+									- rangeStart, colorWhite, colorRed));
 
 							doc = resultText.getText();
 							matcher = patternErrors.matcher(doc);

@@ -57,7 +57,7 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 		warningLabel = new Label(getFieldEditorParent(), SWT.NONE);
 		warningLabel.setText("You must manually recompile your projects after changing paths");
 
-		Group toolsGroup = new Group(getFieldEditorParent(), SWT.BORDER);
+		Group toolsGroup = new Group(getFieldEditorParent(), SWT.NONE);
 		GridData data = new GridData();
 		data.verticalAlignment = GridData.FILL;
 		data.horizontalAlignment = GridData.FILL;
@@ -132,10 +132,12 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 		camlp4Field = new FileFieldEditor(PreferenceConstants.P_PATH_CAMLP4, "camlp4:", toolsGroup);
 		this.addField(camlp4Field);
 
-		ocamlbuildField = new FileFieldEditor(PreferenceConstants.P_PATH_OCAMLBUILD, "ocamlbuild:", toolsGroup);
+		ocamlbuildField = new FileFieldEditor(PreferenceConstants.P_PATH_OCAMLBUILD, "ocamlbuild:",
+				toolsGroup);
 		this.addField(ocamlbuildField);
 
-		Group otherGroup = new Group(getFieldEditorParent(), SWT.BORDER);
+		Group otherGroup = new Group(getFieldEditorParent(), SWT.NONE);
+		otherGroup.setText("Other tools");
 		GridData odata = new GridData();
 		odata.verticalAlignment = GridData.FILL;
 		odata.grabExcessHorizontalSpace = true;

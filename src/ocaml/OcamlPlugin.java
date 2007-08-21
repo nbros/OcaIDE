@@ -93,7 +93,7 @@ public class OcamlPlugin extends AbstractUIPlugin {
 		instance = this;
 
 		File f = new File("");
-		this.pluginDirectory = f.getAbsolutePath().toString();
+		this.pluginDirectory = f.getAbsolutePath();
 	}
 
 	private OcamlPartitionScanner partitionScanner = null;

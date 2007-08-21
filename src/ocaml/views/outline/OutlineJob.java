@@ -1,20 +1,24 @@
 package ocaml.views.outline;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import ocaml.OcamlPlugin;
 import ocaml.editors.OcamlEditor;
+import ocaml.exec.CommandRunner;
 import ocaml.parser.Def;
 import ocaml.parser.ErrorReporting;
 import ocaml.parser.OcamlParser;
 import ocaml.parser.OcamlScanner;
-import ocaml.parser.OcamlParser.Terminals;
+import ocaml.parsers.Camlp4Preprocessor;
 import ocaml.preferences.PreferenceConstants;
 import ocaml.typeHovers.OcamlAnnotParser;
 import ocaml.typeHovers.TypeAnnotation;
@@ -28,15 +32,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.texteditor.MarkerUtilities;
-
-import beaver.Symbol;
-import beaver.Scanner.Exception;
 
 /**
  * This job is used to rebuild the outline in a low-priority thread, so as to not slow down
@@ -45,6 +48,7 @@ import beaver.Scanner.Exception;
  * Note: even if the outline is not displayed (the user closed the view), its content must be
  * computed, because it is also used by the completion and hyperlinks (TODO:refactor this).
  */
+
 public class OutlineJob extends Job {
 
 	public OutlineJob(String name) {
@@ -70,53 +74,188 @@ public class OutlineJob extends Job {
 		this.editor = editor;
 	}
 
+	private File tempFileMl = null;
+	private File tempFileMli = null;
+
 	/**
 	 * This method is "synchronized" to ascertain that this Job will never be running more than one
 	 * instance at any moment.
 	 */
+	// int nJob = 0;
 	@Override
 	public synchronized IStatus run(IProgressMonitor monitor) {
-
 		// System.err.println("outline job" + nJob++);
 
 		// long before = System.currentTimeMillis();
+		IFile file = editor.getFileBeingEdited();
+		if (file == null)
+			return Status.CANCEL_STATUS;
 
 		String strDocument = doc.get();
+
+		Camlp4Preprocessor preprocessor = new Camlp4Preprocessor(strDocument);
+
+		if (preprocessor.mustPreprocess()) {
+			// if (true) {
+			// System.err.println("preprocessing");
+
+			File tempFile = null;
+
+			/* Create a temporary file so that we don't have to save the editor */
+			try {
+				String ext = file.getLocation().getFileExtension();
+				FileWriter writer;
+
+				if ("mli".equals(ext)) {
+					if (tempFileMli == null) {
+						tempFileMli = File.createTempFile("mlp", ".mli");
+						tempFileMli.deleteOnExit();
+					}
+					writer = new FileWriter(tempFileMli);
+					tempFile = tempFileMli;
+
+				}
+
+				else {
+					if (tempFileMl == null) {
+						tempFileMl = File.createTempFile("mlp", ".ml");
+						tempFileMl.deleteOnExit();
+					}
+					writer = new FileWriter(tempFileMl);
+					tempFile = tempFileMl;
+				}
+
+				writer.append(strDocument);
+				writer.flush();
+				writer.close();
+			} catch (IOException e) {
+				OcamlPlugin
+						.logError("couldn't create temporary file for formatting with camlp4", e);
+			}
+
+			if (tempFile == null) {
+				OcamlPlugin.logError("Error creating temporary file for camlp4 preprocessing.");
+				return Status.CANCEL_STATUS;
+			}
+
+			// preprocess the file with camlp4
+			preprocessor.preprocess(tempFile, monitor);
+
+			try {
+				// delete the previous error markers
+				file.deleteMarkers("Ocaml.ocamlSyntaxErrorMarker", false, IResource.DEPTH_ZERO);
+			} catch (Throwable e) {
+				OcamlPlugin.logError("error deleting error markers", e);
+			}
+
+			// camlp4 errors?
+			Pattern patternErrors = Pattern
+					.compile("File \".*?\", line (\\d+), characters (\\d+)-(\\d+):");
+
+			String errorOutput = preprocessor.getErrorOutput();
+
+			Matcher matcher = patternErrors.matcher(errorOutput);
+			if (!"".equals(errorOutput.trim())) {
+				try {
+					int line = 0;
+					int colStart = 0;
+					int colEnd = 1;
+					String message;
+					
+					if (matcher.find()) {
+						line = Integer.parseInt(matcher.group(1)) - 1;
+						colStart = Integer.parseInt(matcher.group(2)) - 1;
+						colEnd = Integer.parseInt(matcher.group(3)) - 1;
+						message = errorOutput.substring(matcher.end()).trim();
+					}else
+						message = errorOutput;
+
+					Hashtable<String, Integer> attributes = new Hashtable<String, Integer>();
+					
+					MarkerUtilities.setMessage(attributes, message);
+					attributes.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_ERROR));
+
+					int lineOffset = doc.getLineOffset(line);
+
+					int offsetStart = lineOffset + colStart;
+					int offsetEnd = lineOffset + colEnd + 1;
+
+					MarkerUtilities.setCharStart(attributes, offsetStart);
+					MarkerUtilities.setCharEnd(attributes, offsetEnd);
+					MarkerUtilities.setLineNumber(attributes, line);
+
+					MarkerUtilities.createMarker(file, attributes, "Ocaml.ocamlSyntaxErrorMarker");
+
+				} catch (Throwable e) {
+					OcamlPlugin.logError("error creating error markers", e);
+				}
+				return Status.OK_STATUS;
+			}
+
+			// System.out.println(output);
+			strDocument = preprocessor.getOutput();
+
+			// System.err.println(output);
+		}
 
 		/*
 		 * "Sanitize" the document by replacing extended characters, which otherwise would crash the
 		 * parser
 		 */
-		final StringBuilder str = new StringBuilder();
-		for (int i = 0; i < strDocument.length(); i++) {
-			char c = strDocument.charAt(i);
+		// final StringBuilder str = new StringBuilder();
+		// System.err.println("sanitizing");
+		char[] sanitizedDocument = null;
+		try {
+			sanitizedDocument = new char[strDocument.length()];
 
-			// replace it by an underscore
-			if (c > 127)
-				c = '_';
-			str.append(c);
+			for (int i = 0; i < strDocument.length(); i++) {
+				char c = strDocument.charAt(i);
+
+				// replace it by an underscore
+				if (c > 127)
+					c = '_';
+				sanitizedDocument[i] = c;
+			}
+
+			strDocument = String.copyValueOf(sanitizedDocument);
+			sanitizedDocument = null;
+		} catch (OutOfMemoryError e) {
+			OcamlPlugin.logError("Not enough memory to parse the file "
+					+ file.getLocation().toOSString(), e);
+			return Status.CANCEL_STATUS;
 		}
 
-		final StringReader in = new StringReader(str.toString());
+		final StringReader in = new StringReader(strDocument);
 		final OcamlScanner scanner = new OcamlScanner(in);
 
-		/*
-		 * Symbol s; while(true) {
-		 * 
-		 * try { s = scanner.nextToken(); if(s.getId() == Terminals.EOF) break; } catch (IOException
-		 * e) { // TODO Auto-generated catch block e.printStackTrace(); break; } catch (Exception e) { //
-		 * TODO Auto-generated catch block e.printStackTrace(); break; }
-		 * System.err.println(OcamlParser.Terminals.NAMES[s.getId()]);
-		 *  }
-		 */
+		// Symbol s;
+		// while (true) {
+		//
+		// try {
+		// s = scanner.nextToken();
+		// if (s.getId() == Terminals.EOF)
+		// break;
+		// } catch (IOException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// break;
+		// } catch (Exception e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// break;
+		// }
+		// System.err.println(OcamlParser.Terminals.NAMES[s.getId()]);
+		// }
 
 		// if(true)
 		// return Status.OK_STATUS;
+		// System.err.println("parsing");
+
 		final OcamlParser parser = new OcamlParser();
 
 		Def root = null;
 		try {
-			String extension = editor.getFileBeingEdited().getFullPath().getFileExtension();
+			String extension = file.getFullPath().getFileExtension();
 
 			if ("ml".equals(extension))
 				root = (Def) parser.parse(scanner);
@@ -132,9 +271,12 @@ public class OutlineJob extends Job {
 
 		// for(long i = 0; i < 1000000000l; i++);
 
-		// recover pieces from the AST (which couldn't be built completely because of an
-		// unrecoverable error)
+		/*
+		 * recover pieces from the AST (which couldn't be built completely because of an
+		 * unrecoverable error)
+		 */
 		if (root == null || !parser.errorReporting.errors.isEmpty()) {
+			// System.err.println("recovering");
 			// System.err.println("recovering AST");
 			root = new Def("root", Def.Type.Root, 0, 0);
 
@@ -145,7 +287,23 @@ public class OutlineJob extends Job {
 				}
 		}
 
+		/*
+		 * The source was preprocessed by camlp4: update the identifiers locations using the 'loc'
+		 * comments leaved by camlp4
+		 */
+		if (preprocessor.mustPreprocess()) {
+			// System.err.println("associate locations");
+
+			Document document = new Document(strDocument);
+			ArrayList<Camlp4Preprocessor.Camlp4Location> camlp4Locations = preprocessor
+					.parseCamlp4Locations(this.doc, document);
+
+			preprocessor.associateCamlp4Locations(this.doc, this.doc.get(), document,
+					camlp4Locations, root, monitor);
+		}
+
 		if (root != null) {
+			// System.err.println("cleaning tree");
 			root.buildParents();
 			root.buildSiblingOffsets();
 			cleanTree(root);
@@ -161,7 +319,7 @@ public class OutlineJob extends Job {
 		initPreferences();
 		cleanOutline(outlineDefinitions);
 
-		final IFile file = editor.getFileBeingEdited();
+		final IFile ifile = file;
 		/*
 		 * if the source hasn't been modified since the last compilation, try to get the types
 		 * inferred by the compiler (in a ".annot" file)
@@ -184,10 +342,10 @@ public class OutlineJob extends Job {
 			public void run() {
 
 				/* Create error markers for syntax errors found while parsing */
-				if (file != null) {
+				if (ifile != null) {
 					try {
 						// delete the previous error markers
-						file.deleteMarkers("Ocaml.ocamlSyntaxErrorMarker", false,
+						ifile.deleteMarkers("Ocaml.ocamlSyntaxErrorMarker", false,
 								IResource.DEPTH_ZERO);
 					} catch (Throwable e) {
 						OcamlPlugin.logError("error deleting error markers", e);
@@ -228,7 +386,7 @@ public class OutlineJob extends Job {
 								MarkerUtilities.setCharEnd(attributes, offsetEnd);
 								MarkerUtilities.setLineNumber(attributes, lineNumber);
 
-								MarkerUtilities.createMarker(file, attributes,
+								MarkerUtilities.createMarker(ifile, attributes,
 										"Ocaml.ocamlSyntaxErrorMarker");
 
 							} catch (Throwable e) {
@@ -237,12 +395,12 @@ public class OutlineJob extends Job {
 						}
 					}
 				}
-
 				// give the definitions tree to the editor
 				editor.setDefinitionsTree(definitions);
 				editor.setOutlineDefinitionsTree(fOutlineDefinitions);
 
-				// to notify the hyperlink detector that the outline is available
+				// to notify the hyperlink detector that the outline is
+				// available
 				synchronized (editor.outlineSignal) {
 					editor.outlineSignal.notifyAll();
 				}
@@ -255,7 +413,8 @@ public class OutlineJob extends Job {
 						// OcamlNewInterfaceParser newParser =
 						// OcamlNewInterfaceParser.getInstance();
 						// try {
-						// Def definitions = newParser.parseModule(str.toString(), "<<<DEBUG>>>",
+						// Def definitions =
+						// newParser.parseModule(str.toString(), "<<<DEBUG>>>",
 						// true);
 						// outline.setInput(definitions);
 						// } catch (Throwable e) {
@@ -283,7 +442,9 @@ public class OutlineJob extends Job {
 		return Status.OK_STATUS;
 	}
 
-	/** Add O'Caml types to the definitions if a ".annot" file is present and up-to-date */
+	/**
+	 * Add O'Caml types to the definitions if a ".annot" file is present and up-to-date
+	 */
 	private void addTypes(IFile file, Def root) {
 		if (file == null || root == null)
 			return;
@@ -348,7 +509,8 @@ public class OutlineJob extends Job {
 		if (def == null)
 			return;
 
-		// collapse the <structure> or <signature> node if it is the child of a module or moduletype
+		// collapse the <structure> or <signature> node if it is the child of a
+		// module or moduletype
 		if (def.type == Def.Type.Module || def.type == Def.Type.ModuleType
 				|| def.type == Def.Type.Functor) {
 			for (int i = 0; i < def.children.size(); i++) {
@@ -462,7 +624,9 @@ public class OutlineJob extends Job {
 		}
 	}
 
-	/** Remove the definitions the user doesn't want to see (outline preference page) */
+	/**
+	 * Remove the definitions the user doesn't want to see (outline preference page)
+	 */
 
 	private void cleanOutline(Def def) {
 		if (def == null)
@@ -480,4 +644,177 @@ public class OutlineJob extends Job {
 		def.children = newChildren;
 	}
 
+	// Pattern patternLocation = Pattern
+	// .compile("\\(\\*loc\\: \\[\".*?\"\\: (\\d+)\\:(\\d+)\\-(\\d+) \\d+\\:\\d+\\]\\*\\)");
+	// final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890'";
+	//
+	// /**
+	// * Update the identifiers source code locations by reading the location comments left by
+	// camlp4
+	// * (using the '-add_locations' command-line switch)
+	// */
+	// private void associateCamlp4Locations(IDocument oldDocument, String strOldDocument,
+	// IDocument newDocument, ArrayList<Camlp4Location> camlp4Locations, Def def,
+	// IProgressMonitor monitor) {
+	// // (*loc: ["a.ml": 1:10-11 1:11]*)
+	//
+	// if (monitor.isCanceled())
+	// return;
+	//
+	// if (def.type != Def.Type.Root) {
+	//
+	// IRegion region = def.getRegion(newDocument);
+	// // String doc = newDocument.get();
+	//
+	// int pos = region.getOffset() - 1;
+	//
+	// // parse whitespace
+	// // while (pos >= 0 && Character.isSpaceChar(doc.charAt(pos)))
+	// // pos--;
+	//
+	// // binary search
+	// int min = 0;
+	// int max = camlp4Locations.size() - 1;
+	// int locationIndex = min + (max - min) / 2;
+	// while (locationIndex > min) {
+	// Camlp4Location loc = camlp4Locations.get(locationIndex);
+	//
+	// if (pos > loc.offset)
+	// min = locationIndex;
+	// else
+	// max = locationIndex;
+	//
+	// locationIndex = min + (max - min) / 2;
+	// }
+	//
+	// while (true) {
+	// Camlp4Location location = camlp4Locations.get(locationIndex);
+	//
+	// // keep only the definition name instead of the whole definition
+	// int lineOffset;
+	// try {
+	// lineOffset = oldDocument.getLineOffset(location.line - 1);
+	// } catch (BadLocationException e) {
+	// OcamlPlugin.logError("bad location while associating camlp4 locations", e);
+	// return;
+	// }
+	//
+	// int originalOffsetStart = lineOffset + location.colStart;
+	// int originalOffsetEnd = lineOffset + location.colEnd;
+	//
+	// if (originalOffsetEnd > strOldDocument.length())
+	// originalOffsetEnd = strOldDocument.length();
+	// // def.posStart = 0;
+	// // def.posEnd = 0;
+	// // break;
+	// // }
+	//
+	// String wholeDefinition = strOldDocument.substring(originalOffsetStart,
+	// originalOffsetEnd);
+	//
+	// int nameIndex = wholeDefinition.indexOf(def.name);
+	// int nameLength = def.name.length();
+	//
+	// while (nameIndex != -1) {
+	// char prevChar = ' ';
+	// if (nameIndex > 0)
+	// prevChar = wholeDefinition.charAt(nameIndex - 1);
+	// char nextChar = ' ';
+	// if (nameIndex + nameLength < wholeDefinition.length())
+	// nextChar = wholeDefinition.charAt(nameIndex + nameLength);
+	//
+	// /*
+	// * if the definition name is preceded or followed by an ocaml identifier char,
+	// * it is not a definition name
+	// */
+	// if (chars.contains("" + prevChar) || chars.contains("" + nextChar))
+	// nameIndex = wholeDefinition.indexOf(def.name, nameIndex + 1);
+	// else
+	// break;
+	// }
+	//
+	// /*
+	// * Go to the previous comment if the range we found doesn't contain the definition
+	// * name
+	// */
+	// if (nameIndex == -1) {
+	// if (locationIndex > 0) {
+	// locationIndex--;
+	// continue;
+	// } else {
+	// def.posStart = 0;
+	// def.posEnd = 0;
+	// break;
+	// }
+	// // nameIndex = 0;
+	// }
+	//
+	// // System.out.println(pos);
+	//
+	// originalOffsetStart += nameIndex;
+	// originalOffsetEnd = originalOffsetStart + def.name.length();
+	//
+	// int lineStart;
+	// int lineEnd;
+	// int lineOffsetStart;
+	// int lineOffsetEnd;
+	// try {
+	// lineStart = oldDocument.getLineOfOffset(originalOffsetStart);
+	// lineEnd = oldDocument.getLineOfOffset(originalOffsetEnd);
+	// lineOffsetStart = oldDocument.getLineOffset(lineStart);
+	// lineOffsetEnd = oldDocument.getLineOffset(lineEnd);
+	// } catch (BadLocationException e) {
+	// OcamlPlugin.logError("bad location in camlp4 offsets", e);
+	// return;
+	// }
+	//
+	// def.posStart = Def.makePosition(lineStart, originalOffsetStart - lineOffsetStart);
+	// def.posEnd = Def.makePosition(lineEnd, originalOffsetEnd - lineOffsetEnd - 1);
+	//
+	// break;
+	//
+	// // def.posStart = Def.makePosition(originalLine - 1, originalColStart);
+	// // def.posEnd = Def.makePosition(originalLine - 1, originalColEnd - 1);
+	// }
+	// }
+	//
+	// for (Def child : def.children)
+	// associateCamlp4Locations(oldDocument, strOldDocument, newDocument, camlp4Locations,
+	// child, monitor);
+	// }
+	//
+	// private ArrayList<Camlp4Location> parseCamlp4Locations(IDocument oldDoc, IDocument doc) {
+	// ArrayList<Camlp4Location> camlp4Locations = new ArrayList<Camlp4Location>();
+	//
+	// String document = doc.get();
+	//
+	// Matcher matcher = patternLocation.matcher(document);
+	// while (matcher.find()) {
+	// int originalLine = Integer.parseInt(matcher.group(1));
+	// int originalColStart = Integer.parseInt(matcher.group(2));
+	// int originalColEnd = Integer.parseInt(matcher.group(3));
+	//
+	// camlp4Locations.add(new Camlp4Location(matcher.start(), originalLine, originalColStart,
+	// originalColEnd));
+	// }
+	//
+	// return camlp4Locations;
+	// }
+	//
+	// /** A location found in camlp4 output when using the add_locations command-line switch */
+	// class Camlp4Location {
+	// public Camlp4Location(int offset, int line, int colStart, int colEnd) {
+	// this.offset = offset;
+	// this.line = line;
+	// this.colStart = colStart;
+	// this.colEnd = colEnd;
+	// }
+	//
+	// /** the offset of the location in the camlp4 output */
+	// int offset;
+	//
+	// int line;
+	// int colStart;
+	// int colEnd;
+	// }
 }
