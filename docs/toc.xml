@@ -28,6 +28,7 @@
 		<topic label="Hyperlinks" href="docs/editor/hyperlinks.html"/>
 		<topic label="Code formatter" href="docs/editor/formatter.html"/>
 		<topic label="Searching" href="docs/editor/searching.html"/>
+		<topic label="Preprocessing files with Camlp4" href="docs/editor/camlp4.html"/>
 	</topic>
 	<topic label="Compiling">
 		<topic label="Compiling an O'Caml project" href="docs/compiling/compiling_project.html"/>

@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Preprocessing files with Camlp4</title>
+</head>
+
+
+<body bgcolor="white">
+
+<h2> Preprocessing files with Camlp4 </h2>
+
+<p>
+
+You can preprocess a file in the editor with camlp4 by putting a special comment
+at the top of each file to be preprocessed: 
+<p>
+<code>(* pp: &lt;params&gt; *)</code>
+<p>
+where <code>&lt;params&gt;</code> are the parameters to be passed to camlp4.
+
+<p>
+
+For example, add <code>(* pp: -parser OcamlRevised *)</code> on the first line
+of a module or interface file which is written using O'Caml revised syntax.
+
+<p>
+
+This feature allows the outline, hyperlinks, module browser and code completion to
+work correctly with files written with a syntax different from the standard O'Caml
+syntax.
+
+<p>
+
+You can add parsers and filters as parameters, but you mustn't add a printer, as
+the printer is already added automatically.
+
+<p>
+
+<b>Note 1:</b> preprocessing files is very slow compared to the integrated parser, so
+prefer the original syntax when possible.
+
+<p>
+ 
+<b>Note 2:</b> the comment is interpreted by OcaIDE, but not by the O'Caml compiler. You must
+still pass the right preprocessing options to the O'Caml compiler.
+ 
+<p>
+ 
+<b>Note 3:</b> the comment must fit on a single line (no multi-line preprocessing comments)
+ 
+
+       
+
+</body>
+
+</html>
