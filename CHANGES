@@ -83,9 +83,12 @@
 	* Added '*.obj' and '_build' in the list of navigator filters 
 	* Hid some resources from versioning system (*.cmo, *.annot, ...). If you ever need to commit these resources, see "Window > Preferences > Team > Ignored Resources".   
 	 
-* 1.2.0 
+* 1.1.1 (August 21 2007) 
 	* New menu action for opening the currently opened file counterpart (interface/implementation)
 	* Support for camlp4 preprocessing 	
+	
+* 1.2.0
+	* Code formatter rewrite
 	
 	
 	
