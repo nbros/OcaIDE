@@ -23,22 +23,24 @@ public class Pos extends beaver.Symbol {
 	public Pos(int start, int end) {
 		super();
 		posStart = start;
-		posEnd = end;
+		posEnd = end + 1;
 	}
 
 	/** Creates a position from the positions of the first and last symbols */
 	public Pos(Symbol first, Symbol last) {
+		super();
 		posStart = first.getStart();
-		posEnd = last.getEnd();
+		posEnd = last.getEnd() + 1;
 	}
 
 	/** Creates a position for a non-terminal consisting of a single terminal */
 	public Pos(Symbol s) {
+		super();
 		posStart = s.getStart();
-		posEnd = s.getEnd();
+		posEnd = s.getEnd() + 1;
 	}
 
-	public Pos(Symbol first, Pos last) {
+	/*public Pos(Symbol first, Pos last) {
 		posStart = first.getStart();
 		posEnd = last.posEnd;
 	}
@@ -51,31 +53,44 @@ public class Pos extends beaver.Symbol {
 	public Pos(Pos first, Pos last) {
 		posStart = first.posStart;
 		posEnd = last.posEnd;
-	}
+	}*/
 	
 	public int getStartColumn(){
+		if(this == Pos.NONE)
+			System.err.println("***--- NONE ---***");
+
 		return getColumn(posStart);
 	}
 	
 	public int getEndColumn(){
+		if(this == Pos.NONE)
+			System.err.println("***--- NONE ---***");
 		return getColumn(posEnd);
 	}
 
 	public int getStartLine(){
+		if(this == Pos.NONE)
+			System.err.println("***--- NONE ---***");
 		return getLine(posStart);
 	}
 	
 	public int getEndLine(){
+		if(this == Pos.NONE)
+			System.err.println("***--- NONE ---***");
 		return getLine(posEnd);
 	}
 	
 	@Override
 	public int getStart(){
+		if(this == Pos.NONE)
+			System.err.println("***--- NONE ---***");
 		return posStart; 
 	}
 
 	@Override
 	public int getEnd(){
+		if(this == Pos.NONE)
+			System.err.println("***--- NONE ---***");
 		return posEnd; 
 	}
 }

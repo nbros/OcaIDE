@@ -15,6 +15,9 @@ import ocaml.editor.newFormatter.OcamlFormatterParser.Terminals;
 %%
 
 %{
+	int stringLineStart = 0;
+	int stringColumnStart = 0;
+	
 	enum eStringsComments{IN_INITIAL, IN_STRING, IN_COMMENT};
 	Stack<eStringsComments> stackStringsComments = new Stack<eStringsComments>();
 %}
@@ -59,7 +62,8 @@ Float_literal = [0-9][0-9\_]*("."[0-9\_]*)?([eE][+-]?[0-9][0-9\_]*)?
     		yybegin(COMMENT);
     	else if(type == eStringsComments.IN_INITIAL){
     		yybegin(YYINITIAL);
-    		return new Symbol(Terminals.STRING);
+    		
+    		return new Symbol(Terminals.STRING, stringLineStart, stringColumnStart, 2, "\"\"");
     	}
     }
     
@@ -167,7 +171,12 @@ Float_literal = [0-9][0-9\_]*("."[0-9\_]*)?([eE][+-]?[0-9][0-9\_]*)?
     {Int_literal} [lLn]? { return new Symbol(Terminals.INT, yyline, yycolumn, yytext().length(), yytext()); }
     {Float_literal} { return new Symbol(Terminals.FLOAT, yyline, yycolumn, yytext().length(), yytext()); }
     
-    "\"" { stackStringsComments.push(eStringsComments.IN_INITIAL); yybegin(STRING); }
+    "\"" { 
+    	stringLineStart = yyline;
+    	stringColumnStart = yycolumn;
+    	stackStringsComments.push(eStringsComments.IN_INITIAL); 
+    	yybegin(STRING); 
+    }
     
     "'" [^\\\'\r\n] "'" { return new Symbol(Terminals.CHAR, yyline, yycolumn, yytext().length(), yytext()); }
     

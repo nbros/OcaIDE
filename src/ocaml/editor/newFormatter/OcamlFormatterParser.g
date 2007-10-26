@@ -9,6 +9,19 @@
 %embed {:
 	public ErrorReporting errorReporting; 
 	public ArrayList<IndentHint> indentHints = new ArrayList<IndentHint>();
+	
+	
+	private void addHint(IndentHint.Type type, int indentPos, int dedentPos)
+	{
+    	IndentHint hint1 = new IndentHint( type, true, indentPos ); 
+    	IndentHint hint2 = new IndentHint( type, false, dedentPos );
+    	
+    	hint1.counterpart = hint2;
+    	hint2.counterpart = hint1;
+    	indentHints.add(hint1);
+    	indentHints.add(hint2);
+    }
+	
 :};
 
 %init {:
@@ -240,17 +253,13 @@ module_expr=
     {: return a; :}
   | STRUCT.s structure.b END.e
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_STRUCT, s.getEnd() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_STRUCT, e.getStart() ));
-    	
+    	addHint(IndentHint.Type.STRUCT, s.getEnd(), e.getStart());
     	return new Pos(s, e);
     :}
 
   | FUNCTOR.a LPAREN UIDENT.i COLON module_type RPAREN MINUSGREATER.c module_expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_FUNCTOR, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_FUNCTOR, b.getStart() ));
-		
+    	addHint(IndentHint.Type.FUNCTOR, b.getStart(), b.getEnd());
 		return new Pos(a, b);
     :}
   | module_expr.a LPAREN module_expr RPAREN.b
@@ -311,11 +320,9 @@ structure_item=
 	{: 
 		return new Pos(a, b); 
 	:}
-  | EXTERNAL.a val_ident_colon core_type EQUAL primitive_declaration.b
+  | EXTERNAL.a val_ident_colon core_type EQUAL.c primitive_declaration.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, c.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
     :}
   | TYPE.a type_declarations.b
@@ -327,11 +334,9 @@ structure_item=
     	else
     		return new Pos(a, c);
     :}
-  | EXCEPTION.a UIDENT.id EQUAL constr_longident.b
+  | EXCEPTION.a UIDENT.id EQUAL.e constr_longident.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
 		return new Pos(a, b);    
     :}
   | MODULE.a UIDENT.id module_binding.b
@@ -340,11 +345,9 @@ structure_item=
     :}
   | MODULE.a REC module_rec_bindings.b
   	{: return new Pos(a, b); :}
-  | MODULE.a TYPE ident.id EQUAL module_type.b
+  | MODULE.a TYPE ident.id EQUAL.e module_type.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
     :}
   | OPEN.a mod_longident.b
@@ -364,20 +367,19 @@ structure_item=
 module_binding=
     EQUAL.a module_expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
-  | COLON.a module_type EQUAL module_expr.b
+  | COLON.a module_type EQUAL.e module_expr.b
   	{: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
   		return new Pos(a, b); 
   	:}
-  | LPAREN.a UIDENT COLON module_type RPAREN module_binding.b
-   	{: return new Pos(a, b); :}
+  | LPAREN.a UIDENT COLON module_type RPAREN.c module_binding.b
+   	{: 
+   		addHint(IndentHint.Type.MODULECONSTRAINT, a.getStart(), c.getEnd());
+   		return new Pos(a, b); 
+   	:}
 ;
 module_rec_bindings=
     module_rec_binding.a                          
@@ -388,11 +390,9 @@ module_rec_bindings=
   	:}
 ;
 module_rec_binding=
-    UIDENT.a COLON module_type EQUAL module_expr.b    
+    UIDENT.a COLON module_type EQUAL.e module_expr.b    
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
     :}
 ;
@@ -402,16 +402,15 @@ module_rec_binding=
 module_type=
     mty_longident.a
     {: return a; :}
-  | SIG.a signature END.b
+  | SIG.a signature.c END.b
     {: 
+    	addHint(IndentHint.Type.SIG, c.getStart(), c.getEnd());
     	return new Pos(a, b);
     :}
   | FUNCTOR.a LPAREN UIDENT COLON module_type RPAREN MINUSGREATER module_type.b
   	@ below_WITH
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_FUNCTOR, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_FUNCTOR, b.getEnd() ));
-
+    	addHint(IndentHint.Type.FUNCTOR, b.getStart(), b.getEnd());
     	return new Pos(a, b);
     :}
   | module_type.a WITH.c with_constraints.b
@@ -444,11 +443,9 @@ signature_item=
     {: 
     	return new Pos(a, b);
     :}
-  | EXTERNAL.a val_ident_colon core_type EQUAL primitive_declaration.b
+  | EXTERNAL.a val_ident_colon core_type EQUAL.e primitive_declaration.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
     :}
   | TYPE.a type_declarations.b
@@ -474,11 +471,9 @@ signature_item=
     {: 
     	return new Pos(a, b);
     :}
-  | MODULE.a TYPE ident.id EQUAL module_type.b
+  | MODULE.a TYPE ident.id EQUAL.e module_type.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
     :}
   | OPEN.a mod_longident.b
@@ -548,16 +543,12 @@ class_declaration=
 class_fun_binding=
     EQUAL.a class_expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
-  | COLON.a class_type EQUAL class_expr.b
+  | COLON.a class_type EQUAL.e class_expr.b
   	{: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
   		return new Pos(a, b); 
   	:}
   | labeled_simple_pattern.a class_fun_binding.b
@@ -592,9 +583,7 @@ class_expr=
     {: return new Pos(a, b); :}
   | LET.a rec_flag let_bindings IN class_expr.b
   	{: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_IN, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_IN, b.getEnd() ));
-
+    	addHint(IndentHint.Type.IN, b.getStart(), b.getEnd());
   		return new Pos(a, b); 
   	:}
 ;
@@ -605,8 +594,9 @@ class_simple_expr=
     :}
   | class_longident.a
     {: return a; :}
-  | OBJECT.a class_structure END.b
+  | OBJECT.a class_structure.c END.b
     {: 
+		addHint(IndentHint.Type.OBJECT, c.getStart(), c.getEnd());
 		return new Pos(a, b);
     :}
   | LPAREN.a class_expr COLON class_type RPAREN.b
@@ -711,20 +701,17 @@ virtual_value=
     :}
 ;
 value=
-    mutable_flag.a label.c EQUAL seq_expr.b
+    mutable_flag.a label.c EQUAL.e seq_expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	if(a != Pos.NONE)
     		return new Pos(a, b);
     	else
     		return new Pos(c, b);
     :}
-  | mutable_flag.a label.c type_constraint EQUAL seq_expr.b
+  | mutable_flag.a label.c type_constraint EQUAL.e seq_expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
 
     	if(a != Pos.NONE)
     		return new Pos(a, b);
@@ -747,18 +734,14 @@ concrete_method =
     {: 
     	return new Pos(a, b);
     :}
-  | METHOD.a private_flag.p label.id COLON poly_type EQUAL seq_expr.b
+  | METHOD.a private_flag.p label.id COLON poly_type EQUAL.e seq_expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
     :}
-  | METHOD.a private_flag.p LABEL.id poly_type EQUAL seq_expr.b
+  | METHOD.a private_flag.p LABEL.id poly_type EQUAL.e seq_expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
     :}
 ;
@@ -793,12 +776,12 @@ class_signature=
   	:}
   | clty_longident.a
   	{: return a; :}
-  | OBJECT.a class_sig_body END.b
+  | OBJECT.a class_sig_body.c END.b
     {: 	
+		addHint(IndentHint.Type.OBJECT, c.getStart(), c.getEnd());
     	return new Pos(a, b);
     :}
 ;
-//////////////////////////////////////////////////////////////////////////
 class_sig_body=
     class_self_type.a class_sig_fields.b
     {: 
@@ -884,11 +867,9 @@ method_type=
     :}
 ;
 constrain=
-	core_type.a EQUAL core_type.b
+	core_type.a EQUAL.e core_type.b
 	{: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
 		return new Pos(a, b); 
 	:}
 ;
@@ -918,10 +899,9 @@ class_type_declarations=
   	{: return a; :}
 ;	
 class_type_declaration=
-    virtual_flag.a class_type_parameters.c LIDENT.id EQUAL class_signature.b
+    virtual_flag.a class_type_parameters.c LIDENT.id EQUAL.e class_signature.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
 
      	if(a != Pos.NONE)
     		return new Pos(a, b);
@@ -985,9 +965,7 @@ opt_default=
     {: return Pos.NONE; :}
   | EQUAL.a seq_expr.b                      /*{ Some $2 }*/
   	{: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
   		return new Pos(a, b); 
   	:}
 ;
@@ -1014,35 +992,52 @@ expr=
     simple_expr.a  @ below_SHARP
     {: return a; :} 
   | simple_expr.a simple_labeled_expr_list.b
-  	{: return new Pos(a, b); :}
+  	{: 
+  		addHint(IndentHint.Type.APP, b.getStart(), b.getEnd());
+  		return new Pos(a, b); 
+  	:}
   | LET.a rec_flag let_bindings IN seq_expr.b
   	{: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_IN, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_IN, b.getEnd() ));
-
+    	addHint(IndentHint.Type.IN, b.getStart(), b.getEnd());
   		return new Pos(a, b);
   	:}
   | LET.a MODULE UIDENT.id module_binding IN seq_expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_IN, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_IN, b.getEnd() ));
-
+    	addHint(IndentHint.Type.IN, b.getStart(), b.getEnd());
     	return new Pos(a, b);
     :}
-  | FUNCTION.a opt_bar match_cases.b
+  | FUNCTION.a opt_bar.c match_cases.b
   	{: 
+	    if(c == Pos.NONE)
+	    	addHint(IndentHint.Type.FIRST_MATCH_ACTION, b.getStart(), b.getStart() + 1);
   		return new Pos(a, b); 
   	:}
   | FUN.a labeled_simple_pattern fun_def.b
   	{: 
   		return new Pos(a, b);
   	:}
-  | MATCH.a seq_expr WITH opt_bar match_cases.b
+  | MATCH.a seq_expr WITH opt_bar.d match_cases.b
     {: 
+    	if(d == Pos.NONE){
+	    	addHint(IndentHint.Type.WITH, b.getStart(), b.getEnd());
+	    	addHint(IndentHint.Type.FIRST_MATCH_ACTION, b.getStart(), b.getStart() + 1);
+	    }
+    	else
+    		addHint(IndentHint.Type.WITH, d.getStart(), b.getEnd());
+    	
     	return new Pos(a, b); 
     :}  
-  | TRY.a seq_expr WITH opt_bar match_cases.b
+  | TRY.a seq_expr.c WITH opt_bar.d match_cases.b
     {: 
+    	addHint(IndentHint.Type.TRY, c.getStart(), c.getEnd());
+
+    	if(d == Pos.NONE){
+	    	addHint(IndentHint.Type.WITH, b.getStart(), b.getEnd());
+	    	addHint(IndentHint.Type.FIRSTCATCH, b.getStart(), b.getStart() + 1);
+	    }
+    	else
+    		addHint(IndentHint.Type.WITH, d.getStart(), b.getEnd());
+
     	return new Pos(a, b);
     :}
   | expr_comma_list.a @ below_COMMA
@@ -1053,34 +1048,24 @@ expr=
     {: return new Pos(a, b); :}
   | IF.a seq_expr THEN expr.c ELSE expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_THEN, c.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_THEN, c.getEnd() ));
+    	addHint(IndentHint.Type.THEN, c.getStart(), c.getEnd());
+    	addHint(IndentHint.Type.ELSE, b.getStart(), b.getEnd());
 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_ELSE, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_ELSE, b.getEnd() ));
-    	
-    	
     	return new Pos(a, b); 
     :}
   | IF.a seq_expr THEN expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_THEN, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_THEN, b.getEnd() ));
-
+    	addHint(IndentHint.Type.THEN, b.getStart(), b.getEnd());
     	return new Pos(a, b); 
     :}
   | WHILE.a seq_expr DO seq_expr.c DONE.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_WHILE, c.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_WHILE, c.getEnd() ));
-
+    	addHint(IndentHint.Type.WHILE, c.getStart(), c.getEnd());
     	return new Pos(a, b); 
     :}
   | FOR.a val_ident EQUAL seq_expr direction_flag seq_expr DO seq_expr.c DONE.b
     {:
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_FOR, c.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_FOR, c.getEnd() ));
-
+    	addHint(IndentHint.Type.FOR, c.getStart(), c.getEnd());
     	return new Pos(a, b); 
     :}
   | expr.a COLONCOLON expr.b
@@ -1137,8 +1122,9 @@ expr=
     {: return new Pos(a, b); :}  
   | LAZY.a simple_expr.b @ below_SHARP 
     {: return new Pos(a, b); :}  
-  | OBJECT.a class_structure END.b
+  | OBJECT.a class_structure.c END.b
     {: 
+		addHint(IndentHint.Type.OBJECT, c.getStart(), c.getEnd());
     	return new Pos(a, b);
     :}
 ;
@@ -1151,12 +1137,14 @@ simple_expr=
     {: return a; :}
   | name_tag.a @ prec_constant_constructor 
     {: return a; :}
-  | LPAREN.a seq_expr RPAREN.b
-    {: return new Pos(a, b); :}
-  | BEGIN.a seq_expr END.b
+  | LPAREN.a seq_expr.c RPAREN.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_BEGIN, a.getEnd() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_BEGIN, b.getStart() ));
+    	addHint(IndentHint.Type.PAREN, a.getEnd() + 1, b.getStart());
+    	return new Pos(a, b); 
+    :}
+  | BEGIN.a seq_expr.c END.b
+    {: 
+    	addHint(IndentHint.Type.BEGIN, a.getEnd() + 1, b.getStart());
     	return new Pos(a, b); 
     :}
   | BEGIN.a END.b
@@ -1173,8 +1161,11 @@ simple_expr=
     {: return new Pos(a, b); :}
   | simple_expr.a DOT LBRACE expr RBRACE.b
     {: return new Pos(a, b); :}
-  | LBRACE.a record_expr RBRACE.b
-    {: return new Pos(a, b); :}
+  | LBRACE.a record_expr.c RBRACE.b
+    {: 
+    	addHint(IndentHint.Type.RECORD, c.getStart(), c.getEnd());
+    	return new Pos(a, b); 
+    :}
   | LBRACKETBAR.a expr_semi_list opt_semi BARRBRACKET.b
     {: return new Pos(a, b); :}
   | LBRACKETBAR.a BARRBRACKET.b
@@ -1233,35 +1224,30 @@ let_binding=
     {: 
     	return new Pos(a, b);
     :}
-  | pattern.a EQUAL seq_expr.b
+  | pattern.a EQUAL.e seq_expr.b
   	{: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-  	
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
   		return new Pos(a, b);
   	:}
 ;
 fun_binding=
     strict_binding.a
     {: return a; :}
-  | type_constraint.a EQUAL seq_expr.b
+  | type_constraint.a EQUAL.e seq_expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
 ;
 strict_binding=
     EQUAL.a seq_expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
   | labeled_simple_pattern.a fun_binding.b
   	{: 
+  		addHint(IndentHint.Type.FUNARGS, a.getStart(), a.getEnd());
   		return new Pos(a, b);
   	:}
 ;
@@ -1286,16 +1272,12 @@ fun_def=
 match_action=
     MINUSGREATER.a seq_expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_MATCH_ACTION, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_MATCH_ACTION, b.getEnd() ));
-    	  
+    	addHint(IndentHint.Type.MATCH_ACTION, b.getStart(), b.getEnd());
     	return new Pos(a, b); 
     :}
   | WHEN.a seq_expr MINUSGREATER seq_expr.b
   	{: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_MATCH_ACTION, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_MATCH_ACTION, b.getEnd() ));
-
+    	addHint(IndentHint.Type.MATCH_ACTION, b.getStart(), b.getEnd());
   		return new Pos(a, b); 
   	:}
 ;
@@ -1322,34 +1304,26 @@ record_expr=
   	:}
 ;
 lbl_expr_list=
-    label_longident.a EQUAL expr.b
+    label_longident.a EQUAL.e expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
-  | lbl_expr_list.a SEMI label_longident EQUAL expr.b
+  | lbl_expr_list.a SEMI label_longident EQUAL.e expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a,b); 
     :}
 ;
 field_expr_list=
-    label.a EQUAL expr.b
+    label.a EQUAL.e expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
-  | field_expr_list.a SEMI label EQUAL expr.b
+  | field_expr_list.a SEMI label EQUAL.e expr.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a,b); 
     :}
 ;
@@ -1403,8 +1377,11 @@ simple_pattern=
     {: return a; :}
   | SHARP.a type_longident.b
     {: return new Pos(a, b); :}
-  | LBRACE.a lbl_pattern_list opt_semi RBRACE.b
-    {: return new Pos(a, b); :}
+  | LBRACE.a lbl_pattern_list.c opt_semi RBRACE.b
+    {: 
+    	addHint(IndentHint.Type.RECORD, c.getStart(), c.getEnd());
+    	return new Pos(a, b); 
+   	:}
   | LBRACKET.a pattern_semi_list opt_semi RBRACKET.b
     {: return new Pos(a, b); :}
   | LBRACKETBAR.a pattern_semi_list opt_semi BARRBRACKET.b
@@ -1430,18 +1407,14 @@ pattern_semi_list=
     {: return new Pos(a, b); :}
 ;
 lbl_pattern_list=
-    label_longident.a EQUAL pattern.b
+    label_longident.a EQUAL.e pattern.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
-  | lbl_pattern_list.a SEMI label_longident EQUAL pattern.b
+  | lbl_pattern_list.a SEMI label_longident EQUAL.e pattern.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
   
@@ -1506,66 +1479,53 @@ type_kind=
     {: return Pos.NONE; :}
   | EQUAL.a core_type.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
   | EQUAL.a constructor_declarations.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+	    addHint(IndentHint.Type.FIRST_CONTRUCTOR, b.getStart(), b.getStart() + 1);
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
   | EQUAL.a PRIVATE.c constructor_declarations.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, c.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+	    addHint(IndentHint.Type.FIRST_CONTRUCTOR, b.getStart(), b.getStart() + 1);
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
   | EQUAL.a private_flag.c BAR.d constructor_declarations.b
     {: 
-    	if(c == Pos.NONE)
-    		indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, d.getStart() ));
-    	else
-    		indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, c.getStart() ));
-    		
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+	    addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
   | EQUAL.a private_flag.c LBRACE.d label_declarations opt_semi RBRACE.b
     {: 
-    	if(c == Pos.NONE)
-    		indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, d.getStart() ));
-    	else
-    		indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, c.getStart() ));
+   		addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd() + 1);
+    	addHint(IndentHint.Type.RECORD, d.getEnd() + 1, b.getStart());
+    	return new Pos(a, b); 
+    :}
+  | EQUAL.a core_type EQUAL.c private_flag opt_bar.o constructor_declarations.b
+    {: 
+    	if(o == Pos.NONE)
+    		addHint(IndentHint.Type.FIRST_CONTRUCTOR, b.getStart(), b.getStart() + 1);
     		
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, c.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
-  | EQUAL.a core_type EQUAL private_flag opt_bar constructor_declarations.b
+  | EQUAL.a core_type.t EQUAL.e private_flag LBRACE.l label_declarations.c opt_semi RBRACE.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-   		indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
-    	return new Pos(a, b); 
-    :}
-  | EQUAL.a core_type EQUAL private_flag LBRACE label_declarations.c opt_semi RBRACE.b
-    {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, c.getStart() ));
-   		indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, c.getEnd() ));
-
+    	if(t == Pos.NONE)
+    		addHint(IndentHint.Type.DEF, e.getEnd() + 1, l.getStart());
+    	else
+    		addHint(IndentHint.Type.DEF, t.getStart(), l.getStart());
+    	
+    	addHint(IndentHint.Type.RECORD, c.getStart(), c.getEnd());
     	return new Pos(a, b); 
     :}
   | EQUAL.a PRIVATE.c core_type.b
     {: 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, c.getStart() ));
-   		indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
 ;
@@ -1659,11 +1619,9 @@ with_constraint=
     	else
     		return new Pos(a, c);  	
 	:}    
-  | MODULE.a mod_longident EQUAL mod_ext_longident.b
+  | MODULE.a mod_longident EQUAL.e mod_ext_longident.b
 	{: 
-   		indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-   		indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
 		return new Pos(a, b); 
 	:}    
 ;
@@ -1738,10 +1696,6 @@ simple_core_type2=
     	else
     		return new Pos(a, c);  	
 	:}   
-
-//////////////////////////////////////
-
-
   | simple_core_type2.a SHARP class_longident.c opt_present.b
 	{: 
      	if(b != Pos.NONE)

@@ -4,24 +4,43 @@ import java.util.Comparator;
 
 public class IndentHint {
 	public enum Type {
-		INDENT_BEGIN, DEDENT_BEGIN, /* begin - end */
-		INDENT_STRUCT, DEDENT_STRUCT, /* struct - end */
-		INDENT_IN, DEDENT_IN, /* indentation after 'in' */
-		INDENT_DEF, DEDENT_DEF, /* indentation after '=' */
-		INDENT_FOR, DEDENT_FOR, /* indentation between 'do' and 'done' */
-		INDENT_THEN, DEDENT_THEN,
-		INDENT_ELSE, DEDENT_ELSE,
-		INDENT_WHILE, DEDENT_WHILE,
-		INDENT_MATCH_ACTION, DEDENT_MATCH_ACTION,
-		INDENT_FUNCTOR, DEDENT_FUNCTOR,
+		BEGIN, /* begin - end */
+		STRUCT,  /* struct - end */
+		SIG,  /* sig - end */
+		IN,  /* indentation after 'in' */
+		DEF, /* indentation after '=' */
+		FOR,  /* indentation between 'do' and 'done' */
+		THEN, 
+		ELSE,
+		WHILE,
+		MATCH_ACTION,
+		FIRST_MATCH_ACTION,
+		FUNCTOR,
+		TRY,
+		WITH,
+		OBJECT,
+		APP, /* function application */
+		RECORD, /* {a=.., b=..} */
+		FIRST_CONTRUCTOR,
+		PAREN,
+		FIRSTCATCH, /* first case in a try with */
+		FUNARGS,
+		MODULECONSTRAINT,
 	};
+	
+	/** indent or dedent? */
+	public boolean indent;
 
 	private Type type;
 	private int pos;
+	
+	/** the dedent (resp. indent) hint for an indent (resp. dedent) hint */
+	public IndentHint counterpart;
 
-	public IndentHint(Type type, int pos) {
+	public IndentHint(Type type, boolean indent, int pos) {
 		this.type = type;
 		this.pos = pos;
+		this.indent = indent;
 	}
 
 	public Type getType() {
@@ -38,7 +57,7 @@ public class IndentHint {
 
 	@Override
 	public String toString() {
-		return "Hint(" + type.name() + ":" + getLine() + "," + getColumn()
+		return (indent?"Indent":"Dedent") + "Hint(" + type.name() + ":" + (getLine() + 1) + "," + (getColumn()+1)
 				+ ")";
 	}
 
@@ -61,5 +80,21 @@ public class IndentHint {
 			}
 		}
 
+	}
+	
+	public boolean isIndent(){
+		return indent;
+	}
+	
+	public IndentHint getCounterpart() {
+		return counterpart;
+	}
+	
+	public int getIndent(){
+		if(type == Type.FUNARGS)
+			return 2;
+		
+		
+		return 1;
 	}
 }

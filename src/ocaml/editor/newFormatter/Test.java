@@ -28,7 +28,7 @@ public class Test {
 				c = '_';
 			str.append(c);
 		}
-
+		
 		final StringReader in = new StringReader(str.toString());
 		final OcamlScanner scanner = new OcamlScanner(in);
 		final OcamlFormatterParser parser = new OcamlFormatterParser();
@@ -51,10 +51,10 @@ public class Test {
 			System.err.println(error.message);
 		}
 
-		System.err.println("before sorting");
-		for (IndentHint hint : parser.indentHints) {
-			System.err.println(hint);
-		}
+//		System.err.println("before sorting");
+//		for (IndentHint hint : parser.indentHints) {
+//			System.err.println(hint);
+//		}
 
 		LinkedList<IndentHint> indentHints = new LinkedList<IndentHint>();
 		indentHints.addAll(parser.indentHints);
@@ -62,7 +62,6 @@ public class Test {
 		IndentHint.HintComparator hintComparator = new IndentHint.HintComparator();
 		Collections.sort(indentHints, hintComparator);
 
-		System.err.println("after sorting");
 		for (IndentHint hint : indentHints) {
 			System.err.println(hint);
 		}

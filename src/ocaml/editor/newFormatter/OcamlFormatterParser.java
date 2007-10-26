@@ -673,6 +673,18 @@ public class OcamlFormatterParser extends Parser {
 
 	public ErrorReporting errorReporting; 
 	public ArrayList<IndentHint> indentHints = new ArrayList<IndentHint>();
+	
+	
+	private void addHint(IndentHint.Type type, int indentPos, int dedentPos)
+	{
+    	IndentHint hint1 = new IndentHint( type, true, indentPos ); 
+    	IndentHint hint2 = new IndentHint( type, false, dedentPos );
+    	
+    	hint1.counterpart = hint2;
+    	hint2.counterpart = hint1;
+    	indentHints.add(hint1);
+    	indentHints.add(hint2);
+    }
 
 	private final Action[] actions;
 
@@ -800,9 +812,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol b = _symbols[offset + 2];
 					final Symbol e = _symbols[offset + 3];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_STRUCT, s.getEnd() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_STRUCT, e.getStart() ));
-    	
+    	addHint(IndentHint.Type.STRUCT, s.getEnd(), e.getStart());
     	return new Pos(s, e);
 				}
 			},
@@ -813,9 +823,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol c = _symbols[offset + 7];
 					final Symbol b = _symbols[offset + 8];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_FUNCTOR, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_FUNCTOR, b.getStart() ));
-		
+    	addHint(IndentHint.Type.FUNCTOR, b.getStart(), b.getEnd());
 		return new Pos(a, b);
 				}
 			},
@@ -912,14 +920,13 @@ public class OcamlFormatterParser extends Parser {
 		return new Pos(a, b);
 				}
 			},
-			new Action() {	// [33] structure_item = EXTERNAL.a val_ident_colon core_type EQUAL primitive_declaration.b
+			new Action() {	// [33] structure_item = EXTERNAL.a val_ident_colon core_type EQUAL.c primitive_declaration.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol c = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 5];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, c.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -942,15 +949,14 @@ public class OcamlFormatterParser extends Parser {
     		return new Pos(a, c);
 				}
 			},
-			new Action() {	// [36] structure_item = EXCEPTION.a UIDENT.id EQUAL constr_longident.b
+			new Action() {	// [36] structure_item = EXCEPTION.a UIDENT.id EQUAL.e constr_longident.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol id = _symbols[offset + 2];
+					final Symbol e = _symbols[offset + 3];
 					final Symbol b = _symbols[offset + 4];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
 		return new Pos(a, b);
 				}
 			},
@@ -970,15 +976,14 @@ public class OcamlFormatterParser extends Parser {
 					 return new Pos(a, b);
 				}
 			},
-			new Action() {	// [39] structure_item = MODULE.a TYPE ident.id EQUAL module_type.b
+			new Action() {	// [39] structure_item = MODULE.a TYPE ident.id EQUAL.e module_type.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol id = _symbols[offset + 3];
+					final Symbol e = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 5];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -1017,28 +1022,28 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol b = _symbols[offset + 2];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [45] module_binding = COLON.a module_type EQUAL module_expr.b
+			new Action() {	// [45] module_binding = COLON.a module_type EQUAL.e module_expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol e = _symbols[offset + 3];
 					final Symbol b = _symbols[offset + 4];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
   		return new Pos(a, b);
 				}
 			},
-			new Action() {	// [46] module_binding = LPAREN.a UIDENT COLON module_type RPAREN module_binding.b
+			new Action() {	// [46] module_binding = LPAREN.a UIDENT COLON module_type RPAREN.c module_binding.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol c = _symbols[offset + 5];
 					final Symbol b = _symbols[offset + 6];
-					 return new Pos(a, b);
+					 
+   		addHint(IndentHint.Type.MODULECONSTRAINT, a.getStart(), c.getEnd());
+   		return new Pos(a, b);
 				}
 			},
 			new Action() {	// [47] module_rec_bindings = module_rec_binding.a
@@ -1055,14 +1060,13 @@ public class OcamlFormatterParser extends Parser {
   		return new Pos(a, b);
 				}
 			},
-			new Action() {	// [49] module_rec_binding = UIDENT.a COLON module_type EQUAL module_expr.b
+			new Action() {	// [49] module_rec_binding = UIDENT.a COLON module_type EQUAL.e module_expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol e = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 5];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -1072,11 +1076,13 @@ public class OcamlFormatterParser extends Parser {
 					 return a;
 				}
 			},
-			new Action() {	// [51] module_type = SIG.a signature END.b
+			new Action() {	// [51] module_type = SIG.a signature.c END.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol c = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
+    	addHint(IndentHint.Type.SIG, c.getStart(), c.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -1085,9 +1091,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol b = _symbols[offset + 8];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_FUNCTOR, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_FUNCTOR, b.getEnd() ));
-
+    	addHint(IndentHint.Type.FUNCTOR, b.getStart(), b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -1142,14 +1146,13 @@ public class OcamlFormatterParser extends Parser {
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [59] signature_item = EXTERNAL.a val_ident_colon core_type EQUAL primitive_declaration.b
+			new Action() {	// [59] signature_item = EXTERNAL.a val_ident_colon core_type EQUAL.e primitive_declaration.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol e = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 5];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -1197,15 +1200,14 @@ public class OcamlFormatterParser extends Parser {
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [65] signature_item = MODULE.a TYPE ident.id EQUAL module_type.b
+			new Action() {	// [65] signature_item = MODULE.a TYPE ident.id EQUAL.e module_type.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol id = _symbols[offset + 3];
+					final Symbol e = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 5];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -1312,20 +1314,17 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol b = _symbols[offset + 2];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [79] class_fun_binding = COLON.a class_type EQUAL class_expr.b
+			new Action() {	// [79] class_fun_binding = COLON.a class_type EQUAL.e class_expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol e = _symbols[offset + 3];
 					final Symbol b = _symbols[offset + 4];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
   		return new Pos(a, b);
 				}
 			},
@@ -1391,9 +1390,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol b = _symbols[offset + 5];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_IN, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_IN, b.getEnd() ));
-
+    	addHint(IndentHint.Type.IN, b.getStart(), b.getEnd());
   		return new Pos(a, b);
 				}
 			},
@@ -1411,11 +1408,13 @@ public class OcamlFormatterParser extends Parser {
 					 return a;
 				}
 			},
-			new Action() {	// [91] class_simple_expr = OBJECT.a class_structure END.b
+			new Action() {	// [91] class_simple_expr = OBJECT.a class_structure.c END.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol c = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
+		addHint(IndentHint.Type.OBJECT, c.getStart(), c.getEnd());
 		return new Pos(a, b);
 				}
 			},
@@ -1591,29 +1590,28 @@ public class OcamlFormatterParser extends Parser {
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [110] value = mutable_flag.a label.c EQUAL seq_expr.b
+			new Action() {	// [110] value = mutable_flag.a label.c EQUAL.e seq_expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol c = _symbols[offset + 2];
+					final Symbol e = _symbols[offset + 3];
 					final Symbol b = _symbols[offset + 4];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	if(a != Pos.NONE)
     		return new Pos(a, b);
     	else
     		return new Pos(c, b);
 				}
 			},
-			new Action() {	// [111] value = mutable_flag.a label.c type_constraint EQUAL seq_expr.b
+			new Action() {	// [111] value = mutable_flag.a label.c type_constraint EQUAL.e seq_expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol c = _symbols[offset + 2];
+					final Symbol e = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 5];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
 
     	if(a != Pos.NONE)
     		return new Pos(a, b);
@@ -1650,29 +1648,27 @@ public class OcamlFormatterParser extends Parser {
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [115] concrete_method = METHOD.a private_flag.p label.id COLON poly_type EQUAL seq_expr.b
+			new Action() {	// [115] concrete_method = METHOD.a private_flag.p label.id COLON poly_type EQUAL.e seq_expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol p = _symbols[offset + 2];
 					final Symbol id = _symbols[offset + 3];
+					final Symbol e = _symbols[offset + 6];
 					final Symbol b = _symbols[offset + 7];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [116] concrete_method = METHOD.a private_flag.p LABEL.id poly_type EQUAL seq_expr.b
+			new Action() {	// [116] concrete_method = METHOD.a private_flag.p LABEL.id poly_type EQUAL.e seq_expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol p = _symbols[offset + 2];
 					final Symbol id = _symbols[offset + 3];
+					final Symbol e = _symbols[offset + 5];
 					final Symbol b = _symbols[offset + 6];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -1728,11 +1724,13 @@ public class OcamlFormatterParser extends Parser {
 					 return a;
 				}
 			},
-			new Action() {	// [124] class_signature = OBJECT.a class_sig_body END.b
+			new Action() {	// [124] class_signature = OBJECT.a class_sig_body.c END.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol c = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 	
+		addHint(IndentHint.Type.OBJECT, c.getStart(), c.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -1867,14 +1865,13 @@ public class OcamlFormatterParser extends Parser {
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [138] constrain = core_type.a EQUAL core_type.b
+			new Action() {	// [138] constrain = core_type.a EQUAL.e core_type.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol e = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
 		return new Pos(a, b);
 				}
 			},
@@ -1920,15 +1917,15 @@ public class OcamlFormatterParser extends Parser {
 					 return a;
 				}
 			},
-			new Action() {	// [144] class_type_declaration = virtual_flag.a class_type_parameters.c LIDENT.id EQUAL class_signature.b
+			new Action() {	// [144] class_type_declaration = virtual_flag.a class_type_parameters.c LIDENT.id EQUAL.e class_signature.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol c = _symbols[offset + 2];
 					final Symbol id = _symbols[offset + 3];
+					final Symbol e = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 5];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
 
      	if(a != Pos.NONE)
     		return new Pos(a, b);
@@ -2040,9 +2037,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol b = _symbols[offset + 2];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
   		return new Pos(a, b);
 				}
 			},
@@ -2089,7 +2084,9 @@ public class OcamlFormatterParser extends Parser {
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol b = _symbols[offset + 2];
-					 return new Pos(a, b);
+					 
+  		addHint(IndentHint.Type.APP, b.getStart(), b.getEnd());
+  		return new Pos(a, b);
 				}
 			},
 			new Action() {	// [167] expr = LET.a rec_flag let_bindings IN seq_expr.b
@@ -2097,9 +2094,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol b = _symbols[offset + 5];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_IN, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_IN, b.getEnd() ));
-
+    	addHint(IndentHint.Type.IN, b.getStart(), b.getEnd());
   		return new Pos(a, b);
 				}
 			},
@@ -2109,17 +2104,18 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol id = _symbols[offset + 3];
 					final Symbol b = _symbols[offset + 6];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_IN, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_IN, b.getEnd() ));
-
+    	addHint(IndentHint.Type.IN, b.getStart(), b.getEnd());
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [169] expr = FUNCTION.a opt_bar match_cases.b
+			new Action() {	// [169] expr = FUNCTION.a opt_bar.c match_cases.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol c = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
+	    if(c == Pos.NONE)
+	    	addHint(IndentHint.Type.FIRST_MATCH_ACTION, b.getStart(), b.getStart() + 1);
   		return new Pos(a, b);
 				}
 			},
@@ -2131,19 +2127,38 @@ public class OcamlFormatterParser extends Parser {
   		return new Pos(a, b);
 				}
 			},
-			new Action() {	// [171] expr = MATCH.a seq_expr WITH opt_bar match_cases.b
+			new Action() {	// [171] expr = MATCH.a seq_expr WITH opt_bar.d match_cases.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol d = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 5];
 					 
+    	if(d == Pos.NONE){
+	    	addHint(IndentHint.Type.WITH, b.getStart(), b.getEnd());
+	    	addHint(IndentHint.Type.FIRST_MATCH_ACTION, b.getStart(), b.getStart() + 1);
+	    }
+    	else
+    		addHint(IndentHint.Type.WITH, d.getStart(), b.getEnd());
+    	
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [172] expr = TRY.a seq_expr WITH opt_bar match_cases.b
+			new Action() {	// [172] expr = TRY.a seq_expr.c WITH opt_bar.d match_cases.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol c = _symbols[offset + 2];
+					final Symbol d = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 5];
 					 
+    	addHint(IndentHint.Type.TRY, c.getStart(), c.getEnd());
+
+    	if(d == Pos.NONE){
+	    	addHint(IndentHint.Type.WITH, b.getStart(), b.getEnd());
+	    	addHint(IndentHint.Type.FIRSTCATCH, b.getStart(), b.getStart() + 1);
+	    }
+    	else
+    		addHint(IndentHint.Type.WITH, d.getStart(), b.getEnd());
+
     	return new Pos(a, b);
 				}
 			},
@@ -2173,13 +2188,9 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol c = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 6];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_THEN, c.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_THEN, c.getEnd() ));
+    	addHint(IndentHint.Type.THEN, c.getStart(), c.getEnd());
+    	addHint(IndentHint.Type.ELSE, b.getStart(), b.getEnd());
 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_ELSE, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_ELSE, b.getEnd() ));
-    	
-    	
     	return new Pos(a, b);
 				}
 			},
@@ -2188,9 +2199,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol b = _symbols[offset + 4];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_THEN, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_THEN, b.getEnd() ));
-
+    	addHint(IndentHint.Type.THEN, b.getStart(), b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -2200,9 +2209,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol c = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 5];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_WHILE, c.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_WHILE, c.getEnd() ));
-
+    	addHint(IndentHint.Type.WHILE, c.getStart(), c.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -2212,9 +2219,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol c = _symbols[offset + 8];
 					final Symbol b = _symbols[offset + 9];
 					
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_FOR, c.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_FOR, c.getEnd() ));
-
+    	addHint(IndentHint.Type.FOR, c.getStart(), c.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -2406,11 +2411,13 @@ public class OcamlFormatterParser extends Parser {
 					 return new Pos(a, b);
 				}
 			},
-			new Action() {	// [207] expr = OBJECT.a class_structure END.b
+			new Action() {	// [207] expr = OBJECT.a class_structure.c END.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol c = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
+		addHint(IndentHint.Type.OBJECT, c.getStart(), c.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -2438,20 +2445,23 @@ public class OcamlFormatterParser extends Parser {
 					 return a;
 				}
 			},
-			new Action() {	// [212] simple_expr = LPAREN.a seq_expr RPAREN.b
+			new Action() {	// [212] simple_expr = LPAREN.a seq_expr.c RPAREN.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
-					final Symbol b = _symbols[offset + 3];
-					 return new Pos(a, b);
-				}
-			},
-			new Action() {	// [213] simple_expr = BEGIN.a seq_expr END.b
-				public Symbol reduce(Symbol[] _symbols, int offset) {
-					final Symbol a = _symbols[offset + 1];
+					final Symbol c = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_BEGIN, a.getEnd() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_BEGIN, b.getStart() ));
+    	addHint(IndentHint.Type.PAREN, a.getEnd() + 1, b.getStart());
+    	return new Pos(a, b);
+				}
+			},
+			new Action() {	// [213] simple_expr = BEGIN.a seq_expr.c END.b
+				public Symbol reduce(Symbol[] _symbols, int offset) {
+					final Symbol a = _symbols[offset + 1];
+					final Symbol c = _symbols[offset + 2];
+					final Symbol b = _symbols[offset + 3];
+					 
+    	addHint(IndentHint.Type.BEGIN, a.getEnd() + 1, b.getStart());
     	return new Pos(a, b);
 				}
 			},
@@ -2498,11 +2508,14 @@ public class OcamlFormatterParser extends Parser {
 					 return new Pos(a, b);
 				}
 			},
-			new Action() {	// [220] simple_expr = LBRACE.a record_expr RBRACE.b
+			new Action() {	// [220] simple_expr = LBRACE.a record_expr.c RBRACE.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol c = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
-					 return new Pos(a, b);
+					 
+    	addHint(IndentHint.Type.RECORD, c.getStart(), c.getEnd());
+    	return new Pos(a, b);
 				}
 			},
 			new Action() {	// [221] simple_expr = LBRACKETBAR.a expr_semi_list opt_semi BARRBRACKET.b
@@ -2643,14 +2656,13 @@ public class OcamlFormatterParser extends Parser {
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [241] let_binding = pattern.a EQUAL seq_expr.b
+			new Action() {	// [241] let_binding = pattern.a EQUAL.e seq_expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol e = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-  	
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
   		return new Pos(a, b);
 				}
 			},
@@ -2660,14 +2672,13 @@ public class OcamlFormatterParser extends Parser {
 					 return a;
 				}
 			},
-			new Action() {	// [243] fun_binding = type_constraint.a EQUAL seq_expr.b
+			new Action() {	// [243] fun_binding = type_constraint.a EQUAL.e seq_expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol e = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -2676,9 +2687,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol b = _symbols[offset + 2];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -2687,6 +2696,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol b = _symbols[offset + 2];
 					 
+  		addHint(IndentHint.Type.FUNARGS, a.getStart(), a.getEnd());
   		return new Pos(a, b);
 				}
 			},
@@ -2725,9 +2735,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol b = _symbols[offset + 2];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_MATCH_ACTION, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_MATCH_ACTION, b.getEnd() ));
-    	  
+    	addHint(IndentHint.Type.MATCH_ACTION, b.getStart(), b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -2736,9 +2744,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol b = _symbols[offset + 4];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_MATCH_ACTION, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_MATCH_ACTION, b.getEnd() ));
-
+    	addHint(IndentHint.Type.MATCH_ACTION, b.getStart(), b.getEnd());
   		return new Pos(a, b);
 				}
 			},
@@ -2779,47 +2785,43 @@ public class OcamlFormatterParser extends Parser {
     		return a;
 				}
 			},
-			new Action() {	// [256] lbl_expr_list = label_longident.a EQUAL expr.b
+			new Action() {	// [256] lbl_expr_list = label_longident.a EQUAL.e expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol e = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [257] lbl_expr_list = lbl_expr_list.a SEMI label_longident EQUAL expr.b
+			new Action() {	// [257] lbl_expr_list = lbl_expr_list.a SEMI label_longident EQUAL.e expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol e = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 5];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a,b);
 				}
 			},
-			new Action() {	// [258] field_expr_list = label.a EQUAL expr.b
+			new Action() {	// [258] field_expr_list = label.a EQUAL.e expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol e = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [259] field_expr_list = field_expr_list.a SEMI label EQUAL expr.b
+			new Action() {	// [259] field_expr_list = field_expr_list.a SEMI label EQUAL.e expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol e = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 5];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a,b);
 				}
 			},
@@ -2955,11 +2957,14 @@ public class OcamlFormatterParser extends Parser {
 					 return new Pos(a, b);
 				}
 			},
-			new Action() {	// [280] simple_pattern = LBRACE.a lbl_pattern_list opt_semi RBRACE.b
+			new Action() {	// [280] simple_pattern = LBRACE.a lbl_pattern_list.c opt_semi RBRACE.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol c = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 4];
-					 return new Pos(a, b);
+					 
+    	addHint(IndentHint.Type.RECORD, c.getStart(), c.getEnd());
+    	return new Pos(a, b);
 				}
 			},
 			new Action() {	// [281] simple_pattern = LBRACKET.a pattern_semi_list opt_semi RBRACKET.b
@@ -3024,25 +3029,23 @@ public class OcamlFormatterParser extends Parser {
 					 return new Pos(a, b);
 				}
 			},
-			new Action() {	// [290] lbl_pattern_list = label_longident.a EQUAL pattern.b
+			new Action() {	// [290] lbl_pattern_list = label_longident.a EQUAL.e pattern.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol e = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [291] lbl_pattern_list = lbl_pattern_list.a SEMI label_longident EQUAL pattern.b
+			new Action() {	// [291] lbl_pattern_list = lbl_pattern_list.a SEMI label_longident EQUAL.e pattern.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol e = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 5];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -3129,9 +3132,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol b = _symbols[offset + 2];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -3140,9 +3141,8 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol b = _symbols[offset + 2];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+	    addHint(IndentHint.Type.FIRST_CONTRUCTOR, b.getStart(), b.getStart() + 1);
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -3152,9 +3152,8 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol c = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, c.getStart() ));
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+	    addHint(IndentHint.Type.FIRST_CONTRUCTOR, b.getStart(), b.getStart() + 1);
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -3165,13 +3164,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol d = _symbols[offset + 3];
 					final Symbol b = _symbols[offset + 4];
 					 
-    	if(c == Pos.NONE)
-    		indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, d.getStart() ));
-    	else
-    		indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, c.getStart() ));
-    		
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+	    addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -3182,36 +3175,40 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol d = _symbols[offset + 3];
 					final Symbol b = _symbols[offset + 6];
 					 
-    	if(c == Pos.NONE)
-    		indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, d.getStart() ));
-    	else
-    		indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, c.getStart() ));
-    		
-    	indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+   		addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd() + 1);
+    	addHint(IndentHint.Type.RECORD, d.getEnd() + 1, b.getStart());
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [305] type_kind = EQUAL.a core_type EQUAL private_flag opt_bar constructor_declarations.b
+			new Action() {	// [305] type_kind = EQUAL.a core_type EQUAL.c private_flag opt_bar.o constructor_declarations.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol c = _symbols[offset + 3];
+					final Symbol o = _symbols[offset + 5];
 					final Symbol b = _symbols[offset + 6];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-   		indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	if(o == Pos.NONE)
+    		addHint(IndentHint.Type.FIRST_CONTRUCTOR, b.getStart(), b.getStart() + 1);
+    		
+    	addHint(IndentHint.Type.DEF, c.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [306] type_kind = EQUAL.a core_type EQUAL private_flag LBRACE label_declarations.c opt_semi RBRACE.b
+			new Action() {	// [306] type_kind = EQUAL.a core_type.t EQUAL.e private_flag LBRACE.l label_declarations.c opt_semi RBRACE.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol t = _symbols[offset + 2];
+					final Symbol e = _symbols[offset + 3];
+					final Symbol l = _symbols[offset + 5];
 					final Symbol c = _symbols[offset + 6];
 					final Symbol b = _symbols[offset + 8];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, c.getStart() ));
-   		indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, c.getEnd() ));
-
+    	if(t == Pos.NONE)
+    		addHint(IndentHint.Type.DEF, e.getEnd() + 1, l.getStart());
+    	else
+    		addHint(IndentHint.Type.DEF, t.getStart(), l.getStart());
+    	
+    	addHint(IndentHint.Type.RECORD, c.getStart(), c.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -3221,9 +3218,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol c = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
-    	indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, c.getStart() ));
-   		indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, a.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},
@@ -3373,14 +3368,13 @@ public class OcamlFormatterParser extends Parser {
     		return new Pos(a, c);
 				}
 			},
-			new Action() {	// [328] with_constraint = MODULE.a mod_longident EQUAL mod_ext_longident.b
+			new Action() {	// [328] with_constraint = MODULE.a mod_longident EQUAL.e mod_ext_longident.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol e = _symbols[offset + 3];
 					final Symbol b = _symbols[offset + 4];
 					 
-   		indentHints.add(new IndentHint( IndentHint.Type.INDENT_DEF, b.getStart() ));
-   		indentHints.add(new IndentHint( IndentHint.Type.DEDENT_DEF, b.getEnd() ));
-
+    	addHint(IndentHint.Type.DEF, e.getEnd() + 1, b.getEnd());
 		return new Pos(a, b);
 				}
 			},
