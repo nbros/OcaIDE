@@ -3,37 +3,34 @@ package ocaml.editor.newFormatter;
 import java.util.Comparator;
 
 public class IndentHint {
+
 	public enum Type {
 		BEGIN, /* begin - end */
-		STRUCT,  /* struct - end */
-		SIG,  /* sig - end */
-		IN,  /* indentation after 'in' */
+		STRUCT, /* struct - end */
+		SIG, /* sig - end */
+		IN, /* indentation after 'in' */
 		DEF, /* indentation after '=' */
-		FOR,  /* indentation between 'do' and 'done' */
-		THEN, 
-		ELSE,
-		WHILE,
-		MATCH_ACTION,
-		FIRST_MATCH_ACTION,
-		FUNCTOR,
-		TRY,
-		WITH,
-		OBJECT,
-		APP, /* function application */
+		FOR, /* indentation between 'do' and 'done' */
+		THEN, ELSE, WHILE, MATCH_ACTION, FIRST_MATCH_CASE, FUNCTOR, TRY,
+		WITH, OBJECT, APP, /* function application */
 		RECORD, /* {a=.., b=..} */
-		FIRST_CONTRUCTOR,
-		PAREN,
-		FIRSTCATCH, /* first case in a try with */
-		FUNARGS,
-		MODULECONSTRAINT,
+		FIRST_CONTRUCTOR, PAREN, FIRSTCATCH, /* first case in a try with */
+		FUNARGS, MODULECONSTRAINT,
 	};
-	
+
+	private static IndentingPreferences indentingPreferences = null;
+
+	public static void setIndentingPreferences(
+			IndentingPreferences indentingPreferences) {
+		IndentHint.indentingPreferences = indentingPreferences;
+	}
+
 	/** indent or dedent? */
 	public boolean indent;
 
 	private Type type;
 	private int pos;
-	
+
 	/** the dedent (resp. indent) hint for an indent (resp. dedent) hint */
 	public IndentHint counterpart;
 
@@ -57,8 +54,8 @@ public class IndentHint {
 
 	@Override
 	public String toString() {
-		return (indent?"Indent":"Dedent") + "Hint(" + type.name() + ":" + (getLine() + 1) + "," + (getColumn()+1)
-				+ ")";
+		return (indent ? "Indent" : "Dedent") + "Hint(" + type.name() + ":"
+				+ (getLine() + 1) + "," + (getColumn() + 1) + ")";
 	}
 
 	public static class HintComparator implements Comparator<IndentHint> {
@@ -81,20 +78,16 @@ public class IndentHint {
 		}
 
 	}
-	
-	public boolean isIndent(){
+
+	public boolean isIndent() {
 		return indent;
 	}
-	
+
 	public IndentHint getCounterpart() {
 		return counterpart;
 	}
-	
-	public int getIndent(){
-		if(type == Type.FUNARGS)
-			return 2;
-		
-		
-		return 1;
+
+	public int getIndent() {
+		return indentingPreferences.getIndent(type);
 	}
 }

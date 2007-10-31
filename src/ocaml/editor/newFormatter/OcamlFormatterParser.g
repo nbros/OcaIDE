@@ -1009,7 +1009,7 @@ expr=
   | FUNCTION.a opt_bar.c match_cases.b
   	{: 
 	    if(c == Pos.NONE)
-	    	addHint(IndentHint.Type.FIRST_MATCH_ACTION, b.getStart(), b.getStart() + 1);
+	    	addHint(IndentHint.Type.FIRST_MATCH_CASE, b.getStart(), b.getStart() + 1);
   		return new Pos(a, b); 
   	:}
   | FUN.a labeled_simple_pattern fun_def.b
@@ -1020,7 +1020,7 @@ expr=
     {: 
     	if(d == Pos.NONE){
 	    	addHint(IndentHint.Type.WITH, b.getStart(), b.getEnd());
-	    	addHint(IndentHint.Type.FIRST_MATCH_ACTION, b.getStart(), b.getStart() + 1);
+	    	addHint(IndentHint.Type.FIRST_MATCH_CASE, b.getStart(), b.getStart() + 1);
 	    }
     	else
     		addHint(IndentHint.Type.WITH, d.getStart(), b.getEnd());

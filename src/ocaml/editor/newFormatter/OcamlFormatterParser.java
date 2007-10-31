@@ -2115,7 +2115,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol b = _symbols[offset + 3];
 					 
 	    if(c == Pos.NONE)
-	    	addHint(IndentHint.Type.FIRST_MATCH_ACTION, b.getStart(), b.getStart() + 1);
+	    	addHint(IndentHint.Type.FIRST_MATCH_CASE, b.getStart(), b.getStart() + 1);
   		return new Pos(a, b);
 				}
 			},
@@ -2135,7 +2135,7 @@ public class OcamlFormatterParser extends Parser {
 					 
     	if(d == Pos.NONE){
 	    	addHint(IndentHint.Type.WITH, b.getStart(), b.getEnd());
-	    	addHint(IndentHint.Type.FIRST_MATCH_ACTION, b.getStart(), b.getStart() + 1);
+	    	addHint(IndentHint.Type.FIRST_MATCH_CASE, b.getStart(), b.getStart() + 1);
 	    }
     	else
     		addHint(IndentHint.Type.WITH, d.getStart(), b.getEnd());
