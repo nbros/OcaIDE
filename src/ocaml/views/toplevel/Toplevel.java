@@ -91,7 +91,7 @@ public class Toplevel {
 
 	private final Color colorRed;
 
-	public Toplevel(OcamlToplevelView view, StyledText userText, StyledText resultText) {
+	public Toplevel(final OcamlToplevelView view, final StyledText userText, final StyledText resultText) {
 
 		Display display = Display.getDefault();
 		colorUserText = new Color(display, 64, 64, 255);
@@ -123,8 +123,14 @@ public class Toplevel {
 
 			@Override
 			public void keyPressed(KeyEvent e) {
+				
+				
+				if (e.character == '\r' && ((e.stateMask & SWT.CTRL) > 0)) { // <Ctrl> + <return>
+					eval(userText.getText());
+					e.doit = false;
+				}
 
-				if (e.character == '\r') { // <return>
+				else if (e.character == '\r') { // <return>
 					sendText();
 					e.doit = false;
 				} else if (e.keyCode == SWT.ARROW_UP) {
@@ -149,6 +155,7 @@ public class Toplevel {
 				}
 			}
 		});
+		
 		this.resultText = resultText;
 		this.resultText.setEditable(false);
 	}
