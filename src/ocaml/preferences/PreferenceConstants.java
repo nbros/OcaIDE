@@ -68,6 +68,32 @@ public class PreferenceConstants
 	public static final String P_FORMATTER_FORMAT_COMMENTS = "ocamlFormatterFormatComments";
 	public static final String P_FORMATTER_INDENT_IN_LETS = "ocamlFormatterIndentInLets";
 	
+	public static final String P_FORMATTER_BEGIN = "ocamlFormatterBegin";
+	public static final String P_FORMATTER_STRUCT = "ocamlFormatterStruct";
+	public static final String P_FORMATTER_SIG = "ocamlFormatterSig";
+	public static final String P_FORMATTER_IN = "ocamlFormatterIn";
+	public static final String P_FORMATTER_DEF =  "ocamlFormatterDef";
+	public static final String P_FORMATTER_FOR =  "ocamlFormatterFor";
+	public static final String P_FORMATTER_THEN =  "ocamlFormatterThen";
+	public static final String P_FORMATTER_ELSE =  "ocamlFormatterElse";
+	public static final String P_FORMATTER_WHILE =  "ocamlFormatterWhile";
+	public static final String P_FORMATTER_MATCH_ACTION =  "ocamlFormatterMatchAction";
+	public static final String P_FORMATTER_FIRST_MATCH_CASE =  "ocamlFormatterFirstMatchCase";
+	public static final String P_FORMATTER_FUNCTOR =  "ocamlFormatterFunctor";
+	public static final String P_FORMATTER_TRY =  "ocamlFormatterTry";
+	public static final String P_FORMATTER_WITH =  "ocamlFormatterWith";
+	public static final String P_FORMATTER_OBJECT =  "ocamlFormatterObject";
+	public static final String P_FORMATTER_APPLICATION =  "ocamlFormatterApplication";
+	public static final String P_FORMATTER_RECORD =  "ocamlFormatterRecord";
+	public static final String P_FORMATTER_FIRST_CONSTRUCTOR =  "ocamlFormatterFirstConstructor";
+	public static final String P_FORMATTER_PAREN =  "ocamlFormatterParen";
+	public static final String P_FORMATTER_FIRST_CATCH =  "ocamlFormatterFirstCatch";
+	public static final String P_FORMATTER_FUN_ARGS =  "ocamlFormatterFunArgs";
+	public static final String P_FORMATTER_MODULE_CONSTRAINT =  "ocamlFormatterModuleConstraint";
+
+	public static final String P_FORMATTER_INDENT_LET_IN = "ocamlFormatterIndentLetIn";
+	
+	
 	public static final String P_OUTLINE_SHOW_LET = "ocamlOutlineShowLet";
 	public static final String P_OUTLINE_SHOW_LET_IN = "ocamlOutlineShowLetIn";
 	public static final String P_OUTLINE_SHOW_TYPE = "ocamlOutlineShowType";

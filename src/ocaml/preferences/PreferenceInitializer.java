@@ -77,6 +77,30 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_FORMATTER_COMMENT_WIDTH, 78);
 			store.setDefault(PreferenceConstants.P_FORMATTER_MAX_BLANK_LINES, 1);
 			store.setDefault(PreferenceConstants.P_FORMATTER_FORMAT_COMMENTS, true);
+			
+			store.setDefault(PreferenceConstants.P_FORMATTER_INDENT_LET_IN, false);
+			store.setDefault(PreferenceConstants.P_FORMATTER_APPLICATION, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_BEGIN, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_DEF, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_ELSE, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_FIRST_CATCH, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_FIRST_CONSTRUCTOR, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_FIRST_MATCH_CASE, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_FOR, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_FUN_ARGS, 2);
+			store.setDefault(PreferenceConstants.P_FORMATTER_FUNCTOR, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_IN, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_MATCH_ACTION, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_MODULE_CONSTRAINT, 2);
+			store.setDefault(PreferenceConstants.P_FORMATTER_OBJECT, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_PAREN, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_RECORD, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_SIG, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_STRUCT, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_THEN, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_TRY, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_WHILE, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_WITH, 0);
 
 			// set the default for the outline
 			store.setDefault(PreferenceConstants.P_OUTLINE_LET_MINIMUM_CHARS, 0);
