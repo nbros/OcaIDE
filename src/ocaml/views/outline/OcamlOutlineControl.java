@@ -41,7 +41,7 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 	/** Whether to always fully expand the outline */
 	private boolean expandAll;
 
-	public static final boolean bOutlineDebugButton = true;
+	public static final boolean bOutlineDebugButton = false;
 
 	/**
 	 * Creates a content outline page using the given provider and the given editor.
