@@ -1,6 +1,5 @@
 package ocaml.editor.formatting;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,15 +7,15 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import beaver.Parser.Exception;
-
 import ocaml.OcamlPlugin;
 import ocaml.editor.newFormatter.IndentHint;
+import ocaml.editor.newFormatter.IndentingPreferences;
 import ocaml.editor.newFormatter.OcamlFormatterParser;
 import ocaml.editor.newFormatter.OcamlScanner;
-import ocaml.editor.newFormatter.Pos;
 import ocaml.parser.ErrorReporting;
 import ocaml.preferences.PreferenceConstants;
+
+import org.eclipse.jface.dialogs.MessageDialog;
 
 /**
  * This class is responsible for formating O'Caml code. It indents code, adds
@@ -46,6 +45,17 @@ public class OcamlFormater {
 	 * 
 	 */
 	public String format(String doc) {
+		
+		/* Load and bind the preferences */
+		IndentingPreferences indentingPreferences = new IndentingPreferences();
+		indentingPreferences.readPreferences();
+		IndentHint.setIndentingPreferences(indentingPreferences);
+		
+		boolean indentLetIn = OcamlPlugin.getInstance().getPreferenceStore()
+		.getBoolean(PreferenceConstants.P_FORMATTER_INDENT_LET_IN);
+
+		
+		
 		// number of consecutive blank lines
 		int nConsecutiveBlankLines = 0;
 
@@ -80,31 +90,39 @@ public class OcamlFormater {
 
 		try {
 			parser.parse(scanner);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Throwable e) {
+			OcamlPlugin.logError("Error parsing for formatting", e);
 		}
 
-		for (ErrorReporting.Error error : parser.errorReporting.errors) {
-			System.err.println(error.message);
+		// cannot format if there are syntax errors, since we are using a parser
+		if (parser.errorReporting.errors.size() > 0) {
+			StringBuilder buffer = new StringBuilder();
+			for (ErrorReporting.Error error : parser.errorReporting.errors)
+				buffer.append(error.message + "\n");
+
+			MessageDialog.openInformation(null, "Ocaml Plugin",
+					"Couldn't format because of syntax errors\n" + buffer);
+			return doc;
 		}
 
+		// Create a copy of the indent hints
 		LinkedList<IndentHint> indentHints = new LinkedList<IndentHint>();
 		indentHints.addAll(parser.indentHints);
 
+		// sort the indent hints by position (so as to get linear formatting
+		// time)
 		IndentHint.HintComparator hintComparator = new IndentHint.HintComparator();
 		Collections.sort(indentHints, hintComparator);
 
-		for (IndentHint hint : indentHints) {
-			System.err.println(hint);
-		}
-
+		/** The formatted text */
 		StringBuilder result = new StringBuilder();
+		/** The current line indentation */
 		int indent = 0;
 
+		/*
+		 * Formatting algorithm: for each line, apply all the formatting hints
+		 * up until the first character of this line
+		 */
 		for (int lineNumber = 0; lineNumber < lines.length; lineNumber++) {
 			String line = lines[lineNumber];
 			String trimmed = line.trim();
@@ -117,97 +135,80 @@ public class OcamlFormater {
 			} else
 				nConsecutiveBlankLines = 0;
 
-			// look for the first real character
+			// look for the first non-blank character
 			int firstColumn;
 			for (firstColumn = 0; firstColumn < line.length(); firstColumn++) {
 				if (!Character.isWhitespace(line.charAt(firstColumn)))
 					break;
 			}
 
+			// apply the indent hints
 			while (!indentHints.isEmpty()) {
 				IndentHint hint = indentHints.getFirst();
 				if (hint.getLine() < lineNumber || hint.getLine() == lineNumber
 						&& hint.getColumn() <= firstColumn) {
 					indentHints.removeFirst();
+
 					if (hint.isIndent()) {
 
+						// compute the offset of this hint in the document
 						int currentOffset = linesOffsets.get(hint.getLine())
 								+ hint.getColumn();
 
 						boolean bCancel = false;
 
+						// the text after the offset
 						String after = doc.substring(currentOffset);
-						// System.err.println(">>>" +after.substring(0,
-						// after.length() > 10? 10 : after.length()));
 
-						if (hint.isIndent()) {
+						/* Cancel some redundant indentations */
 
-							if (hint.getType() == IndentHint.Type.WITH)
+						/*
+						 * if (hint.getType() == IndentHint.Type.WITH) bCancel =
+						 * true;
+						 */
+
+						if (hint.getType() == IndentHint.Type.THEN
+								|| hint.getType() == IndentHint.Type.ELSE) {
+							Matcher matcher = patternBegin.matcher(after);
+							if (matcher.find())
 								bCancel = true;
-
-							if (hint.getType() == IndentHint.Type.THEN
-									|| hint.getType() == IndentHint.Type.ELSE) {
-								Matcher matcher = patternBegin.matcher(after);
-								if (matcher.find())
-									bCancel = true;
-							}
-							if (hint.getType() == IndentHint.Type.ELSE) {
-								Matcher matcher = patternIf.matcher(after);
-								if (matcher.find())
-									bCancel = true;
-							}
-
-							if (hint.getType() == IndentHint.Type.DEF) {
-								Matcher matcher = patternAfterDef
-										.matcher(after);
-								if (matcher.find())
-									bCancel = true;
-
-								matcher = patternLBrace.matcher(after);
-								if (matcher.find())
-									bCancel = true;
-							}
-
-							if (hint.getType() == IndentHint.Type.IN) {
-								Matcher matcher = patternLet.matcher(after);
-								if (matcher.find())
-									bCancel = true;
-							}
-
-							if (hint.getType() == IndentHint.Type.BEGIN || hint.getType() == IndentHint.Type.PAREN) {
-								Matcher matcher = patternTry.matcher(after);
-								if (matcher.find())
-									bCancel = true;
-							}
+						}
+						if (hint.getType() == IndentHint.Type.ELSE) {
+							Matcher matcher = patternIf.matcher(after);
+							if (matcher.find())
+								bCancel = true;
 						}
 
+						if (hint.getType() == IndentHint.Type.DEF) {
+							Matcher matcher = patternAfterDef.matcher(after);
+							if (matcher.find())
+								bCancel = true;
+
+							matcher = patternLBrace.matcher(after);
+							if (matcher.find())
+								bCancel = true;
+						}
+
+						if (!indentLetIn && hint.getType() == IndentHint.Type.IN) {
+							Matcher matcher = patternLet.matcher(after);
+							if (matcher.find())
+								bCancel = true;
+						}
+
+						if (hint.getType() == IndentHint.Type.BEGIN
+								|| hint.getType() == IndentHint.Type.PAREN) {
+							Matcher matcher = patternTry.matcher(after);
+							if (matcher.find())
+								bCancel = true;
+						}
+
+						/* if this indentation was removed, remove the
+						 corresponding dedentation */
 						if (bCancel) {
 							indentHints.remove(hint.getCounterpart());
 							continue;
 						}
 
-						// int currentOffset = linesOffsets.get(hint.getLine())
-						// + hint.getColumn();
-						//
-						// if (prevHint != null) {
-						// String between = doc.substring(prevHintOffset,
-						// currentOffset);
-						//							
-						// if(between.length() < 10)
-						// System.err.println(">" + between + "<");
-						//							
-						// if (between.trim().equals("if")) {
-						// if (prevHint.isIndent()
-						// && prevHint.getType() == IndentHint.Type.ELSE) {
-						// indentHints.remove(hint.getCounterpart());
-						// continue;
-						// }
-						//
-						// }
-						//
-						// }
-
-						// if (!hint.getType().name().equals("IN"))
 						indent += hint.getIndent();
 
 						// if (hint.isIndent()) {
