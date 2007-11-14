@@ -75,7 +75,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 				path = path.trim();
 				if (!".".equals(path)) {
 					commandLine.add("-I");
-					commandLine.add("\"" + path + "\"");
+					commandLine.add(path);
 				}
 			}
 		}

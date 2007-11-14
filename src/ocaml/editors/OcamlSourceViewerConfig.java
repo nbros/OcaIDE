@@ -1,5 +1,6 @@
 package ocaml.editors;
 
+import ocaml.OcamlPlugin;
 import ocaml.editor.completion.OcamlCompletionProcessor;
 import ocaml.editor.completion.OcamlInformationControlCreator;
 import ocaml.editor.formatting.OcamlFormattingStrategy;
@@ -7,6 +8,7 @@ import ocaml.editor.syntaxcoloring.DocumentAnnotationRule;
 import ocaml.editor.syntaxcoloring.OcamlEditorColors;
 import ocaml.editor.syntaxcoloring.OcamlPartitionScanner;
 import ocaml.editor.syntaxcoloring.OcamlRuleScanner;
+import ocaml.preferences.PreferenceConstants;
 
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
@@ -141,7 +143,12 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 				IDocument.DEFAULT_CONTENT_TYPE), IDocument.DEFAULT_CONTENT_TYPE);
 
 		assistant.enableAutoInsert(true);
-		assistant.enableAutoActivation(true);
+		
+		boolean autoActivation = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+				PreferenceConstants.P_EDITOR_AUTOCOMPLETION);
+		
+		assistant.enableAutoActivation(autoActivation);
+
 		assistant.setAutoActivationDelay(100);
 		assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_STACKED);
 		assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);

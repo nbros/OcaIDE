@@ -45,6 +45,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_BOLD_STRINGS, false);
 
 			// set the defaults for the editor
+			store.setDefault(PreferenceConstants.P_EDITOR_AUTOCOMPLETION, true);
 			store.setDefault(PreferenceConstants.P_EDITOR_DISABLE_AUTOFORMAT, false);
 			store.setDefault(PreferenceConstants.P_EDITOR_TABS, 2);
 			store.setDefault(PreferenceConstants.P_EDITOR_CONTINUE_COMMENTS, true);

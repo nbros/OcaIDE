@@ -24,9 +24,9 @@ import ocaml.parser.OcamlParser;
 import ocaml.parser.OcamlScanner;
 
 /**
- * An O'Caml interface parser. Allows us to extract all the definitions from an O'Caml interface,
- * together with the documentation associated to each definition, so as to be able to display it to
- * the user when needed. <br>
+ * An O'Caml interface parser. Allows us to extract all the definitions from an
+ * O'Caml interface, together with the documentation associated to each
+ * definition, so as to be able to display it to the user when needed. <br>
  * This class makes use of the singleton design pattern, to cache all searches.
  */
 public class OcamlNewInterfaceParser {
@@ -50,17 +50,19 @@ public class OcamlNewInterfaceParser {
 	}
 
 	/** The cache of module definitions */
-	private LinkedList<SoftReference<CachedDef>> cache = new LinkedList<SoftReference<CachedDef>>();
+	private LinkedList<CachedDef> cache = new LinkedList<CachedDef>();
 
 	/**
-	 * ocamldoc section comment. We retrieve them and put them at the beginning of the following
-	 * definitions
+	 * ocamldoc section comment. We retrieve them and put them at the beginning
+	 * of the following definitions
 	 */
-	private Pattern patternSectionComment = Pattern.compile("\\A *\\{\\d+ (.*)\\}((.|\\n)*)\\z");
+	private Pattern patternSectionComment = Pattern
+			.compile("\\A *\\{\\d+ (.*)\\}((.|\\n)*)\\z");
 
 	/**
-	 * The comment intervals in the source code. They are used to avoid wrongly interpreting a
-	 * keyword inside a comment, and to attach comments to definitions.
+	 * The comment intervals in the source code. They are used to avoid wrongly
+	 * interpreting a keyword inside a comment, and to attach comments to
+	 * definitions.
 	 */
 	private LinkedList<Comment> comments;
 
@@ -68,19 +70,21 @@ public class OcamlNewInterfaceParser {
 	private LinkedList<Comment> sectionComments;
 
 	/**
-	 * Parse the O'Caml interface to extract definitions and ocamldoc comments attached to them, and
-	 * put the result in the cache.
+	 * Parse the O'Caml interface to extract definitions and ocamldoc comments
+	 * attached to them, and put the result in the cache.
 	 * <p>
-	 * We use a File instead of an IFile because the file can be out of the workspace (O'Caml
-	 * library files, typically)
+	 * We use a File instead of an IFile because the file can be out of the
+	 * workspace (O'Caml library files, typically)
 	 * 
 	 * @param file
 	 *            the file to parse (interface or module)
 	 * @param bInProject
-	 *            This file is it part of the project? (this is used to put a different icon on
-	 *            project modules and standard library modules)
+	 *            This file is it part of the project? (this is used to put a
+	 *            different icon on project modules and standard library
+	 *            modules)
 	 * 
-	 * @return The module definition or <code>null</code> if the file can't be read
+	 * @return The module definition or <code>null</code> if the file can't be
+	 *         read
 	 */
 	public synchronized Def parseFile(final File file) {
 
@@ -93,30 +97,26 @@ public class OcamlNewInterfaceParser {
 		}
 
 		/*
-		 * Table of stale entries, that we will remove from the cache. We can't do that in the next
-		 * loop, because of concurrent access issues.
+		 * Table of stale entries, that we will remove from the cache. We can't
+		 * do that in the next loop, because of concurrent access issues.
 		 */
 		ArrayList<CachedDef> toRemove = new ArrayList<CachedDef>();
 		Def found = null;
 
 		// First, see if the informations are in the cache
-		for (SoftReference<CachedDef> ref : cache) {
-			CachedDef def = ref.get();
-			if (def != null && def.sameAs(file)) {
+		for (CachedDef def : cache) {
+			if (def.sameAs(file)) {
 				// The entry is in the cache, and is still valid
 				if (def.isMoreRecentThan(file))
 					found = def.getDefinition();
 				/*
-				 * The cache entry is not valid anymore: we put it in the list of entries to delete
-				 * from the cache
+				 * The cache entry is not valid anymore: we put it in the list
+				 * of entries to delete from the cache
 				 */
 				else {
 					toRemove.add(def);
 				}
 			}
-			
-			if(def == null)
-				System.err.println("softref lost!!!");
 		}
 
 		// remove the stale entries from the cache
@@ -173,7 +173,8 @@ public class OcamlNewInterfaceParser {
 
 		// capitalize the first letter
 		if (moduleName.length() > 0)
-			moduleName = Character.toUpperCase(moduleName.charAt(0)) + moduleName.substring(1);
+			moduleName = Character.toUpperCase(moduleName.charAt(0))
+					+ moduleName.substring(1);
 
 		final Camlp4Preprocessor preprocessor = new Camlp4Preprocessor(lines);
 		if (preprocessor.mustPreprocess()) {
@@ -185,24 +186,24 @@ public class OcamlNewInterfaceParser {
 					return Status.OK_STATUS;
 				}
 			};
-			
+
 			job.schedule();
 			try {
 				job.join();
 			} catch (InterruptedException e) {
 				OcamlPlugin.logError("interrupted", e);
 			}
-			
 
 			String errors = preprocessor.getErrorOutput().trim();
 			if (!"".equals(errors)) {
 				Def def = new Def(moduleName, Def.Type.ParserError, 0, 0);
 				def.filename = filename;
 
-				def.setComment("ERROR: The camlp4 preprocessor encountered an error "
-						+ "while parsing this file:\n" + errors);
+				def
+						.setComment("ERROR: The camlp4 preprocessor encountered an error "
+								+ "while parsing this file:\n" + errors);
 
-				cache.addFirst(new SoftReference<CachedDef>(new CachedDef(file, def)));
+				cache.addFirst(new CachedDef(file, def));
 				return def;
 			}
 
@@ -216,25 +217,27 @@ public class OcamlNewInterfaceParser {
 			// System.err.println("parsing:" + filename);
 			definition = parseModule(lines, moduleName, bInterface);
 		} catch (Throwable e) {
-			// if there was a parsing error, we log it and we continue on to the next file
+			// if there was a parsing error, we log it and we continue on to the
+			// next file
 			// OcamlPlugin.logError("Error parsing '" + moduleName + "'", e);
 			Def def = new Def(moduleName, Def.Type.ParserError, 0, 0);
 			def.filename = filename;
 
-			def.setComment("ERROR: The parser encountered an error while parsing this file.\n\n"
-					+ "Please make sure that it is syntactically correct.\n\n");
+			def
+					.setComment("ERROR: The parser encountered an error while parsing this file.\n\n"
+							+ "Please make sure that it is syntactically correct.\n\n");
 
 			// System.err.println("ERROR:" + filename);
 
-			cache.addFirst(new SoftReference<CachedDef>(new CachedDef(file, def)));
+			cache.addFirst(new CachedDef(file, def));
 			return def;
 		}
 
 		definition.setBody("module " + moduleName);
 
 		/*
-		 * The source was preprocessed by camlp4: update the identifiers locations using the 'loc'
-		 * comments leaved by camlp4
+		 * The source was preprocessed by camlp4: update the identifiers
+		 * locations using the 'loc' comments leaved by camlp4
 		 */
 		if (preprocessor.mustPreprocess()) {
 			// System.err.println("associate locations");
@@ -244,19 +247,21 @@ public class OcamlNewInterfaceParser {
 			ArrayList<Camlp4Preprocessor.Camlp4Location> camlp4Locations = preprocessor
 					.parseCamlp4Locations(oldDocument, document);
 
-			preprocessor.associateCamlp4Locations(oldDocument, unprocessedLines, document,
-					camlp4Locations, definition, null);
+			preprocessor.associateCamlp4Locations(oldDocument,
+					unprocessedLines, document, camlp4Locations, definition,
+					null);
 		}
 
 		setFilenames(definition, filename);
 
 		// put the entry into the cache
-		cache.addFirst(new SoftReference<CachedDef>(new CachedDef(file, definition)));
+		cache.addFirst(new CachedDef(file,
+				definition));
 
 		// definition.print(0);
 		/*
-		 * Return the module definition (root) that contains all this module's definitions
-		 * (recursively)
+		 * Return the module definition (root) that contains all this module's
+		 * definitions (recursively)
 		 */
 		return definition;
 	}
@@ -267,11 +272,12 @@ public class OcamlNewInterfaceParser {
 			setFilenames(child, filename);
 	}
 
-	private Def parseModule(String doc, String moduleName, boolean parseInterface) throws Throwable {
+	private Def parseModule(String doc, String moduleName,
+			boolean parseInterface) throws Throwable {
 
 		/*
-		 * "Sanitize" the document by replacing extended characters, which otherwise would crash the
-		 * parser
+		 * "Sanitize" the document by replacing extended characters, which
+		 * otherwise would crash the parser
 		 */
 		StringBuilder str = new StringBuilder();
 		for (int i = 0; i < doc.length(); i++) {
@@ -306,7 +312,8 @@ public class OcamlNewInterfaceParser {
 		if (parseInterface) {
 			doc = parseComments(doc);
 
-			// find the end of each definition (the parser only gives us the start)
+			// find the end of each definition (the parser only gives us the
+			// start)
 			root.defOffsetEnd = doc.length();
 			findDefinitionsEnd(root, doc, 0, null);
 
@@ -320,8 +327,9 @@ public class OcamlNewInterfaceParser {
 
 		if (parser.errorReporting.errors.size() != 0) {
 			root.type = Def.Type.ParserError;
-			root.setComment("ERROR: The parser encountered an error while parsing this file.\n\n"
-					+ "Please make sure that it is syntactically correct.\n\n");
+			root
+					.setComment("ERROR: The parser encountered an error while parsing this file.\n\n"
+							+ "Please make sure that it is syntactically correct.\n\n");
 		} else
 			root.type = Def.Type.Module;
 
@@ -335,7 +343,9 @@ public class OcamlNewInterfaceParser {
 	private void setBodies(Def def, String doc, boolean parseInterface) {
 		if (def.type != Def.Type.Root) {
 			if (parseInterface)
-				def.setBody(doc.substring(def.defOffsetStart, def.defOffsetEnd));
+				def
+						.setBody(doc.substring(def.defOffsetStart,
+								def.defOffsetEnd));
 			else {
 				def.setBody(def.name);
 			}
@@ -353,8 +363,9 @@ public class OcamlNewInterfaceParser {
 		for (int i = 0; i < doc.length(); i++) {
 
 			/*
-			 * if(doc.charAt(i) == '\r') System.err.print("<R>\n"); if(doc.charAt(i) == '\n')
-			 * System.err.print("<N>\n"); else System.err.print(doc.charAt(i));
+			 * if(doc.charAt(i) == '\r') System.err.print("<R>\n");
+			 * if(doc.charAt(i) == '\n') System.err.print("<N>\n"); else
+			 * System.err.print(doc.charAt(i));
 			 */
 
 			if (doc.charAt(i) == '\n') {
@@ -378,7 +389,8 @@ public class OcamlNewInterfaceParser {
 	}
 
 	/**
-	 * Find the end of each definition, knowing the start of the next definition.
+	 * Find the end of each definition, knowing the start of the next
+	 * definition.
 	 * 
 	 * @param def
 	 *            the definition to set
@@ -404,23 +416,27 @@ public class OcamlNewInterfaceParser {
 
 		boolean skip = false;
 		if (def.defOffsetStart > def.defOffsetEnd || def.defOffsetStart < 0) {
-			OcamlPlugin.logError("OcamlNewParser: findDefinitionsEnd: wrong offset (" + def.name
-					+ ")");
+			OcamlPlugin
+					.logError("OcamlNewParser: findDefinitionsEnd: wrong offset ("
+							+ def.name + ")");
 			skip = true;
 		}
 
 		if (def.type != Def.Type.Root && !skip) {
 
 			// remove the blank space at the end of the definition
-			String defText = doc.substring(def.defOffsetStart, def.defOffsetEnd).trim();
+			String defText = doc
+					.substring(def.defOffsetStart, def.defOffsetEnd).trim();
 
 			// remove the ";;" at the end
 			if (defText.endsWith(";;"))
 				defText = defText.substring(0, defText.length() - 2).trim();
 
 			// remove the "end" in a module declaration
-			if (parent.type == Def.Type.Module || parent.type == Def.Type.ModuleType
-					|| parent.type == Def.Type.Class || parent.type == Def.Type.ClassType
+			if (parent.type == Def.Type.Module
+					|| parent.type == Def.Type.ModuleType
+					|| parent.type == Def.Type.Class
+					|| parent.type == Def.Type.ClassType
 					|| parent.type == Def.Type.Functor) {
 				if (defText.endsWith("end"))
 					defText = defText.substring(0, defText.length() - 3).trim();
@@ -451,8 +467,8 @@ public class OcamlNewInterfaceParser {
 	}
 
 	/**
-	 * An ocamldoc comment: beginning, end, and body. This is used to associate ocamldoc comments
-	 * with the corresponding definitions.
+	 * An ocamldoc comment: beginning, end, and body. This is used to associate
+	 * ocamldoc comments with the corresponding definitions.
 	 */
 	private class Comment {
 		public Comment(int begin, int end, String text) {
@@ -469,9 +485,10 @@ public class OcamlNewInterfaceParser {
 	}
 
 	/**
-	 * Look for all the comment intervals in the text, and replace them by spaces. Keep all the
-	 * comments in table <code>comments</code>. Look also for the section comments and put them
-	 * in the <code>sectionComments</code> table.
+	 * Look for all the comment intervals in the text, and replace them by
+	 * spaces. Keep all the comments in table <code>comments</code>. Look
+	 * also for the section comments and put them in the
+	 * <code>sectionComments</code> table.
 	 */
 	private String parseComments(String lines) {
 
@@ -504,17 +521,21 @@ public class OcamlNewInterfaceParser {
 				bInComment = false;
 
 				// ocamldoc comment (the normal comments are not useful to us)
-				if (commentStart + 1 < lines.length() && lines.charAt(commentStart) == '*'
+				if (commentStart + 1 < lines.length()
+						&& lines.charAt(commentStart) == '*'
 						&& lines.charAt(commentStart + 1) != '*') {
 
 					String body = lines.substring(commentStart + 1, i - 1);
-					Matcher matcherSectionComment = patternSectionComment.matcher(body);
+					Matcher matcherSectionComment = patternSectionComment
+							.matcher(body);
 					if (matcherSectionComment.find()) {
 						String section = matcherSectionComment.group(1) + "\n"
 								+ matcherSectionComment.group(2);
-						sectionComments.add(new Comment(commentStart + 1, i - 1, section.trim()));
+						sectionComments.add(new Comment(commentStart + 1,
+								i - 1, section.trim()));
 					} else
-						comments.add(new Comment(commentStart + 1, i - 1, body));
+						comments
+								.add(new Comment(commentStart + 1, i - 1, body));
 				}
 
 				// replace the comment by spaces (so as to preserve the offsets)
@@ -531,7 +552,8 @@ public class OcamlNewInterfaceParser {
 					bEscape = !bEscape;
 				else if (ch == '[' && !bEscape && bInOcamldocComment)
 					codeNestingLevel++;
-				else if (ch == ']' && !bEscape && codeNestingLevel > 0 && bInOcamldocComment)
+				else if (ch == ']' && !bEscape && codeNestingLevel > 0
+						&& bInOcamldocComment)
 					codeNestingLevel--;
 				else
 					bEscape = false;
@@ -561,12 +583,13 @@ public class OcamlNewInterfaceParser {
 	}
 
 	/**
-	 * Retrieve the comment attached to the definition that spans from <code>begin</code> to
-	 * <code>end</code>. Associate this comment to <code>definition</code> and delete it from
-	 * the list. During the parsing, attach module comments to <code>module</code>.
+	 * Retrieve the comment attached to the definition that spans from
+	 * <code>begin</code> to <code>end</code>. Associate this comment to
+	 * <code>definition</code> and delete it from the list. During the
+	 * parsing, attach module comments to <code>module</code>.
 	 */
-	private void attachComment(Def definition, String doc, boolean onlyAfter, int maxOffset,
-			boolean noNewLines) {
+	private void attachComment(Def definition, String doc, boolean onlyAfter,
+			int maxOffset, boolean noNewLines) {
 
 		int begin = definition.defOffsetStart;
 		int end = definition.defOffsetEnd;
@@ -592,7 +615,8 @@ public class OcamlNewInterfaceParser {
 				toDelete.add(comment);
 			}
 			// a comment right after the definition
-			else if (nextTo(doc, end, comment.begin, noNewLines) && comment.end <= maxOffset) {
+			else if (nextTo(doc, end, comment.begin, noNewLines)
+					&& comment.end <= maxOffset) {
 				definition.appendToComment(comment.text);
 				toDelete.add(comment);
 				break;
@@ -607,16 +631,19 @@ public class OcamlNewInterfaceParser {
 	}
 
 	/**
-	 * Attach the first comment found inside the range going from <code>begin</code> to
-	 * <code>end</code>. This is useful for type constructors.
+	 * Attach the first comment found inside the range going from
+	 * <code>begin</code> to <code>end</code>. This is useful for type
+	 * constructors.
 	 */
 	/*
-	 * private void attachCommentIn(OcamlDefinition definition, int begin, int end) {
+	 * private void attachCommentIn(OcamlDefinition definition, int begin, int
+	 * end) {
 	 * 
 	 * Comment toDelete = null;
 	 * 
-	 * for (Comment comment : comments) { if (comment.begin >= begin && comment.end <= end) {
-	 * definition.appendToComment(comment.text); toDelete = comment; break; } }
+	 * for (Comment comment : comments) { if (comment.begin >= begin &&
+	 * comment.end <= end) { definition.appendToComment(comment.text); toDelete =
+	 * comment; break; } }
 	 * 
 	 * if (toDelete != null) comments.remove(toDelete); }
 	 */
@@ -627,7 +654,8 @@ public class OcamlNewInterfaceParser {
 	private void attachSectionComment(Def definition) {
 
 		/*
-		 * look for the first comment that is past the offset, and take the one before it
+		 * look for the first comment that is past the offset, and take the one
+		 * before it
 		 */
 		Comment previousComment = null;
 		for (Comment comment : sectionComments) {
@@ -642,10 +670,12 @@ public class OcamlNewInterfaceParser {
 	}
 
 	/**
-	 * @return true if there are less than 2 newlines between <code>offset1</code> and
-	 *         <code>offset2</code> in <code>text</code>
+	 * @return true if there are less than 2 newlines between
+	 *         <code>offset1</code> and <code>offset2</code> in
+	 *         <code>text</code>
 	 */
-	private boolean nextTo(String text, int offset1, int offset2, boolean noNewLines) {
+	private boolean nextTo(String text, int offset1, int offset2,
+			boolean noNewLines) {
 		if (offset2 < offset1)
 			return false;
 
@@ -659,7 +689,8 @@ public class OcamlNewInterfaceParser {
 						return false;
 					bNewline = true;
 				}
-			} else if (!Character.isWhitespace(text.charAt(i)) && text.charAt(i) != ';')
+			} else if (!Character.isWhitespace(text.charAt(i))
+					&& text.charAt(i) != ';')
 				return false;
 		}
 

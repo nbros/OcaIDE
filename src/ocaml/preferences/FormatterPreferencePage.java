@@ -35,7 +35,7 @@ public class FormatterPreferencePage extends FieldEditorPreferencePage implement
 				"Indent consecutive 'let in's", this.getFieldEditorParent()));
 		
 		this.addField(new IntegerFieldEditor(PreferenceConstants.P_FORMATTER_DEF,
-				"Indent after 'def'", this.getFieldEditorParent()));
+				"Indent after definition", this.getFieldEditorParent()));
 		this.addField(new IntegerFieldEditor(PreferenceConstants.P_FORMATTER_FOR,
 				"Indent after 'for'", this.getFieldEditorParent()));
 		this.addField(new IntegerFieldEditor(PreferenceConstants.P_FORMATTER_THEN,

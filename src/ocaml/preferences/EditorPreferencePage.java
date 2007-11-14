@@ -23,6 +23,9 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
 	@Override
 	public void createFieldEditors() {
 
+		this.addField(new BooleanFieldEditor(PreferenceConstants.P_EDITOR_AUTOCOMPLETION,
+				"Enable completion auto activation", this.getFieldEditorParent()));
+
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_EDITOR_DISABLE_AUTOFORMAT,
 				"Completely disable auto formatting", this.getFieldEditorParent()));
 

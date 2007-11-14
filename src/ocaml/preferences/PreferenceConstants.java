@@ -132,4 +132,7 @@ public class PreferenceConstants
 	/** The paths encoded as a list of strings separated by newlines */
 	public static final String P_BROWSER_PATHS = "ocamlBrowserPaths";
 	
+	/** Activate automatic completion after '.' or '@'?*/
+	public static final String P_EDITOR_AUTOCOMPLETION = "ocamlEditorAutoCompletion";
+	
 }
