@@ -63,13 +63,22 @@ public class OcamlFormater {
 		int nMaxBlankLines = OcamlPlugin.getInstance().getPreferenceStore()
 				.getInt(PreferenceConstants.P_FORMATTER_MAX_BLANK_LINES);
 
-		ArrayList<Integer> linesOffsets = computeLinesStartOffset(doc);
+		
 
 		String[] lines = doc.split("\\n");
 
 		if (lines.length == 0)
 			return doc;
-
+		
+		
+		
+		this.lines = lines;
+		doc = formatComments();
+		lines = doc.split("\\n");
+		
+		ArrayList<Integer> linesOffsets = computeLinesStartOffset(doc);
+		
+		
 		/*
 		 * "Sanitize" the document by replacing extended characters, which
 		 * otherwise would crash the parser
@@ -234,6 +243,465 @@ public class OcamlFormater {
 		// returns the formated source code
 		return result.toString();
 	}
+
+	/** true if the comment begins with "(*|" or "(**" => we don't format those */
+	private boolean bDoNotFormatComment = false;
+
+	/** Are we currently reading a multi-line comment */
+	private boolean bInMultilineComment = false;
+	
+	/** The current line number */
+	private int currentLine;
+
+	/** The current line being formated */
+	private String line;
+
+	/** the entire document split into lines */
+	private String[] lines;
+
+	
+	private String formatComments() {
+		
+		StringBuilder result = new StringBuilder();
+		
+		boolean bInComment = false;
+		
+		mainLoop: for (currentLine = 0; currentLine < lines.length; currentLine++) {
+
+			line = lines[currentLine];
+			String trimmed = line.trim();
+
+			/*
+			 * reformat comments that start after some source code and continue onto the next line
+			 */
+			if (reformatMultilineComments()) {
+				/*
+				 * The reformatMultilineComments modified the current line number so that the
+				 * formatter will take its modifications into account (when return value = true)
+				 */
+				/*
+				 * we decrement the current line number because the loop will immediately be
+				 * incremented after the "continue"
+				 */
+				currentLine--;
+				continue mainLoop;
+			}
+
+			/*
+			 * We find back code or a blank line: we can restart formatting the next comments
+			 */
+			if (!trimmed.startsWith("(*") && !bInComment)
+				bDoNotFormatComment = false;
+
+			// format the comment
+			if (!bDoNotFormatComment)
+				if(formatComment(result))
+					continue;
+			
+			result.append(line);
+			
+			/*
+			 * do not add a newline after the last line, or else we would add a new line after each
+			 * time the formatter is invoked
+			 * 
+			 */
+			if (currentLine != lines.length - 1)
+				result.append('\n');
+		}
+		
+		return result.toString();
+	}
+	
+	
+	
+	/**
+	 * A comment opened on this line, but not closed on this line (which we want to delete in the
+	 * analysis)
+	 */
+	private Pattern patternCommentEOL = Pattern.compile("\\(\\*.*");
+
+	/**
+	 * A pattern to match a comment. The "*?" quantifier is "reluctant", that is it doesn't match
+	 * "(* *) (* *)" in a single match, and instead gives us two matches, one for each comment.
+	 */
+	private Pattern patternComment = Pattern.compile("\\(\\*.*?\\*\\)");
+
+	/** a string (that can have embedded '\"' (escaped double quote character) ) */
+	private Pattern patternString = Pattern.compile("\"(\\\\\"|.)*?\"");
+
+	/**
+	 * A whole line comment (no code on this line). The group inside is the body of the comment
+	 * (groups are what's inside parenthesis in regular expressions).
+	 */
+	private Pattern patternWholeLineComment = Pattern.compile("^\\s*\\(\\*(.*)\\*\\)\\s*$");
+
+	private boolean preferenceFormatComments = OcamlPlugin.getInstance().getPreferenceStore()
+	.getBoolean(PreferenceConstants.P_FORMATTER_FORMAT_COMMENTS);
+
+	
+	
+	/**
+	 * If the line has an opened but not closed comment, then we put back three lines into the
+	 * pending lines: what's before the comment on its first line, the entire body of the comment
+	 * (we delete embedded comments), and what's after the multi-line comment on its last line.
+	 * @param result 
+	 * 
+	 * @return true if the loop must jump back
+	 */
+	private boolean reformatMultilineComments() {
+
+		String curLine = line.trim();
+
+		// abort the operation?
+		boolean bAbort = false;
+		// the level of nested comments
+		int nestedCommentsLevel = 0;
+		// a comment until the end of the line
+		Matcher matcherCommentEOL = patternCommentEOL.matcher(curLine);
+		if (matcherCommentEOL.find()) {
+
+			if (matcherCommentEOL.start() + 2 < curLine.length()) {
+				char firstChar = curLine.charAt(matcherCommentEOL.start() + 2);
+				// this character means "do not reformat this comment"
+				if (firstChar == '*' || firstChar == '|') {
+					bDoNotFormatComment = true;
+					bAbort = true;
+				}
+			}
+
+			// check that this comment is not closed (or else, we would loop indefinitely)
+			Matcher matcherComment = patternComment.matcher(curLine);
+			while (matcherComment.find())
+				if (matcherComment.start() == matcherCommentEOL.start())
+					bAbort = true;
+
+			// if we are inside a string, do nothing
+			Matcher matcherString = patternString.matcher(curLine);
+			while (matcherString.find()) {
+				if ((matcherString.start() < matcherCommentEOL.start())
+						&& (matcherCommentEOL.start() < matcherString.end()))
+					bAbort = true;
+			}
+
+			if (!bAbort && preferenceFormatComments) {
+
+				nestedCommentsLevel = 1;
+
+				// look for the end of the comment
+				Pattern patternCommentBeginEnd = Pattern.compile("(\\(\\*)|(\\*\\))");
+
+				// all the lines of the comment, concatenated
+				String commentLines = curLine.substring(matcherCommentEOL.start() + 2);
+
+				// what's before the comment on its first line
+				String beforeComment = curLine.substring(0, matcherCommentEOL.start());
+
+				// what's left after the comment on its last line
+				String afterComment = "";
+
+				// the index of the current line
+				int l;
+				getWholeComment: for (l = currentLine; l < lines.length; l++) {
+
+					String commentLine;
+					// first line
+					if (l == currentLine) {
+						commentLine = commentLines;
+						commentLines = "";
+					} else
+						commentLine = lines[l].trim();
+
+					Matcher matcherCommentBeginEnd = patternCommentBeginEnd.matcher(commentLine);
+
+					/*
+					 * parse all the delimiters, and delete the nested ones, while keeping the body
+					 * of the comment
+					 */
+					while (matcherCommentBeginEnd.find()) {
+
+						// check that we are not inside a string
+						Matcher matcherString2 = patternString.matcher(commentLine);
+						boolean bInString = false;
+
+						while (matcherString2.find()) {
+
+							if (matcherString2.start() <= matcherCommentBeginEnd.start()
+									&& matcherCommentBeginEnd.start() < matcherString2.end()) {
+								bInString = true;
+								break;
+							}
+						}
+						if (!bInString) {
+
+							if (matcherCommentBeginEnd.group().equals("(*"))
+								nestedCommentsLevel++;
+							else
+								nestedCommentsLevel--;
+
+							// delete the comment delimiter from the body of the comment
+							if (nestedCommentsLevel != 0) {
+								String before = commentLine.substring(0, matcherCommentBeginEnd
+										.start());
+								String after = commentLine
+										.substring(matcherCommentBeginEnd.start() + 2);
+								commentLine = before + after;
+							}
+
+							if (nestedCommentsLevel == 0) {
+
+								commentLines = commentLines + " "
+										+ commentLine.substring(0, matcherCommentBeginEnd.start());
+								afterComment = commentLine
+										.substring(matcherCommentBeginEnd.start() + 2);
+
+								break getWholeComment;
+							}
+
+							// we modified the string: we have to restart the matcher
+							matcherCommentBeginEnd = patternCommentBeginEnd.matcher(commentLine);
+						}
+					}
+					commentLines = commentLines + " " + commentLine;
+				}
+
+				// if we are at the beginning, we must insert blank lines (or else we would access
+				// out of
+				// bounds)
+				if (l < 3) {
+					String[] lines2 = new String[lines.length + 2];
+					for (int k = 0; k < lines.length; k++)
+						lines2[k + 2] = lines[k];
+					lines = lines2;
+					l += 2;
+				}
+
+				// if we didn't go through at least one iteration of the loop
+				if (l >= lines.length)
+					l--;
+
+				/*
+				 * Now, we put all the modified lines in the table, and we modify the current line
+				 * so that the formatter will take the modifications into account.
+				 */
+
+				// Do not put blank lines
+				if (beforeComment.trim().equals("") && afterComment.trim().equals("")) {
+					lines[l] = "(*" + commentLines + "*)";
+					currentLine = l;
+					return true;
+				} else if (beforeComment.trim().equals("")) {
+					lines[l - 1] = "(*" + commentLines + "*)";
+					lines[l] = afterComment;
+					currentLine = l - 1;
+					return true;
+				} else if (afterComment.trim().equals("")) {
+					lines[l - 1] = beforeComment;
+					lines[l] = "(*" + commentLines + "*)";
+					currentLine = l - 1;
+					return true;
+				} else {
+					// the source code before the comment
+					lines[l - 2] = beforeComment;
+					// the body of the comment
+					lines[l - 1] = "(*" + commentLines + "*)";
+					// the source code after the comment
+					lines[l] = afterComment;
+					// the line on which we will continue formatting
+					currentLine = l - 2;
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Formating comments: read words separated by spaces and split the comment onto several lines
+	 * so that the length of each line is inferior to the width of the edit window.
+	 * 
+	 * <p>
+	 * The formating of comments can be disabled in a selective manner, by starting the comment by
+	 * "(*|" instead of just "(*". This allows the user to keep source code in a comment, or draw
+	 * some ASCII-art.
+	 * 
+	 * @return true if the loop must jump back to continue formatting
+	 */
+	private boolean formatComment(StringBuilder result) {
+
+		if (!preferenceFormatComments)
+			return false;
+
+		/* The list of remaining words to continue on the next line */
+		LinkedList<String> commentWords = new LinkedList<String>();
+
+		int maxLineLength = OcamlPlugin.getInstance().getPreferenceStore().getInt(
+				PreferenceConstants.P_FORMATTER_COMMENT_WIDTH);
+
+		int nCommentLine = currentLine;
+
+		bInMultilineComment = false;
+
+		String firstCommentLine = line;
+
+		/* Read all the following lines having a single comment */
+		boolean bWholeLineComment;
+		do {
+			if (bDoNotFormatComment)
+				break;
+
+			bWholeLineComment = false;
+
+			String commentLine = lines[nCommentLine];
+
+			String trimmed2 = commentLine.trim();
+			/*
+			 * Matcher matcherString = patternString.matcher(trimmed); trimmed =
+			 * matcherString.replaceAll("\"\"");
+			 */
+
+			/*
+			 * Count the number of comments on the line, because patternWholeLineComment matches
+			 * several comments in a single match. If there are several comments on the same line,
+			 * then we leave them as is.
+			 */
+			Matcher matcherComment = patternComment.matcher(trimmed2);
+			boolean bMoreThanOneComment = matcherComment.find() && matcherComment.find();
+
+			if (!bMoreThanOneComment) {
+
+				/*
+				 * Read all the words (anything separated by spaces) of this comment, and add them
+				 * to the list.
+				 */
+				Matcher matcherWholeLineComment = patternWholeLineComment.matcher(trimmed2);
+
+				String commentBody = null;
+
+				if (trimmed2.startsWith("(*") && !trimmed2.contains("*)"))
+					bInMultilineComment = true;
+
+				if (matcherWholeLineComment.find() || bInMultilineComment) {
+
+					if (bInMultilineComment) {
+						if (trimmed2.endsWith("*)")) {
+							bInMultilineComment = false;
+							commentBody = trimmed2.substring(0, trimmed2.length() - 2);
+						}
+
+						else if (trimmed2.startsWith("(*")) {
+							commentBody = trimmed2.substring(2, trimmed2.length());
+						} else
+							commentBody = trimmed2;
+					}
+
+					if (commentBody == null)
+						commentBody = matcherWholeLineComment.group(1);
+
+					// Special character that means: do not format this comment
+					// We don't format documentation comments either
+					if (commentBody.startsWith("|") || commentBody.startsWith("*")) {
+						bDoNotFormatComment = true;
+						break;
+					}
+
+					String[] words = commentBody.split("\\s");
+
+					// add the words to the list
+					for (String w : words)
+						if (!w.trim().equals(""))
+							commentWords.addLast(w);
+
+					bWholeLineComment = true;
+
+					nCommentLine++;
+					if (nCommentLine >= lines.length)
+						break;
+				}
+			}
+
+		} while (bWholeLineComment);
+
+		int nLastCommentLine = nCommentLine - 1;
+
+		/* If we found at least one comment */
+		if (!commentWords.isEmpty()) {
+			/*
+			 * Get the indentation of the first comment line. The following ones will get the same
+			 * indentation.
+			 */
+			int firstCommentLineIndent = getLineIndent(firstCommentLine);
+
+			int currentOffset = 0;
+			int tabSize = ocaml.editors.OcamlEditor.getTabSize();
+
+			/* Now that we have a list of words, we spread it onto the following lines */
+
+			// indentation in number of spaces from the beginning of the line
+			int leadingSpace = 0;
+			for (int j = 0; j < firstCommentLineIndent; j++) {
+				result.append("\t");
+				currentOffset += tabSize;
+				leadingSpace += tabSize;
+			}
+
+			result.append("(* ");
+			currentOffset += 3;
+
+			int nCommentLines = 1;
+			// for each word of the comment
+			for (String word : commentWords) {
+				// if the word fits into the remaining space on the line or if the line is empty
+				if ((currentOffset + word.length() + 3 < maxLineLength || currentOffset == firstCommentLineIndent + 3)) {
+					result.append(word + " ");
+					currentOffset += word.length() + 1;
+				}
+
+				/*
+				 * if the word doesn't fit on the remaining space on the line, then we create a new
+				 * line
+				 */
+				else {
+					nCommentLines++;
+
+					while (currentOffset++ < maxLineLength - 3)
+						result.append(" ");
+
+					result.append("*)\n");
+
+					currentOffset = 0;
+					for (int j = 0; j < firstCommentLineIndent; j++) {
+						result.append("\t");
+						currentOffset += tabSize;
+					}
+
+					result.append("(* " + word + " ");
+					currentOffset += word.length() + 4;
+				}
+			}
+
+			/*
+			 * if there are several comment lines, we put the ending "*)" against the margin, so
+			 * that the comment endings are all aligned
+			 */
+			if (nCommentLines != 1)
+				while (currentOffset++ < maxLineLength - 3)
+					result.append(" ");
+
+			result.append("*)\n");
+
+			/*
+			 * We're done with this comment: analyze the remaining lines: continue at i (the +1 is
+			 * done by the loop)
+			 */
+			currentLine = nLastCommentLine;
+			// true means: jump back
+			return true;
+		}
+		// continue normally (do not jump in the loop)
+		return false;
+	}
+	
 
 	private ArrayList<Integer> computeLinesStartOffset(String doc) {
 		ArrayList<Integer> lineOffsets = new ArrayList<Integer>();
