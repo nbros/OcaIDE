@@ -36,6 +36,10 @@ public class OcamlFormater {
 	private Pattern patternAfterDef = Pattern
 			.compile("\\A\\s*(?:object|struct|sig|functor)\\W");
 
+	
+	/** The FormatterAction sets this when formatting a mli file */
+	public static boolean formatInterface = false;
+	
 	/**
 	 * Format the string <code>text</code> and return the formatted source
 	 * 
@@ -98,7 +102,10 @@ public class OcamlFormater {
 		final OcamlFormatterParser parser = new OcamlFormatterParser();
 
 		try {
-			parser.parse(scanner);
+			if(formatInterface)
+				parser.parse(scanner, OcamlFormatterParser.AltGoals.interfaces);
+			else
+				parser.parse(scanner);
 		} catch (Throwable e) {
 			OcamlPlugin.logError("Error parsing for formatting", e);
 		}

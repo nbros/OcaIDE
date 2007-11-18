@@ -433,9 +433,12 @@ signature=
     	else
     		return b;
    	:}
-  | signature.a signature_item SEMISEMI.b           /*{ $2 :: $1 }*/
+  | signature.a signature_item.b SEMISEMI.c           /*{ $2 :: $1 }*/
    	{: 
-   		return new Pos(a, b); 
+    	if(a != Pos.NONE)
+    		return new Pos(a, c);
+    	else
+    		return new Pos(b, c);
    	:}
 ;
 signature_item=
