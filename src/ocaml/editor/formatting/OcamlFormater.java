@@ -25,7 +25,8 @@ import org.eclipse.jface.dialogs.MessageDialog;
  */
 public class OcamlFormater {
 
-	private Pattern patternBegin = Pattern.compile("\\A\\s*(?:begin\\W|\\()");
+	private Pattern patternBegin = Pattern
+			.compile("\\A(?: |\t)*(?:begin\\W|\\()");
 	private Pattern patternIf = Pattern.compile("\\A\\s*if\\W");
 
 	private Pattern patternLet = Pattern.compile("\\A\\s*let\\W");
@@ -36,10 +37,9 @@ public class OcamlFormater {
 	private Pattern patternAfterDef = Pattern
 			.compile("\\A\\s*(?:object|struct|sig|functor)\\W");
 
-	
 	/** The FormatterAction sets this when formatting a mli file */
 	public static boolean formatInterface = false;
-	
+
 	/**
 	 * Format the string <code>text</code> and return the formatted source
 	 * 
@@ -49,17 +49,15 @@ public class OcamlFormater {
 	 * 
 	 */
 	public String format(String doc) {
-		
+
 		/* Load and bind the preferences */
 		IndentingPreferences indentingPreferences = new IndentingPreferences();
 		indentingPreferences.readPreferences();
 		IndentHint.setIndentingPreferences(indentingPreferences);
-		
-		boolean indentLetIn = OcamlPlugin.getInstance().getPreferenceStore()
-		.getBoolean(PreferenceConstants.P_FORMATTER_INDENT_LET_IN);
 
-		
-		
+		boolean indentLetIn = OcamlPlugin.getInstance().getPreferenceStore()
+				.getBoolean(PreferenceConstants.P_FORMATTER_INDENT_LET_IN);
+
 		// number of consecutive blank lines
 		int nConsecutiveBlankLines = 0;
 
@@ -67,22 +65,17 @@ public class OcamlFormater {
 		int nMaxBlankLines = OcamlPlugin.getInstance().getPreferenceStore()
 				.getInt(PreferenceConstants.P_FORMATTER_MAX_BLANK_LINES);
 
-		
-
 		String[] lines = doc.split("\\n");
 
 		if (lines.length == 0)
 			return doc;
 		
-		
-		
 		this.lines = lines;
-		doc = formatComments();
+		doc = formatCommentsAndSpaces();
 		lines = doc.split("\\n");
 		
 		ArrayList<Integer> linesOffsets = computeLinesStartOffset(doc);
-		
-		
+
 		/*
 		 * "Sanitize" the document by replacing extended characters, which
 		 * otherwise would crash the parser
@@ -102,7 +95,7 @@ public class OcamlFormater {
 		final OcamlFormatterParser parser = new OcamlFormatterParser();
 
 		try {
-			if(formatInterface)
+			if (formatInterface)
 				parser.parse(scanner, OcamlFormatterParser.AltGoals.interfaces);
 			else
 				parser.parse(scanner);
@@ -130,6 +123,11 @@ public class OcamlFormater {
 		IndentHint.HintComparator hintComparator = new IndentHint.HintComparator();
 		Collections.sort(indentHints, hintComparator);
 
+		// for(IndentHint indentHint : indentHints)
+		// System.out.println((indentHint.isIndent() ? "+" : "-") +
+		// indentHint.getType().name() + "\t" + (indentHint.getLine() + 1) + ",
+		// " + (indentHint.getColumn() + 1));
+
 		/** The formatted text */
 		StringBuilder result = new StringBuilder();
 		/** The current line indentation */
@@ -140,6 +138,7 @@ public class OcamlFormater {
 		 * up until the first character of this line
 		 */
 		for (int lineNumber = 0; lineNumber < lines.length; lineNumber++) {
+
 			String line = lines[lineNumber];
 			String trimmed = line.trim();
 
@@ -205,7 +204,8 @@ public class OcamlFormater {
 								bCancel = true;
 						}
 
-						if (!indentLetIn && hint.getType() == IndentHint.Type.IN) {
+						if (!indentLetIn
+								&& hint.getType() == IndentHint.Type.IN) {
 							Matcher matcher = patternLet.matcher(after);
 							if (matcher.find())
 								bCancel = true;
@@ -218,8 +218,10 @@ public class OcamlFormater {
 								bCancel = true;
 						}
 
-						/* if this indentation was removed, remove the
-						 corresponding dedentation */
+						/*
+						 * if this indentation was removed, remove the
+						 * corresponding dedentation
+						 */
 						if (bCancel) {
 							indentHints.remove(hint.getCounterpart());
 							continue;
@@ -240,12 +242,13 @@ public class OcamlFormater {
 					break;
 
 			}
-
+			
 			for (int k = 0; k < indent; k++)
 				result.append('\t');
 			result.append(line.trim() + "\n");
 
 		}
+
 
 		// returns the formated source code
 		return result.toString();
@@ -256,7 +259,7 @@ public class OcamlFormater {
 
 	/** Are we currently reading a multi-line comment */
 	private boolean bInMultilineComment = false;
-	
+
 	/** The current line number */
 	private int currentLine;
 
@@ -266,70 +269,75 @@ public class OcamlFormater {
 	/** the entire document split into lines */
 	private String[] lines;
 
-	
-	private String formatComments() {
-		
+	private String formatCommentsAndSpaces() {
+
 		StringBuilder result = new StringBuilder();
-		
+
 		boolean bInComment = false;
-		
+
 		mainLoop: for (currentLine = 0; currentLine < lines.length; currentLine++) {
 
 			line = lines[currentLine];
 			String trimmed = line.trim();
 
 			/*
-			 * reformat comments that start after some source code and continue onto the next line
+			 * reformat comments that start after some source code and continue
+			 * onto the next line
 			 */
 			if (reformatMultilineComments()) {
 				/*
-				 * The reformatMultilineComments modified the current line number so that the
-				 * formatter will take its modifications into account (when return value = true)
+				 * The reformatMultilineComments modified the current line
+				 * number so that the formatter will take its modifications into
+				 * account (when return value = true)
 				 */
 				/*
-				 * we decrement the current line number because the loop will immediately be
-				 * incremented after the "continue"
+				 * we decrement the current line number because the loop will
+				 * immediately be incremented after the "continue"
 				 */
 				currentLine--;
 				continue mainLoop;
 			}
 
 			/*
-			 * We find back code or a blank line: we can restart formatting the next comments
+			 * We find back code or a blank line: we can restart formatting the
+			 * next comments
 			 */
 			if (!trimmed.startsWith("(*") && !bInComment)
 				bDoNotFormatComment = false;
 
 			// format the comment
 			if (!bDoNotFormatComment)
-				if(formatComment(result))
+				if (formatComment(result))
 					continue;
-			
+
+			// correct the spacing between characters on this line
+			if (!bDoNotFormatComment)
+				line = spacing(line);			
+
 			result.append(line);
-			
+
 			/*
-			 * do not add a newline after the last line, or else we would add a new line after each
-			 * time the formatter is invoked
+			 * do not add a newline after the last line, or else we would add a
+			 * new line after each time the formatter is invoked
 			 * 
 			 */
 			if (currentLine != lines.length - 1)
 				result.append('\n');
 		}
-		
+
 		return result.toString();
 	}
-	
-	
-	
+
 	/**
-	 * A comment opened on this line, but not closed on this line (which we want to delete in the
-	 * analysis)
+	 * A comment opened on this line, but not closed on this line (which we want
+	 * to delete in the analysis)
 	 */
 	private Pattern patternCommentEOL = Pattern.compile("\\(\\*.*");
 
 	/**
-	 * A pattern to match a comment. The "*?" quantifier is "reluctant", that is it doesn't match
-	 * "(* *) (* *)" in a single match, and instead gives us two matches, one for each comment.
+	 * A pattern to match a comment. The "*?" quantifier is "reluctant", that is
+	 * it doesn't match "(* *) (* *)" in a single match, and instead gives us
+	 * two matches, one for each comment.
 	 */
 	private Pattern patternComment = Pattern.compile("\\(\\*.*?\\*\\)");
 
@@ -337,21 +345,24 @@ public class OcamlFormater {
 	private Pattern patternString = Pattern.compile("\"(\\\\\"|.)*?\"");
 
 	/**
-	 * A whole line comment (no code on this line). The group inside is the body of the comment
-	 * (groups are what's inside parenthesis in regular expressions).
+	 * A whole line comment (no code on this line). The group inside is the body
+	 * of the comment (groups are what's inside parenthesis in regular
+	 * expressions).
 	 */
-	private Pattern patternWholeLineComment = Pattern.compile("^\\s*\\(\\*(.*)\\*\\)\\s*$");
+	private Pattern patternWholeLineComment = Pattern
+			.compile("^\\s*\\(\\*(.*)\\*\\)\\s*$");
 
-	private boolean preferenceFormatComments = OcamlPlugin.getInstance().getPreferenceStore()
-	.getBoolean(PreferenceConstants.P_FORMATTER_FORMAT_COMMENTS);
+	private boolean preferenceFormatComments = OcamlPlugin.getInstance()
+			.getPreferenceStore().getBoolean(
+					PreferenceConstants.P_FORMATTER_FORMAT_COMMENTS);
 
-	
-	
 	/**
-	 * If the line has an opened but not closed comment, then we put back three lines into the
-	 * pending lines: what's before the comment on its first line, the entire body of the comment
-	 * (we delete embedded comments), and what's after the multi-line comment on its last line.
-	 * @param result 
+	 * If the line has an opened but not closed comment, then we put back three
+	 * lines into the pending lines: what's before the comment on its first
+	 * line, the entire body of the comment (we delete embedded comments), and
+	 * what's after the multi-line comment on its last line.
+	 * 
+	 * @param result
 	 * 
 	 * @return true if the loop must jump back
 	 */
@@ -376,7 +387,8 @@ public class OcamlFormater {
 				}
 			}
 
-			// check that this comment is not closed (or else, we would loop indefinitely)
+			// check that this comment is not closed (or else, we would loop
+			// indefinitely)
 			Matcher matcherComment = patternComment.matcher(curLine);
 			while (matcherComment.find())
 				if (matcherComment.start() == matcherCommentEOL.start())
@@ -395,13 +407,16 @@ public class OcamlFormater {
 				nestedCommentsLevel = 1;
 
 				// look for the end of the comment
-				Pattern patternCommentBeginEnd = Pattern.compile("(\\(\\*)|(\\*\\))");
+				Pattern patternCommentBeginEnd = Pattern
+						.compile("(\\(\\*)|(\\*\\))");
 
 				// all the lines of the comment, concatenated
-				String commentLines = curLine.substring(matcherCommentEOL.start() + 2);
+				String commentLines = curLine.substring(matcherCommentEOL
+						.start() + 2);
 
 				// what's before the comment on its first line
-				String beforeComment = curLine.substring(0, matcherCommentEOL.start());
+				String beforeComment = curLine.substring(0, matcherCommentEOL
+						.start());
 
 				// what's left after the comment on its last line
 				String afterComment = "";
@@ -418,22 +433,26 @@ public class OcamlFormater {
 					} else
 						commentLine = lines[l].trim();
 
-					Matcher matcherCommentBeginEnd = patternCommentBeginEnd.matcher(commentLine);
+					Matcher matcherCommentBeginEnd = patternCommentBeginEnd
+							.matcher(commentLine);
 
 					/*
-					 * parse all the delimiters, and delete the nested ones, while keeping the body
-					 * of the comment
+					 * parse all the delimiters, and delete the nested ones,
+					 * while keeping the body of the comment
 					 */
 					while (matcherCommentBeginEnd.find()) {
 
 						// check that we are not inside a string
-						Matcher matcherString2 = patternString.matcher(commentLine);
+						Matcher matcherString2 = patternString
+								.matcher(commentLine);
 						boolean bInString = false;
 
 						while (matcherString2.find()) {
 
-							if (matcherString2.start() <= matcherCommentBeginEnd.start()
-									&& matcherCommentBeginEnd.start() < matcherString2.end()) {
+							if (matcherString2.start() <= matcherCommentBeginEnd
+									.start()
+									&& matcherCommentBeginEnd.start() < matcherString2
+											.end()) {
 								bInString = true;
 								break;
 							}
@@ -445,33 +464,41 @@ public class OcamlFormater {
 							else
 								nestedCommentsLevel--;
 
-							// delete the comment delimiter from the body of the comment
+							// delete the comment delimiter from the body of the
+							// comment
 							if (nestedCommentsLevel != 0) {
-								String before = commentLine.substring(0, matcherCommentBeginEnd
-										.start());
+								String before = commentLine.substring(0,
+										matcherCommentBeginEnd.start());
 								String after = commentLine
-										.substring(matcherCommentBeginEnd.start() + 2);
+										.substring(matcherCommentBeginEnd
+												.start() + 2);
 								commentLine = before + after;
 							}
 
 							if (nestedCommentsLevel == 0) {
 
-								commentLines = commentLines + " "
-										+ commentLine.substring(0, matcherCommentBeginEnd.start());
+								commentLines = commentLines
+										+ " "
+										+ commentLine.substring(0,
+												matcherCommentBeginEnd.start());
 								afterComment = commentLine
-										.substring(matcherCommentBeginEnd.start() + 2);
+										.substring(matcherCommentBeginEnd
+												.start() + 2);
 
 								break getWholeComment;
 							}
 
-							// we modified the string: we have to restart the matcher
-							matcherCommentBeginEnd = patternCommentBeginEnd.matcher(commentLine);
+							// we modified the string: we have to restart the
+							// matcher
+							matcherCommentBeginEnd = patternCommentBeginEnd
+									.matcher(commentLine);
 						}
 					}
 					commentLines = commentLines + " " + commentLine;
 				}
 
-				// if we are at the beginning, we must insert blank lines (or else we would access
+				// if we are at the beginning, we must insert blank lines (or
+				// else we would access
 				// out of
 				// bounds)
 				if (l < 3) {
@@ -487,12 +514,14 @@ public class OcamlFormater {
 					l--;
 
 				/*
-				 * Now, we put all the modified lines in the table, and we modify the current line
-				 * so that the formatter will take the modifications into account.
+				 * Now, we put all the modified lines in the table, and we
+				 * modify the current line so that the formatter will take the
+				 * modifications into account.
 				 */
 
 				// Do not put blank lines
-				if (beforeComment.trim().equals("") && afterComment.trim().equals("")) {
+				if (beforeComment.trim().equals("")
+						&& afterComment.trim().equals("")) {
 					lines[l] = "(*" + commentLines + "*)";
 					currentLine = l;
 					return true;
@@ -524,13 +553,14 @@ public class OcamlFormater {
 	}
 
 	/**
-	 * Formating comments: read words separated by spaces and split the comment onto several lines
-	 * so that the length of each line is inferior to the width of the edit window.
+	 * Formating comments: read words separated by spaces and split the comment
+	 * onto several lines so that the length of each line is inferior to the
+	 * width of the edit window.
 	 * 
 	 * <p>
-	 * The formating of comments can be disabled in a selective manner, by starting the comment by
-	 * "(*|" instead of just "(*". This allows the user to keep source code in a comment, or draw
-	 * some ASCII-art.
+	 * The formating of comments can be disabled in a selective manner, by
+	 * starting the comment by "(*|" instead of just "(*". This allows the user
+	 * to keep source code in a comment, or draw some ASCII-art.
 	 * 
 	 * @return true if the loop must jump back to continue formatting
 	 */
@@ -542,8 +572,8 @@ public class OcamlFormater {
 		/* The list of remaining words to continue on the next line */
 		LinkedList<String> commentWords = new LinkedList<String>();
 
-		int maxLineLength = OcamlPlugin.getInstance().getPreferenceStore().getInt(
-				PreferenceConstants.P_FORMATTER_COMMENT_WIDTH);
+		int maxLineLength = OcamlPlugin.getInstance().getPreferenceStore()
+				.getInt(PreferenceConstants.P_FORMATTER_COMMENT_WIDTH);
 
 		int nCommentLine = currentLine;
 
@@ -568,20 +598,23 @@ public class OcamlFormater {
 			 */
 
 			/*
-			 * Count the number of comments on the line, because patternWholeLineComment matches
-			 * several comments in a single match. If there are several comments on the same line,
-			 * then we leave them as is.
+			 * Count the number of comments on the line, because
+			 * patternWholeLineComment matches several comments in a single
+			 * match. If there are several comments on the same line, then we
+			 * leave them as is.
 			 */
 			Matcher matcherComment = patternComment.matcher(trimmed2);
-			boolean bMoreThanOneComment = matcherComment.find() && matcherComment.find();
+			boolean bMoreThanOneComment = matcherComment.find()
+					&& matcherComment.find();
 
 			if (!bMoreThanOneComment) {
 
 				/*
-				 * Read all the words (anything separated by spaces) of this comment, and add them
-				 * to the list.
+				 * Read all the words (anything separated by spaces) of this
+				 * comment, and add them to the list.
 				 */
-				Matcher matcherWholeLineComment = patternWholeLineComment.matcher(trimmed2);
+				Matcher matcherWholeLineComment = patternWholeLineComment
+						.matcher(trimmed2);
 
 				String commentBody = null;
 
@@ -593,11 +626,13 @@ public class OcamlFormater {
 					if (bInMultilineComment) {
 						if (trimmed2.endsWith("*)")) {
 							bInMultilineComment = false;
-							commentBody = trimmed2.substring(0, trimmed2.length() - 2);
+							commentBody = trimmed2.substring(0, trimmed2
+									.length() - 2);
 						}
 
 						else if (trimmed2.startsWith("(*")) {
-							commentBody = trimmed2.substring(2, trimmed2.length());
+							commentBody = trimmed2.substring(2, trimmed2
+									.length());
 						} else
 							commentBody = trimmed2;
 					}
@@ -607,7 +642,8 @@ public class OcamlFormater {
 
 					// Special character that means: do not format this comment
 					// We don't format documentation comments either
-					if (commentBody.startsWith("|") || commentBody.startsWith("*")) {
+					if (commentBody.startsWith("|")
+							|| commentBody.startsWith("*")) {
 						bDoNotFormatComment = true;
 						break;
 					}
@@ -634,15 +670,18 @@ public class OcamlFormater {
 		/* If we found at least one comment */
 		if (!commentWords.isEmpty()) {
 			/*
-			 * Get the indentation of the first comment line. The following ones will get the same
-			 * indentation.
+			 * Get the indentation of the first comment line. The following ones
+			 * will get the same indentation.
 			 */
 			int firstCommentLineIndent = getLineIndent(firstCommentLine);
 
 			int currentOffset = 0;
 			int tabSize = ocaml.editors.OcamlEditor.getTabSize();
 
-			/* Now that we have a list of words, we spread it onto the following lines */
+			/*
+			 * Now that we have a list of words, we spread it onto the following
+			 * lines
+			 */
 
 			// indentation in number of spaces from the beginning of the line
 			int leadingSpace = 0;
@@ -658,15 +697,16 @@ public class OcamlFormater {
 			int nCommentLines = 1;
 			// for each word of the comment
 			for (String word : commentWords) {
-				// if the word fits into the remaining space on the line or if the line is empty
+				// if the word fits into the remaining space on the line or if
+				// the line is empty
 				if ((currentOffset + word.length() + 3 < maxLineLength || currentOffset == firstCommentLineIndent + 3)) {
 					result.append(word + " ");
 					currentOffset += word.length() + 1;
 				}
 
 				/*
-				 * if the word doesn't fit on the remaining space on the line, then we create a new
-				 * line
+				 * if the word doesn't fit on the remaining space on the line,
+				 * then we create a new line
 				 */
 				else {
 					nCommentLines++;
@@ -688,8 +728,8 @@ public class OcamlFormater {
 			}
 
 			/*
-			 * if there are several comment lines, we put the ending "*)" against the margin, so
-			 * that the comment endings are all aligned
+			 * if there are several comment lines, we put the ending "*)"
+			 * against the margin, so that the comment endings are all aligned
 			 */
 			if (nCommentLines != 1)
 				while (currentOffset++ < maxLineLength - 3)
@@ -698,8 +738,8 @@ public class OcamlFormater {
 			result.append("*)\n");
 
 			/*
-			 * We're done with this comment: analyze the remaining lines: continue at i (the +1 is
-			 * done by the loop)
+			 * We're done with this comment: analyze the remaining lines:
+			 * continue at i (the +1 is done by the loop)
 			 */
 			currentLine = nLastCommentLine;
 			// true means: jump back
@@ -708,7 +748,6 @@ public class OcamlFormater {
 		// continue normally (do not jump in the loop)
 		return false;
 	}
-	
 
 	private ArrayList<Integer> computeLinesStartOffset(String doc) {
 		ArrayList<Integer> lineOffsets = new ArrayList<Integer>();
@@ -720,7 +759,141 @@ public class OcamlFormater {
 		}
 		return lineOffsets;
 	}
+	
+	
+	/** the characters to space */
+	private final String spacing = "\\+|\\-|\\*|\\/|\\=|\\||&|\\<|\\>|\\{|\\}";
 
+	/** the characters that must have a space before them */
+	private Pattern patternSpacingLeft = Pattern.compile("((\\w|\"|\\))(" + spacing + "))");
+
+	/** the characters that must have a space after them */
+	private Pattern patternSpacingRight = Pattern.compile("((" + spacing + "|:|,|;)(\\(|\\w|\"))");
+
+	/** At least two consecutive spaces */
+	private Pattern patternSpaces = Pattern.compile("\\s\\s+");
+
+	/** Add or remove spaces on this line */
+	private String spacing(String line) {
+
+		/* Remove redundant spaces (keep only one space between two words) */
+		int limit = 0;
+		Matcher matcher = patternSpaces.matcher(line);
+
+		String oldLine = line;
+
+		remSpaces: while (matcher.find()) {
+
+			int offset = matcher.start();
+			
+			// do not remove spaces at the beginning of a line
+			if(line.substring(0, offset).trim().equals(""))
+				continue;
+
+			/*
+			 * if the spaces (or tabs) are at the beginning of a line or before a comment, then we
+			 * keep them
+			 */
+			/*
+			 * Matcher matcherSpacesBeforeComment = patternSpacesBeforeComment.matcher(line); if
+			 * (matcherSpacesBeforeComment.find()) { if (offset < matcherSpacesBeforeComment.end())
+			 * continue remSpaces; }
+			 */
+
+			// if the spaces are before a comment, then we keep them
+			String afterSpaces = line.substring(matcher.end());
+			if (afterSpaces.startsWith("(*"))
+				continue remSpaces;
+
+			// If we are inside a string, then we skip this replacing
+			Matcher matcherString = patternString.matcher(line);
+			while (matcherString.find()) {
+				if (matcherString.start() <= offset && offset < matcherString.end())
+					continue remSpaces;
+			}
+
+			// If we are inside a comment, then we skip this replacing
+			Matcher matcherComment = patternComment.matcher(line);
+			while (matcherComment.find()) {
+				if (matcherComment.start() <= offset && offset < matcherComment.end())
+					continue remSpaces;
+			}
+
+			line = line.substring(0, offset) + " " + line.substring(matcher.end());
+
+			// we have to reset the matcher, because we modified the line
+			matcher = patternSpaces.matcher(line);
+
+			// we put a limit, just in case we would get into an infinite loop
+			if (limit++ > 10000) {
+				OcamlPlugin.logError("Infinite loop detected in formatter during spacing (1): <<"
+						+ oldLine + ">>");
+				break;
+			}
+
+		}
+
+		// remove spaces before commas
+		line = line.replaceAll(" ,", ",");
+		// remove spaces before semicolons
+		line = line.replaceAll(" ;", ";");
+
+		for (int nPattern = 0; nPattern <= 1; nPattern++) {
+			Pattern patternSpacing;
+			if (nPattern == 0)
+				patternSpacing = patternSpacingRight;
+			else
+				patternSpacing = patternSpacingLeft;
+
+			/*
+			 * We put a limit to the number of replacements, just in case we would get into an
+			 * infinite loop
+			 */
+			limit = 0;
+			// add spaces before some characters
+			matcher = patternSpacing.matcher(line);
+
+			oldLine = line;
+
+			addSpaces: while (matcher.find()) {
+
+				int offset = matcher.start() + 1;
+				if (offset > line.length() - 1 || offset < 0) {
+					ocaml.OcamlPlugin.logError("OcamlIndenter:format : invalid position");
+					break;
+				}
+
+				// if we are inside a string, then we skip this replacement
+				Matcher matcherString = patternString.matcher(line);
+				while (matcherString.find()) {
+					if (matcherString.start() <= offset && offset < matcherString.end())
+						continue addSpaces;
+				}
+
+				// Skip replacement if in comment
+				Matcher matcherComment = patternComment.matcher(line);
+				while (matcherComment.find()) {
+					if (matcherComment.start() <= offset && offset < matcherComment.end())
+						continue addSpaces;
+				}
+
+				line = line.substring(0, offset) + " " + line.substring(offset);
+
+				// we have to reset the matcher, because we modified the line
+				matcher = patternSpacing.matcher(line);
+				if (limit++ > 10000) {
+					OcamlPlugin
+							.logError("Infinite loop detected in formatter during spacing (2): <<"
+									+ oldLine + ">>");
+					break;
+				}
+			}
+		}
+
+		return line;
+
+	}
+	
 	// /**
 	// * If the line has an opened but not closed comment, then we put back
 	// three lines into the

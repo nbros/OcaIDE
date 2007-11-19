@@ -1049,16 +1049,16 @@ expr=
     {: return new Pos(a, b); :}
   | name_tag.a simple_expr.b @ below_SHARP 
     {: return new Pos(a, b); :}
-  | IF.a seq_expr THEN expr.c ELSE expr.b
+  | IF.a seq_expr THEN.t expr.c ELSE.e expr.b
     {: 
-    	addHint(IndentHint.Type.THEN, c.getStart(), c.getEnd());
-    	addHint(IndentHint.Type.ELSE, b.getStart(), b.getEnd());
+    	addHint(IndentHint.Type.THEN, t.getEnd() + 1, c.getEnd());
+    	addHint(IndentHint.Type.ELSE, e.getEnd() + 1, b.getEnd());
 
     	return new Pos(a, b); 
     :}
-  | IF.a seq_expr THEN expr.b
+  | IF.a seq_expr THEN.t expr.b
     {: 
-    	addHint(IndentHint.Type.THEN, b.getStart(), b.getEnd());
+    	addHint(IndentHint.Type.THEN, t.getEnd() + 1, b.getEnd());
     	return new Pos(a, b); 
     :}
   | WHILE.a seq_expr DO seq_expr.c DONE.b

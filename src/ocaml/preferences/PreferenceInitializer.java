@@ -90,8 +90,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_FORMATTER_FOR, 1);
 			store.setDefault(PreferenceConstants.P_FORMATTER_FUN_ARGS, 2);
 			store.setDefault(PreferenceConstants.P_FORMATTER_FUNCTOR, 1);
-			store.setDefault(PreferenceConstants.P_FORMATTER_IN, 1);
-			store.setDefault(PreferenceConstants.P_FORMATTER_MATCH_ACTION, 1);
+			store.setDefault(PreferenceConstants.P_FORMATTER_IN, 0);
+			store.setDefault(PreferenceConstants.P_FORMATTER_MATCH_ACTION, 2);
 			store.setDefault(PreferenceConstants.P_FORMATTER_MODULE_CONSTRAINT, 2);
 			store.setDefault(PreferenceConstants.P_FORMATTER_OBJECT, 1);
 			store.setDefault(PreferenceConstants.P_FORMATTER_PAREN, 1);
