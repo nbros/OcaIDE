@@ -213,7 +213,7 @@ public class OcamlBuilder extends IncrementalProjectBuilder {
 	@Override
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
 
-		Misc.appendToOcamlConsole("===== Build n°" + nBuild++ + " =====");
+		Misc.appendToOcamlConsole("===== Build \u2116" + nBuild++ + " =====");
 
 		getProject().deleteMarkers(IMarker.PROBLEM, false, IResource.DEPTH_ZERO);
 

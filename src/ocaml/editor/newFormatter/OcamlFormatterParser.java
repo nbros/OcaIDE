@@ -1,5 +1,5 @@
 package ocaml.editor.newFormatter;
-// TODO: regénérer le parseur 
+
 import ocaml.parser.ErrorReporting;
 import java.util.ArrayList;
 import beaver.*;
@@ -1130,12 +1130,16 @@ public class OcamlFormatterParser extends Parser {
     		return b;
 				}
 			},
-			new Action() {	// [57] signature = signature.a signature_item SEMISEMI.b
+			new Action() {	// [57] signature = signature.a signature_item.b SEMISEMI.c
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
-					final Symbol b = _symbols[offset + 3];
+					final Symbol b = _symbols[offset + 2];
+					final Symbol c = _symbols[offset + 3];
 					 
-   		return new Pos(a, b);
+    	if(a != Pos.NONE)
+    		return new Pos(a, c);
+    	else
+    		return new Pos(b, c);
 				}
 			},
 			new Action() {	// [58] signature_item = VAL.a val_ident_colon core_type.b
@@ -2182,24 +2186,26 @@ public class OcamlFormatterParser extends Parser {
 					 return new Pos(a, b);
 				}
 			},
-			new Action() {	// [176] expr = IF.a seq_expr THEN expr.c ELSE expr.b
+			new Action() {	// [176] expr = IF.a seq_expr THEN.t expr.c ELSE expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol t = _symbols[offset + 3];
 					final Symbol c = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 6];
 					 
-    	addHint(IndentHint.Type.THEN, c.getStart(), c.getEnd());
+    	addHint(IndentHint.Type.THEN, t.getEnd() + 1, c.getEnd());
     	addHint(IndentHint.Type.ELSE, b.getStart(), b.getEnd());
 
     	return new Pos(a, b);
 				}
 			},
-			new Action() {	// [177] expr = IF.a seq_expr THEN expr.b
+			new Action() {	// [177] expr = IF.a seq_expr THEN.t expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
+					final Symbol t = _symbols[offset + 3];
 					final Symbol b = _symbols[offset + 4];
 					 
-    	addHint(IndentHint.Type.THEN, b.getStart(), b.getEnd());
+    	addHint(IndentHint.Type.THEN, t.getEnd() + 1, b.getEnd());
     	return new Pos(a, b);
 				}
 			},

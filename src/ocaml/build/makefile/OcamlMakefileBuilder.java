@@ -143,13 +143,13 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 			};
 
 			// clean the output from the last compilation
-			Display.getDefault().syncExec(new Runnable() {
+			/*Display.getDefault().syncExec(new Runnable() {
 				public void run() {
 					OcamlCompilerOutput output = OcamlCompilerOutput.get();
 					if (output != null)
 						output.clear();
 				}
-			});
+			});*/
 
 			File dir = project.getLocation().toFile();
 			ExecHelper execHelper = null;
