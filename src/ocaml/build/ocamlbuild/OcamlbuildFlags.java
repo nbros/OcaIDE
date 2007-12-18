@@ -6,6 +6,7 @@ import ocaml.OcamlPlugin;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.debug.core.DebugPlugin;
 
 public class OcamlbuildFlags {
 
@@ -109,6 +110,8 @@ public class OcamlbuildFlags {
 
 	public void setCFlags(String strCFlags) {
 		cflags = new ArrayList<String>();
+		// TODO: tokenate strings with spaces (for paths)  
+		// String targets[] = DebugPlugin.parseArguments(strTargets);
 		String cflags[] = strCFlags.split(",");
 
 		for (String cflag : cflags)
