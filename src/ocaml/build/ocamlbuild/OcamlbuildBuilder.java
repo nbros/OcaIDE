@@ -73,7 +73,10 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 		if (paths.length > 0) {
 			for (String path : paths) {
 				path = path.trim();
-				if (!".".equals(path)) {
+
+				File file = new File(path);
+				// ocamlbuild doesn't accept absolute paths (only relative to the project root)
+				if (!".".equals(path) && !file.isAbsolute()) {
 					commandLine.add("-I");
 					commandLine.add(path);
 				}
