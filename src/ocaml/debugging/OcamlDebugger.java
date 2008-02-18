@@ -180,6 +180,10 @@ public class OcamlDebugger implements IExecEvents {
 				}
 			}
 			
+			// add the root of the project
+			commandLine.add("-I");
+			commandLine.add(project.getLocation().toOSString());
+			
 			commandLine.add(exeFile.getPath());
 
 			String[] strCommandLine = commandLine.toArray(new String[commandLine.size()]);
