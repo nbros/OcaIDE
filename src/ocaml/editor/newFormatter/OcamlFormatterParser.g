@@ -1127,7 +1127,7 @@ expr=
     {: return new Pos(a, b); :}  
   | OBJECT.a class_structure.c END.b
     {: 
-		addHint(IndentHint.Type.OBJECT, c.getStart(), c.getEnd());
+		addHint(IndentHint.Type.OBJECT, a.getEnd() + 1, b.getStart());
     	return new Pos(a, b);
     :}
 ;
