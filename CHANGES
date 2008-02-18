@@ -90,6 +90,8 @@
 * 1.2.0
 	* Code formatter rewrite
 	
+	* Changed the terminal type for toplevel, so that it doesn't try to send formatting characters  
+	
 	
 	
 	
