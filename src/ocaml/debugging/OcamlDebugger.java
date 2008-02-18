@@ -37,8 +37,8 @@ import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.part.FileEditorInput;
 
 /**
- * Main class of the debugger. Manages the debugger state in a finite state automaton. Communicates
- * with the O'Caml debugger through its standard input and output.
+ * Main class of the debugger. Manages the debugger state in a finite state automaton. Communicates with the
+ * O'Caml debugger through its standard input and output.
  */
 public class OcamlDebugger implements IExecEvents {
 
@@ -154,13 +154,22 @@ public class OcamlDebugger implements IExecEvents {
 
 			String ocamldebug = OcamlPlugin.getOcamldebugFullPath();
 
-			String[] commandLine = new String[2];
-			commandLine[0] = ocamldebug;
-			commandLine[1] = exeFile.getPath();
-			
-			// TODO add projet paths
+			ArrayList<String> commandLine = new ArrayList<String>();
+			commandLine.add(ocamldebug);
+			commandLine.add(exeFile.getPath());
 
-			Process process = DebugPlugin.exec(commandLine, exeFile.getParentFile());
+			OcamlPaths ocamlPaths = new OcamlPaths(project);
+			String[] paths = ocamlPaths.getPaths();
+			for (String path : paths) {
+				path = path.trim();
+				if (!".".equals(path)) {
+					commandLine.add("-I");
+					commandLine.add(path);
+				}
+			}
+
+			String[] strCommandLine = commandLine.toArray(new String[commandLine.size()]);
+			Process process = DebugPlugin.exec(strCommandLine, exeFile.getParentFile());
 			debuggerProcess = ExecHelper.exec(this, process);
 
 		} catch (Exception e) {
@@ -337,11 +346,11 @@ public class OcamlDebugger implements IExecEvents {
 	public synchronized void quit() {
 		if (!checkStarted())
 			return;
-		
-		if(state == State.Quitting){
+
+		if (state == State.Quitting) {
 			// the user clicked twice on the "quit" button
 			kill();
-		}else{
+		} else {
 			state = State.Quitting;
 			send("quit");
 		}
@@ -368,8 +377,8 @@ public class OcamlDebugger implements IExecEvents {
 	private String displayExpression = "";
 
 	/**
-	 * Ask the debugger to analyze the expression and return its value. This function is
-	 * synchronous, so it is blocking until the debugger answers back, or 2000ms ellapsed.
+	 * Ask the debugger to analyze the expression and return its value. This function is synchronous, so it is
+	 * blocking until the debugger answers back, or 2000ms ellapsed.
 	 */
 	public synchronized String display(String expression) {
 		if (!checkStarted())
@@ -382,9 +391,8 @@ public class OcamlDebugger implements IExecEvents {
 
 			try {
 				/*
-				 * The debugger thread will put the value in 'displayExpression' and call "notify()"
-				 * as soon as it receives the value. Timeout after 2000ms (it means the debugger is
-				 * stuck or busy)
+				 * The debugger thread will put the value in 'displayExpression' and call "notify()" as soon
+				 * as it receives the value. Timeout after 2000ms (it means the debugger is stuck or busy)
 				 */
 				wait(2000);
 			} catch (InterruptedException e) {
@@ -429,8 +437,8 @@ public class OcamlDebugger implements IExecEvents {
 		if (bDebuggingInfoMessage) {
 			if (error.endsWith("has no debugging info.\n")) {
 				message("This executable has no debugging information, so it cannot be debugged. "
-						+ "To add debugging information, compile with the '-g' switch, " +
-								"or use a .d.byte target with ocamlbuild.");
+						+ "To add debugging information, compile with the '-g' switch, "
+						+ "or use a .d.byte target with ocamlbuild.");
 				bDebuggingInfoMessage = false;
 				state = State.Quitting;
 				send("quit");
@@ -592,8 +600,8 @@ public class OcamlDebugger implements IExecEvents {
 				state = State.Idle;
 			}
 			/*
-			 * This case happens only if there is no breakpoint to delete (and so the confirmation
-			 * message isn't displayed)
+			 * This case happens only if there is no breakpoint to delete (and so the confirmation message
+			 * isn't displayed)
 			 */
 			else if (state.equals(State.RemovingBreakpoints)) {
 				debuggerOutput.setLength(0);
@@ -606,11 +614,9 @@ public class OcamlDebugger implements IExecEvents {
 				notify();
 				debuggerOutput.setLength(0);
 				state = State.Idle;
-			} 
-			else if (state.equals(State.Quitting)) {
+			} else if (state.equals(State.Quitting)) {
 				// do nothing
-			}
-			else {
+			} else {
 				OcamlPlugin.logError("debugger: incoherent state (" + state + ")");
 				// System.err.println("###other###");
 				message("debugger internal error (incoherent state)");
@@ -653,8 +659,8 @@ public class OcamlDebugger implements IExecEvents {
 			public void run() {
 				try {
 
-					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
-							.getActiveWorkbenchWindow().getActivePage();
+					final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage();
 					OcamlBreakpointsView breakpointsview = (OcamlBreakpointsView) activePage
 							.findView(OcamlBreakpointsView.ID);
 
@@ -673,8 +679,8 @@ public class OcamlDebugger implements IExecEvents {
 			public void run() {
 				try {
 
-					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
-							.getActiveWorkbenchWindow().getActivePage();
+					final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage();
 					OcamlCallStackView callstackview = (OcamlCallStackView) activePage
 							.findView(OcamlCallStackView.ID);
 
@@ -753,8 +759,8 @@ public class OcamlDebugger implements IExecEvents {
 								.findView(OcamlBreakpointsView.ID);
 
 						if (breakpointsview != null)
-							breakpointsview.addBreakpoint(number, address, filename, line,
-									charBegin, charEnd);
+							breakpointsview
+									.addBreakpoint(number, address, filename, line, charBegin, charEnd);
 
 					} catch (Throwable e) {
 						OcamlPlugin.logError("ocaml plugin error", e);
@@ -763,8 +769,7 @@ public class OcamlDebugger implements IExecEvents {
 			});
 
 		} else
-			OcamlPlugin
-					.logError("ocamldebugger: couldn't parse breakpoint information:\n" + output);
+			OcamlPlugin.logError("ocamldebugger: couldn't parse breakpoint information:\n" + output);
 	}
 
 	Pattern patternFrame = Pattern.compile("\\A#\\d+  Pc : \\d+  (\\w+) char (\\d+)");
@@ -790,16 +795,15 @@ public class OcamlDebugger implements IExecEvents {
 			public void run() {
 				try {
 
-					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
-							.getActiveWorkbenchWindow().getActivePage();
+					final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage();
 					OcamlCallStackView stackview = (OcamlCallStackView) activePage
 							.findView(OcamlCallStackView.ID);
 					if (stackview != null) {
 
 						String[] elements = output.split("\\n");
 						/*
-						 * Remove the first and last line. The first is "Backtrace:" and the last is
-						 * "(ocd)".
+						 * Remove the first and last line. The first is "Backtrace:" and the last is "(ocd)".
 						 */
 						if (elements.length >= 2) {
 							String[] backtrace = new String[elements.length - 2];
@@ -854,8 +858,7 @@ public class OcamlDebugger implements IExecEvents {
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
 
-						IWorkbenchWindow window = PlatformUI.getWorkbench()
-								.getActiveWorkbenchWindow();
+						IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 						if (window != null) {
 							IWorkbenchPage page = window.getActivePage();
 							if (page != null) {
@@ -866,8 +869,7 @@ public class OcamlDebugger implements IExecEvents {
 									if (part instanceof OcamlEditor) {
 										OcamlEditor editor = (OcamlEditor) part;
 
-										DebugMarkers.getInstance().setCurrentPosition(filename,
-												offset);
+										DebugMarkers.getInstance().setCurrentPosition(filename, offset);
 										editor.redraw();
 										editor.highlightLineAtOffset(offset);
 									}
@@ -897,8 +899,8 @@ public class OcamlDebugger implements IExecEvents {
 
 		/*
 		 * try { IEditorDescriptor descriptor = IDE.getEditorDescriptor(file); // descriptor.
-		 * System.err.println(descriptor); } catch (PartInitException e) {
-		 * OcamlPlugin.logError("ocaml plugin error", e); }
+		 * System.err.println(descriptor); } catch (PartInitException e) { OcamlPlugin.logError("ocaml plugin
+		 * error", e); }
 		 */
 
 	}
@@ -976,10 +978,9 @@ public class OcamlDebugger implements IExecEvents {
 			public void run() {
 				try {
 
-					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
-							.getActiveWorkbenchWindow().getActivePage();
-					OcamlWatchView watchview = (OcamlWatchView) activePage
-							.findView(OcamlWatchView.ID);
+					final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage();
+					OcamlWatchView watchview = (OcamlWatchView) activePage.findView(OcamlWatchView.ID);
 
 					if (watchview != null)
 						watchview.setVariables(watchVariablesResult.toArray(new String[0]));
@@ -999,10 +1000,9 @@ public class OcamlDebugger implements IExecEvents {
 			public void run() {
 				try {
 
-					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
-							.getActiveWorkbenchWindow().getActivePage();
-					OcamlWatchView watchview = (OcamlWatchView) activePage
-							.findView(OcamlWatchView.ID);
+					final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage();
+					OcamlWatchView watchview = (OcamlWatchView) activePage.findView(OcamlWatchView.ID);
 
 					if (watchview != null)
 						watchview.clearVariables();
