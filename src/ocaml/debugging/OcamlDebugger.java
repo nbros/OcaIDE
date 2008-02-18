@@ -13,6 +13,7 @@ import ocaml.debugging.views.OcamlWatchView;
 import ocaml.editors.OcamlEditor;
 import ocaml.exec.ExecHelper;
 import ocaml.exec.IExecEvents;
+import ocaml.natures.OcamlbuildNature;
 import ocaml.perspectives.OcamlDebugPerspective;
 import ocaml.perspectives.OcamlPerspective;
 import ocaml.preferences.PreferenceConstants;
@@ -140,7 +141,7 @@ public class OcamlDebugger implements IExecEvents {
 			OcamlPlugin.logError("OcamlDebugger:start : not a file");
 			return;
 		}
-
+		
 		try {
 			// System.err.println("starting debugger on " + exeFile.getAbsolutePath() + " in project
 			// " + project.getName());
@@ -156,7 +157,18 @@ public class OcamlDebugger implements IExecEvents {
 
 			ArrayList<String> commandLine = new ArrayList<String>();
 			commandLine.add(ocamldebug);
-			commandLine.add(exeFile.getPath());
+			
+			/* FIXME launch shortcuts on exe symbolic links don't work 
+			 * (debugger can't find other modules) */
+
+			// start in "_build" directory only in ocamlbuild projects
+			/*if(project.getNature(OcamlbuildNature.ID) != null) {
+				IFolder folder = project.getFolder("_build");
+				if(folder.isAccessible()){
+					commandLine.add("-cd");
+					commandLine.add(folder.getLocation().toOSString());
+				}
+			}*/
 
 			OcamlPaths ocamlPaths = new OcamlPaths(project);
 			String[] paths = ocamlPaths.getPaths();
@@ -168,7 +180,7 @@ public class OcamlDebugger implements IExecEvents {
 				}
 			}
 			
-			// TODO add "_build" directory to paths (only in ocamlbuild projects)
+			commandLine.add(exeFile.getPath());
 
 			String[] strCommandLine = commandLine.toArray(new String[commandLine.size()]);
 			Process process = DebugPlugin.exec(strCommandLine, exeFile.getParentFile());
