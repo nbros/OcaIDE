@@ -67,9 +67,9 @@ public class OpenIntfImplAction implements IWorkbenchWindowActionDelegate {
 					OcamlPlugin.logError("OpenIntfImplAction: only works on ml and mli files");
 
 			} else
-				OcamlPlugin.logError("FormatWithCamlp4Action: editorPart is null");
+				OcamlPlugin.logError("OpenIntfImplAction: editorPart is null");
 		} else
-			OcamlPlugin.logError("FormatWithCamlp4Action: page is null");
+			OcamlPlugin.logError("OpenIntfImplAction: page is null");
 
 	}
 

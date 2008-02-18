@@ -89,9 +89,17 @@
 	
 * 1.2.0
 	* Code formatter rewrite
-	* ...
+	* Replaced build "N°" by corresponding Unicode character (as suggested by Ben Liblit)
+	* Removed unnecessary protection tokenization of ocamlbuild paths, which caused problems
+	* Use parsed ml files in completion when there is no corresponding mli file
+	* Removed the underscore from colorized punctuation characters
+	* User setting for disabling automatic completion
+	* Changed a regular expression which was causing stack overflows on big inputs
+	* Interface files are now parsed with a real parser, instead of the old fuzzy one
+	* In the toplevel, Ctrl+Enter always evaluates the expression, even when it is not terminated with ";;". This is useful to answer input queries.
 	* Changed the terminal type for toplevel, so that it doesn't try to send formatting characters  
 	* The debugger is now passed the paths defined for the project 
+	* Commenting and uncommenting of code blocks in the editor
 	
 	
 	

@@ -679,6 +679,10 @@
 			<menu id="Ocaml_sourceMenu" label="Ocaml">
 				<separator name="slot1"/>
 			</menu>
+			<action class="ocaml.editor.actions.CommentSelectionAction"
+				definitionId="Ocaml.commentSelectionCommand"
+				id="Ocaml_sourceActions_CommentSelection" label="Comment/Uncomment selection"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
 			<action class="ocaml.editor.actions.OpenIntfImplAction"
 				definitionId="Ocaml.openIntfImplCommand"
 				id="Ocaml_sourceActions_OpenIntfImpl" label="Open interface/implementation"
@@ -774,6 +778,8 @@
 			name="Goto Matching Delimiter"/>
 		<command categoryId="Ocaml.commandscategory"
 			id="Ocaml.toplevelQuickEvalCommand" name="Eval In Toplevel"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.commentSelectionCommand" name="Comment/Uncomment selection"/>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
 		<key
@@ -839,6 +845,10 @@
 			contextId="Ocaml.editor.context"
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
 			sequence="F7"/>
+		<key commandId="Ocaml.commentSelectionCommand"
+			contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+M2+C"/>
 	</extension>
 	<extension point="org.eclipse.ui.contexts">
 		<context description="Context for editing Ocaml source"

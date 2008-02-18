@@ -57,40 +57,40 @@ public class Pos extends beaver.Symbol {
 	
 	public int getStartColumn(){
 		if(this == Pos.NONE)
-			System.err.println("***--- NONE ---***");
+			System.err.println("Formatter parser: Pos.NONE encountered");
 
 		return getColumn(posStart);
 	}
 	
 	public int getEndColumn(){
 		if(this == Pos.NONE)
-			System.err.println("***--- NONE ---***");
+			System.err.println("Formatter parser: Pos.NONE encountered");
 		return getColumn(posEnd);
 	}
 
 	public int getStartLine(){
 		if(this == Pos.NONE)
-			System.err.println("***--- NONE ---***");
+			System.err.println("Formatter parser: Pos.NONE encountered");
 		return getLine(posStart);
 	}
 	
 	public int getEndLine(){
 		if(this == Pos.NONE)
-			System.err.println("***--- NONE ---***");
+			System.err.println("Formatter parser: Pos.NONE encountered");
 		return getLine(posEnd);
 	}
 	
 	@Override
 	public int getStart(){
 		if(this == Pos.NONE)
-			System.err.println("***--- NONE ---***");
+			System.err.println("Formatter parser: Pos.NONE encountered");
 		return posStart; 
 	}
 
 	@Override
 	public int getEnd(){
 		if(this == Pos.NONE)
-			System.err.println("***--- NONE ---***");
+			System.err.println("Formatter parser: Pos.NONE encountered");
 		return posEnd; 
 	}
 }
