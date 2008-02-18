@@ -681,7 +681,7 @@
 			</menu>
 			<action class="ocaml.editor.actions.CommentSelectionAction"
 				definitionId="Ocaml.commentSelectionCommand"
-				id="Ocaml_sourceActions_CommentSelection" label="Comment/Uncomment selection"
+				id="Ocaml_sourceActions_CommentSelection" label="Comment/Uncomment Selection"
 				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
 			<action class="ocaml.editor.actions.OpenIntfImplAction"
 				definitionId="Ocaml.openIntfImplCommand"
@@ -689,7 +689,11 @@
 				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
 			<action class="ocaml.editor.actions.ConvertSpacesToTabsAction"
 				definitionId="Ocaml.spacesToTabsCommand"
-				id="Ocaml_sourceActions_SpacesToTabs" label="Convert spaces to tabs"
+				id="Ocaml_sourceActions_SpacesToTabs" label="Convert Spaces to Tabs"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+			<action class="ocaml.editor.actions.ConvertTabsToSpacesAction"
+				definitionId="Ocaml.tabsToSpacesCommand"
+				id="Ocaml_sourceActions_TabsToSpaces" label="Convert Tabs to Spaces"
 				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
 			<action class="ocaml.editor.actions.ConvertWithCamlp4Action"
 				definitionId="Ocaml.camlp4convertCommand"
@@ -772,14 +776,16 @@
 		<command categoryId="Ocaml.commandscategory" id="Ocaml.camlp4convertCommand"
 			name="Convert from revised syntax to standard syntax with camlp4"/>
 		<command categoryId="Ocaml.commandscategory" id="Ocaml.spacesToTabsCommand"
-			name="Convert spaces to tabs"/>
+			name="Convert Spaces to Tabs"/>
+		<command categoryId="Ocaml.commandscategory" id="Ocaml.tabsToSpacesCommand"
+			name="Convert Tabs to Spaces"/>
 		<command categoryId="Ocaml.commandscategory"
 			id="Ocaml.gotoMatchingDelimiterCommand"
 			name="Goto Matching Delimiter"/>
 		<command categoryId="Ocaml.commandscategory"
 			id="Ocaml.toplevelQuickEvalCommand" name="Eval In Toplevel"/>
 		<command categoryId="Ocaml.commandscategory"
-			id="Ocaml.commentSelectionCommand" name="Comment/Uncomment selection"/>
+			id="Ocaml.commentSelectionCommand" name="Comment/Uncomment Selection"/>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
 		<key

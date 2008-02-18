@@ -16,9 +16,9 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.editors.text.TextEditor;
 
 /**
- * This action converts spaces to tabs in the current editor.
+ * This action converts tabs to spaces in the current editor.
  */
-public class ConvertSpacesToTabsAction implements IWorkbenchWindowActionDelegate {
+public class ConvertTabsToSpacesAction implements IWorkbenchWindowActionDelegate {
 	private IWorkbenchWindow window;
 
 	public void run(IAction action) {
@@ -26,18 +26,18 @@ public class ConvertSpacesToTabsAction implements IWorkbenchWindowActionDelegate
 		if (page != null) {
 			IEditorPart editorPart = page.getActiveEditor();
 			if (editorPart != null) {
-				if (editorPart instanceof OcamlEditor) {
+				if (editorPart instanceof TextEditor) {
 					TextEditor editor = (TextEditor) editorPart;
 
 					IEditorInput input = editor.getEditorInput();
-					IDocument doc = editor.getDocumentProvider().getDocument(input);
+					IDocument document = editor.getDocumentProvider().getDocument(input);
 
-					String result = replaceSpacesByTabs(OcamlEditor.getTabSize(), doc.get());
+					String result = replaceTabsBySpaces(OcamlEditor.getTabSize(), document.get());
 
 					try {
-						doc.replace(0, doc.getLength(), result);
+						document.replace(0, document.getLength(), result);
 					} catch (BadLocationException e1) {
-						OcamlPlugin.logError("bad location while converting spaces to tabs", e1);
+						OcamlPlugin.logError("bad location while converting tabs to spaces", e1);
 						return;
 					}
 
@@ -49,30 +49,22 @@ public class ConvertSpacesToTabsAction implements IWorkbenchWindowActionDelegate
 		}
 	}
 
-	private String replaceSpacesByTabs(int tabSize, String doc) {
+	private String replaceTabsBySpaces(int tabSize, String doc) {
+
+		StringBuilder builderTab = new StringBuilder();
+		for (int i = 0; i < tabSize; i++)
+			builderTab.append(" ");
+		final String tab = builderTab.toString();
+
 		StringBuilder stringBuilder = new StringBuilder();
 
-		int nSpaces = 0;
-		boolean lineStart = true;
 		for (int i = 0; i < doc.length(); i++) {
 			char c = doc.charAt(i);
 
-			if (c == ' ' && lineStart)
-				nSpaces++;
-			else if (c == '\t' && lineStart)
-				nSpaces += tabSize;
-			else if (lineStart) {
-				lineStart = false;
-				int nTabs = nSpaces / tabSize;
-				for (int j = 0; j < nTabs; j++)
-					stringBuilder.append('\t');
-				nSpaces = 0;
+			if (c == '\t')
+				stringBuilder.append(tab);
+			else
 				stringBuilder.append(c);
-			} else
-				stringBuilder.append(c);
-
-			if (c == '\n')
-				lineStart = true;
 		}
 
 		return stringBuilder.toString();
