@@ -82,6 +82,8 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 				}
 			}
 		}
+		
+		// TODO: add compile and link paths (eg: -cflags -I /path)
 
 		commandLine.add("-tags");
 		commandLine.add("dtypes"); // TODO user preference?
