@@ -59,7 +59,9 @@ public class OcamlFormattingStrategy implements IFormattingStrategy, IFormatting
 			String text = document.get(start, length);
 			OcamlFormater indenter = new OcamlFormater();
 			String indentedText = indenter.format(text);
-			document.replace(start, length, indentedText);
+			
+			if(!text.equals(indentedText))
+				document.replace(start, length, indentedText);
 		} catch (Throwable e) {
 			ocaml.OcamlPlugin.logError("Error in OcamlFormattingStrategy:format", e);
 		}
