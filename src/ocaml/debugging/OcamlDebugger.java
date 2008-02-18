@@ -167,6 +167,8 @@ public class OcamlDebugger implements IExecEvents {
 					commandLine.add(path);
 				}
 			}
+			
+			// TODO add "_build" directory to paths (only in ocamlbuild projects)
 
 			String[] strCommandLine = commandLine.toArray(new String[commandLine.size()]);
 			Process process = DebugPlugin.exec(strCommandLine, exeFile.getParentFile());
