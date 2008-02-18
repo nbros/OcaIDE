@@ -19,6 +19,7 @@ public class OcamlbuildFlags {
 	ArrayList<String> libs;
 	ArrayList<String> cflags;
 	ArrayList<String> lflags;
+	// TODO : add "other flags" (eg: --use-menhir) and corresponding GUI 
 
 	private final IProject project;
 
