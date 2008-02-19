@@ -12,6 +12,7 @@ import ocaml.parser.Def;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ContextInformation;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -301,15 +302,16 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	 */
 	private String getLastWord(ITextViewer viewer, int index) {
 		String lastWord = "";
+		IDocument document = viewer.getDocument();
 		try {
-			char c = viewer.getDocument().getChar(index);
+			char c = document.getChar(index);
 			if (c == ' ')
 				return " ";
 			while (c != ' '
 					&& "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'".contains("" + c)) {
 				lastWord = String.valueOf(c) + lastWord;
 				index--;
-				c = viewer.getDocument().getChar(index);
+				c = document.getChar(index);
 			}
 		} catch (BadLocationException e) {
 			return lastWord;
