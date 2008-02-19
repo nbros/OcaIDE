@@ -38,10 +38,10 @@ public class CommandRunner {
 	 * 
 	 * @param command
 	 *            the command to execute, with its parameters
-	 * @param fileFolderPath
+	 * @param folderPath
 	 *            the path in which to execute the command
 	 */
-	public CommandRunner(String[] command, String fileFolderPath) {
+	public CommandRunner(String[] command, String folderPath) {
 		if (command.length == 0) {
 			return;
 		}
@@ -55,7 +55,7 @@ public class CommandRunner {
 
 		try {
 			// execute the command
-			this.process = runtime.exec(command, null, fileFolderPath == null ? null : new File(fileFolderPath));
+			this.process = runtime.exec(command, null, folderPath == null ? null : new File(folderPath));
 
 			// get the standard and error outputs
 			InputStream stderr = this.process.getErrorStream();

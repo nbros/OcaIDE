@@ -13,6 +13,7 @@ public class PreferenceConstants
 	public static final String P_COMPIL_PATH_OCAMLDOC = "ocamldocPathPreference";
 	public static final String P_COMPIL_PATH_OCAMLDEBUG = "ocamldebugPathPreference";
 	public static final String P_MAKE_PATH = "makePathPreference";
+	public static final String P_OMAKE_PATH = "omakePathPreference";
 	public static final String P_PATH_CAMLP4 = "camlp4PathPreference";
 	public static final String P_PATH_OCAMLBUILD = "ocamlbuildPathPreference";
 	

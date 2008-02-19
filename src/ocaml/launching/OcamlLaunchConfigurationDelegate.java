@@ -53,17 +53,6 @@ public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDel
 		}
 
 		if (mode.equals(ILaunchManager.DEBUG_MODE)) {
-			
-			if(!OcamlPlugin.runningOnLinuxCompatibleSystem()) {
-				Display.getDefault().asyncExec(new Runnable() {
-					public void run() {
-						MessageDialog.openInformation(null, "Ocaml Plugin",
-						"Sorry, the debugger only works on Linux or Mac");
-					}
-				});
-				return;
-			}
-			
 			Display.getDefault().syncExec(new Runnable() {
 				public void run() {
 					PlatformUI.getWorkbench().saveAllEditors(false);

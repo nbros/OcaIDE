@@ -179,6 +179,18 @@
 			<description> Create an empty OCaml Makefile project (useful for importing projects) </description>
 		</wizard>
 
+		<wizard category="ocaml.wizards.Category"
+			class="ocaml.wizards.OcamlNewOMakeProjectWizard"
+			finalPerspective="ocaml.perspectives.OcamlPerspective"
+			icon="icons/caml16x16.gif"
+			id="ocaml.wizards.OcamlNewOMakeProjectWizard"
+			name="OCaml OMake Project"
+			preferredPerspectives="ocaml.perspectives.OcamlPerspective"
+			project="true">
+			<selection class="org.eclipse.core.resources.IResource"/>
+			<description> Create an OMake project with OMakefile and OMakeroot </description>
+		</wizard>
+
 		<wizard name="OCaml Managed Project" icon="icons/caml16x16.gif"
 			category="ocaml.wizards.Category"
 			class="ocaml.wizards.OcamlNewProjectWizard"

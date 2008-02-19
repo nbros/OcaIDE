@@ -47,6 +47,7 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 	FileFieldEditor ocamldebugField;
 	FileFieldEditor camlp4Field;
 	FileFieldEditor ocamlbuildField;
+	FileFieldEditor omakeField;
 
 	Text pathText;
 	private Label warningLabel;
@@ -146,6 +147,7 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 		otherGroup.setLayoutData(odata);
 
 		this.addField(new FileFieldEditor(PreferenceConstants.P_MAKE_PATH, "make:", otherGroup));
+		this.addField(new FileFieldEditor(PreferenceConstants.P_OMAKE_PATH, "omake:", otherGroup));
 		this.addField(new DirectoryFieldEditor(PreferenceConstants.P_LIB_PATH, "OCaml &lib path:",
 				otherGroup));
 

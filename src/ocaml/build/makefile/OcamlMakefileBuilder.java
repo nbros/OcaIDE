@@ -2,7 +2,6 @@ package ocaml.build.makefile;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import ocaml.OcamlPlugin;
@@ -64,11 +63,6 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 	@Override
 	protected IProject[] build(final int kind, final Map args, final IProgressMonitor monitor)
 			throws CoreException {
-		
-		if(OcamlPlugin.getMakeFullPath().trim().equals("")){
-			OcamlPlugin.logError("The make command couldn't be found. Please configure its path in the preferences.");
-			return null; 
-		}
 
 		final IProgressMonitor buildMonitor;
 		if (monitor == null)
@@ -96,11 +90,37 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 
 			building = true;
 
+    		String makeCmd = "";
+			MakeUtility makeUtility = new MakeUtility(project);
+			switch (makeUtility.getVariant()) {
+			case GNU_MAKE:
+				makeCmd = OcamlPlugin.getMakeFullPath();
+				break;
+			case OMAKE:
+				makeCmd = OcamlPlugin.getOMakeFullPath();
+				break;
+			}
+			makeCmd = makeCmd.trim();
+			if(makeCmd.trim().equals("")){
+				OcamlPlugin.logError(
+						"The "+MakeUtility.getName(makeUtility.getVariant())+
+						" command couldn't be found. Please configure its path in the preferences.");
+				return null;
+			}
+
 			String path = project.getLocation().toOSString();
 
 			ArrayList<String> commandLine = new ArrayList<String>();
-			commandLine.add(OcamlPlugin.getMakeFullPath());
-			commandLine.add("-C" + path);
+			commandLine.add(makeCmd);
+			switch (makeUtility.getVariant()) {
+			case OMAKE:
+				commandLine.add("--no--progress");
+				commandLine.add("-w");
+				break;
+			case GNU_MAKE:
+				commandLine.add("-C" + path);
+				break;
+			}
 
 			MakefileTargets makefileTargets = new MakefileTargets(project);
 			String[] targets = null;
@@ -154,12 +174,8 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 			File dir = project.getLocation().toFile();
 			ExecHelper execHelper = null;
 			try {
-				
-				
-				Map<String,String> env = new HashMap<String, String>();
-				String paths = findMakePaths(project);
-				env.put("PATH", paths);
-				execHelper = ExecHelper.execMerge(events, strCommandLine, env, dir);
+				// use OS-inherited environment for the make process
+				execHelper = ExecHelper.execMerge(events, strCommandLine, System.getenv(), dir);
 			} catch (Exception e) {
 				OcamlPlugin.logError("ocaml plugin error", e);
 				return null;
@@ -193,7 +209,7 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 		StringBuilder strBuilder = new StringBuilder();
 		for(String p : opaths.getPaths())
 			strBuilder.append(p + File.pathSeparatorChar);
-		
+
 		// remove the last separator
 		strBuilder.setLength(strBuilder.length() - 1);
 		return strBuilder.toString();
@@ -317,7 +333,9 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 
 								String name = file.getName();
 								if (name.equalsIgnoreCase("makefile")
-										|| name.equalsIgnoreCase("OCamlMakefile"))
+										|| name.equalsIgnoreCase("OCamlMakefile")
+										|| name.equalsIgnoreCase("OMakefile")
+										|| name.equalsIgnoreCase("OMakeroot"))
 									continue;
 
 								// Skip upper-case filenames (README, INSTALL)

@@ -55,9 +55,11 @@ public class ProblemMarkers {
 			+ "Class type declarations do not match|" + "Class declarations do not match|"
 			+ "Unbound module type )");
 
-	/** regex: File [f] line [l], characters [a]-[b]: */
+	/** regex: File "[f]" line [l], characters [a]-[b]: (Ocaml compilers)
+	 *     or    File [f] line [l]: characters [a]-[b]  (Omake)
+	 */
 	private final Pattern patternFile = Pattern
-			.compile("^File \"(.+?)\", line (\\d+), characters (\\d+)-(\\d+):");
+			.compile("^\\s*File (\"?)(.+?)\\1[:,] line (\\d+), characters (\\d+)-(\\d+):?\\s*$");
 
 	/** Create the markers for error messages coming from the O'Caml compiler. */
 	public void makeMarkers(String compilerOutput) {
@@ -80,10 +82,10 @@ public class ProblemMarkers {
 					currentMessage = "";
 				}
 
-				filename = matcher.group(1);
-				lineNumber = Integer.parseInt(matcher.group(2));
-				charStart = Integer.parseInt(matcher.group(3));
-				charEnd = Integer.parseInt(matcher.group(4));
+				filename = matcher.group(2);
+				lineNumber = Integer.parseInt(matcher.group(3));
+				charStart = Integer.parseInt(matcher.group(4));
+				charEnd = Integer.parseInt(matcher.group(5));
 
 				/* if the start and end positions are equal, the marker doesn't appear */
 				if (charStart == charEnd && charStart > 0)
@@ -151,10 +153,10 @@ public class ProblemMarkers {
 							.trim());
 					currentMessage = "";
 				}
-				filename = matcher.group(1);
-				lineNumber = Integer.parseInt(matcher.group(2));
-				charStart = Integer.parseInt(matcher.group(3));
-				charEnd = Integer.parseInt(matcher.group(4));
+				filename = matcher.group(2);
+				lineNumber = Integer.parseInt(matcher.group(3));
+				charStart = Integer.parseInt(matcher.group(4));
+				charEnd = Integer.parseInt(matcher.group(5));
 
 			} else if (line.startsWith("Error while linking")) {
 				if (!currentMessage.equals(""))

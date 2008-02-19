@@ -287,6 +287,11 @@ public class OcamlPlugin extends AbstractUIPlugin {
 		return instance.getPreferenceStore().getString(PreferenceConstants.P_MAKE_PATH);
 	}
 
+	/** Returns the omake command absolute path */
+	public static String getOMakeFullPath() {
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_OMAKE_PATH);
+	}
+
 	/** Returns the ocaml library absolute path */
 	public static String getLibFullPath() {
 		return instance.getPreferenceStore().getString(PreferenceConstants.P_LIB_PATH);

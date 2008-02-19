@@ -3,6 +3,8 @@ package ocaml.debugging;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -141,7 +143,7 @@ public class OcamlDebugger implements IExecEvents {
 			OcamlPlugin.logError("OcamlDebugger:start : not a file");
 			return;
 		}
-		
+
 		try {
 			// System.err.println("starting debugger on " + exeFile.getAbsolutePath() + " in project
 			// " + project.getName());
@@ -157,18 +159,17 @@ public class OcamlDebugger implements IExecEvents {
 
 			ArrayList<String> commandLine = new ArrayList<String>();
 			commandLine.add(ocamldebug);
-			
-			/* FIXME launch shortcuts on exe symbolic links don't work 
-			 * (debugger can't find other modules) */
+
+			/*
+			 * FIXME launch shortcuts on exe symbolic links don't work (debugger can't find other modules)
+			 */
 
 			// start in "_build" directory only in ocamlbuild projects
-			/*if(project.getNature(OcamlbuildNature.ID) != null) {
-				IFolder folder = project.getFolder("_build");
-				if(folder.isAccessible()){
-					commandLine.add("-cd");
-					commandLine.add(folder.getLocation().toOSString());
-				}
-			}*/
+			/*
+			 * if(project.getNature(OcamlbuildNature.ID) != null) { IFolder folder =
+			 * project.getFolder("_build"); if(folder.isAccessible()){ commandLine.add("-cd");
+			 * commandLine.add(folder.getLocation().toOSString()); } }
+			 */
 
 			OcamlPaths ocamlPaths = new OcamlPaths(project);
 			String[] paths = ocamlPaths.getPaths();
@@ -179,11 +180,11 @@ public class OcamlDebugger implements IExecEvents {
 					commandLine.add(path);
 				}
 			}
-			
+
 			// add the root of the project
 			commandLine.add("-I");
 			commandLine.add(project.getLocation().toOSString());
-			
+
 			commandLine.add(exeFile.getPath());
 
 			String[] strCommandLine = commandLine.toArray(new String[commandLine.size()]);
@@ -651,10 +652,21 @@ public class OcamlDebugger implements IExecEvents {
 	}
 
 	private boolean loadProgram(String socket) {
-		String[] envp = new String[] { "CAML_DEBUG_SOCKET=" + socket };
+
+		// add the CAML_DEBUG_SOCKET variable to the current environment
+		Map<String, String> env = System.getenv();
+		Iterator<String> it = env.keySet().iterator();
+		String[] envp = new String[env.size() + 1];
+		int i = 0;
+		while (it.hasNext()) {
+			String key = (String) it.next();
+			envp[i++] = key + "=" + env.get(key);
+		}
+		envp[i] = "CAML_DEBUG_SOCKET=" + socket;
 
 		String[] commandLine = new String[args.length + 1];
 		commandLine[0] = exeFile.getPath();
+
 		System.arraycopy(args, 0, commandLine, 1, args.length);
 
 		File workingDir = exeFile.getParentFile(); // project.getLocation().toFile();

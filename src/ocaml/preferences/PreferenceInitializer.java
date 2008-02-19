@@ -122,15 +122,15 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_TYPE, true);
 			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_VAL, true);
 			store.setDefault(PreferenceConstants.P_OUTLINE_SHOW_VARIANT_CONS, true);
-			
+
 			store.setDefault(PreferenceConstants.P_OUTLINE_EXPAND_ALL, false);
 			store.setDefault(PreferenceConstants.P_OUTLINE_EXPAND_MODULES, false);
 			store.setDefault(PreferenceConstants.P_OUTLINE_EXPAND_CLASSES, false);
-			
+
 			store.setDefault(PreferenceConstants.P_OUTLINE_UNNEST_IN, true);
 			store.setDefault(PreferenceConstants.P_OUTLINE_AND_BLUE, true);
 
-			
+
 			// set the defaults for the debugger
 			store.setDefault(PreferenceConstants.P_DEBUGGER_CHECKPOINTS, true);
 			store.setDefault(PreferenceConstants.P_DEBUGGER_SMALL_STEP, 1000);
@@ -149,6 +149,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			String camlp4 = "";
 			String ocamlbuild = "";
 			String make = "";
+			String omake = "";
 
 			String which = "";
 
@@ -260,6 +261,12 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 							make = file.getPath();
 					}
 
+					if (omake.equals("")) {
+						file = new File(prefix + "/omake");
+						if (file.exists() && file.isFile())
+							omake = file.getPath();
+					}
+
 					if (which.equals("")) {
 						file = new File(prefix + "/which");
 						if (file.exists() && file.isFile())
@@ -271,7 +278,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 				 * java.io.File file = new java.io.File("/usr/lib/ocaml"); if (!file.exists() ||
 				 * !file.isDirectory()) { file = new java.io.File("/lib/ocaml"); if (!file.exists() ||
 				 * !file.isDirectory()) file = new java.io.File("/usr/local/lib/ocaml"); }
-				 * 
+				 *
 				 * if (file.exists() && file.isDirectory()) { for (String s : file.list()) {
 				 * java.io.File dir = new java.io.File(file.getAbsolutePath() + "/" + s); if
 				 * (dir.isDirectory()) { for (String s2 : dir.list()) { java.io.File f = new
@@ -396,6 +403,15 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 							OcamlPlugin.logError("ocaml plugin error", e);
 						}
 					}
+					if (omake.equals("")) {
+
+						try {
+							commandRunner = new CommandRunner(new String[] { which, "omake" }, "/");
+							omake = commandRunner.getStdout().trim();
+						} catch (Exception e) {
+							OcamlPlugin.logError("ocaml plugin error", e);
+						}
+					}
 
 				}
 
@@ -431,6 +447,10 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 					ocamlbuild = basepath + "\\bin\\ocamlbuild.exe";
 					// configure ocamldebug manually under Windows (with cygwin)
 				}
+				
+				file = new File("C:\\Program Files\\OMake\\bin\\omake.exe");
+				if(file.exists() && file.isFile())
+					omake = file.getAbsolutePath();
 			}
 
 			// Save all the preferences in the preferences register
@@ -446,6 +466,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_COMPIL_PATH_OCAMLDEBUG, ocamldebug);
 			store.setDefault(PreferenceConstants.P_PATH_OCAMLBUILD, ocamlbuild);
 			store.setDefault(PreferenceConstants.P_MAKE_PATH, make);
+			store.setDefault(PreferenceConstants.P_OMAKE_PATH, omake);
 
 		} catch (Throwable e) {
 			OcamlPlugin.logError("error in preference initializer", e);

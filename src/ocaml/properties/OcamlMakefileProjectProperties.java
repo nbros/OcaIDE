@@ -1,6 +1,7 @@
 package ocaml.properties;
 
 import ocaml.OcamlPlugin;
+import ocaml.build.makefile.MakeUtility;
 import ocaml.build.makefile.MakefileTargets;
 
 import org.eclipse.core.resources.IProject;
@@ -12,6 +13,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.ui.dialogs.PropertyPage;
 
 /**
@@ -26,6 +28,10 @@ import org.eclipse.ui.dialogs.PropertyPage;
 public class OcamlMakefileProjectProperties extends PropertyPage {
 
 	private IProject project = null;
+
+	private Label makeLabel;
+
+	private Button[] makeButton;
 
 	private Label targetsLabel;
 
@@ -52,6 +58,18 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 		composite.setLayout(new GridLayout(1, false));
 		composite.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
+		makeLabel = new Label(composite, SWT.LEFT);
+		makeLabel.setText("make variant");
+
+		makeButton = new Button[2];
+		makeButton[0] = new Button(composite, SWT.RADIO);
+		makeButton[0].setSelection(true);
+		makeButton[0].setText("GNU make");
+		makeButton[0].setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+		makeButton[1] = new Button(composite, SWT.RADIO);
+		makeButton[1].setText("OMake");
+		makeButton[1].setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+
 		targetsLabel = new Label(composite, SWT.LEFT);
 		targetsLabel.setText("make targets for rebuild (separated by commas):");
 
@@ -76,6 +94,19 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 	}
 
 	private void load() {
+		// make variant
+		MakeUtility makeUtility = new MakeUtility(project);
+		switch (makeUtility.getVariant()) {
+		case GNU_MAKE:
+			makeButton[0].setSelection(true);
+			makeButton[1].setSelection(false);
+			break;
+		case OMAKE:
+			makeButton[0].setSelection(false);
+			makeButton[1].setSelection(true);
+			break;
+		}
+
 		// make
 		MakefileTargets makefileTargets = new MakefileTargets(project);
 		String[] targets = makefileTargets.getTargets();
@@ -113,6 +144,13 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 
 	@Override
 	public boolean performOk() {
+		MakeUtility.Variants clone;
+		if (makeButton[1].getSelection()) clone = MakeUtility.Variants.OMAKE;
+		else clone = MakeUtility.Variants.GNU_MAKE;
+
+		MakeUtility makeUtility = new MakeUtility(project);
+		makeUtility.setVariant(clone);
+
 		String[] targets = targetsText.getText().split(",");
 		MakefileTargets makefileTargets = new MakefileTargets(this.project);
 		makefileTargets.setTargets(targets);
@@ -129,6 +167,8 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 
 	@Override
 	protected void performDefaults() {
+		makeButton[0].setSelection(true);
+		makeButton[1].setSelection(false);
 		targetsText.setText("all");
 		cleanTargetsText.setText("clean");
 		docTargetsText.setText("htdoc");
