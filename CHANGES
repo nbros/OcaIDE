@@ -100,6 +100,7 @@
 	* Changed the terminal type for toplevel, so that it doesn't try to send formatting characters  
 	* The debugger is now passed the paths defined for the project 
 	* Commenting and uncommenting of code blocks in the editor (protected and not protected)
+	* Integrated a patch for OMake support contributed by Dmitry Bely
 	
 	
 	
