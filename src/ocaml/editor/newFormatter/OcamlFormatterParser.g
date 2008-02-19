@@ -6,6 +6,8 @@
 %import "java.util.ArrayList";
 %import "ocaml.parser.ErrorReporting";
 
+/* @SuppressWarnings("all") */
+
 %embed {:
 	public ErrorReporting errorReporting; 
 	public ArrayList<IndentHint> indentHints = new ArrayList<IndentHint>();
@@ -599,7 +601,7 @@ class_simple_expr=
     {: return a; :}
   | OBJECT.a class_structure.c END.b
     {: 
-		addHint(IndentHint.Type.OBJECT, c.getStart(), c.getEnd());
+		addHint(IndentHint.Type.OBJECT, a.getEnd() + 1, b.getStart());
 		return new Pos(a, b);
     :}
   | LPAREN.a class_expr COLON class_type RPAREN.b
@@ -781,7 +783,7 @@ class_signature=
   	{: return a; :}
   | OBJECT.a class_sig_body.c END.b
     {: 	
-		addHint(IndentHint.Type.OBJECT, c.getStart(), c.getEnd());
+		addHint(IndentHint.Type.OBJECT, a.getEnd() + 1, b.getStart());
     	return new Pos(a, b);
     :}
 ;

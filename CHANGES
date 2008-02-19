@@ -99,7 +99,7 @@
 	* In the toplevel, Ctrl+Enter always evaluates the expression, even when it is not terminated with ";;". This is useful to answer input queries.
 	* Changed the terminal type for toplevel, so that it doesn't try to send formatting characters  
 	* The debugger is now passed the paths defined for the project 
-	* Commenting and uncommenting of code blocks in the editor
+	* Commenting and uncommenting of code blocks in the editor (protected and not protected)
 	
 	
 	

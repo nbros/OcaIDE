@@ -20,8 +20,12 @@ import org.eclipse.ui.editors.text.TextEditor;
 public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 
 	private IWorkbenchWindow window;
+	private boolean bProtectedComment = false;
 
 	public void run(IAction action) {
+
+		bProtectedComment = "Ocaml_sourceActions_CommentSelectionProtected".equals(action.getId());
+
 		IWorkbenchPage page = window.getActivePage();
 		if (page != null) {
 			IEditorPart editorPart = page.getActiveEditor();
@@ -136,7 +140,10 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("(*");
+		if (bProtectedComment)
+			builder.append("(*|");
+		else
+			builder.append("(*");
 		builder.append(line);
 
 		int trailingSpaces = length - calculateLength(line, tabSize);
@@ -153,10 +160,17 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 	/** Uncomment this line if it is commented */
 	private String unComment(String line) {
 		line = line.trim();
-		if (!isCommented(line))
-			return line;
 
-		return trimEnd(line.substring(2, line.length() - 2));
+		if (bProtectedComment) {
+			if (isCommentedProtected(line))
+				return trimEnd(line.substring(3, line.length() - 2));
+		}
+
+		if (isCommented(line))
+			return trimEnd(line.substring(2, line.length() - 2));
+
+		return line;
+
 	}
 
 	/** Remove the terminating blank space from this line and return the result */
@@ -185,6 +199,10 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 
 	private boolean isCommented(String line) {
 		return line.startsWith("(*") && line.endsWith("*)");
+	}
+
+	private boolean isCommentedProtected(String line) {
+		return line.startsWith("(*|") && line.endsWith("*)");
 	}
 
 	public void dispose() {

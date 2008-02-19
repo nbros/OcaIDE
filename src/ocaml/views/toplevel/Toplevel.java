@@ -55,8 +55,9 @@ public class Toplevel {
 
 	/** The help message that is displayed when the user types "help" in the top-level view */
 	private final String helpMessage = "\nType an ocaml expression followed by ';;' and type <ENTER> to evaluate it.\n"
+			+ "Type <Ctrl+Enter> to evaluate the expression without checking that it is terminated by ';;'\n"
 			+ "Use the <UP> and <DOWN> arrow keys to recall history, or <F3> and <F4> in multiline expressions\n"
-			+ "Press Ctrl+C to abort the current evaluation (only on linux compatible systems)\n"
+			+ "Press <Ctrl+C> to abort the current evaluation (only on linux compatible systems)\n"
 			+ "You can also type the following commands:\n"
 			+ "kill    kill the ocaml interpreter\n"
 			+ "reset   restart the interpreter\n"

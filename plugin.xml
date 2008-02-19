@@ -680,6 +680,10 @@
 				<separator name="slot1"/>
 			</menu>
 			<action class="ocaml.editor.actions.CommentSelectionAction"
+				definitionId="Ocaml.commentSelectionProtectedCommand"
+				id="Ocaml_sourceActions_CommentSelectionProtected" label="Comment/Uncomment Selection (Protected)"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+			<action class="ocaml.editor.actions.CommentSelectionAction"
 				definitionId="Ocaml.commentSelectionCommand"
 				id="Ocaml_sourceActions_CommentSelection" label="Comment/Uncomment Selection"
 				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
@@ -786,6 +790,8 @@
 			id="Ocaml.toplevelQuickEvalCommand" name="Eval In Toplevel"/>
 		<command categoryId="Ocaml.commandscategory"
 			id="Ocaml.commentSelectionCommand" name="Comment/Uncomment Selection"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.commentSelectionProtectedCommand" name="Comment/Uncomment Selection (Protected)"/>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
 		<key
@@ -855,6 +861,10 @@
 			contextId="Ocaml.editor.context"
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
 			sequence="M1+M2+C"/>
+		<key commandId="Ocaml.commentSelectionProtectedCommand"
+			contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+M2+M3+C"/>
 	</extension>
 	<extension point="org.eclipse.ui.contexts">
 		<context description="Context for editing Ocaml source"

@@ -1418,7 +1418,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol c = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
-		addHint(IndentHint.Type.OBJECT, c.getStart(), c.getEnd());
+		addHint(IndentHint.Type.OBJECT, a.getEnd() + 1, b.getStart());
 		return new Pos(a, b);
 				}
 			},
@@ -1734,7 +1734,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol c = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 	
-		addHint(IndentHint.Type.OBJECT, c.getStart(), c.getEnd());
+		addHint(IndentHint.Type.OBJECT, a.getEnd() + 1, b.getStart());
     	return new Pos(a, b);
 				}
 			},
@@ -2186,15 +2186,16 @@ public class OcamlFormatterParser extends Parser {
 					 return new Pos(a, b);
 				}
 			},
-			new Action() {	// [176] expr = IF.a seq_expr THEN.t expr.c ELSE expr.b
+			new Action() {	// [176] expr = IF.a seq_expr THEN.t expr.c ELSE.e expr.b
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol a = _symbols[offset + 1];
 					final Symbol t = _symbols[offset + 3];
 					final Symbol c = _symbols[offset + 4];
+					final Symbol e = _symbols[offset + 5];
 					final Symbol b = _symbols[offset + 6];
 					 
     	addHint(IndentHint.Type.THEN, t.getEnd() + 1, c.getEnd());
-    	addHint(IndentHint.Type.ELSE, b.getStart(), b.getEnd());
+    	addHint(IndentHint.Type.ELSE, e.getEnd() + 1, b.getEnd());
 
     	return new Pos(a, b);
 				}
@@ -2423,7 +2424,7 @@ public class OcamlFormatterParser extends Parser {
 					final Symbol c = _symbols[offset + 2];
 					final Symbol b = _symbols[offset + 3];
 					 
-		addHint(IndentHint.Type.OBJECT, c.getStart(), c.getEnd());
+		addHint(IndentHint.Type.OBJECT, a.getEnd() + 1, b.getStart());
     	return new Pos(a, b);
 				}
 			},
