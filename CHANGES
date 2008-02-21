@@ -101,6 +101,7 @@
 	* The debugger is now passed the paths defined for the project 
 	* Commenting and uncommenting of code blocks in the editor (protected and not protected)
 	* Integrated a patch for OMake support contributed by Dmitry Bely
+	* Replaced Unix newlines by platform newlines
 	
 	
 	
