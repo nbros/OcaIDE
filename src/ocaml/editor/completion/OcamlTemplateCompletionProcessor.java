@@ -59,12 +59,12 @@ public class OcamlTemplateCompletionProcessor extends TemplateCompletionProcesso
 	protected Template[] getTemplates(String contextTypeId) {
 
 		Template t1 =
-				new Template("if", "condition", "ocamltemplatecontext", "if ${condition} then\n"
-						+ indent(indent + 1) + "${consequence}\n" + indent(indent) + "else\n"
-						+ indent(indent + 1) + "${alternative}\n"+indent(indent), true);
+				new Template("if", "condition", "ocamltemplatecontext", "if ${condition} then" + OcamlPlugin.newline
+						+ indent(indent + 1) + "${consequence}" + OcamlPlugin.newline + indent(indent) + "else\n"
+						+ indent(indent + 1) + "${alternative}" + OcamlPlugin.newline+indent(indent), true);
 		Template t2 =
-				new Template("for", "loop", "ocamltemplatecontext", "for ${i} = ${0} to ${10} do\n"
-						+ indent(indent + 1) + "${instruction}\n" + indent(indent) + "done\n" +indent(indent), true);
+				new Template("for", "loop", "ocamltemplatecontext", "for ${i} = ${0} to ${10} do" + OcamlPlugin.newline
+						+ indent(indent + 1) + "${instruction}" + OcamlPlugin.newline + indent(indent) + "done" + OcamlPlugin.newline +indent(indent), true);
 		Template t3 =
 				new Template("let+match", "let+match", "ocamltemplatecontext",
 					"let rec ${function name} ${parameter} = match ${parameter} with", true);
@@ -81,27 +81,27 @@ public class OcamlTemplateCompletionProcessor extends TemplateCompletionProcesso
 				new Template("try", "try with", "ocamltemplatecontext",
 					"try ${expr} with ${Exception} -> ${expr2}", true);
 		Template t8 =
-				new Template("module", "module", "ocamltemplatecontext", "module ${Name} =\n"
-						+ indent(indent) + "struct\n" + indent(indent + 1) + "${body}\n"
-						+ indent(indent) + "end;;\n" + indent(indent), true);
+				new Template("module", "module", "ocamltemplatecontext", "module ${Name} =" + OcamlPlugin.newline
+						+ indent(indent) + "struct" + OcamlPlugin.newline + indent(indent + 1) + "${body}" + OcamlPlugin.newline
+						+ indent(indent) + "end;;" + OcamlPlugin.newline + indent(indent), true);
 		Template t9 =
 				new Template("module type", "module signature", "ocamltemplatecontext",
-					"module type ${Name} =\n"+indent(indent) + "sig\n" +indent(indent+1) + "${body}\n"+indent(indent) + "end;;\n"+indent(indent), true);
+					"module type ${Name} =" + OcamlPlugin.newline+indent(indent) + "sig" + OcamlPlugin.newline +indent(indent+1) + "${body}" + OcamlPlugin.newline+indent(indent) + "end;;" + OcamlPlugin.newline+indent(indent), true);
 		Template t10 =
 				new Template("class", "class definition", "ocamltemplatecontext",
-					"class ${name} =\n" + indent(indent) + "object (self)\n" + indent(indent + 1)
-							+ "${body}\n" + indent(indent) + "end;;\n"+indent(indent), true);
+					"class ${name} =" + OcamlPlugin.newline + indent(indent) + "object (self)" + OcamlPlugin.newline + indent(indent + 1)
+							+ "${body}" + OcamlPlugin.newline + indent(indent) + "end;;" + OcamlPlugin.newline+indent(indent), true);
 		Template t11 =
 			new Template("match", "match with", "ocamltemplatecontext",
-				"match ${name} with\n" + indent(indent+1) + "| ", true);
+				"match ${name} with" + OcamlPlugin.newline + indent(indent+1) + "| ", true);
 
 		Template t12 =
 			new Template("while", "while", "ocamltemplatecontext",
-				"while ${condition} do\n" + indent(indent+1) + "${expression}" + "\n" + indent(indent) + "done\n", true);
+				"while ${condition} do" + OcamlPlugin.newline + indent(indent+1) + "${expression}" + "" + OcamlPlugin.newline + indent(indent) + "done" + OcamlPlugin.newline, true);
 
 		Template t13 =
 			new Template("begin end", "begin end block", "ocamltemplatecontext",
-				"begin\n" + indent(indent+1) + "${}\n" + indent(indent) + "end\n", true);
+				"begin" + OcamlPlugin.newline + indent(indent+1) + "${}" + OcamlPlugin.newline + indent(indent) + "end" + OcamlPlugin.newline, true);
 
 		return new Template[] { t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13};
 	}

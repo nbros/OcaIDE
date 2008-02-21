@@ -67,7 +67,7 @@ import org.osgi.framework.BundleContext;
 public class OcamlPlugin extends AbstractUIPlugin {
 	
 	/** newline */
-	String NL = System.getProperty("line.separator");
+	public static String newline = System.getProperty("line.separator");
 
 	/** The singleton instance of the plug-in. */
 	private static OcamlPlugin instance = null;
@@ -136,45 +136,45 @@ public class OcamlPlugin extends AbstractUIPlugin {
 
 		File file = new File(getOcamlcFullPath());
 		if (!file.exists())
-			missing = missing + "ocamlc (ocaml compiler)" + NL;
+			missing = missing + "ocamlc (ocaml compiler)" + newline;
 
 		file = new File(getLibFullPath());
 		if (!file.exists())
-			missing = missing + "ocaml library directory" + NL;
+			missing = missing + "ocaml library directory" + newline;
 
 		file = new File(getOcamlFullPath());
 		if (!file.exists())
-			missing = missing + "ocaml (toplevel)" + NL;
+			missing = missing + "ocaml (toplevel)" + newline;
 
 		file = new File(getOcamldepFullPath());
 		if (!file.exists())
-			missing = missing + "ocamldep (ocaml dependencies generator)" + NL;
+			missing = missing + "ocamldep (ocaml dependencies generator)" + newline;
 
 		file = new File(getOcamloptFullPath());
 		if (!file.exists())
-			missing = missing + "ocamlopt (ocaml native code compiler)" + NL;
+			missing = missing + "ocamlopt (ocaml native code compiler)" + newline;
 
 		file = new File(getOcamllexFullPath());
 		if (!file.exists())
-			missing = missing + "ocamllex (ocaml lexer generator)" + NL;
+			missing = missing + "ocamllex (ocaml lexer generator)" + newline;
 
 		file = new File(getOcamlyaccFullPath());
 		if (!file.exists())
-			missing = missing + "ocamlyacc (ocaml parser generator)" + NL;
+			missing = missing + "ocamlyacc (ocaml parser generator)" + newline;
 
 		file = new File(getOcamldocFullPath());
 		if (!file.exists())
-			missing = missing + "ocamldoc (ocaml documentation generator)" + NL;
+			missing = missing + "ocamldoc (ocaml documentation generator)" + newline;
 
 		file = new File(getCamlp4FullPath());
 		if (!file.exists())
-			missing = missing + "camlp4 (ocaml preprocessor-pretty printer)" + NL;
+			missing = missing + "camlp4 (ocaml preprocessor-pretty printer)" + newline;
 
 		if (!missing.equals("")) {
 
-			String message = "The following paths are not correctly set:" + NL
+			String message = "The following paths are not correctly set:" + newline
 					+ missing
-					+  NL + "Please set them in Window>Preferences>Ocaml>Paths.";
+					+  newline + "Please set them in Window>Preferences>Ocaml>Paths.";
 
 			boolean bDoNotShowMessage = getPreferenceStore().getBoolean(
 					PreferenceConstants.P_DONT_SHOW_MISSING_PATHS_WARNING);

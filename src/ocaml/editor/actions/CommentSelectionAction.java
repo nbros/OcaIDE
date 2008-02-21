@@ -116,7 +116,7 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 		StringBuilder builder = new StringBuilder();
 
 		for (String line : lines)
-			builder.append(line + "\n");
+			builder.append(line + OcamlPlugin.newline);
 
 		// remove the last newline
 		builder.setLength(builder.length() - 1);

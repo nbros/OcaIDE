@@ -149,11 +149,11 @@ public class FormatWithCamlp4Action implements IWorkbenchWindowActionDelegate {
 				if (!noNewline) {
 					Matcher matcher2 = lineContinuatorsPattern.matcher(previousLine);
 					if (!matcher2.find())
-						stringBuilder.append("\n");
+						stringBuilder.append(OcamlPlugin.newline);
 				}
 			}
 
-			stringBuilder.append(line + "\n");
+			stringBuilder.append(line + OcamlPlugin.newline);
 			previousLine = line;
 		}
 

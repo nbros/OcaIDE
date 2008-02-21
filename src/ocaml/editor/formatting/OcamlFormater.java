@@ -65,14 +65,14 @@ public class OcamlFormater {
 		int nMaxBlankLines = OcamlPlugin.getInstance().getPreferenceStore()
 				.getInt(PreferenceConstants.P_FORMATTER_MAX_BLANK_LINES);
 
-		String[] lines = doc.split("\\n");
+		String[] lines = doc.split("\\r?\\n");
 
 		if (lines.length == 0)
 			return doc;
 		
 		this.lines = lines;
 		doc = formatCommentsAndSpaces();
-		lines = doc.split("\\n");
+		lines = doc.split("\\r?\\n");
 		
 		ArrayList<Integer> linesOffsets = computeLinesStartOffset(doc);
 
@@ -245,7 +245,7 @@ public class OcamlFormater {
 			
 			for (int k = 0; k < indent; k++)
 				result.append('\t');
-			result.append(line.trim() + "\n");
+			result.append(line.trim() + OcamlPlugin.newline);
 
 		}
 
@@ -322,7 +322,7 @@ public class OcamlFormater {
 			 * 
 			 */
 			if (currentLine != lines.length - 1)
-				result.append('\n');
+				result.append(OcamlPlugin.newline);
 		}
 
 		return result.toString();
@@ -714,7 +714,7 @@ public class OcamlFormater {
 					while (currentOffset++ < maxLineLength - 3)
 						result.append(" ");
 
-					result.append("*)\n");
+					result.append("*)" + OcamlPlugin.newline);
 
 					currentOffset = 0;
 					for (int j = 0; j < firstCommentLineIndent; j++) {
@@ -735,7 +735,7 @@ public class OcamlFormater {
 				while (currentOffset++ < maxLineLength - 3)
 					result.append(" ");
 
-			result.append("*)\n");
+			result.append("*)" + OcamlPlugin.newline);
 
 			/*
 			 * We're done with this comment: analyze the remaining lines:
