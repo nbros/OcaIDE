@@ -297,6 +297,16 @@ public class Toplevel {
 		if (exec != null && exec.isRunning())
 			exec.kill();
 	}
+	
+	/** The path of the toplevel to start. <code>null</code> means default toplevel, as defined in 
+	 * user preferences */
+	private String toplevelPath = null;
+	
+	/** Change the path of the toplevel (used to start a custom toplevel, by default the toplevel path 
+	 * is the one defined in the user preferences )*/
+	public void setToplevelPath(String path){
+		toplevelPath = path;
+	}
 
 	public void start() {
 		IExecEvents execEvents = new IExecEvents() {
@@ -315,6 +325,10 @@ public class Toplevel {
 		};
 
 		try {
+			String path = toplevelPath;
+			if(path == null)
+				path = OcamlPlugin.getOcamlFullPath();
+
 			if (OcamlPlugin.runningOnLinuxCompatibleSystem()) {
 				/*
 				 * Here, we try to get the pid of our process by comparing the list of pids before and after
@@ -338,7 +352,7 @@ public class Toplevel {
 					 */
 					environment.put("TERM", "eclipse");
 
-					exec = ExecHelper.execMerge(execEvents, new String[] { OcamlPlugin.getOcamlFullPath() },
+					exec = ExecHelper.execMerge(execEvents, new String[] { path },
 							environment, null);
 					
 				} catch (Throwable e) {
@@ -373,18 +387,25 @@ public class Toplevel {
 					}
 				}
 			} else {
-				String[] command = { OcamlPlugin.getOcamlFullPath() };
-				if (command[0].trim().equals("")) {
-					resultText.append("Error: couldn't start toplevel.\n"
-							+ "Please check its path in the preferences.");
+				// XXX Why is the starting code different for Linux and Windows?
+				
+				String[] command = { path };
+				
+				File file = new File(path);
+				
+				if (!file.exists() || !file.isFile()) {
+					resultText.append("Error: couldn't start toplevel.\n" + path + " doesn't exist or is not a file."
+							+ "Please check toplevel path in preferences.");
 					return;
 				}
 
-				File dir = new File(OcamlPlugin.getPluginDirectory());
+				
+				File dir = file.getParentFile();
 
 				ProcessBuilder processBuilder = new ProcessBuilder(command);
 				processBuilder.directory(dir);
 				processBuilder.environment().put("OCAMLLIB", OcamlPlugin.getLibFullPath());
+				processBuilder.environment().put("TERM", "eclipse");
 
 				Process process = processBuilder.start();
 				exec = new ExecHelper(execEvents, process);

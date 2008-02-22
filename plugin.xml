@@ -110,6 +110,10 @@
 			class="ocaml.views.toplevel.OcamlToplevelView"
 			fastViewWidthRatio="40" icon="icons/toplevelViewIcon.gif"
 			id="Ocaml.ocamlToplevelView" name="OCaml Toplevel"/>
+		<view allowMultiple="true" category="ocaml.views.Category"
+			class="ocaml.views.toplevel.OcamlCustomToplevelView"
+			fastViewWidthRatio="40" icon="icons/toplevelViewIcon.gif"
+			id="Ocaml.ocamlCustomToplevelView" name="OCaml Custom Toplevel"/>
 		<view allowMultiple="false" category="ocaml.views.DebugCategory"
 			class="ocaml.debugging.views.OcamlCallStackView"
 			icon="icons/stackframe.gif" id="Ocaml.CallStackView"
@@ -610,6 +614,35 @@
 			</contextualLaunch>
 		</shortcut>
 	</extension>
+	
+	
+	<extension point="org.eclipse.debug.ui.launchShortcuts">
+  		<shortcut
+    		label="Ocaml Toplevel"
+		    icon="icons/toplevelViewIcon.gif"
+		    modes="run"
+		    class="ocaml.launching.OcamlToplevelLaunchShortcut"
+		    description="Launch an Ocaml toplevel"
+		    id="Ocaml.launching.toplevelLaunchShortcut">
+    		<description description="Run an Ocaml toplevel" mode="run"/>
+  			<contextualLaunch>
+				<enablement>
+					<with variable="selection">
+				     <count value="1"/>
+				      <iterate>
+				        <test
+		                  forcePluginActivation="true"
+        		          property="Ocaml.isExecutable"/>
+				      </iterate>
+				     </with>
+				</enablement>
+			</contextualLaunch>
+  		</shortcut>
+	</extension>
+
+	
+	
+	
 	<extension point="org.eclipse.ui.actionSets">
 		<actionSet description="Actions for debugging an Ocaml program"
 			id="Ocaml_debuggingActionSet" label="Ocaml Debugging" visible="false">

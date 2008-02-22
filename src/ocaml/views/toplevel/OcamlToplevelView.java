@@ -30,6 +30,10 @@ import org.eclipse.ui.part.ViewPart;
 
 /** Implements the O'Caml top-level view */
 public class OcamlToplevelView extends ViewPart {
+	
+	/** Start the toplevel immediately when the view is created. Overrided in the CustomToplevel class 
+	 * to launch custom toplevels  */
+	protected boolean bStartWhenCreated = true;
 
 	public static final String ID = "Ocaml.ocamlToplevelView";
 	public static int nLastPageOpen = 1;
@@ -61,7 +65,7 @@ public class OcamlToplevelView extends ViewPart {
 	private StyledText resultText;
 	private Sash sash;
 
-	private Toplevel toplevel;
+	protected Toplevel toplevel;
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -160,8 +164,8 @@ public class OcamlToplevelView extends ViewPart {
 		toolBarManager.add(actionNewToplevel);
 		toolBarManager.add(actionHelp);
 
-		
-		toplevel.start();
+		if(bStartWhenCreated)
+			toplevel.start();
 		lastFocusedInstance = this;
 	}
 
