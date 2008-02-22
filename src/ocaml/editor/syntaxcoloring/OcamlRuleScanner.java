@@ -27,6 +27,12 @@ public class OcamlRuleScanner extends RuleBasedScanner implements ILanguageWords
 		IToken punctuation =
 			new Token(new TextAttribute(OcamlEditorColors.getPunctuationColor()));
 
+		IToken uppercase =
+			new Token(new TextAttribute(OcamlEditorColors.getUppercaseColor()));
+		
+		IToken pointedUppercase =
+			new Token(new TextAttribute(OcamlEditorColors.getPointedUppercaseColor()));
+
 		
 		IToken character =
 				new Token(
@@ -42,6 +48,7 @@ public class OcamlRuleScanner extends RuleBasedScanner implements ILanguageWords
 		rules.add(new CharacterRule(character));
 		rules.add(new OcamlNumberRule(integer, decimal));
 		rules.add(new PunctuationRule(punctuation));
+		rules.add(new OcamlUppercaseRule(uppercase, pointedUppercase)); 
 		rules.add(new SimpleWordRule(keywords, keyword, letin, fun));
 		
 		this.setRules(rules.toArray(new IRule[] {}));

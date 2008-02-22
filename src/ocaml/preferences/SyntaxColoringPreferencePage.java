@@ -45,6 +45,10 @@ public class SyntaxColoringPreferencePage extends FieldEditorPreferencePage impl
 	private ColorFieldEditor colorFieldYaccDefinition;
 	
 	private ColorFieldEditor colorFieldPunctuation;
+	
+	private ColorFieldEditor colorFieldUppercase;
+	
+	private ColorFieldEditor colorFieldPointedUppercase;
 
 	@Override
 	public void createFieldEditors() {
@@ -78,6 +82,12 @@ public class SyntaxColoringPreferencePage extends FieldEditorPreferencePage impl
 		colorFieldPunctuation = new ColorFieldEditor(PreferenceConstants.P_PUNCTUATION_COLOR,
 				"Punctuation Color:", this.getFieldEditorParent());
 
+		colorFieldUppercase = new ColorFieldEditor(PreferenceConstants.P_UPPERCASE_COLOR,
+				"Uppercase identifier Color:", this.getFieldEditorParent());
+
+		colorFieldPointedUppercase = new ColorFieldEditor(PreferenceConstants.P_POINTED_UPPERCASE_COLOR,
+				"Pointed uppercase identifier Color:", this.getFieldEditorParent());
+
 		this.addField(colorFieldKeywords);
 		this.addField(colorFieldLetinKeywords);
 		this.addField(colorFieldFunFunctionKeywords);
@@ -91,6 +101,8 @@ public class SyntaxColoringPreferencePage extends FieldEditorPreferencePage impl
 		this.addField(colorFieldCharacter);
 		this.addField(colorFieldYaccDefinition);
 		this.addField(colorFieldPunctuation);
+		this.addField(colorFieldUppercase);
+		this.addField(colorFieldPointedUppercase);
 		
 
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_BOLD_KEYWORDS, "Bold k&eywords", this

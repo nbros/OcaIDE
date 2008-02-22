@@ -363,6 +363,16 @@ public class OcamlPlugin extends AbstractUIPlugin {
 		return string2RGB(instance.getPreferenceStore()
 				.getString(PreferenceConstants.P_PUNCTUATION_COLOR));
 	}
+
+	public static RGB getUppercaseColor() {
+		return string2RGB(instance.getPreferenceStore()
+				.getString(PreferenceConstants.P_UPPERCASE_COLOR));
+	}
+	
+	public static RGB getPointedUppercaseColor() {
+		return string2RGB(instance.getPreferenceStore()
+				.getString(PreferenceConstants.P_POINTED_UPPERCASE_COLOR));
+	}
 	
 
 	/** Returns whether comments should appear in bold (from the user preferences) */

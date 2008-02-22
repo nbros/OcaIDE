@@ -31,6 +31,8 @@ public class PreferenceConstants
 	public static final String P_CHARACTER_COLOR = "ocamlPlugincharacterColorPreference";
 	public static final String P_YACC_DEFINITION_COLOR = "ocamlPluginyaccDefinitionColorPreference";
 	public static final String P_PUNCTUATION_COLOR = "ocamlPluginPunctuationColorPreference";
+	public static final String P_UPPERCASE_COLOR = "ocamlPluginUppercaseColorPreference";
+	public static final String P_POINTED_UPPERCASE_COLOR = "ocamlPluginPointedUppercaseColorPreference";
 	
 	public static final String P_BOLD_KEYWORDS = "ocamlPluginboldKeywordsFormattingPreference";
 	public static final String P_BOLD_COMMENTS = "ocamlPluginboldCommentsFormattingPreference";
@@ -135,5 +137,6 @@ public class PreferenceConstants
 	
 	/** Activate automatic completion after '.' or '@'?*/
 	public static final String P_EDITOR_AUTOCOMPLETION = "ocamlEditorAutoCompletion";
+	
 	
 }

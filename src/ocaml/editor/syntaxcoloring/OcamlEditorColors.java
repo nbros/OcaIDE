@@ -6,6 +6,7 @@ import org.eclipse.swt.widgets.Display;
 /** Store the O'Caml editor colors, so as to minimize memory use */
 public class OcamlEditorColors {
 	
+	
 	private static Color COMMENT_COLOR;
 	private static Color DOC_COMMENT_COLOR;
 	private static Color DOC_ANNOTATION_COLOR;
@@ -19,6 +20,8 @@ public class OcamlEditorColors {
 	private static Color CHARACTER_COLOR;
 	private static Color YACC_DEFINITION_COLOR;
 	private static Color PUNCTUATION_COLOR;
+	private static Color UPPERCASE_COLOR;
+	private static Color POINTED_UPPERCASE_COLOR;
 	
 	private static boolean initialized = false;
 
@@ -38,6 +41,8 @@ public class OcamlEditorColors {
 		LETIN_COLOR = new Color(display, OcamlPlugin.getLetInColor());
 		FUN_COLOR = new Color(display, OcamlPlugin.getFunColor());
 		PUNCTUATION_COLOR = new Color(display, OcamlPlugin.getPunctuationColor());
+		UPPERCASE_COLOR = new Color(display, OcamlPlugin.getUppercaseColor());
+		POINTED_UPPERCASE_COLOR = new Color(display, OcamlPlugin.getPointedUppercaseColor());
 		
 		initialized = true;
 	}
@@ -125,4 +130,17 @@ public class OcamlEditorColors {
 			init();
 		return PUNCTUATION_COLOR;
 	}
+	
+	public static Color getUppercaseColor() {
+		if(!initialized)
+			init();
+		return UPPERCASE_COLOR;
+	}
+
+	public static Color getPointedUppercaseColor() {
+		if(!initialized)
+			init();
+		return POINTED_UPPERCASE_COLOR;
+	}
+
 }

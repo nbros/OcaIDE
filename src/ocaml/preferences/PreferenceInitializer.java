@@ -35,6 +35,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_DOC_ANNOTATION_COLOR, "127,159,191");
 			store.setDefault(PreferenceConstants.P_YACC_DEFINITION_COLOR, "191,63,63");
 			store.setDefault(PreferenceConstants.P_PUNCTUATION_COLOR, "128,0,0");
+			store.setDefault(PreferenceConstants.P_UPPERCASE_COLOR, "82,112,180");
+			store.setDefault(PreferenceConstants.P_POINTED_UPPERCASE_COLOR, "162,0,185");
 
 			// set the default syntax coloring bold attributes
 			store.setDefault(PreferenceConstants.P_BOLD_CHARACTERS, false);
