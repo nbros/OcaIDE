@@ -104,6 +104,7 @@
 	* Replaced Unix newlines by platform newlines
 	* Optimized an often used function
 	* Added 'insert spaces instead of tabulations' option for the O'Caml editor
+	* Spell checking of comments and documentation comments
 	
 	
 	

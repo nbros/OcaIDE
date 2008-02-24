@@ -10,6 +10,8 @@ import ocaml.editor.syntaxcoloring.OcamlPartitionScanner;
 import ocaml.editor.syntaxcoloring.OcamlRuleScanner;
 import ocaml.preferences.PreferenceConstants;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
@@ -22,6 +24,9 @@ import org.eclipse.jface.text.formatter.MultiPassContentFormatter;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
+import org.eclipse.jface.text.reconciler.IReconciler;
+import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
+import org.eclipse.jface.text.reconciler.Reconciler;
 import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.IRule;
@@ -32,6 +37,12 @@ import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.SWT;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
+import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
+import org.eclipse.ui.texteditor.spelling.SpellingReconcileStrategy;
+import org.eclipse.ui.texteditor.spelling.SpellingService;
 
 /**
  * Configures the O'Caml code editor: auto edit strategies, formatter, partitioning, completion assistant,
@@ -46,6 +57,7 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 
 	/**
 	 * Returns the double-click strategy.
+	 * 
 	 * @see OcamlDoubleClickStrategy
 	 */
 	@Override
@@ -55,6 +67,7 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 
 	/**
 	 * Returns auto-edit strategies.
+	 * 
 	 * @see OcamlAutoEditStrategy
 	 */
 	@Override
@@ -84,8 +97,7 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 				OcamlPartitionScanner.OCAML_DOCUMENTATION_COMMENT,
 				OcamlPartitionScanner.OCAML_MULTILINE_COMMENT };
 	}
-	
-	
+
 	/**
 	 * Return the "Reconciler" for the O'Caml editor (see Eclipse documentation)
 	 */
@@ -143,10 +155,10 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 				IDocument.DEFAULT_CONTENT_TYPE), IDocument.DEFAULT_CONTENT_TYPE);
 
 		assistant.enableAutoInsert(true);
-		
+
 		boolean autoActivation = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 				PreferenceConstants.P_EDITOR_AUTOCOMPLETION);
-		
+
 		assistant.enableAutoActivation(autoActivation);
 
 		assistant.setAutoActivationDelay(100);
@@ -170,6 +182,31 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 	public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
 		return new IHyperlinkDetector[] { new OcamlHyperlinkDetector(this.ocamlEditor) };
 	}
+
+	@Override
+	public IReconciler getReconciler(ISourceViewer sourceViewer) {
+
+		IPreferenceStore preferenceStore = EditorsPlugin.getDefault().getPreferenceStore();
+
+		if (preferenceStore == null
+				|| !preferenceStore.getBoolean(SpellingService.PREFERENCE_SPELLING_ENABLED))
+			return null;
+
+		SpellingService spellingService = EditorsUI.getSpellingService();
+		if (spellingService.getDefaultSpellingEngineDescriptor() == null)
+			return null;
+		
+		IReconcilingStrategy strategy = new OcamlSpellingReconcileStrategy(sourceViewer, spellingService);
+		Reconciler reconciler = new Reconciler();
+		reconciler.setDocumentPartitioning(OcamlPartitionScanner.OCAML_PARTITIONING);
+		reconciler.setReconcilingStrategy(strategy, OcamlPartitionScanner.OCAML_MULTILINE_COMMENT);
+		reconciler.setIsIncrementalReconciler(false);
+		reconciler.setProgressMonitor(new NullProgressMonitor());
+		reconciler.setDelay(500);
+		return reconciler;
+	}
+	
+	
 }
 
 class SingleTokenScanner extends BufferedRuleBasedScanner {

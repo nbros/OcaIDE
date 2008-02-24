@@ -391,21 +391,24 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 					for (String segment : path.segments()) {
 						if (segment.equals("_build")
 								|| segment.equals(OcamlPaths.EXTERNAL_SOURCES)
-								|| segment.equals(Misc.HYPERLINKSDIR))
+								|| segment.equals(Misc.HYPERLINKSDIR)){
+//							 System.err.println("Ignoring " + resource.getLocation().toOSString()
+//									 + " ('_build' in path)");
 							return true;
+						}
 					}
 
 					if (delta.getKind() == IResourceDelta.REMOVED) {
-						// System.err.println(resource.getLocation().toOSString()
-						// + " removed");
+//						 System.err.println(resource.getLocation().toOSString()
+//						 + " removed");
 						changed = true;
 						return false;
 					}
 
 					String ext = resource.getFileExtension();
 					if (ext != null && ext.matches("ml|mli|mll|mly")) {
-						// System.err.println(resource.getLocation().toOSString()
-						// + " changed");
+//						 System.err.println(resource.getLocation().toOSString()
+//						 + " changed");
 						changed = true;
 						return false;
 					}
