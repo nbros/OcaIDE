@@ -54,6 +54,11 @@ public class Misc {
 							"\\B'i\\b", "\u03b9").replaceAll("\\B'j\\b", "\u03ba").replaceAll(
 							"\\B'k\\b", "\u03bb").replaceAll("\\B'l\\b", "\u03bc").trim();
 	}
+	
+	public static boolean isOcamlIdentifierChar(char c){
+		return (c >= 'a' && c <='z' || c >= 'A' && c <='Z' || c >= '0' && c <='9' 
+			|| c == '_'|| c == '\'');
+	}
 
 	/**
 	 * Update the decorator manager (in a UI-Thread)

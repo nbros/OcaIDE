@@ -9,6 +9,7 @@ import ocaml.editors.OcamlEditor;
 import ocaml.editors.lex.OcamllexEditor;
 import ocaml.editors.yacc.OcamlyaccEditor;
 import ocaml.parser.Def;
+import ocaml.util.Misc;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.BadLocationException;
@@ -23,13 +24,12 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 /**
  * This class is responsible for managing completion in the O'Caml editor.
  * <p>
- * Find the expression before the cursor in the O'Caml editor, find completion proposals by going
- * through the definitions tree, find context informations that will appear after a completion
- * proposal is selected...
+ * Find the expression before the cursor in the O'Caml editor, find completion proposals by going through the
+ * definitions tree, find context informations that will appear after a completion proposal is selected...
  */
 public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
-	//private final OcamlEditor ocamlEditor;
+	// private final OcamlEditor ocamlEditor;
 
 	private final IProject project;
 
@@ -37,26 +37,26 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	private final String partitionType;
 
 	public OcamlCompletionProcessor(OcamlEditor edit, String regionType) {
-		//this.ocamlEditor = edit;
+		// this.ocamlEditor = edit;
 		this.partitionType = regionType;
 		this.project = edit.getProject();
 	}
 
 	public OcamlCompletionProcessor(OcamllexEditor edit, String regionType) {
-		//this.ocamlEditor = null;
+		// this.ocamlEditor = null;
 		this.partitionType = regionType;
 		this.project = edit.getProject();
 	}
 
 	public OcamlCompletionProcessor(OcamlyaccEditor edit, String regionType) {
-		//this.ocamlEditor = null;
+		// this.ocamlEditor = null;
 		this.partitionType = regionType;
 		this.project = edit.getProject();
 	}
 
 	/**
-	 * To know whether the user is precising a completion or starting a new one, so as to dismiss
-	 * the completion box when he types a space
+	 * To know whether the user is precising a completion or starting a new one, so as to dismiss the
+	 * completion box when he types a space
 	 */
 	private int lastOffset = -1;
 
@@ -82,14 +82,14 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		if (partitionType.equals(OcamlPartitionScanner.OCAML_DOCUMENTATION_COMMENT)) {
 
 			// the documentation annotations that can appear in ocamldoc comments
-			String[] docCompletions = { "@author ", "@deprecated ", "@param ", "@raise ",
-					"@return ", "@see ", "@since ", "@version " };
+			String[] docCompletions = { "@author ", "@deprecated ", "@param ", "@raise ", "@return ",
+					"@see ", "@since ", "@version " };
 
 			ArrayList<ICompletionProposal> docProposals = new ArrayList<ICompletionProposal>(8);
 			for (String s : docCompletions)
 				if (s.startsWith(lastWordDoc))
-					docProposals.add(new SimpleCompletionProposal(s, documentOffset
-							- lastWordDoc.length(), lastWordDoc.length(), s.length()));
+					docProposals.add(new SimpleCompletionProposal(s, documentOffset - lastWordDoc.length(),
+							lastWordDoc.length(), s.length()));
 
 			return docProposals.toArray(new ICompletionProposal[0]);
 		}
@@ -102,9 +102,9 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		OcamlCompletionProposal[] proposals;
 		/*
-		 * If the interfaces parsing Job isn't done, we return an empty list to avoid blocking the
-		 * graphical interface by doing a potentially long search (should be quick normally, but not
-		 * on a network file system for example).
+		 * If the interfaces parsing Job isn't done, we return an empty list to avoid blocking the graphical
+		 * interface by doing a potentially long search (should be quick normally, but not on a network file
+		 * system for example).
 		 */
 		if (CompletionJob.isParsingFinished()) {
 			Def definitionsRoot = CompletionJob.buildDefinitionsTree(this.project, true);
@@ -133,32 +133,28 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			allProposals.add(proposals[j]);
 
 		// get the definitions from the file being edited
-		/*if (!completion.contains(".") && this.ocamlEditor != null) {
-			Def def = ocamlEditor.getOutlineDefinitionsTree();
-			if (def != null) {
-				ICompletionProposal[] moduleCompletionProposals = findModuleCompletionProposals(
-						def, documentOffset, lastWord.length(), lastWord);
-
-				for (int j = 0; j < moduleCompletionProposals.length; j++)
-					allProposals.add(moduleCompletionProposals[j]);
-			} else
-				OcamlPlugin
-						.logError("OcamlCompletionProcessor:computeCompletionProposals : module definitions=null");
-		}*/
+		/*
+		 * if (!completion.contains(".") && this.ocamlEditor != null) { Def def =
+		 * ocamlEditor.getOutlineDefinitionsTree(); if (def != null) { ICompletionProposal[]
+		 * moduleCompletionProposals = findModuleCompletionProposals( def, documentOffset, lastWord.length(),
+		 * lastWord);
+		 * 
+		 * for (int j = 0; j < moduleCompletionProposals.length; j++)
+		 * allProposals.add(moduleCompletionProposals[j]); } else OcamlPlugin
+		 * .logError("OcamlCompletionProcessor:computeCompletionProposals : module definitions=null"); }
+		 */
 
 		/*
-		 * If a definition appears twice, remove the second one so that the user needn't press enter
-		 * to enter it
+		 * If a definition appears twice, remove the second one so that the user needn't press enter to enter
+		 * it
 		 */
-		/*if (allProposals.size() == 2) {
-			ICompletionProposal prop1 = allProposals.get(0);
-			ICompletionProposal prop2 = allProposals.get(1);
-
-			if (prop1 instanceof OcamlCompletionProposal
-					&& prop2 instanceof SimpleCompletionProposal
-					&& prop1.getDisplayString().equals(prop2.getDisplayString()))
-				allProposals.remove(1);
-		}*/
+		/*
+		 * if (allProposals.size() == 2) { ICompletionProposal prop1 = allProposals.get(0);
+		 * ICompletionProposal prop2 = allProposals.get(1);
+		 * 
+		 * if (prop1 instanceof OcamlCompletionProposal && prop2 instanceof SimpleCompletionProposal &&
+		 * prop1.getDisplayString().equals(prop2.getDisplayString())) allProposals.remove(1); }
+		 */
 
 		return allProposals.toArray(new ICompletionProposal[] {});
 	}
@@ -174,30 +170,28 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	}
 
 	/** Fill the list "<code>proposals</code>" with the completions found recursively */
-	private void findModuleCompletionProposalsAux(Def def, int offset, int length,
-			String completion, TreeSet<SimpleCompletionProposal> proposals) {
+	private void findModuleCompletionProposalsAux(Def def, int offset, int length, String completion,
+			TreeSet<SimpleCompletionProposal> proposals) {
 		String name = def.name.trim();
 		Def.Type type = def.type;
 
-		if (name.startsWith(completion) && !name.equals("") && !name.equals("()")
-				&& !name.equals("_") && !type.equals(Def.Type.Open)
-				&& !type.equals(Def.Type.Include) && !type.equals(Def.Type.Root)
-				&& !type.equals(Def.Type.LetIn))
-			proposals.add(new SimpleCompletionProposal(def, name, offset - length, length, name
-					.length()));
+		if (name.startsWith(completion) && !name.equals("") && !name.equals("()") && !name.equals("_")
+				&& !type.equals(Def.Type.Open) && !type.equals(Def.Type.Include)
+				&& !type.equals(Def.Type.Root) && !type.equals(Def.Type.LetIn))
+			proposals.add(new SimpleCompletionProposal(def, name, offset - length, length, name.length()));
 
 		for (Def child : def.children)
 			findModuleCompletionProposalsAux(child, offset, length, completion, proposals);
 	}
 
 	/**
-	 * Find the completions matching the argument <code>completion</code> from all the definitions
-	 * found in the definitionsRoot tree.
+	 * Find the completions matching the argument <code>completion</code> from all the definitions found in
+	 * the definitionsRoot tree.
 	 * 
 	 * @return the completions found
 	 */
-	private OcamlCompletionProposal[] findCompletionProposals(String completion,
-			Def definitionsRoot, int offset) {
+	private OcamlCompletionProposal[] findCompletionProposals(String completion, Def definitionsRoot,
+			int offset) {
 
 		ArrayList<Def> definitions = definitionsRoot.children;
 
@@ -256,8 +250,6 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			return "";
 		}
 
-		final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890'.";
-
 		int startIndex = documentOffset;
 		for (int i = documentOffset - 1; i >= -1; i--) {
 			if (i == -1) {
@@ -265,7 +257,8 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 				break;
 			}
 
-			if (!chars.contains("" + doc.charAt(i))) {
+			char c = doc.charAt(i);
+			if (!(Misc.isOcamlIdentifierChar(c) || c == '.')) {
 				startIndex = i + 1;
 				break;
 			}
@@ -286,7 +279,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			char c = viewer.getDocument().getChar(index);
 			if (c == ' ')
 				return " ";
-			while (c != ' ' && "abcdefghijklmnopqrstuvwxyz@".contains("" + c)) {
+			while (c != ' ' && (c >= 'a' && c <= 'z' || c == '@')) {
 				lastWord = String.valueOf(c) + lastWord;
 				index--;
 				c = viewer.getDocument().getChar(index);
@@ -307,8 +300,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			char c = document.getChar(index);
 			if (c == ' ')
 				return " ";
-			while (c != ' '
-					&& "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'".contains("" + c)) {
+			while (c != ' ' && Misc.isOcamlIdentifierChar(c)) {
 				lastWord = String.valueOf(c) + lastWord;
 				index--;
 				c = document.getChar(index);
@@ -327,18 +319,17 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	}
 
 	/**
-	 * Return the list of characters that activate context informations when they are typed in the
-	 * editor.
+	 * Return the list of characters that activate context informations when they are typed in the editor.
 	 */
 	public char[] getContextInformationAutoActivationCharacters() {
 		return null;
 	}
 
 	/**
-	 * Provides a context information validator that will say whether the context information is
-	 * still valid at a given position. This is used to make the information box disappear when it
-	 * is no longer needed (it can also be discarded by the ESCAPE key). It is also used to format
-	 * the text in this box with colors (but it cannot be modified there).
+	 * Provides a context information validator that will say whether the context information is still valid
+	 * at a given position. This is used to make the information box disappear when it is no longer needed (it
+	 * can also be discarded by the ESCAPE key). It is also used to format the text in this box with colors
+	 * (but it cannot be modified there).
 	 */
 	public IContextInformationValidator getContextInformationValidator() {
 		return new OcamlContextInformation();
@@ -350,25 +341,23 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		int endOffset = doc.length();
 
-		final String charsAfter = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890'";
-
 		for (int i = documentOffset; i < doc.length(); i++) {
-			if (!charsAfter.contains("" + doc.charAt(i))) {
+			if (!Misc.isOcamlIdentifierChar(doc.charAt(i))) {
 				endOffset = i;
 				break;
 			}
 		}
 
-		final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890'.";
-
 		int startIndex = documentOffset;
 		for (int i = endOffset - 1; i >= -1; i--) {
+
 			if (i == -1) {
 				startIndex = 0;
 				break;
 			}
 
-			if (!chars.contains("" + doc.charAt(i))) {
+			char c = doc.charAt(i);
+			if (!(Misc.isOcamlIdentifierChar(c) || c == '.')) {
 				startIndex = i + 1;
 				break;
 			}
@@ -398,8 +387,8 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	}
 
 	/**
-	 * Find the element "expression" in the tree rooted in "definitionsRoot", and return the
-	 * corresponding context informations.
+	 * Find the element "expression" in the tree rooted in "definitionsRoot", and return the corresponding
+	 * context informations.
 	 */
 	private IContextInformation[] findContextInformation(String expression, Def definitionsRoot) {
 
@@ -428,8 +417,8 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 			for (Def def : definitions) {
 				/*
-				 * trick: the character '\u00A0' is a non-breakable space. It is used as a delimiter
-				 * between parts.
+				 * trick: the character '\u00A0' is a non-breakable space. It is used as a delimiter between
+				 * parts.
 				 */
 
 				if (def.name.equals(expression)) {

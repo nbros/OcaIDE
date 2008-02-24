@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import ocaml.OcamlPlugin;
 import ocaml.exec.CommandRunner;
 import ocaml.parser.Def;
+import ocaml.util.Misc;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -177,7 +178,6 @@ public class Camlp4Preprocessor {
 
 	Pattern patternLocation = Pattern
 			.compile("\\(\\*loc\\: \\[\".*?\"\\: (\\d+)\\:(\\d+)\\-(\\d+) \\d+\\:\\d+\\]\\*\\)");
-	final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890'";
 
 	/**
 	 * Update the identifiers source code locations by reading the location comments left by camlp4
@@ -260,7 +260,7 @@ public class Camlp4Preprocessor {
 					 * if the definition name is preceded or followed by an ocaml identifier char,
 					 * it is not a definition name
 					 */
-					if (chars.contains("" + prevChar) || chars.contains("" + nextChar))
+					if (Misc.isOcamlIdentifierChar(prevChar) || Misc.isOcamlIdentifierChar(nextChar))
 						nameIndex = wholeDefinition.indexOf(def.name, nameIndex + 1);
 					else
 						break;

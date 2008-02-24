@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ocaml.OcamlPlugin;
+import ocaml.util.Misc;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRegion;
@@ -23,12 +24,9 @@ public class OcamlyaccHyperlinkDetector implements IHyperlinkDetector {
 		definitions = new ArrayList<Definition>();
 	}
 
-	private final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890";
-
 	// a pattern to match the definitions in an O'Caml Yacc file
-	private final Pattern patternDefinition =
-			Pattern
-				.compile("(?:^ *(\\w+) *:)|(?:^ *%(?:token|nonassoc|left|right) *(?:<.*?> *)?((?:\\w| )+))");
+	private final Pattern patternDefinition = Pattern
+			.compile("(?:^ *(\\w+) *:)|(?:^ *%(?:token|nonassoc|left|right) *(?:<.*?> *)?((?:\\w| )+))");
 
 	private static String lastDoc = "";
 	private static ArrayList<Definition> definitions = new ArrayList<Definition>();
@@ -52,15 +50,20 @@ public class OcamlyaccHyperlinkDetector implements IHyperlinkDetector {
 		int end = -1;
 		int offset = region.getOffset();
 
-		for (begin = offset; begin >= 0; begin--)
-			if (!(chars.contains("" + doc.charAt(begin)))) {
+		for (begin = offset; begin >= 0; begin--) {
+			char ch = doc.charAt(begin);
+
+			if (!(Misc.isOcamlIdentifierChar(ch))) {
 				begin++;
 				break;
 			}
+		}
 
-		for (end = offset; end < length - 1; end++)
-			if (!(chars.contains("" + doc.charAt(end))))
+		for (end = offset; end < length - 1; end++) {
+			char ch = doc.charAt(end);
+			if (!(Misc.isOcamlIdentifierChar(ch)))
 				break;
+		}
 
 		if (begin < 0 || end < 0 || begin > length - 1 || end > length || begin >= end)
 			return null;
@@ -82,8 +85,7 @@ public class OcamlyaccHyperlinkDetector implements IHyperlinkDetector {
 
 					public void open() {
 						try {
-							IRegion region =
-									textViewer.getDocument().getLineInformation(lineNumber);
+							IRegion region = textViewer.getDocument().getLineInformation(lineNumber);
 							ocamlyaccEditor.selectAndReveal(region.getOffset(), region.getLength());
 						} catch (BadLocationException e) {
 							OcamlPlugin.logError("ocaml plugin error", e);
@@ -116,7 +118,7 @@ public class OcamlyaccHyperlinkDetector implements IHyperlinkDetector {
 		if (doc.equals(lastDoc))
 			return;
 
-		//System.err.println("parsing document");
+		// System.err.println("parsing document");
 		definitions.clear();
 
 		String[] lines = doc.split("\\n");
@@ -132,7 +134,7 @@ public class OcamlyaccHyperlinkDetector implements IHyperlinkDetector {
 					 * The group number 2 matches all the tokens defined on the same line
 					 */
 					String[] defs = matcher.group(2).split(" +");
-					for(String def : defs)
+					for (String def : defs)
 						definitions.add(new Definition(l, def));
 				}
 

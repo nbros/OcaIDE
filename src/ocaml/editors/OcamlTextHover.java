@@ -156,10 +156,9 @@ public class OcamlTextHover implements ITextHover {
 		int endOffset = text.length();
 		int length = text.length();
 
-		final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890'";
-
 		for (int i = offset; i < length; i++) {
-			if (!chars.contains("" + text.charAt(i))) {
+			char c = text.charAt(i);
+			if (!Misc.isOcamlIdentifierChar(c)) {
 				endOffset = i;
 				break;
 			}
@@ -172,7 +171,8 @@ public class OcamlTextHover implements ITextHover {
 				break;
 			}
 
-			if (!chars.contains("" + text.charAt(i))) {
+			char c = text.charAt(i);
+			if (!Misc.isOcamlIdentifierChar(c)) {
 				startIndex = i + 1;
 				break;
 			}

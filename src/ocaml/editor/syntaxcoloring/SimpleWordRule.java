@@ -1,6 +1,9 @@
 package ocaml.editor.syntaxcoloring;
 
 import java.util.HashSet;
+
+import ocaml.util.Misc;
+
 import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
@@ -30,8 +33,6 @@ public final class SimpleWordRule implements IRule {
 		for (String k : keywords)
 			this.words.add(k);
 	}
-	
-	private final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890'";
 
 	/** Return the first token that matches on the input */
 	public IToken evaluate(ICharacterScanner scanner) {
@@ -44,17 +45,17 @@ public final class SimpleWordRule implements IRule {
 			ch = -1;
 		}
 		/*
-		 * the character before the word musn't be an identifier part, or else we are not at the
-		 * beginning of a word
+		 * the character before the word musn't be an identifier part, or else we are not at the beginning of
+		 * a word
 		 */
-		if (ch <= 0 || !chars.contains(""+(char) ch)) {
+		if (ch <= 0 || !Misc.isOcamlIdentifierChar((char) ch)) {
 			ch = scanner.read();
-			if (chars.contains(""+(char) ch)) {
+			if (Misc.isOcamlIdentifierChar((char) ch)) {
 				this.stringBuffer.setLength(0);
 				this.stringBuffer.append((char) ch);
 				for (;;) {
 					ch = scanner.read();
-					if (ch == ICharacterScanner.EOF || !chars.contains(""+(char) ch))
+					if (ch == ICharacterScanner.EOF || !Misc.isOcamlIdentifierChar((char) ch))
 						break;
 					this.stringBuffer.append((char) ch);
 				}

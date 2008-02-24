@@ -1,5 +1,7 @@
 package ocaml.editors.yacc;
 
+import ocaml.util.Misc;
+
 import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
@@ -17,8 +19,8 @@ public class OcamlyaccDefinitionRule implements IRule {
 	/** Return the first token corresponding to the input */
 	public IToken evaluate(ICharacterScanner scanner) {
 		int ch;
-		
-		if(scanner.getColumn() != 0){
+
+		if (scanner.getColumn() != 0) {
 			return Token.UNDEFINED;
 		}
 
@@ -27,12 +29,11 @@ public class OcamlyaccDefinitionRule implements IRule {
 		for (;;) {
 			ch = scanner.read();
 			readCount++;
-			if (!"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
-				.contains("" + (char) ch))
+			if (!Misc.isOcamlIdentifierChar((char) ch))
 				break;
 		}
 
-		while (ch == ' '){
+		while (ch == ' ') {
 			ch = scanner.read();
 			readCount++;
 		}
@@ -40,9 +41,8 @@ public class OcamlyaccDefinitionRule implements IRule {
 		if (ch == ':' && readCount > 1)
 			return token;
 
-		for(int i = 0; i < readCount; i++)
+		for (int i = 0; i < readCount; i++)
 			scanner.unread();
-
 
 		return Token.UNDEFINED;
 

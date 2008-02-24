@@ -1,5 +1,7 @@
 package ocaml.editor.syntaxcoloring;
 
+import ocaml.util.Misc;
+
 import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IPredicateRule;
 import org.eclipse.jface.text.rules.IToken;
@@ -23,7 +25,7 @@ public class OcamlUppercaseRule implements IPredicateRule {
 		
 		if(ch >= 'A' && ch <= 'Z'){
 			
-			while(ch != scanner.EOF){
+			while(ch != ICharacterScanner.EOF){
 				ch = scanner.read();
 				nRead++;
 				
@@ -33,7 +35,7 @@ public class OcamlUppercaseRule implements IPredicateRule {
 					return pointedUppercase;
 				}
 
-				if(!(ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch == '\''))
+				if(!(Misc.isOcamlIdentifierChar((char)ch)))
 				{
 					scanner.unread();
 					return uppercase;

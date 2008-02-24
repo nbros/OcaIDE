@@ -102,6 +102,7 @@
 	* Commenting and uncommenting of code blocks in the editor (protected and not protected)
 	* Integrated a patch for OMake support contributed by Dmitry Bely
 	* Replaced Unix newlines by platform newlines
+	* Optimized an often used function
 	
 	
 	

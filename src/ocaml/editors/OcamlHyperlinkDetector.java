@@ -46,9 +46,6 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	private int lastOffset = -1;
 	private Def lastDef = null;
 
-	// private final String chars =
-	// "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890'";
-
 	public IHyperlink[] detectHyperlinks(final ITextViewer textViewer, final IRegion region,
 			boolean canShowMultipleHyperlinks) {
 
