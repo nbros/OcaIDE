@@ -23,6 +23,7 @@ public class OcamlCustomToplevelView extends OcamlToplevelView {
 		toplevel.start();
 	}
 
-
-
+	public void setSecondaryId(String secondaryId) {
+		this.secondaryId = secondaryId;
+	}
 }

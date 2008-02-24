@@ -44,6 +44,7 @@ public class PreferenceConstants
 	
 	public static final String P_EDITOR_DISABLE_AUTOFORMAT = "ocamlEditorDisableAutoformat";
 	public static final String P_EDITOR_TABS = "ocamlEditorTabsWidth";
+	public static final String P_EDITOR_SPACES_FOR_TABS = "ocamlEditorSpacesForTabs";
 	public static final String P_EDITOR_CONTINUE_COMMENTS = "ocamlEditorContinueComments";
 	public static final String P_EDITOR_PIPE_AFTER_TYPE = "ocamlEditorPipeAfterType";
 	public static final String P_EDITOR_PIPE_AFTER_WITH = "ocamlEditorPipeAfterWith";

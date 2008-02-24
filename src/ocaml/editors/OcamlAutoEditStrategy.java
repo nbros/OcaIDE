@@ -40,8 +40,12 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 
 	/** A documentation comment opened at the beginning of the line */
 	private Pattern patternDocCommentOpen = Pattern.compile("^\\(\\*\\*");
+	
+	private String tab;
 
 	public void customizeDocumentCommand(IDocument document, DocumentCommand command) {
+		
+		this.tab = OcamlEditor.getTab();
 
 		if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 				PreferenceConstants.P_EDITOR_DISABLE_AUTOFORMAT))
@@ -285,6 +289,8 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 					command.text = " -> ";
 				}
 			}
+			
+			command.text = tab;
 		}
 	}
 
@@ -292,7 +298,7 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 	private String makeIndent(int nTabs) {
 		StringBuilder result = new StringBuilder();
 		for (int i = 0; i < nTabs; i++)
-			result.append('\t');
+			result.append(tab);
 		return result.toString();
 	}
 

@@ -30,16 +30,17 @@ import org.eclipse.ui.part.ViewPart;
 
 /** Implements the O'Caml top-level view */
 public class OcamlToplevelView extends ViewPart {
-	
-	/** Start the toplevel immediately when the view is created. Overrided in the CustomToplevel class 
-	 * to launch custom toplevels  */
+
+	/**
+	 * Start the toplevel immediately when the view is created. Overrided in the CustomToplevel class to
+	 * launch custom toplevels
+	 */
 	protected boolean bStartWhenCreated = true;
 
 	public static final String ID = "Ocaml.ocamlToplevelView";
+	protected String secondaryId = null;
+	
 	public static int nLastPageOpen = 1;
-
-	/** Instance of the last focused top-level view. This is used to evaluate expressions in the top-level. */
-	private static OcamlToplevelView lastFocusedInstance = null;
 
 	public OcamlToplevelView() {
 	}
@@ -50,10 +51,10 @@ public class OcamlToplevelView extends ViewPart {
 	}
 
 	public static void eval(String expression) {
+		final OcamlToplevelView lastFocusedInstance = OcamlPlugin.getLastFocusedToplevelInstance();
 		if (lastFocusedInstance == null) {
 			Shell shell = Display.getDefault().getActiveShell();
-			MessageDialog.openInformation(shell, "Ocaml Plugin",
-				"Please open a toplevel view first.");
+			MessageDialog.openInformation(shell, "Ocaml Plugin", "Please open a toplevel view first.");
 			return;
 		}
 
@@ -71,7 +72,7 @@ public class OcamlToplevelView extends ViewPart {
 	public void createPartControl(Composite parent) {
 
 		this.setPartName("Ocaml Toplevel");
-		
+
 		composite = new Composite(parent, SWT.BORDER);
 		composite.addControlListener(new ControlAdapter() {
 			@Override
@@ -93,9 +94,8 @@ public class OcamlToplevelView extends ViewPart {
 				layout();
 			}
 		});
-		
+
 		toplevel = new Toplevel(this, userText, resultText);
-		
 
 		IActionBars actionBars = this.getViewSite().getActionBars();
 		IMenuManager dropDownMenu = actionBars.getMenuManager();
@@ -106,10 +106,11 @@ public class OcamlToplevelView extends ViewPart {
 			@Override
 			public void run() {
 				try {
-					IWorkbenchPage page =
-							PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-					page.showView(ID, "ocamltoplevelview" + new Random().nextInt(),
-						IWorkbenchPage.VIEW_ACTIVATE);
+					IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage();
+					OcamlToplevelView.this.secondaryId = "ocamltoplevelview" + new Random().nextInt();
+					page.showView(ID, OcamlToplevelView.this.secondaryId,
+							IWorkbenchPage.VIEW_ACTIVATE);
 				} catch (Exception e) {
 					OcamlPlugin.logError("ocaml plugin error", e);
 				}
@@ -124,8 +125,7 @@ public class OcamlToplevelView extends ViewPart {
 			}
 		};
 
-		ImageDescriptor iconInterrupt =
-				ImageRepository.getImageDescriptor(ImageRepository.ICON_INTERRUPT);
+		ImageDescriptor iconInterrupt = ImageRepository.getImageDescriptor(ImageRepository.ICON_INTERRUPT);
 		Action actionBreak = new Action("Interrupt", iconInterrupt) {
 			@Override
 			public void run() {
@@ -164,9 +164,10 @@ public class OcamlToplevelView extends ViewPart {
 		toolBarManager.add(actionNewToplevel);
 		toolBarManager.add(actionHelp);
 
-		if(bStartWhenCreated)
+		if (bStartWhenCreated)
 			toplevel.start();
-		lastFocusedInstance = this;
+
+		OcamlPlugin.setLastFocusedToplevelInstance(this);
 	}
 
 	private final double defaultRatio = 0.8;
@@ -199,13 +200,13 @@ public class OcamlToplevelView extends ViewPart {
 
 	@Override
 	public void init(IViewSite site) throws PartInitException {
-		lastFocusedInstance = this;
+		OcamlPlugin.setLastFocusedToplevelInstance(this);
 		super.init(site);
 	}
 
 	@Override
 	public void setFocus() {
-		lastFocusedInstance = this;
+		OcamlPlugin.setLastFocusedToplevelInstance(this);
 		userText.setFocus();
 	}
 
@@ -213,8 +214,12 @@ public class OcamlToplevelView extends ViewPart {
 	public void dispose() {
 		toplevel.kill();
 		super.dispose();
-		if (this == lastFocusedInstance)
-			lastFocusedInstance = null;
-	}
 
+		if (this.equals(OcamlPlugin.getLastFocusedToplevelInstance()))
+			OcamlPlugin.setLastFocusedToplevelInstance(null);
+	}
+	
+	public String getSecondaryId() {
+		return secondaryId;
+	}
 }

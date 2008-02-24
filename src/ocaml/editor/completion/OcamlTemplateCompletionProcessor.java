@@ -55,8 +55,13 @@ public class OcamlTemplateCompletionProcessor extends TemplateCompletionProcesso
 		return ImageRepository.getImage(ImageRepository.ICON_TEMPLATES);
 	}
 
+	
+	private String tab;
+	
 	@Override
 	protected Template[] getTemplates(String contextTypeId) {
+		
+		this.tab = OcamlEditor.getTab();
 
 		Template t1 =
 				new Template("if", "condition", "ocamltemplatecontext", "if ${condition} then" + OcamlPlugin.newline
@@ -110,7 +115,7 @@ public class OcamlTemplateCompletionProcessor extends TemplateCompletionProcesso
 	String indent(int count) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (int i = 0; i < count; i++)
-			stringBuilder.append('\t');
+			stringBuilder.append(tab);
 		return stringBuilder.toString();
 	}
 

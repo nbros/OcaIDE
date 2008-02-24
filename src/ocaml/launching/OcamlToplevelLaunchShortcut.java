@@ -36,13 +36,16 @@ public class OcamlToplevelLaunchShortcut implements ILaunchShortcut {
 				String path = location.toOSString();
 				
 				try {
+					String secondaryId = "ocamlcustomtoplevelview" + new Random().nextInt();
+					
 					IWorkbenchPage page =
 							PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-					IViewPart viewPart = page.showView(OcamlCustomToplevelView.ID, "ocamlcustomtoplevelview" + new Random().nextInt(),
+					IViewPart viewPart = page.showView(OcamlCustomToplevelView.ID, secondaryId,
 						IWorkbenchPage.VIEW_ACTIVATE);
 					
 					if (viewPart instanceof OcamlCustomToplevelView) {
 						OcamlCustomToplevelView view = (OcamlCustomToplevelView) viewPart;
+						view.setSecondaryId(secondaryId);
 						view.start(path);
 					}
 				} catch (Exception e) {

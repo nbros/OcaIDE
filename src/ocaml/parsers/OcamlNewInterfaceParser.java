@@ -601,7 +601,8 @@ public class OcamlNewInterfaceParser {
 			end = doc.length() - 1;
 
 		// discard the blanks at the beginning of the definition
-		while (" \n\t\r".contains("" + doc.charAt(end)) && end > 0)
+		char ch = doc.charAt(end);
+		while (end > 0 && ch <= ' ')
 			end--;
 		// end = the first character just after the end of the definition
 		end++;

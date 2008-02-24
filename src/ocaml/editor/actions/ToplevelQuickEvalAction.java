@@ -3,6 +3,7 @@ package ocaml.editor.actions;
 import ocaml.OcamlPlugin;
 import ocaml.editors.OcamlEditor;
 import ocaml.util.Misc;
+import ocaml.views.toplevel.OcamlCustomToplevelView;
 import ocaml.views.toplevel.OcamlToplevelView;
 
 import org.eclipse.jface.action.IAction;
@@ -14,9 +15,12 @@ import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * Action from the O'Caml editor to evaluate a piece of code in the last focused toplevel.
@@ -32,7 +36,28 @@ public class ToplevelQuickEvalAction implements IWorkbenchWindowActionDelegate {
 				if (editorPart instanceof OcamlEditor) {
 					OcamlEditor editor = (OcamlEditor) editorPart;
 
-					Misc.showView(OcamlToplevelView.ID);
+					// Misc.showView(OcamlToplevelView.ID);
+					/*
+					 * Show the last focused toplevel view (in which the user input will be evaluated), so
+					 * that the user can see the result of the evaluation
+					 */
+					OcamlToplevelView lastFocusedToplevelInstance = OcamlPlugin
+							.getLastFocusedToplevelInstance();
+					final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage();
+					try {
+						String id = null;
+						if (lastFocusedToplevelInstance instanceof OcamlCustomToplevelView) {
+							id = OcamlCustomToplevelView.ID;
+						} else if (lastFocusedToplevelInstance instanceof OcamlToplevelView) {
+							id = OcamlToplevelView.ID;
+						}
+
+						activePage.showView(id, lastFocusedToplevelInstance.getSecondaryId(),
+								IWorkbenchPage.VIEW_VISIBLE);
+					} catch (PartInitException e) {
+						OcamlPlugin.logError("Error showing toplevel view", e);
+					}
 
 					ISelection sel = editor.getSelectionProvider().getSelection();
 					if (sel instanceof TextSelection) {
@@ -78,7 +103,7 @@ public class ToplevelQuickEvalAction implements IWorkbenchWindowActionDelegate {
 							strSelected = strSelected + ";;";
 
 						// TODO: find last focused custom toplevel too
-						
+
 						// ask the last focused toplevel view to evaluate the selection
 						OcamlToplevelView.eval(strSelected);
 

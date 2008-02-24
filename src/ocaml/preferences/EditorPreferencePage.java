@@ -35,6 +35,9 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
 		tabWidth.setValidRange(1, 16);
 		this.addField(tabWidth);
 
+		this.addField(new BooleanFieldEditor(PreferenceConstants.P_EDITOR_SPACES_FOR_TABS,
+				"Insert spaces instead of tabulations", this.getFieldEditorParent()));
+
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_EDITOR_CONTINUE_COMMENTS,
 				"Close and reopen comments on the next line", this.getFieldEditorParent()));
 

@@ -12,6 +12,7 @@ import ocaml.editor.newFormatter.IndentHint;
 import ocaml.editor.newFormatter.IndentingPreferences;
 import ocaml.editor.newFormatter.OcamlFormatterParser;
 import ocaml.editor.newFormatter.OcamlScanner;
+import ocaml.editors.OcamlEditor;
 import ocaml.parser.ErrorReporting;
 import ocaml.preferences.PreferenceConstants;
 
@@ -49,6 +50,8 @@ public class OcamlFormater {
 	 * 
 	 */
 	public String format(String doc) {
+		
+		String tab = OcamlEditor.getTab();
 
 		/* Load and bind the preferences */
 		IndentingPreferences indentingPreferences = new IndentingPreferences();
@@ -71,7 +74,7 @@ public class OcamlFormater {
 			return doc;
 		
 		this.lines = lines;
-		doc = formatCommentsAndSpaces();
+		doc = formatCommentsAndSpaces(tab);
 		lines = doc.split("\\r?\\n");
 		
 		ArrayList<Integer> linesOffsets = computeLinesStartOffset(doc);
@@ -244,7 +247,7 @@ public class OcamlFormater {
 			}
 			
 			for (int k = 0; k < indent; k++)
-				result.append('\t');
+				result.append(tab);
 			result.append(line.trim() + OcamlPlugin.newline);
 
 		}
@@ -269,7 +272,7 @@ public class OcamlFormater {
 	/** the entire document split into lines */
 	private String[] lines;
 
-	private String formatCommentsAndSpaces() {
+	private String formatCommentsAndSpaces(String tab) {
 
 		StringBuilder result = new StringBuilder();
 
@@ -307,7 +310,7 @@ public class OcamlFormater {
 
 			// format the comment
 			if (!bDoNotFormatComment)
-				if (formatComment(result))
+				if (formatComment(result, tab))
 					continue;
 
 			// correct the spacing between characters on this line
@@ -564,7 +567,7 @@ public class OcamlFormater {
 	 * 
 	 * @return true if the loop must jump back to continue formatting
 	 */
-	private boolean formatComment(StringBuilder result) {
+	private boolean formatComment(StringBuilder result, String tab) {
 
 		if (!preferenceFormatComments)
 			return false;
@@ -686,7 +689,7 @@ public class OcamlFormater {
 			// indentation in number of spaces from the beginning of the line
 			int leadingSpace = 0;
 			for (int j = 0; j < firstCommentLineIndent; j++) {
-				result.append("\t");
+				result.append(tab);
 				currentOffset += tabSize;
 				leadingSpace += tabSize;
 			}

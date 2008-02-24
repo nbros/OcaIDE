@@ -45,6 +45,7 @@ import ocaml.editors.yacc.OcamlyaccPartitionScanner;
 import ocaml.preferences.PreferenceConstants;
 import ocaml.util.GeneratedResourcesHandler;
 import ocaml.views.outline.OutlineBuildListener;
+import ocaml.views.toplevel.OcamlToplevelView;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -65,7 +66,7 @@ import org.osgi.framework.BundleContext;
  * when one of the features of the plug-in is used.
  */
 public class OcamlPlugin extends AbstractUIPlugin {
-	
+
 	/** newline */
 	public static String newline = System.getProperty("line.separator");
 
@@ -172,13 +173,12 @@ public class OcamlPlugin extends AbstractUIPlugin {
 
 		if (!missing.equals("")) {
 
-			String message = "The following paths are not correctly set:" + newline
-					+ missing
-					+  newline + "Please set them in Window>Preferences>Ocaml>Paths.";
+			String message = "The following paths are not correctly set:" + newline + missing + newline
+					+ "Please set them in Window>Preferences>Ocaml>Paths.";
 
 			boolean bDoNotShowMessage = getPreferenceStore().getBoolean(
 					PreferenceConstants.P_DONT_SHOW_MISSING_PATHS_WARNING);
-			if (!bDoNotShowMessage){
+			if (!bDoNotShowMessage) {
 				MessageDialog.openInformation(null, "Ocaml Plugin", message);
 				getPreferenceStore().setValue(PreferenceConstants.P_DONT_SHOW_MISSING_PATHS_WARNING, true);
 			}
@@ -274,7 +274,7 @@ public class OcamlPlugin extends AbstractUIPlugin {
 	/** Returns ocamlbuild absolute path */
 	public static String getOcamlbuildFullPath() {
 		return instance.getPreferenceStore().getString(PreferenceConstants.P_PATH_OCAMLBUILD);
-		
+
 	}
 
 	/** Returns camlp4 absolute path */
@@ -332,7 +332,6 @@ public class OcamlPlugin extends AbstractUIPlugin {
 		return string2RGB(instance.getPreferenceStore().getString(PreferenceConstants.P_FUN_COLOR));
 	}
 
-
 	/** Returns the strings color from the preferences */
 	public static RGB getStringColor() {
 		return string2RGB(instance.getPreferenceStore().getString(PreferenceConstants.P_STRING_COLOR));
@@ -358,22 +357,19 @@ public class OcamlPlugin extends AbstractUIPlugin {
 		return string2RGB(instance.getPreferenceStore()
 				.getString(PreferenceConstants.P_YACC_DEFINITION_COLOR));
 	}
-	
+
 	public static RGB getPunctuationColor() {
-		return string2RGB(instance.getPreferenceStore()
-				.getString(PreferenceConstants.P_PUNCTUATION_COLOR));
+		return string2RGB(instance.getPreferenceStore().getString(PreferenceConstants.P_PUNCTUATION_COLOR));
 	}
 
 	public static RGB getUppercaseColor() {
-		return string2RGB(instance.getPreferenceStore()
-				.getString(PreferenceConstants.P_UPPERCASE_COLOR));
+		return string2RGB(instance.getPreferenceStore().getString(PreferenceConstants.P_UPPERCASE_COLOR));
 	}
-	
+
 	public static RGB getPointedUppercaseColor() {
-		return string2RGB(instance.getPreferenceStore()
-				.getString(PreferenceConstants.P_POINTED_UPPERCASE_COLOR));
+		return string2RGB(instance.getPreferenceStore().getString(
+				PreferenceConstants.P_POINTED_UPPERCASE_COLOR));
 	}
-	
 
 	/** Returns whether comments should appear in bold (from the user preferences) */
 	public static boolean getCommentIsBold() {
@@ -431,6 +427,17 @@ public class OcamlPlugin extends AbstractUIPlugin {
 		return (os.equals(Platform.OS_LINUX) || os.equals(Platform.OS_MACOSX));
 	}
 
+	/** Instance of the last focused top-level view. This is used to evaluate expressions in the top-level. */
+	private static OcamlToplevelView lastFocusedToplevelInstance = null;
+
+	public static OcamlToplevelView getLastFocusedToplevelInstance() {
+		return lastFocusedToplevelInstance;
+	}
+
+	public static void setLastFocusedToplevelInstance(OcamlToplevelView lastFocusedToplevelInstance) {
+		OcamlPlugin.lastFocusedToplevelInstance = lastFocusedToplevelInstance;
+	}
+
 	/**
 	 * Called when the plug-in is first used.<br>
 	 * Register a listener to manage automatically generated files.<br>
@@ -464,6 +471,7 @@ public class OcamlPlugin extends AbstractUIPlugin {
 	 */
 	@Override
 	public void stop(BundleContext context) throws Exception {
+
 		super.stop(context);
 		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		// Remove the previously listener
@@ -485,5 +493,19 @@ public class OcamlPlugin extends AbstractUIPlugin {
 			debugger.kill();
 
 	}
+
+	/*private void hideCustomToplevelViews() {
+		try {
+			final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+					.getActivePage();
+			IViewReference[] viewReferences = activePage.getViewReferences();
+			for (IViewReference viewReference : viewReferences) {
+				if (OcamlCustomToplevelView.ID.equals(viewReference.getId()))
+					activePage.hideView(viewReference);
+			}
+		} catch (Throwable e) {
+			OcamlPlugin.logError("Error while closing custom toplevel views", e);
+		}
+	}*/
 
 }

@@ -255,7 +255,7 @@ public class Toplevel {
 				if (title.equals(""))
 					this.view.setTabTitle("Ocaml Toplevel");
 				else
-					this.view.setTabTitle("Ocaml Toplevel (" + text.substring(6).trim() + ")");
+					this.view.setTabTitle(text.substring(6).trim());
 				userText.setText("");
 				return;
 			}

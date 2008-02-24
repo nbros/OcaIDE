@@ -41,17 +41,17 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 /**
- * Configures the O'Caml editor, and manages the events raised by this editor, by overloading
- * methods of the TextEditor class.
+ * Configures the O'Caml editor, and manages the events raised by this editor, by overloading methods of the
+ * TextEditor class.
  */
 public class OcamlEditor extends TextEditor {
 
 	/**
-	 * used to notify that the outline job is finished (notified by OutlineJob to
-	 * OcamlHyperlinkDetector)
+	 * used to notify that the outline job is finished (notified by OutlineJob to OcamlHyperlinkDetector)
 	 */
 	public Object outlineSignal = new Object();
 
@@ -88,8 +88,7 @@ public class OcamlEditor extends TextEditor {
 			paintManager = new PaintManager(getSourceViewer());
 			matchingCharacterPainter = new MatchingCharacterPainter(getSourceViewer(),
 					new OcamlCharacterPairMatcher());
-			matchingCharacterPainter.setColor(new Color(Display.getCurrent(),
-					new RGB(160, 160, 160)));
+			matchingCharacterPainter.setColor(new Color(Display.getCurrent(), new RGB(160, 160, 160)));
 			paintManager.addPainter(matchingCharacterPainter);
 
 			/*
@@ -156,10 +155,9 @@ public class OcamlEditor extends TextEditor {
 		}
 
 		IProject project = this.getProject();
-		if(project == null)
+		if (project == null)
 			return;
 
-		
 		// parse the project interfaces in a background thread
 		CompletionJob job = new CompletionJob("Parsing ocaml project mli files", project);
 		job.setPriority(CompletionJob.DECORATE);
@@ -209,8 +207,28 @@ public class OcamlEditor extends TextEditor {
 	}
 
 	public static int getTabSize() {
-		return OcamlPlugin.getInstance().getPreferenceStore().getInt(
-				PreferenceConstants.P_EDITOR_TABS);
+		return OcamlPlugin.getInstance().getPreferenceStore().getInt(PreferenceConstants.P_EDITOR_TABS);
+	}
+
+	public static boolean spacesForTabs() {
+		return OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+				PreferenceConstants.P_EDITOR_SPACES_FOR_TABS);
+	}
+
+	/**
+	 * Return a string representing a tabulation as defined by user preferences. Can be a single tab character
+	 * or multiple spaces.
+	 */
+	public static String getTab() {
+		if (!spacesForTabs())
+			return "\t";
+		else {
+			int nSpaces = getTabSize();
+			StringBuilder builder = new StringBuilder(nSpaces);
+			for (int i = 0; i < nSpaces; i++)
+				builder.append(" ");
+			return builder.toString();
+		}
 	}
 
 	public void redraw() {
@@ -324,8 +342,8 @@ public class OcamlEditor extends TextEditor {
 		}
 
 		/*
-		 * If this project is a makefile project, then we compile manually each time the user saves
-		 * (because the automatic compiling provided by Eclipse is disabled on makefile projects)
+		 * If this project is a makefile project, then we compile manually each time the user saves (because
+		 * the automatic compiling provided by Eclipse is disabled on makefile projects)
 		 */
 		if (bMakefileNature) {
 			IWorkspace ws = ResourcesPlugin.getWorkspace();
@@ -339,22 +357,21 @@ public class OcamlEditor extends TextEditor {
 	 * @Override protected void editorContextMenuAboutToShow(IMenuManager menu) { IFile file =
 	 * this.getFileBeingEdited(); super.editorContextMenuAboutToShow(menu);
 	 * 
-	 * MenuManager ocamlGroup = new MenuManager("OCaml"); menu.add(new Separator());
-	 * menu.add(ocamlGroup); ocamlGroup.add(new GenDocAction("GenDoc", file)); }
+	 * MenuManager ocamlGroup = new MenuManager("OCaml"); menu.add(new Separator()); menu.add(ocamlGroup);
+	 * ocamlGroup.add(new GenDocAction("GenDoc", file)); }
 	 */
 
 	/*
-	 * public OcamlOutlineControl getOutlinePage() { if (this.fOutlinePage == null)
-	 * this.fOutlinePage = new OcamlOutlineControl(this.getDocumentProvider(), this); return
-	 * this.fOutlinePage; }
+	 * public OcamlOutlineControl getOutlinePage() { if (this.fOutlinePage == null) this.fOutlinePage = new
+	 * OcamlOutlineControl(this.getDocumentProvider(), this); return this.fOutlinePage; }
 	 */
 
 	public void rebuildOutline(int delay) {
-		
+
 		// invalidate previous definitions
 		this.codeDefinitionsTree = null;
 		this.codeOutlineDefinitionsTree = null;
-		
+
 		IEditorInput input = this.getEditorInput();
 		IDocument document = this.getDocumentProvider().getDocument(input);
 		// String doc = document.get();
@@ -383,8 +400,8 @@ public class OcamlEditor extends TextEditor {
 
 		if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 				PreferenceConstants.P_SHOW_TYPES_IN_STATUS_BAR)) {
-			final String annot = OcamlTextHover.getAnnotAt(this,
-					(TextViewer) this.getSourceViewer(), this.getCaretOffset()).trim();
+			final String annot = OcamlTextHover.getAnnotAt(this, (TextViewer) this.getSourceViewer(),
+					this.getCaretOffset()).trim();
 			final OcamlEditor editor = this;
 			Display.getCurrent().asyncExec(new Runnable() {
 
