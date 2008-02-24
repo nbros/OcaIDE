@@ -119,7 +119,7 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 			builder.append(line + OcamlPlugin.newline);
 
 		// remove the last newline
-		builder.setLength(builder.length() - 1);
+		builder.setLength(builder.length() - OcamlPlugin.newline.length());
 
 		return builder.toString();
 	}
