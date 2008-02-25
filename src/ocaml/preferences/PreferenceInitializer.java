@@ -139,6 +139,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_DEBUGGER_SMALL_STEP, 1000);
 			store.setDefault(PreferenceConstants.P_DEBUGGER_BIG_STEP, 10000);
 			store.setDefault(PreferenceConstants.P_DEBUGGER_PROCESS_COUNT, 15);
+			
+			// spell checking comments in the editor
+			store.setDefault(PreferenceConstants.P_EDITOR_SPELL_CHECKING, false);
 
 			String ocamlLibPath = "";
 			String ocaml = "";

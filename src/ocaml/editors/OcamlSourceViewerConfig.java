@@ -36,6 +36,8 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -184,29 +186,51 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 	}
 
 	@Override
-	public IReconciler getReconciler(ISourceViewer sourceViewer) {
+	public IReconciler getReconciler(final ISourceViewer sourceViewer) {
 
-		IPreferenceStore preferenceStore = EditorsPlugin.getDefault().getPreferenceStore();
-
-		if (preferenceStore == null
-				|| !preferenceStore.getBoolean(SpellingService.PREFERENCE_SPELLING_ENABLED))
-			return null;
+		/*
+		 * IPreferenceStore preferenceStore = EditorsPlugin.getDefault().getPreferenceStore();
+		 * 
+		 * if (preferenceStore == null ||
+		 * !preferenceStore.getBoolean(SpellingService.PREFERENCE_SPELLING_ENABLED)) return null;
+		 */
 
 		SpellingService spellingService = EditorsUI.getSpellingService();
 		if (spellingService.getDefaultSpellingEngineDescriptor() == null)
 			return null;
-		
+
 		IReconcilingStrategy strategy = new OcamlSpellingReconcileStrategy(sourceViewer, spellingService);
-		Reconciler reconciler = new Reconciler();
+		final Reconciler reconciler = new Reconciler();
 		reconciler.setDocumentPartitioning(OcamlPartitionScanner.OCAML_PARTITIONING);
 		reconciler.setReconcilingStrategy(strategy, OcamlPartitionScanner.OCAML_MULTILINE_COMMENT);
 		reconciler.setIsIncrementalReconciler(false);
 		reconciler.setProgressMonitor(new NullProgressMonitor());
 		reconciler.setDelay(500);
-		return reconciler;
+
+		OcamlPlugin.getInstance().getPreferenceStore().addPropertyChangeListener(
+				new IPropertyChangeListener() {
+					public void propertyChange(PropertyChangeEvent event) {
+						if (event.getProperty().equals(PreferenceConstants.P_EDITOR_SPELL_CHECKING)) {
+							if (!event.getNewValue().equals(event.getOldValue())) {
+								if (event.getNewValue().equals(Boolean.TRUE))
+									reconciler.install(sourceViewer);
+								else
+									reconciler.uninstall();
+								// FIXME remove spelling error markers
+								//sourceViewer.invalidateTextPresentation();
+							}
+						}
+					}
+
+				});
+
+		if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+				PreferenceConstants.P_EDITOR_SPELL_CHECKING))
+			return reconciler;
+		else
+			return null;
 	}
-	
-	
+
 }
 
 class SingleTokenScanner extends BufferedRuleBasedScanner {
