@@ -1,6 +1,9 @@
 package ocaml.editors;
 
+import java.util.Iterator;
+
 import ocaml.OcamlPlugin;
+import ocaml.editor.actions.SwitchSpellCheckingAction;
 import ocaml.editor.completion.OcamlCompletionProcessor;
 import ocaml.editor.completion.OcamlInformationControlCreator;
 import ocaml.editor.formatting.OcamlFormattingStrategy;
@@ -11,6 +14,7 @@ import ocaml.editor.syntaxcoloring.OcamlRuleScanner;
 import ocaml.preferences.PreferenceConstants;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
@@ -33,7 +37,9 @@ import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
+import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationHover;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -43,6 +49,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
+import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
 import org.eclipse.ui.texteditor.spelling.SpellingReconcileStrategy;
 import org.eclipse.ui.texteditor.spelling.SpellingService;
 
@@ -214,9 +221,22 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 							if (!event.getNewValue().equals(event.getOldValue())) {
 								if (event.getNewValue().equals(Boolean.TRUE))
 									reconciler.install(sourceViewer);
-								else
+								else {
 									reconciler.uninstall();
-								// FIXME remove spelling error markers
+
+									IAnnotationModel annotationModel = sourceViewer.getAnnotationModel();
+									if (annotationModel == null)
+										return;
+									Iterator<Annotation> annotationIterator = annotationModel
+											.getAnnotationIterator();
+
+									while (annotationIterator.hasNext()) {
+										Annotation annotation = annotationIterator.next();
+										if (annotation.getType().equals(SpellingAnnotation.TYPE))
+											annotationModel.removeAnnotation(annotation);
+									}
+								}
+
 								//sourceViewer.invalidateTextPresentation();
 							}
 						}

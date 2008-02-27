@@ -778,6 +778,17 @@
 				icon="icons/help.gif" id="Ocaml_sourceActions_ContextInformation"
 				label="Show Tooltip Description"
 				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+   <action
+         class="ocaml.editor.actions.SwitchSpellCheckingAction"
+         definitionId="Ocaml.switchSpellCheckerCommand"
+         icon="icons/spellcheck.gif"
+         id="Ocaml_sourceActions_SwitchSpellChecker"
+         label="Switch Spell Checker"
+         pulldown="false"
+         state="false"
+         style="push"
+         toolbarPath="Ocaml_sourceMenu/slot1">
+   </action>
 		</actionSet>
 	</extension>
 	<extension point="org.eclipse.ui.commands">

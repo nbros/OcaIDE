@@ -81,6 +81,9 @@ public class OcamlSpellingReconcileStrategy implements IReconcilingStrategy, IRe
 		public void accept(SpellingProblem problem) {
 			try {
 				IDocumentExtension3 extension = (IDocumentExtension3) fDocument;
+				if(problem.getOffset() >= fDocument.getLength())
+					return;
+				
 				ITypedRegion partition = extension.getPartition(OcamlPartitionScanner.OCAML_PARTITIONING,
 						problem.getOffset(), false);
 
