@@ -12,6 +12,8 @@ import org.eclipse.jface.text.templates.TemplateCompletionProcessor;
 import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.swt.graphics.Image;
 
+// TODO: templates editor (in preferences)
+
 /** Process the completions for O'Caml language constructs */
 public class OcamlTemplateCompletionProcessor extends TemplateCompletionProcessor {
 

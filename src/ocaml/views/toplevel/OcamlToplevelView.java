@@ -32,7 +32,7 @@ import org.eclipse.ui.part.ViewPart;
 public class OcamlToplevelView extends ViewPart {
 
 	/**
-	 * Start the toplevel immediately when the view is created. Overrided in the CustomToplevel class to
+	 * Start the toplevel immediately when the view is created. Overridden in the CustomToplevel class to
 	 * launch custom toplevels
 	 */
 	protected boolean bStartWhenCreated = true;
