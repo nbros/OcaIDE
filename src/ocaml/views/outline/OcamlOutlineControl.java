@@ -41,7 +41,11 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 	/** Whether to always fully expand the outline */
 	private boolean expandAll;
 
-	public static final boolean bOutlineDebugButton = false;
+	/** Is the debug button visible? */
+	public static final boolean bOutlineDebugButton = true;
+	/** Debug mode for the outline */
+	protected static boolean bDebug = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+			PreferenceConstants.P_OUTLINE_DEBUG_MODE);
 
 	/**
 	 * Creates a content outline page using the given provider and the given editor.
@@ -84,6 +88,7 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 					.getPreferenceStore(), PreferenceConstants.P_OUTLINE_DEBUG_MODE) {
 				@Override
 				public void run() {
+					OcamlOutlineControl.bDebug = this.isChecked();
 					super.run();
 					editor.rebuildOutline(0);
 					outline.update();
@@ -110,9 +115,9 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 	@Override
 	public void selectionChanged(SelectionChangedEvent event) {
 		super.selectionChanged(event);
-		
+
 		// the outline is being rebuilt
-		if(editor.getDefinitionsTree() == null)
+		if (editor.getDefinitionsTree() == null)
 			return;
 
 		ISelection selection = event.getSelection();
@@ -122,7 +127,6 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 			if (element instanceof Def) {
 				Def def = (Def) element;
 
-				
 				IDocument document = editor.getDocumentProvider().getDocument(
 						editor.getEditorInput());
 
@@ -170,9 +174,9 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 
 	/** Update the outline */
 	public void update() {
-		if(editor.getDefinitionsTree() == null)
+		if (editor.getDefinitionsTree() == null)
 			return;
-		
+
 		TreeViewer viewer = this.getTreeViewer();
 		if (viewer != null) {
 			Tree tree = (Tree) viewer.getControl();
@@ -196,7 +200,7 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 	 * (if it exists)
 	 */
 	public void synchronizeWithEditor(int line, int column) {
-		if(editor.getDefinitionsTree() == null)
+		if (editor.getDefinitionsTree() == null)
 			return;
 
 		TreeViewer viewer = this.getTreeViewer();
@@ -212,7 +216,8 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 					if (tree != null && !tree.isDisposed()) {
 						/*
 						 * We don't want to be notified of a selection change in the outline when we
-						 * collapse all. This caused a bug on Windows which created an infinite loop.
+						 * collapse all. This caused a bug on Windows which created an infinite
+						 * loop.
 						 */
 						viewer.removeSelectionChangedListener(this);
 
@@ -227,7 +232,7 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 
 						TreePath treePath = new TreePath(new Object[] { element });
 						viewer.setSelection(new TreeSelection(treePath), true);
-						
+
 						tree.setRedraw(true);
 					}
 				}

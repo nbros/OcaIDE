@@ -65,6 +65,11 @@ public class OcamlOutlineLabelProvider extends LabelProvider /* implements IStru
 			if (type.equals(Def.Type.ParserError))
 				return ImageRepository.getImage(ImageRepository.ICON_MODULE_PARSER_ERROR);
 
+			if (type.equals(Def.Type.Identifier))
+				return ImageRepository.getImage(ImageRepository.ICON_CIRCLE);
+			if (type.equals(Def.Type.Parameter))
+				return ImageRepository.getImage(ImageRepository.ICON_CIRCLE);
+
 		}
 
 		return null;
@@ -80,6 +85,10 @@ public class OcamlOutlineLabelProvider extends LabelProvider /* implements IStru
 	public String getText(Object element) {
 		if (element instanceof Def) {
 			Def def = (Def) element;
+
+			if (OcamlOutlineControl.bOutlineDebugButton && OcamlOutlineControl.bDebug)
+				return def.name + " (" + def.type + ")";
+
 			if (def.ocamlType != null && !"".equals(def.ocamlType))
 				return def.name + " : " + def.ocamlType;
 			else
