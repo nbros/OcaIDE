@@ -3,7 +3,6 @@ package ocaml.editors;
 import java.util.Iterator;
 
 import ocaml.OcamlPlugin;
-import ocaml.editor.actions.SwitchSpellCheckingAction;
 import ocaml.editor.completion.OcamlCompletionProcessor;
 import ocaml.editor.completion.OcamlInformationControlCreator;
 import ocaml.editor.formatting.OcamlFormattingStrategy;
@@ -14,8 +13,6 @@ import ocaml.editor.syntaxcoloring.OcamlRuleScanner;
 import ocaml.preferences.PreferenceConstants;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
@@ -45,12 +42,8 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
-import org.eclipse.ui.internal.editors.text.EditorsPlugin;
-import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
-import org.eclipse.ui.texteditor.spelling.SpellingReconcileStrategy;
 import org.eclipse.ui.texteditor.spelling.SpellingService;
 
 /**

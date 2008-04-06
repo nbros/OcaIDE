@@ -30,6 +30,10 @@ public class FolderChangeListener implements IResourceChangeListener {
 					if (res.getType() == IResource.FOLDER) {
 
 						IProject project = res.getProject();
+						
+						// the project is being closed or deleted
+						if(project == null || !project.exists())
+							return false;
 
 						// if this project is an ocaml project
 						if (project.getNature(OcamlbuildNature.ID) != null

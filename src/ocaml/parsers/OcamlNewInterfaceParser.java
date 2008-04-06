@@ -6,22 +6,21 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import ocaml.OcamlPlugin;
+import ocaml.parser.Def;
+import ocaml.parser.OcamlParser;
+import ocaml.parser.OcamlScanner;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.Document;
-
-import ocaml.OcamlPlugin;
-import ocaml.parser.Def;
-import ocaml.parser.OcamlParser;
-import ocaml.parser.OcamlScanner;
 
 /**
  * An O'Caml interface parser. Allows us to extract all the definitions from an

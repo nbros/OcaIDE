@@ -36,14 +36,17 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 	public static final String ID = "Ocaml.ocamlbuildBuilder";
 
 	/** Is a build in progress? */
-	private boolean building = false;
+	private static boolean building = false;
+
+	/** we assume only one build will be active at any time */
+	private static final Object buildSignal = new Object();
 
 	public OcamlbuildBuilder() {
 	}
 
 	/**
-	 * Build the ocamlbuild command line which will compile the given project with the flags and paths the
-	 * user defined in the project properties page.
+	 * Build the ocamlbuild command line which will compile the given project with the flags and
+	 * paths the user defined in the project properties page.
 	 * 
 	 * @param project
 	 *            the project to build
@@ -155,129 +158,140 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 	@Override
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
+		
+		System.out.println("building");
 
 		// don't start two builds simultaneously
-		if (building)
-			return null;
-
-		IResourceDelta delta = getDelta(getProject());
-		if (delta != null && !containsChanges(delta))
-			return null;
-
-		final IProgressMonitor buildMonitor;
-		if (monitor == null)
-			buildMonitor = new NullProgressMonitor();
-		else
-			buildMonitor = monitor;
+		synchronized (buildSignal) {
+			if (building)
+				return null;
+			else
+				building = true;
+		}
 
 		try {
-			if (kind == CLEAN_BUILD) {
-				OcamlPlugin.logError("CLEAN_BUILD kind in build()? Shouldn't happen.");
-				return null;
-			}
 
-			building = true;
-
-			buildMonitor.beginTask("Building Project", IProgressMonitor.UNKNOWN);
-
-			final IProject project = this.getProject();
-
-			ArrayList<String> commandLine = buildCommandLine(project, false);
-			if (commandLine == null)
+			IResourceDelta delta = getDelta(getProject());
+			if (delta != null && !containsChanges(delta))
 				return null;
 
-			String[] strCommandLine = commandLine.toArray(new String[commandLine.size()]);
+			final IProgressMonitor buildMonitor;
+			if (monitor == null)
+				buildMonitor = new NullProgressMonitor();
+			else
+				buildMonitor = monitor;
 
-			final StringBuilder output = new StringBuilder();
-
-			IExecEvents events = new IExecEvents() {
-
-				public void processNewInput(final String input) {
-					// System.out.println(input);
-					output.append(input);
-					Display.getDefault().asyncExec(new Runnable() {
-						public void run() {
-							OcamlCompilerOutput outputView = OcamlCompilerOutput.get();
-							if (outputView != null)
-								outputView.append(input);
-						}
-					});
-				}
-
-				// not used, because the error output is merged with the
-				// standard output
-				public void processNewError(String error) {
-				}
-
-				public void processEnded(int exitValue) {
-					buildFinished(output.toString(), project);
-				}
-
-			};
-
-			// clean the output from the last compilation
-			/*
-			 * Display.getDefault().syncExec(new Runnable() { public void run() { OcamlCompilerOutput output =
-			 * OcamlCompilerOutput.get(); if (output != null) output.clear(); } });
-			 */
-
-			File dir = project.getLocation().toFile();
-
-			ExecHelper execHelper = null;
 			try {
-				execHelper = ExecHelper.execMerge(events, strCommandLine, null, dir);
-			} catch (Exception e) {
-				OcamlPlugin.logError("ocaml plugin error", e);
-				return null;
-			}
-
-			/*
-			 * Check at regular intervals whether the user canceled the build. When that happens, we kill the
-			 * "ocamlbuild" process.
-			 */
-			while (execHelper.isRunning()) {
-				if (buildMonitor.isCanceled())
-					execHelper.kill();
-				try {
-					buildMonitor.worked(1);
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
+				if (kind == CLEAN_BUILD) {
+					OcamlPlugin.logError("CLEAN_BUILD kind in build()? Shouldn't happen.");
+					return null;
 				}
+
+				buildMonitor.beginTask("Building Project", IProgressMonitor.UNKNOWN);
+
+				final IProject project = this.getProject();
+
+				ArrayList<String> commandLine = buildCommandLine(project, false);
+				if (commandLine == null)
+					return null;
+
+				String[] strCommandLine = commandLine.toArray(new String[commandLine.size()]);
+
+				final StringBuilder output = new StringBuilder();
+
+				IExecEvents events = new IExecEvents() {
+
+					public void processNewInput(final String input) {
+						// System.out.println(input);
+						output.append(input);
+						Display.getDefault().asyncExec(new Runnable() {
+							public void run() {
+								OcamlCompilerOutput outputView = OcamlCompilerOutput.get();
+								if (outputView != null)
+									outputView.append(input);
+							}
+						});
+					}
+
+					// not used, because the error output is merged with the
+					// standard output
+					public void processNewError(String error) {
+					}
+
+					public void processEnded(int exitValue) {
+						buildFinished(output.toString(), project);
+					}
+
+				};
+
+				// clean the output from the last compilation
+				/*
+				 * Display.getDefault().syncExec(new Runnable() { public void run() {
+				 * OcamlCompilerOutput output = OcamlCompilerOutput.get(); if (output != null)
+				 * output.clear(); } });
+				 */
+
+				File dir = project.getLocation().toFile();
+
+				ExecHelper execHelper = null;
+				try {
+					execHelper = ExecHelper.execMerge(events, strCommandLine, null, dir);
+				} catch (Exception e) {
+					OcamlPlugin.logError("ocaml plugin error", e);
+					return null;
+				}
+
+				/*
+				 * Check at regular intervals whether the user canceled the build. When that
+				 * happens, we kill the "ocamlbuild" process.
+				 */
+				while (execHelper.isRunning()) {
+					if (buildMonitor.isCanceled())
+						execHelper.kill();
+					try {
+						buildMonitor.worked(1);
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+					}
+				}
+
+				execHelper.join();
+
+				return null;
+			} finally {
+				buildMonitor.worked(1);
+				buildMonitor.done();
 			}
 
-			execHelper.join();
-
-			return null;
 		} finally {
-			buildMonitor.worked(1);
-			buildMonitor.done();
-			building = false;
+			synchronized (buildSignal) {
+				building = false;
+			}
 		}
 
 		/*
-		 * if (kind == IncrementalProjectBuilder.FULL_BUILD) { fullBuild(monitor); } else { IResourceDelta
-		 * delta = getDelta(getProject()); if (delta == null) { fullBuild(monitor); } else {
-		 * incrementalBuild(delta, monitor); } }
+		 * if (kind == IncrementalProjectBuilder.FULL_BUILD) { fullBuild(monitor); } else {
+		 * IResourceDelta delta = getDelta(getProject()); if (delta == null) { fullBuild(monitor); }
+		 * else { incrementalBuild(delta, monitor); } }
 		 */
 	}
 
-	private final Object signal = new Object();
-	private boolean refreshed = true;
-
 	private void buildFinished(final String output, final IProject project) {
-		refreshed = false;
+		
+		System.out.println("build finished");
+		
+		final Object refreshedSignal = new Object();
 
 		/*
-		 * Refresh the project to see modifications. This is executed asynchronously because the refresh
-		 * operation is waiting for the completion of the build() method to run.
+		 * Refresh the project to see modifications. This is executed asynchronously because the
+		 * refresh operation is waiting for the completion of the build() method to run.
 		 */
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				try {
 					project.refreshLocal(IProject.DEPTH_INFINITE, null);
-					synchronized (signal) {
-						refreshed = true;
-						signal.notifyAll();
+					synchronized (refreshedSignal) {
+						refreshedSignal.notifyAll();
 					}
 
 				} catch (CoreException e1) {
@@ -292,23 +306,24 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 			protected IStatus run(IProgressMonitor monitor) {
 
 				try {
-					while (!refreshed && !monitor.isCanceled()) {
-						synchronized (signal) {
-							signal.wait(1000);
-						}
+					
+					synchronized (refreshedSignal) {
+						refreshedSignal.wait(1000);
+						if(monitor.isCanceled())
+							return Status.CANCEL_STATUS;
 					}
 
 					IFile[] files = Misc.getProjectFiles(project);
-
 					monitor.beginTask("Decorating Project", files.length + 3);
-
+					
 					/*
-					 * Delete all markers on the project (since we rebuilt it). This can be problematic with
-					 * warning markers, that will disappear at the next rebuild (since files with only
-					 * warnings won't be recompiled). The warning marker will only reappear next time the file
-					 * in which it appears is modified.
+					 * Delete all markers on the project (since we rebuilt it). This can be
+					 * problematic with warning markers, that will disappear at the next rebuild
+					 * (since files with only warnings won't be recompiled). The warning marker will
+					 * only reappear next time the file in which it appears is modified.
 					 */
 					try {
+						monitor.subTask("Deleting old markers");
 						project.deleteMarkers(IMarker.PROBLEM, false, IResource.DEPTH_INFINITE);
 					} catch (CoreException e) {
 						OcamlPlugin.logError("ocaml plugin error", e);
@@ -319,6 +334,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 					/*
 					 * Parse the compiler output to find error and warning messages.
 					 */
+					monitor.subTask("Creating new markers");
 					ProblemMarkers problemMarkers = new ProblemMarkers(project);
 					problemMarkers.makeMarkers2(output.toString());
 
@@ -332,7 +348,8 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 					}
 
 					/*
-					 * Put a "warning" property on files that generated at least a warning but not any error
+					 * Put a "warning" property on files that generated at least a warning but not
+					 * any error
 					 */
 					for (IFile f : problemMarkers.getFilesWithWarnings())
 						Misc.setFileProperty(f, OcamlBuilder.COMPILATION_WARNINGS, "true");
@@ -356,6 +373,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 					 * Mark files as byte-code or native depending on their extension.
 					 */
 					for (IFile file : files) {
+						monitor.subTask("Decorating file " + file.getName());
 						monitor.worked(1);
 
 						if (monitor.isCanceled())
@@ -363,9 +381,11 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 						String extension = file.getFileExtension();
 						if ("byte".equals(extension)) {
-							Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.BYTE_CODE);
+							Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE,
+									OcamlBuilder.BYTE_CODE);
 						} else if ("native".equals(extension)) {
-							Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.NATIVE);
+							Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE,
+									OcamlBuilder.NATIVE);
 						}
 					}
 
@@ -383,8 +403,8 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 	}
 
 	/**
-	 * Returns true if the delta contains modified source files (so as not to get into an infinite loop in the
-	 * builder, which rebuilds because it sees its own generated files changed)
+	 * Returns true if the delta contains modified source files (so as not to get into an infinite
+	 * loop in the builder, which rebuilds because it sees its own generated files changed)
 	 */
 	private boolean changed = false;
 

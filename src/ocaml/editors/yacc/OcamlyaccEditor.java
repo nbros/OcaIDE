@@ -8,7 +8,6 @@ import ocaml.editors.yacc.outline.YaccOutlineJob;
 import ocaml.natures.OcamlNatureMakefile;
 import ocaml.popup.actions.CompileProjectAction;
 import ocaml.preferences.PreferenceConstants;
-import ocaml.views.outline.OutlineJob;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;

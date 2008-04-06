@@ -2,7 +2,6 @@ package ocaml.views.toplevel;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IViewReference;
-import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchListener;
 import org.eclipse.ui.IWorkbenchPage;

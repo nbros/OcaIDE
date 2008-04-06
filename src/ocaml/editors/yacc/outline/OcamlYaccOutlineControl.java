@@ -1,30 +1,16 @@
 package ocaml.editors.yacc.outline;
 
-import ocaml.OcamlPlugin;
-import ocaml.editors.OcamlEditor;
 import ocaml.editors.yacc.OcamlyaccEditor;
-import ocaml.parser.Def;
-import ocaml.preferences.PreferenceConstants;
-import ocaml.util.ImageRepository;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.preference.BooleanPropertyAction;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.TreePath;
-import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 /** Implements the outline view for the O'Caml editor */

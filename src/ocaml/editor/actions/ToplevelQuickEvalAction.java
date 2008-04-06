@@ -2,7 +2,6 @@ package ocaml.editor.actions;
 
 import ocaml.OcamlPlugin;
 import ocaml.editors.OcamlEditor;
-import ocaml.util.Misc;
 import ocaml.views.toplevel.OcamlCustomToplevelView;
 import ocaml.views.toplevel.OcamlToplevelView;
 
@@ -15,7 +14,6 @@ import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;

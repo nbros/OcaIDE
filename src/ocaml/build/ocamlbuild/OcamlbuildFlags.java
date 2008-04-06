@@ -6,7 +6,6 @@ import ocaml.OcamlPlugin;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.QualifiedName;
-import org.eclipse.debug.core.DebugPlugin;
 
 public class OcamlbuildFlags {
 

@@ -15,7 +15,6 @@ import ocaml.debugging.views.OcamlWatchView;
 import ocaml.editors.OcamlEditor;
 import ocaml.exec.ExecHelper;
 import ocaml.exec.IExecEvents;
-import ocaml.natures.OcamlbuildNature;
 import ocaml.perspectives.OcamlDebugPerspective;
 import ocaml.perspectives.OcamlPerspective;
 import ocaml.preferences.PreferenceConstants;

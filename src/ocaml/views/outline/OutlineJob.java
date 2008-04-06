@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 
 import ocaml.OcamlPlugin;
 import ocaml.editors.OcamlEditor;
-import ocaml.exec.CommandRunner;
 import ocaml.parser.Def;
 import ocaml.parser.ErrorReporting;
 import ocaml.parser.OcamlParser;
@@ -32,7 +31,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;

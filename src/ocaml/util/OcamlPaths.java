@@ -28,6 +28,12 @@ import org.eclipse.core.runtime.Path;
  * <li> used for completion
  * </ul>
  */
+
+/*
+ * TODO: replace all this "external folder" and "DebuggerSourceLookup" nonsense by uses of
+ * FileStoreEditorInput to open external files in editors (>= Eclipse 3.3)
+ */
+
 public class OcamlPaths {
 
 	/** the name of the external sources folder (.ml) for the debugger */
@@ -57,6 +63,10 @@ public class OcamlPaths {
 			OcamlPlugin.logError("ocaml plugin error", e);
 			return;
 		}
+		
+		// XXX TEST
+		//if(true)
+		//	return;
 
 		// create the external sources folder
 		IFolder sourcesFolder = project.getFolder(EXTERNAL_SOURCES);
@@ -66,9 +76,10 @@ public class OcamlPaths {
 				Misc.setFolderProperty(sourcesFolder, Misc.EXTERNAL_SOURCES_FOLDER, "true");
 
 				/*
-				 * ResourceAttributes attributes = sourcesFolder.getResourceAttributes(); if (attributes !=
-				 * null) { attributes.setReadOnly(true); sourcesFolder.setResourceAttributes(attributes); }
-				 * else OcamlPlugin.logError("cannot set '" + EXTERNAL_SOURCES + "' as read only");
+				 * ResourceAttributes attributes = sourcesFolder.getResourceAttributes(); if
+				 * (attributes != null) { attributes.setReadOnly(true);
+				 * sourcesFolder.setResourceAttributes(attributes); } else
+				 * OcamlPlugin.logError("cannot set '" + EXTERNAL_SOURCES + "' as read only");
 				 */
 
 			} catch (Exception e) {
@@ -84,8 +95,8 @@ public class OcamlPaths {
 
 		// link the external paths to the project
 		/*
-		 * Go through the list in reverse, so that files in the first paths will override files in the
-		 * following paths (in case they have the same name)
+		 * Go through the list in reverse, so that files in the first paths will override files in
+		 * the following paths (in case they have the same name)
 		 */
 		for (int i = paths.length - 1; i >= 0; i--) {
 			String path = paths[i];
@@ -101,7 +112,8 @@ public class OcamlPaths {
 				if (mlFiles != null) {
 					for (File mlFile : mlFiles) {
 						IPath location = new Path(mlFile.getAbsolutePath());
-						if (project.getWorkspace().validateLinkLocation(sourcesFolder, location).isOK()) {
+						if (project.getWorkspace().validateLinkLocation(sourcesFolder, location)
+								.isOK()) {
 							try {
 								IFile linkedFile = sourcesFolder.getFile(mlFile.getName());
 								linkedFile.createLink(location, IResource.REPLACE, null);
@@ -189,7 +201,8 @@ public class OcamlPaths {
 					if (f.isAbsolute())
 						paths.add(p);
 					else {
-						File absolutePath = new File(referencedProject.getLocation().toOSString(), p);
+						File absolutePath = new File(referencedProject.getLocation().toOSString(),
+								p);
 						paths.add(absolutePath.getPath());
 					}
 
@@ -244,8 +257,8 @@ public class OcamlPaths {
 	/**
 	 * Add a path list to a project
 	 * <p>
-	 * Note: If a path does not start by {@link File#separatorChar} it will be considered as relative to the
-	 * project.
+	 * Note: If a path does not start by {@link File#separatorChar} it will be considered as
+	 * relative to the project.
 	 * 
 	 * @param paths
 	 *            the list of paths to add
@@ -253,8 +266,8 @@ public class OcamlPaths {
 	 *            the project to add them to
 	 */
 	public static void addToPaths(final List<IPath> paths, final IProject project) {
-		final OcamlPaths currentOcamlPaths = new OcamlPaths(project);
-		final String[] currentPaths = currentOcamlPaths.getPaths();
+		final OcamlPaths oPaths = new OcamlPaths(project);
+		final String[] currentPaths = oPaths.getPaths();
 
 		final String[] pathsToAdd = new String[currentPaths.length + paths.size()];
 		int i = 0;
@@ -264,13 +277,15 @@ public class OcamlPaths {
 				final IResource res = project.findMember(path);
 				if ((res == null) || (res.getType() != IResource.FOLDER)
 						&& (res.getType() != IResource.PROJECT)) {
-					OcamlPlugin
-							.logError("error in " + "OcamlPaths:addToPath: path not found or not a folder");
+					OcamlPlugin.logError("error in "
+							+ "OcamlPaths:addToPath: path not found or not a folder");
 				} else {
 					final String name = res.getName();
-					if (!res.isLinked() && !name.equals(".settings")
-							&& Misc.getResourceProperty(res, Misc.EXTERNAL_SOURCES_FOLDER).equals("")
-							&& !name.equals(OcamlBuilder.EXTERNALFILES) && !name.equals(Misc.HYPERLINKSDIR)) {
+					if (!res.isLinked()
+							&& !name.equals(".settings")
+							&& Misc.getResourceProperty(res, Misc.EXTERNAL_SOURCES_FOLDER).equals(
+									"") && !name.equals(OcamlBuilder.EXTERNALFILES)
+							&& !name.equals(Misc.HYPERLINKSDIR)) {
 						boolean found = false;
 						final String strPath = path.isEmpty() ? "." : path.toOSString();
 						for (int j = 0; j < pathsToAdd.length && !found; j++) {
@@ -305,6 +320,6 @@ public class OcamlPaths {
 				pathsToAdd[i++] = curPath;
 		}
 
-		currentOcamlPaths.setPaths(pathsToAdd);
+		oPaths.setPaths(pathsToAdd);
 	}
 }
