@@ -88,7 +88,7 @@
 	* Support for camlp4 preprocessing 	
 	
 * 1.2.0
-	* Code formatter rewrite
+	* Code formatter rewrite : better formatting and more parameters
 	* Replaced build "N°" by corresponding Unicode character (as suggested by Ben Liblit)
 	* Removed unnecessary protection tokenization of ocamlbuild paths, which caused problems
 	* Use parsed ml files in completion when there is no corresponding mli file
@@ -105,6 +105,8 @@
 	* Optimized an often used function
 	* Added 'insert spaces instead of tabulations' option for the O'Caml editor
 	* Spell checking of comments and documentation comments
+	* Keep leading and trailing newlines as-is when formatting a selection
+	* Hyperlink on open directive opens a ".ml" file when there is no ".mli" file
 	
 	
 	

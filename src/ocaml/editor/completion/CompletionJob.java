@@ -153,7 +153,7 @@ public class CompletionJob extends Job {
 				 * keep all the mli files, and discard the ml files when there is a mli file with
 				 * the same name
 				 */
-				String[] files = filterInterfaces(mlmliFiles);
+				String[] files = Misc.filterInterfaces(mlmliFiles);
 
 				// for each file
 				for (String mlmlifile : files) {
@@ -225,35 +225,6 @@ public class CompletionJob extends Job {
 		return definitionsRoot;
 	}
 
-	/**
-	 * Keep all the mli files in the list and the ml files when there is no corresponding mli
-	 * 
-	 * @return the mli files and the ml files which don't have a corresponding mli file
-	 */
-	private static String[] filterInterfaces(String[] mlmliFiles) {
-		ArrayList<String> listFiles = new ArrayList<String>();
-
-		Arrays.sort(mlmliFiles);
-
-		for (int i = 0; i < mlmliFiles.length; i++) {
-			String filename = mlmliFiles[i];
-			String next;
-			if (i + 1 < mlmliFiles.length)
-				next = mlmliFiles[i + 1];
-			else
-				next = "";
-
-			if (filename.endsWith(".mli"))
-				listFiles.add(filename);
-			if (filename.endsWith(".ml") && !next.endsWith(".mli"))
-				listFiles.add(filename);
-
-		}
-
-		String[] files = listFiles.toArray(new String[listFiles.size()]);
-		return files;
-	}
-
 	static final Pattern patternOpen = Pattern.compile("(\\A|\\n) *open +(\\w*)");
 
 	/** Find the opened modules by looking for "open moduleName" directives in the source code */
@@ -293,7 +264,7 @@ public class CompletionJob extends Job {
 					return Status.CANCEL_STATUS;
 				}
 
-				mlmliFiles = filterInterfaces(dir.list(mlmliFilter));
+				mlmliFiles = Misc.filterInterfaces(dir.list(mlmliFilter));
 				for (int i = 0; i < mlmliFiles.length; i++)
 					mlmliFiles[i] = dir.getAbsolutePath() + File.separatorChar + mlmliFiles[i];
 
@@ -309,7 +280,7 @@ public class CompletionJob extends Job {
 				}
 
 				mlmliFiles = strFiles.toArray(new String[0]);
-				mlmliFiles = filterInterfaces(mlmliFiles);
+				mlmliFiles = Misc.filterInterfaces(mlmliFiles);
 			}
 
 			if (mlmliFiles == null)

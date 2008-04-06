@@ -3,6 +3,7 @@ package ocaml.util;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import ocaml.OcamlPlugin;
@@ -21,6 +22,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
@@ -36,28 +39,46 @@ public class Misc {
 
 	public static boolean bNoUnicode = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 			PreferenceConstants.P_DISABLE_UNICODE_CHARS);
+	
+	static {
+		OcamlPlugin.getInstance().getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent event) {
+				if(event.getProperty().equals(PreferenceConstants.P_DISABLE_UNICODE_CHARS)){
+					bNoUnicode = (Boolean)event.getNewValue();
+				}
+			}
+		});
+	}
 
 	/**
-	 * Replaces some characters/groups of characters by nicer looking equivalents in Unicode.
-	 * (&rarr;, &times;, &alpha;, &beta;, &gamma;, &delta; ... instead of -&gt;, *, 'a, 'b, 'c, 'd
-	 * ...)
+	 * Replaces some characters/groups of characters by nicer looking equivalents in Unicode. (&rarr;,
+	 * &times;, &alpha;, &beta;, &gamma;, &delta; ... instead of -&gt;, *, 'a, 'b, 'c, 'd ...)
 	 */
 	public static String beautify(String str) {
+		
 		if (bNoUnicode)
 			return str.trim();
-		else
-			return (" " + str + " ").replaceAll("->", "\u2192").replaceAll("\\*", "\u00d7")
+
+		String[] lines = str.split("\\r?\\n");
+		
+		StringBuilder builder = new StringBuilder();
+		
+		for(String line : lines){
+			builder.append((" " + line + " ").replaceAll("->", "\u2192").replaceAll("\\*", "\u00d7")
 					.replaceAll("\\B'a\\b", "\u03b1").replaceAll("\\B'b\\b", "\u03b2").replaceAll(
 							"\\B'c\\b", "\u03b3").replaceAll("\\B'd\\b", "\u03b4").replaceAll(
 							"\\B'e\\b", "\u03b5").replaceAll("\\B'f\\b", "\u03b6").replaceAll(
 							"\\B'g\\b", "\u03b7").replaceAll("\\B'h\\b", "\u03b8").replaceAll(
 							"\\B'i\\b", "\u03b9").replaceAll("\\B'j\\b", "\u03ba").replaceAll(
-							"\\B'k\\b", "\u03bb").replaceAll("\\B'l\\b", "\u03bc").trim();
+							"\\B'k\\b", "\u03bb").replaceAll("\\B'l\\b", "\u03bc").trim() + OcamlPlugin.newline);
+		}
+		
+		
+		return builder.toString().trim();
 	}
-	
-	public static boolean isOcamlIdentifierChar(char c){
-		return (c >= 'a' && c <='z' || c >= 'A' && c <='Z' || c >= '0' && c <='9' 
-			|| c == '_'|| c == '\'');
+
+	public static boolean isOcamlIdentifierChar(char c) {
+		return (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_' || c == '\'');
 	}
 
 	/**
@@ -68,8 +89,7 @@ public class Misc {
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 
-				IDecoratorManager decoratorManager = PlatformUI.getWorkbench()
-						.getDecoratorManager();
+				IDecoratorManager decoratorManager = PlatformUI.getWorkbench().getDecoratorManager();
 				try {
 					decoratorManager.setEnabled("Ocaml.errorInSourceDecorator", true);
 					decoratorManager.setEnabled("Ocaml.warningInSourceDecorator", true);
@@ -94,8 +114,8 @@ public class Misc {
 		Display.getDefault().syncExec(new Runnable() {
 			public void run() {
 				try {
-					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
-							.getActiveWorkbenchWindow().getActivePage();
+					final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage();
 					activePage.showView(id);
 				} catch (Exception e) {
 					OcamlPlugin.logError("error in Misc:showview", e);
@@ -105,22 +125,21 @@ public class Misc {
 	}
 
 	/**
-	 * Name of a persistent property that indicates whether a file must be made into an executable.
-	 * The value of this property is the name of the executable or <code>null</code> if there is
-	 * no executable to create for this file.
+	 * Name of a persistent property that indicates whether a file must be made into an executable. The value
+	 * of this property is the name of the executable or <code>null</code> if there is no executable to
+	 * create for this file.
 	 */
 	public static final String MAKE_EXE = "make_exe";
 
 	/**
-	 * Name of a persistent property put on the external sources folder, which is used by the
-	 * debugger to display the current position in the code. This folder must be ignored by the
-	 * Builder.
+	 * Name of a persistent property put on the external sources folder, which is used by the debugger to
+	 * display the current position in the code. This folder must be ignored by the Builder.
 	 */
 	public static final String EXTERNAL_SOURCES_FOLDER = "ocaml_external_sources_folder";
 
 	/**
-	 * The name of the hyperlinked files temporary directory, which is used to create links in the
-	 * workspace to external files anywhere on the file system
+	 * The name of the hyperlinked files temporary directory, which is used to create links in the workspace
+	 * to external files anywhere on the file system
 	 */
 	public final static String HYPERLINKSDIR = ".HyperlinksLinkedFiles";
 
@@ -139,11 +158,10 @@ public class Misc {
 					public boolean visit(IResource resource) throws CoreException {
 						// do not visit external sources folders of .settings
 						if (resource.getType() == IResource.FOLDER
-								&& (!Misc.getResourceProperty(resource, EXTERNAL_SOURCES_FOLDER)
-										.equals("")
+								&& (!Misc.getResourceProperty(resource, EXTERNAL_SOURCES_FOLDER).equals("")
 										|| resource.getName().matches(OcamlBuilder.EXTERNALFILES)
-										|| resource.getName().equals(".settings") || resource
-										.getName().equals(Misc.HYPERLINKSDIR)))
+										|| resource.getName().equals(".settings") || resource.getName()
+										.equals(Misc.HYPERLINKSDIR)))
 							return false;
 
 						// all the remaining folders are OK
@@ -171,11 +189,10 @@ public class Misc {
 					public boolean visit(IResource resource) throws CoreException {
 						// do not visit external sources folders or .settings
 						if (resource.getType() == IResource.FOLDER
-								&& (!Misc.getResourceProperty(resource, EXTERNAL_SOURCES_FOLDER)
-										.equals("")
+								&& (!Misc.getResourceProperty(resource, EXTERNAL_SOURCES_FOLDER).equals("")
 										|| resource.getName().equals(OcamlBuilder.EXTERNALFILES)
-										|| resource.getName().equals(".settings") || resource
-										.getName().equals(Misc.HYPERLINKSDIR)))
+										|| resource.getName().equals(".settings") || resource.getName()
+										.equals(Misc.HYPERLINKSDIR)))
 							return false;
 
 						// ignore .project and .paths
@@ -211,9 +228,38 @@ public class Misc {
 	}
 
 	/**
-	 * Return the paths chosen by the user in the "O'Caml project Paths" preference dialog, as a
-	 * string made from a succession of "-I";"path" so that they can be used as a parameter for the
-	 * O'Caml compiler. Some paths are relative to the workspace, and some others are absolute.
+	 * Keep all the mli files in the list and the ml files when there is no corresponding mli
+	 * 
+	 * @return the mli files and the ml files which don't have a corresponding mli file
+	 */
+	public static String[] filterInterfaces(String[] mlmliFiles) {
+		ArrayList<String> listFiles = new ArrayList<String>();
+
+		Arrays.sort(mlmliFiles);
+
+		for (int i = 0; i < mlmliFiles.length; i++) {
+			String filename = mlmliFiles[i];
+			String next;
+			if (i + 1 < mlmliFiles.length)
+				next = mlmliFiles[i + 1];
+			else
+				next = "";
+
+			if (filename.endsWith(".mli"))
+				listFiles.add(filename);
+			if (filename.endsWith(".ml") && !next.endsWith(".mli"))
+				listFiles.add(filename);
+
+		}
+
+		String[] files = listFiles.toArray(new String[listFiles.size()]);
+		return files;
+	}
+	
+	/**
+	 * Return the paths chosen by the user in the "O'Caml project Paths" preference dialog, as a string made
+	 * from a succession of "-I";"path" so that they can be used as a parameter for the O'Caml compiler. Some
+	 * paths are relative to the workspace, and some others are absolute.
 	 */
 	public static ArrayList<String> getProjectPaths(IProject project) {
 		final ArrayList<String> strPaths = new ArrayList<String>();
@@ -240,8 +286,8 @@ public class Misc {
 	}
 
 	/**
-	 * Return <code>true</code> if <code>file</code> is a cmo, cmi, cmx, exe, annot, o, or
-	 * automatically generated file.
+	 * Return <code>true</code> if <code>file</code> is a cmo, cmi, cmx, exe, annot, o, or automatically
+	 * generated file.
 	 */
 	public static boolean isGeneratedFile(IFile file) {
 
@@ -289,8 +335,7 @@ public class Misc {
 	 */
 	public static String getFileProperty(IFile file, String propertyName) {
 		try {
-			String value = file.getPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER,
-					propertyName));
+			String value = file.getPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, propertyName));
 			if (value == null)
 				return "";
 			return value;
@@ -307,8 +352,8 @@ public class Misc {
 	 */
 	public static String getFolderProperty(IFolder folder, String propertyName) {
 		try {
-			String value = folder.getPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER,
-					propertyName));
+			String value = folder
+					.getPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, propertyName));
 			if (value == null)
 				return "";
 			return value;
@@ -341,8 +386,7 @@ public class Misc {
 	 */
 	public static void setProjectProperty(IProject project, String propertyName, String value) {
 		try {
-			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, propertyName),
-					value);
+			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, propertyName), value);
 		} catch (Exception e) {
 			OcamlPlugin.logError("error in Misc:setProjectProperty :", e);
 		}
@@ -355,8 +399,7 @@ public class Misc {
 	 */
 	public static void setFileProperty(IFile file, String propertyName, String value) {
 		try {
-			file.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, propertyName),
-					value);
+			file.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, propertyName), value);
 		} catch (Exception e) {
 			OcamlPlugin.logError("error in Misc:setFileProperty :", e);
 		}
@@ -369,8 +412,7 @@ public class Misc {
 	 */
 	public static void setFolderProperty(IFolder folder, String propertyName, String value) {
 		try {
-			folder.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, propertyName),
-					value);
+			folder.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, propertyName), value);
 		} catch (Exception e) {
 			OcamlPlugin.logError("error in Misc:setFolderProperty :", e);
 		}
@@ -385,8 +427,8 @@ public class Misc {
 
 			public void run() {
 				try {
-					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
-							.getActiveWorkbenchWindow().getActivePage();
+					final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage();
 					OcamlCompilerOutput console = (OcamlCompilerOutput) activePage
 							.findView(OcamlCompilerOutput.ID);
 					if (console == null) {
@@ -492,8 +534,7 @@ public class Misc {
 				return annotFile1;
 
 			// then, try with a .annot in the _build/ directory + same directory
-			File annotFile2 = new File(projectPath + "_build" + File.separator
-					+ basePath.toOSString());
+			File annotFile2 = new File(projectPath + "_build" + File.separator + basePath.toOSString());
 			if (annotFile2.exists())
 				return annotFile2;
 		}

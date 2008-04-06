@@ -19,12 +19,12 @@ import ocaml.preferences.PreferenceConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 
 /**
- * This class is responsible for formating O'Caml code. It indents code, adds
+ * This class is responsible for formatting O'Caml code. It indents code, adds
  * spaces where they are missing, delete those that are redundant, splits
  * comments on several lines if they are too long, merge consecutive comments if
  * they are too short, turn multi-line comments into single-line comments.
  */
-public class OcamlFormater {
+public class OcamlFormatter {
 
 	private Pattern patternBegin = Pattern
 			.compile("\\A(?: |\t)*(?:begin\\W|\\()");
@@ -556,12 +556,12 @@ public class OcamlFormater {
 	}
 
 	/**
-	 * Formating comments: read words separated by spaces and split the comment
+	 * Formatting comments: read words separated by spaces and split the comment
 	 * onto several lines so that the length of each line is inferior to the
 	 * width of the edit window.
 	 * 
 	 * <p>
-	 * The formating of comments can be disabled in a selective manner, by
+	 * The formatting of comments can be disabled in a selective manner, by
 	 * starting the comment by "(*|" instead of just "(*". This allows the user
 	 * to keep source code in a comment, or draw some ASCII-art.
 	 * 
@@ -1081,13 +1081,13 @@ public class OcamlFormater {
 	// }
 	//
 	// /**
-	// * Formating comments: read words separated by spaces and split the
+	// * Formatting comments: read words separated by spaces and split the
 	// comment onto several lines
 	// * so that the length of each line is inferior to the width of the edit
 	// window.
 	// *
 	// * <p>
-	// * The formating of comments can be disabled in a selective manner, by
+	// * The formatting of comments can be disabled in a selective manner, by
 	// starting the comment by
 	// * "(*|" instead of just "(*". This allows the user to keep source code in
 	// a comment, or draw

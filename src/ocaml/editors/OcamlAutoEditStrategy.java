@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ocaml.OcamlPlugin;
-import ocaml.editor.formatting.OcamlFormater;
+import ocaml.editor.formatting.OcamlFormatter;
 import ocaml.editor.syntaxcoloring.OcamlPartitionScanner;
 import ocaml.preferences.PreferenceConstants;
 
@@ -79,10 +79,10 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 			return;
 		}
 
-		int indent = OcamlFormater.getLineIndent(line);
+		int indent = OcamlFormatter.getLineIndent(line);
 		int lineLength = line.length();
 		// int prevLineLength = previousLine.length();
-		int previousIndent = OcamlFormater.getLineIndent(previousLine);
+		int previousIndent = OcamlFormatter.getLineIndent(previousLine);
 		String trimmed = line.trim();
 		previousLine = previousLine.trim();
 

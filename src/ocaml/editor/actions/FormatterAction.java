@@ -1,7 +1,7 @@
 package ocaml.editor.actions;
 
 import ocaml.OcamlPlugin;
-import ocaml.editor.formatting.OcamlFormater;
+import ocaml.editor.formatting.OcamlFormatter;
 import ocaml.editors.OcamlEditor;
 
 import org.eclipse.jface.action.IAction;
@@ -30,7 +30,7 @@ public class FormatterAction implements IWorkbenchWindowActionDelegate {
 				if (editorPart instanceof OcamlEditor) {
 					OcamlEditor editor = (OcamlEditor) editorPart;
 
-					OcamlFormater.formatInterface = editor.getFileBeingEdited()
+					OcamlFormatter.formatInterface = editor.getFileBeingEdited()
 							.getName().endsWith(".mli");
 
 					ITextOperationTarget textOperationTarget = (ITextOperationTarget) editor
