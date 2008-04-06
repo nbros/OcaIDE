@@ -10,6 +10,7 @@ import ocaml.build.ProblemMarkers;
 import ocaml.exec.CommandRunner;
 import ocaml.exec.ExecHelper;
 import ocaml.exec.IExecEvents;
+import ocaml.preferences.PreferenceConstants;
 import ocaml.util.Misc;
 import ocaml.util.OcamlPaths;
 import ocaml.views.OcamlCompilerOutput;
@@ -41,16 +42,15 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 	}
 
 	/**
-	 * Build the ocamlbuild command line which will compile the given project
-	 * with the flags and paths the user defined in the project properties page.
+	 * Build the ocamlbuild command line which will compile the given project with the flags and paths the
+	 * user defined in the project properties page.
 	 * 
 	 * @param project
 	 *            the project to build
 	 * @param noTargets
 	 *            do not add targets to the build command line
 	 */
-	public static ArrayList<String> buildCommandLine(IProject project,
-			boolean noTargets) {
+	public static ArrayList<String> buildCommandLine(IProject project, boolean noTargets) {
 		OcamlbuildFlags ocamlbuildFlags = new OcamlbuildFlags(project);
 		ocamlbuildFlags.load();
 
@@ -58,7 +58,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 		ArrayList<String> commandLine = new ArrayList<String>();
 
-		String ocamlbuild = OcamlPlugin.getOcamlbuildFullPath().trim();
+		String ocamlbuild = OcamlPlugin.getOcamlbuildFullPath();
 		if ("".equals(ocamlbuild)) {
 			OcamlPlugin.logError("ocamlbuild path is not configured");
 			return null;
@@ -67,6 +67,8 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 		commandLine.add(ocamlbuild);
 		commandLine.add("-classic-display");
 		commandLine.add("-no-log");
+
+		addToolsPaths(commandLine);
 
 		OcamlPaths ocamlPaths = new OcamlPaths(project);
 		String[] paths = ocamlPaths.getPaths();
@@ -82,7 +84,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 				}
 			}
 		}
-		
+
 		// TODO: add compile and link paths (eg: -cflags -I /path)
 
 		commandLine.add("-tags");
@@ -114,9 +116,45 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 		return commandLine;
 	}
 
+	private static void addToolsPaths(ArrayList<String> commandLine) {
+
+		if (!OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+				PreferenceConstants.P_OCAMLBUILD_COMPIL_PATHS_OVERRIDE))
+			return;
+
+		String ocamlc = OcamlPlugin.getOcamlcFullPath();
+		if (!"".equals(ocamlc)) {
+			commandLine.add("-ocamlc");
+			commandLine.add(ocamlc);
+		}
+
+		String ocamlopt = OcamlPlugin.getOcamloptFullPath();
+		if (!"".equals(ocamlopt)) {
+			commandLine.add("-ocamlopt");
+			commandLine.add(ocamlopt);
+		}
+
+		String ocamldep = OcamlPlugin.getOcamldepFullPath();
+		if (!"".equals(ocamldep)) {
+			commandLine.add("-ocamldep");
+			commandLine.add(ocamldep);
+		}
+
+		String ocamlyacc = OcamlPlugin.getOcamlyaccFullPath();
+		if (!"".equals(ocamlyacc)) {
+			commandLine.add("-ocamlyacc");
+			commandLine.add(ocamlyacc);
+		}
+
+		String ocamllex = OcamlPlugin.getOcamllexFullPath();
+		if (!"".equals(ocamllex)) {
+			commandLine.add("-ocamllex");
+			commandLine.add(ocamllex);
+		}
+	}
+
 	@Override
-	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
-			throws CoreException {
+	protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
 
 		// don't start two builds simultaneously
 		if (building)
@@ -134,15 +172,13 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 		try {
 			if (kind == CLEAN_BUILD) {
-				OcamlPlugin
-						.logError("CLEAN_BUILD kind in build()? Shouldn't happen.");
+				OcamlPlugin.logError("CLEAN_BUILD kind in build()? Shouldn't happen.");
 				return null;
 			}
 
 			building = true;
 
-			buildMonitor
-					.beginTask("Building Project", IProgressMonitor.UNKNOWN);
+			buildMonitor.beginTask("Building Project", IProgressMonitor.UNKNOWN);
 
 			final IProject project = this.getProject();
 
@@ -150,8 +186,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 			if (commandLine == null)
 				return null;
 
-			String[] strCommandLine = commandLine
-					.toArray(new String[commandLine.size()]);
+			String[] strCommandLine = commandLine.toArray(new String[commandLine.size()]);
 
 			final StringBuilder output = new StringBuilder();
 
@@ -162,8 +197,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 					output.append(input);
 					Display.getDefault().asyncExec(new Runnable() {
 						public void run() {
-							OcamlCompilerOutput outputView = OcamlCompilerOutput
-									.get();
+							OcamlCompilerOutput outputView = OcamlCompilerOutput.get();
 							if (outputView != null)
 								outputView.append(input);
 						}
@@ -182,28 +216,24 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 			};
 
 			// clean the output from the last compilation
-			/*Display.getDefault().syncExec(new Runnable() {
-				public void run() {
-					OcamlCompilerOutput output = OcamlCompilerOutput.get();
-					if (output != null)
-						output.clear();
-				}
-			});*/
+			/*
+			 * Display.getDefault().syncExec(new Runnable() { public void run() { OcamlCompilerOutput output =
+			 * OcamlCompilerOutput.get(); if (output != null) output.clear(); } });
+			 */
 
 			File dir = project.getLocation().toFile();
 
 			ExecHelper execHelper = null;
 			try {
-				execHelper = ExecHelper.execMerge(events, strCommandLine, null,
-						dir);
+				execHelper = ExecHelper.execMerge(events, strCommandLine, null, dir);
 			} catch (Exception e) {
 				OcamlPlugin.logError("ocaml plugin error", e);
 				return null;
 			}
 
 			/*
-			 * Check at regular intervals whether the user canceled the build.
-			 * When that happens, we kill the "ocamlbuild" process.
+			 * Check at regular intervals whether the user canceled the build. When that happens, we kill the
+			 * "ocamlbuild" process.
 			 */
 			while (execHelper.isRunning()) {
 				if (buildMonitor.isCanceled())
@@ -225,10 +255,9 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 		}
 
 		/*
-		 * if (kind == IncrementalProjectBuilder.FULL_BUILD) {
-		 * fullBuild(monitor); } else { IResourceDelta delta =
-		 * getDelta(getProject()); if (delta == null) { fullBuild(monitor); }
-		 * else { incrementalBuild(delta, monitor); } }
+		 * if (kind == IncrementalProjectBuilder.FULL_BUILD) { fullBuild(monitor); } else { IResourceDelta
+		 * delta = getDelta(getProject()); if (delta == null) { fullBuild(monitor); } else {
+		 * incrementalBuild(delta, monitor); } }
 		 */
 	}
 
@@ -239,9 +268,8 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 		refreshed = false;
 
 		/*
-		 * Refresh the project to see modifications. This is executed
-		 * asynchronously because the refresh operation is waiting for the
-		 * completion of the build() method to run.
+		 * Refresh the project to see modifications. This is executed asynchronously because the refresh
+		 * operation is waiting for the completion of the build() method to run.
 		 */
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
@@ -275,16 +303,13 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 					monitor.beginTask("Decorating Project", files.length + 3);
 
 					/*
-					 * Delete all markers on the project (since we rebuilt it).
-					 * This can be problematic with warning markers, that will
-					 * disappear at the next rebuild (since files with only
-					 * warnings won't be recompiled). The warning marker will
-					 * only reappear next time the file in which it appears is
-					 * modified.
+					 * Delete all markers on the project (since we rebuilt it). This can be problematic with
+					 * warning markers, that will disappear at the next rebuild (since files with only
+					 * warnings won't be recompiled). The warning marker will only reappear next time the file
+					 * in which it appears is modified.
 					 */
 					try {
-						project.deleteMarkers(IMarker.PROBLEM, false,
-								IResource.DEPTH_INFINITE);
+						project.deleteMarkers(IMarker.PROBLEM, false, IResource.DEPTH_INFINITE);
 					} catch (CoreException e) {
 						OcamlPlugin.logError("ocaml plugin error", e);
 					}
@@ -292,8 +317,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 					monitor.worked(1);
 
 					/*
-					 * Parse the compiler output to find error and warning
-					 * messages.
+					 * Parse the compiler output to find error and warning messages.
 					 */
 					ProblemMarkers problemMarkers = new ProblemMarkers(project);
 					problemMarkers.makeMarkers2(output.toString());
@@ -303,42 +327,33 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 					// Remove the "error" and "warning" property on each project
 					// file
 					for (IFile f : files) {
-						Misc.setFileProperty(f,
-								OcamlBuilder.COMPILATION_ERRORS, null);
-						Misc.setFileProperty(f,
-								OcamlBuilder.COMPILATION_WARNINGS, null);
+						Misc.setFileProperty(f, OcamlBuilder.COMPILATION_ERRORS, null);
+						Misc.setFileProperty(f, OcamlBuilder.COMPILATION_WARNINGS, null);
 					}
 
 					/*
-					 * Put a "warning" property on files that generated at least
-					 * a warning but not any error
+					 * Put a "warning" property on files that generated at least a warning but not any error
 					 */
 					for (IFile f : problemMarkers.getFilesWithWarnings())
-						Misc.setFileProperty(f,
-								OcamlBuilder.COMPILATION_WARNINGS, "true");
+						Misc.setFileProperty(f, OcamlBuilder.COMPILATION_WARNINGS, "true");
 
 					/*
-					 * Put an "error" property on files that generated at least
-					 * an error
+					 * Put an "error" property on files that generated at least an error
 					 */
 					for (IFile f : problemMarkers.getFilesWithErrors())
-						Misc.setFileProperty(f,
-								OcamlBuilder.COMPILATION_ERRORS, "true");
+						Misc.setFileProperty(f, OcamlBuilder.COMPILATION_ERRORS, "true");
 
 					if (problemMarkers.errorsFound())
-						Misc.setProjectProperty(project,
-								OcamlBuilder.COMPILATION_ERRORS, "true");
+						Misc.setProjectProperty(project, OcamlBuilder.COMPILATION_ERRORS, "true");
 					else
-						Misc.setProjectProperty(project,
-								OcamlBuilder.COMPILATION_ERRORS, null);
+						Misc.setProjectProperty(project, OcamlBuilder.COMPILATION_ERRORS, null);
 
 					Misc.updateDecoratorManager();
 
 					monitor.worked(1);
 
 					/*
-					 * Mark files as byte-code or native depending on their
-					 * extension.
+					 * Mark files as byte-code or native depending on their extension.
 					 */
 					for (IFile file : files) {
 						monitor.worked(1);
@@ -348,19 +363,14 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 						String extension = file.getFileExtension();
 						if ("byte".equals(extension)) {
-							Misc.setFileProperty(file,
-									OcamlBuilder.COMPIL_MODE,
-									OcamlBuilder.BYTE_CODE);
+							Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.BYTE_CODE);
 						} else if ("native".equals(extension)) {
-							Misc.setFileProperty(file,
-									OcamlBuilder.COMPIL_MODE,
-									OcamlBuilder.NATIVE);
+							Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.NATIVE);
 						}
 					}
 
 				} catch (Exception e) {
-					OcamlPlugin.logError("ocaml plugin error (file decorator)",
-							e);
+					OcamlPlugin.logError("ocaml plugin error (file decorator)", e);
 				} finally {
 					monitor.done();
 				}
@@ -373,9 +383,8 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 	}
 
 	/**
-	 * Returns true if the delta contains modified source files (so as not to
-	 * get into an infinite loop in the builder, which rebuilds because it sees
-	 * its own generated files changed)
+	 * Returns true if the delta contains modified source files (so as not to get into an infinite loop in the
+	 * builder, which rebuilds because it sees its own generated files changed)
 	 */
 	private boolean changed = false;
 
@@ -389,26 +398,25 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 					// ignore files in the _build directory
 					for (String segment : path.segments()) {
-						if (segment.equals("_build")
-								|| segment.equals(OcamlPaths.EXTERNAL_SOURCES)
-								|| segment.equals(Misc.HYPERLINKSDIR)){
-//							 System.err.println("Ignoring " + resource.getLocation().toOSString()
-//									 + " ('_build' in path)");
+						if (segment.equals("_build") || segment.equals(OcamlPaths.EXTERNAL_SOURCES)
+								|| segment.equals(Misc.HYPERLINKSDIR)) {
+							// System.err.println("Ignoring " + resource.getLocation().toOSString()
+							// + " ('_build' in path)");
 							return true;
 						}
 					}
 
 					if (delta.getKind() == IResourceDelta.REMOVED) {
-//						 System.err.println(resource.getLocation().toOSString()
-//						 + " removed");
+						// System.err.println(resource.getLocation().toOSString()
+						// + " removed");
 						changed = true;
 						return false;
 					}
 
 					String ext = resource.getFileExtension();
 					if (ext != null && ext.matches("ml|mli|mll|mly")) {
-//						 System.err.println(resource.getLocation().toOSString()
-//						 + " changed");
+						// System.err.println(resource.getLocation().toOSString()
+						// + " changed");
 						changed = true;
 						return false;
 					}
@@ -416,8 +424,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 				}
 			});
 		} catch (CoreException e) {
-			OcamlPlugin.logError("error in ocamlbuild resource delta visitor",
-					e);
+			OcamlPlugin.logError("error in ocamlbuild resource delta visitor", e);
 			e.printStackTrace();
 		}
 

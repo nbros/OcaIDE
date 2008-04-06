@@ -142,5 +142,8 @@ public class PreferenceConstants
 	/** Spell check comments? */
 	public static final String P_EDITOR_SPELL_CHECKING = "SpellChecking";
 	
+	/** Override default ocamlbuild paths by user paths */
+	public static final String P_OCAMLBUILD_COMPIL_PATHS_OVERRIDE = "OcamlbuildPathsOverride";
+	
 	
 }

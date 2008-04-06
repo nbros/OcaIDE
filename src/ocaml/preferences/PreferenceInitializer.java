@@ -142,6 +142,10 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			
 			// spell checking comments in the editor
 			store.setDefault(PreferenceConstants.P_EDITOR_SPELL_CHECKING, false);
+			
+			// Override default ocamlbuild paths by user paths
+			store.setDefault(PreferenceConstants.P_OCAMLBUILD_COMPIL_PATHS_OVERRIDE, false);
+			
 
 			String ocamlLibPath = "";
 			String ocaml = "";

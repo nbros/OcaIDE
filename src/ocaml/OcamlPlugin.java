@@ -233,68 +233,68 @@ public class OcamlPlugin extends AbstractUIPlugin {
 
 	/** Returns ocamllex absolute path */
 	public static String getOcamllexFullPath() {
-		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLLEX);
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLLEX).trim();
 	}
 
 	/** Returns ocamlyacc absolute path */
 	public static String getOcamlyaccFullPath() {
-		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLYACC);
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLYACC).trim();
 	}
 
 	/** Returns ocamlopt absolute path */
 	public static String getOcamloptFullPath() {
-		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLOPT);
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLOPT).trim();
 	}
 
 	/** Returns ocaml toplevel absolute path */
 	public static String getOcamlFullPath() {
-		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAML);
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAML).trim();
 	}
 
 	/** Returns ocamlc absolute path */
 	public static String getOcamlcFullPath() {
-		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLC);
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLC).trim();
 	}
 
 	/** Returns ocamldep absolute path */
 	public static String getOcamldepFullPath() {
-		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLDEP);
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLDEP).trim();
 	}
 
 	/** Returns ocamldoc absolute path */
 	public static String getOcamldocFullPath() {
-		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLDOC);
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLDOC).trim();
 	}
 
 	/** Returns ocamldebug absolute path */
 	public static String getOcamldebugFullPath() {
-		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLDEBUG);
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_COMPIL_PATH_OCAMLDEBUG).trim();
 	}
 
 	/** Returns ocamlbuild absolute path */
 	public static String getOcamlbuildFullPath() {
-		return instance.getPreferenceStore().getString(PreferenceConstants.P_PATH_OCAMLBUILD);
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_PATH_OCAMLBUILD).trim();
 
 	}
 
 	/** Returns camlp4 absolute path */
 	public static String getCamlp4FullPath() {
-		return instance.getPreferenceStore().getString(PreferenceConstants.P_PATH_CAMLP4);
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_PATH_CAMLP4).trim();
 	}
 
 	/** Returns the make command absolute path */
 	public static String getMakeFullPath() {
-		return instance.getPreferenceStore().getString(PreferenceConstants.P_MAKE_PATH);
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_MAKE_PATH).trim();
 	}
 
 	/** Returns the omake command absolute path */
 	public static String getOMakeFullPath() {
-		return instance.getPreferenceStore().getString(PreferenceConstants.P_OMAKE_PATH);
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_OMAKE_PATH).trim();
 	}
 
 	/** Returns the ocaml library absolute path */
 	public static String getLibFullPath() {
-		return instance.getPreferenceStore().getString(PreferenceConstants.P_LIB_PATH);
+		return instance.getPreferenceStore().getString(PreferenceConstants.P_LIB_PATH).trim();
 	}
 
 	/** Returns the comments color from the preferences */
@@ -458,12 +458,19 @@ public class OcamlPlugin extends AbstractUIPlugin {
 		// add a second listener to know when we can rebuild the outline after a project build
 		this.outlineBuildListener = new OutlineBuildListener();
 		workspace.addResourceChangeListener(outlineBuildListener, IResourceChangeEvent.POST_BUILD);
+		
+		this.folderChangeListener = new FolderChangeListener();
+		   workspace.addResourceChangeListener(this.folderChangeListener,
+		      IResourceChangeEvent.POST_CHANGE);
+
 	}
 
 	/** The registered listeners. Used to remove it afterwards. */
 	private IResourceChangeListener registeredListener;
 
 	private IResourceChangeListener outlineBuildListener;
+	
+	private IResourceChangeListener folderChangeListener;
 
 	/**
 	 * Called when the plug-in is stopping.<br>
@@ -477,6 +484,7 @@ public class OcamlPlugin extends AbstractUIPlugin {
 		// Remove the previously listener
 		workspace.removeResourceChangeListener(registeredListener);
 		workspace.removeResourceChangeListener(outlineBuildListener);
+		workspace.removeResourceChangeListener(folderChangeListener);
 
 		// stop the ocamldebug process if it is started
 		OcamlDebugger debugger = OcamlDebugger.getInstance();

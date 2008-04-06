@@ -127,14 +127,15 @@ public class OcamlPaths {
 			final String folderName = folder.getFullPath().lastSegment();
 			if (!folder.isLinked() && !folderName.equals(".settings")
 					&& Misc.getFolderProperty(folder, Misc.EXTERNAL_SOURCES_FOLDER).equals("")
-					&& !folderName.equals(OcamlBuilder.EXTERNALFILES) && !folderName.equals(Misc.HYPERLINKSDIR)) {
+					&& !folderName.equals(OcamlBuilder.EXTERNALFILES)
+					&& !folderName.equals(Misc.HYPERLINKSDIR)) {
 				IPath path = folder.getFullPath();
-				
-				for(String segment:path.segments()){
-					if("_build".equals(segment))
+
+				for (String segment : path.segments()) {
+					if ("_build".equals(segment))
 						continue mainLoop;
 				}
-				
+
 				// if the first segment is the project name, we remove it
 				if (path.segmentCount() > 0 && path.segment(0).equals(projectName))
 					paths.add(path.removeFirstSegments(1).toPortableString());
@@ -171,7 +172,37 @@ public class OcamlPaths {
 			return new String[0];
 		}
 
+		addReferencedProjectsPaths(paths);
+
 		return paths.toArray(new String[paths.size()]);
+	}
+
+	private void addReferencedProjectsPaths(ArrayList<String> paths) {
+		try {
+			IProject[] referencedProjects = project.getReferencedProjects();
+
+			for (IProject referencedProject : referencedProjects) {
+				OcamlPaths opaths = new OcamlPaths(referencedProject);
+
+				for (String p : opaths.getPaths()) {
+					File f = new File(p);
+					if (f.isAbsolute())
+						paths.add(p);
+					else {
+						File absolutePath = new File(referencedProject.getLocation().toOSString(), p);
+						paths.add(absolutePath.getPath());
+					}
+
+					// if(".".equals(p))
+					// paths.add(referencedProject.getLocation().toOSString());
+				}
+			}
+
+		} catch (CoreException e) {
+			OcamlPlugin.logError("Error while trying to get referenced projects paths for project "
+					+ project.getName(), e);
+		}
+
 	}
 
 	/** @return true if the path is valid in this project */

@@ -7,6 +7,7 @@ import ocaml.OcamlPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
@@ -48,6 +49,8 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 	FileFieldEditor camlp4Field;
 	FileFieldEditor ocamlbuildField;
 	FileFieldEditor omakeField;
+	
+	BooleanFieldEditor ocamlbuildPathsOverride;
 
 	Text pathText;
 	private Label warningLabel;
@@ -57,7 +60,7 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 
 		warningLabel = new Label(getFieldEditorParent(), SWT.NONE);
 		warningLabel.setText("You must manually recompile your projects after changing paths");
-
+		
 		Group toolsGroup = new Group(getFieldEditorParent(), SWT.NONE);
 		GridData data = new GridData();
 		data.verticalAlignment = GridData.FILL;
@@ -97,7 +100,11 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements
 		IPath path = new Path(OcamlPlugin.getOcamlcFullPath());
 		path = path.removeLastSegments(1);
 		pathText.setText(path.toOSString());
-
+		
+		ocamlbuildPathsOverride = new BooleanFieldEditor(PreferenceConstants.P_OCAMLBUILD_COMPIL_PATHS_OVERRIDE, "Override default ocamlbuild paths",
+				toolsGroup);
+		this.addField(ocamlbuildPathsOverride);
+	
 		ocamlField = new FileFieldEditor(PreferenceConstants.P_COMPIL_PATH_OCAML, "oca&ml:",
 				toolsGroup);
 		this.addField(ocamlField);
