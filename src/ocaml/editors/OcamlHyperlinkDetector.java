@@ -161,6 +161,14 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				if (openDefInInterfaces(0, pervasivesPath, interfacesDefinitionsRoot))
 					return null;
 			}
+
+			// if it still wasn't found, try to open it as a module
+			if (def == null && searchedDef.name.length() > 0
+					&& Character.isUpperCase(searchedDef.name.charAt(0))) {
+				IHyperlink[] hyperlinks = makeOpenHyperlink(null, searchedDef, interfacesDefinitionsRoot);
+				if (hyperlinks.length > 0)
+					hyperlinks[0].open();
+			}
 		}
 
 		return def;

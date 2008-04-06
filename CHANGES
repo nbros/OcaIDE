@@ -109,7 +109,8 @@
 	* Hyperlink on open directive opens a ".ml" file when there is no ".mli" file
 	* Add referenced projects paths to available paths
 	* Option to override ocamlbuild tools paths
-	* When a folder is added or removed in an ocaml project, this project paths are automatically changed accordingly 
+	* When a folder is added or removed in an ocaml project, this project paths are automatically changed accordingly
+	* Ctrl+Clicking on "B" in "module A = B" now opens B.mli or B.ml
 	
 	
 	
