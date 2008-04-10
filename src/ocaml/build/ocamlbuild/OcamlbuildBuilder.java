@@ -38,8 +38,8 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 	/** Is a build in progress? */
 	private static boolean building = false;
 
-	/** we assume only one build will be active at any time */
-	private static final Object buildSignal = new Object();
+	/** To make sure only one build can be active at any time */
+	private static final Object buildMutex = new Object();
 
 	public OcamlbuildBuilder() {
 	}
@@ -158,22 +158,25 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 	@Override
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
-		
-		System.out.println("building");
+
+		// System.out.println("building");
 
 		// don't start two builds simultaneously
-		synchronized (buildSignal) {
-			if (building)
+		synchronized (buildMutex) {
+			if (building) {
+				// System.out.println("already building: aborting");
 				return null;
-			else
+			} else
 				building = true;
 		}
 
 		try {
 
 			IResourceDelta delta = getDelta(getProject());
-			if (delta != null && !containsChanges(delta))
+			if (delta != null && !containsChanges(delta)) {
+				// System.out.println("build : nothing changed : aborting");
 				return null;
+			}
 
 			final IProgressMonitor buildMonitor;
 			if (monitor == null)
@@ -264,7 +267,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 			}
 
 		} finally {
-			synchronized (buildSignal) {
+			synchronized (buildMutex) {
 				building = false;
 			}
 		}
@@ -277,28 +280,8 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 	}
 
 	private void buildFinished(final String output, final IProject project) {
-		
-		System.out.println("build finished");
-		
-		final Object refreshedSignal = new Object();
 
-		/*
-		 * Refresh the project to see modifications. This is executed asynchronously because the
-		 * refresh operation is waiting for the completion of the build() method to run.
-		 */
-		Display.getDefault().asyncExec(new Runnable() {
-			public void run() {
-				try {
-					project.refreshLocal(IProject.DEPTH_INFINITE, null);
-					synchronized (refreshedSignal) {
-						refreshedSignal.notifyAll();
-					}
-
-				} catch (CoreException e1) {
-					OcamlPlugin.logError("ocaml plugin error", e1);
-				}
-			}
-		});
+		// System.out.println("build finished");
 
 		// Execute a background job to decorate files with markers
 		Job job = new Job("Decorating Project") {
@@ -306,16 +289,23 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 			protected IStatus run(IProgressMonitor monitor) {
 
 				try {
-					
-					synchronized (refreshedSignal) {
-						refreshedSignal.wait(1000);
-						if(monitor.isCanceled())
-							return Status.CANCEL_STATUS;
-					}
+					/*
+					 * Refresh the project to see modifications. Eclipse waits for the build Job to
+					 * finish before executing this refresh.
+					 */
+					Display.getDefault().syncExec(new Runnable() {
+						public void run() {
+							try {
+								project.refreshLocal(IProject.DEPTH_INFINITE, null);
+							} catch (CoreException e1) {
+								OcamlPlugin.logError("ocaml plugin error", e1);
+							}
+						}
+					});
 
 					IFile[] files = Misc.getProjectFiles(project);
 					monitor.beginTask("Decorating Project", files.length + 3);
-					
+
 					/*
 					 * Delete all markers on the project (since we rebuilt it). This can be
 					 * problematic with warning markers, that will disappear at the next rebuild
@@ -340,8 +330,9 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 					monitor.worked(1);
 
-					// Remove the "error" and "warning" property on each project
-					// file
+					/*
+					 * Remove the "error" and "warning" property on each project file
+					 */
 					for (IFile f : files) {
 						Misc.setFileProperty(f, OcamlBuilder.COMPILATION_ERRORS, null);
 						Misc.setFileProperty(f, OcamlBuilder.COMPILATION_WARNINGS, null);
@@ -400,6 +391,11 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 		job.setPriority(Job.DECORATE);
 		job.schedule(250);
+
+		/*
+		 * Do not join on this job, since it refreshes the workspace, and this operation waits for
+		 * the build to finish first.
+		 */
 	}
 
 	/**
@@ -472,7 +468,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 		final String out = commandRunner.getStdout();
 		final String err = commandRunner.getStderr();
 
-		// refresh the workspace
+		// fill the output view and refresh the workspace
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				try {
