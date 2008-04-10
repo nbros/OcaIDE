@@ -38,9 +38,7 @@ public class SuitableFilesFinder implements IResourceVisitor {
 	/** Look at the type and extension of each resource, and only keep what's suitable. */
 	public boolean visit(IResource resource) throws CoreException {
 
-		if (!resource.exists()
-				|| Misc.getResourceProperty(resource,
-						Misc.EXTERNAL_SOURCES_FOLDER).equals("true")) {
+		if (!resource.exists()) {
 			return false;
 		}
 

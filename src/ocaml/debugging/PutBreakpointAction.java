@@ -3,6 +3,7 @@ package ocaml.debugging;
 import ocaml.editors.OcamlEditor;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
@@ -29,11 +30,11 @@ public class PutBreakpointAction implements IWorkbenchWindowActionDelegate {
 					OcamlEditor editor = (OcamlEditor) editorPart;
 					int offset = editor.getCaretOffset();
 					
-					IFile file = editor.getFileBeingEdited();
+					IPath file = editor.getPathOfFileBeingEdited();
 					if(file == null)
 						return;
 					
-					String filename = file.getName();
+					String filename = file.lastSegment();
 
 					if (filename.endsWith(".ml")) {
 						String moduleName = Character.toUpperCase(filename.charAt(0))

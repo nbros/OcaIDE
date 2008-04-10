@@ -36,9 +36,6 @@ import org.eclipse.core.runtime.Path;
 
 public class OcamlPaths {
 
-	/** the name of the external sources folder (.ml) for the debugger */
-	public static final String EXTERNAL_SOURCES = ".DebuggerSourceLookup";
-
 	public static final String PATHS_FILE = ".paths";
 
 	private final IProject project;
@@ -63,69 +60,6 @@ public class OcamlPaths {
 			OcamlPlugin.logError("ocaml plugin error", e);
 			return;
 		}
-		
-		// XXX TEST
-		//if(true)
-		//	return;
-
-		// create the external sources folder
-		IFolder sourcesFolder = project.getFolder(EXTERNAL_SOURCES);
-		if (!sourcesFolder.exists()) {
-			try {
-				sourcesFolder.create(IFolder.FORCE, true, null);
-				Misc.setFolderProperty(sourcesFolder, Misc.EXTERNAL_SOURCES_FOLDER, "true");
-
-				/*
-				 * ResourceAttributes attributes = sourcesFolder.getResourceAttributes(); if
-				 * (attributes != null) { attributes.setReadOnly(true);
-				 * sourcesFolder.setResourceAttributes(attributes); } else
-				 * OcamlPlugin.logError("cannot set '" + EXTERNAL_SOURCES + "' as read only");
-				 */
-
-			} catch (Exception e) {
-				OcamlPlugin.logError("ocaml plugin error", e);
-				return;
-			}
-		}
-
-		// check that the folder has the right property
-		if (!Misc.getResourceProperty(sourcesFolder, Misc.EXTERNAL_SOURCES_FOLDER).equals("true")) {
-			Misc.setFolderProperty(sourcesFolder, Misc.EXTERNAL_SOURCES_FOLDER, "true");
-		}
-
-		// link the external paths to the project
-		/*
-		 * Go through the list in reverse, so that files in the first paths will override files in
-		 * the following paths (in case they have the same name)
-		 */
-		for (int i = paths.length - 1; i >= 0; i--) {
-			String path = paths[i];
-
-			if (path != null && !isRelativePath(project, path)) {
-				File dir = new File(path);
-				File[] mlFiles = dir.listFiles(new FilenameFilter() {
-					public boolean accept(File dir, String name) {
-						return name.endsWith(".ml");
-					}
-				});
-
-				if (mlFiles != null) {
-					for (File mlFile : mlFiles) {
-						IPath location = new Path(mlFile.getAbsolutePath());
-						if (project.getWorkspace().validateLinkLocation(sourcesFolder, location)
-								.isOK()) {
-							try {
-								IFile linkedFile = sourcesFolder.getFile(mlFile.getName());
-								linkedFile.createLink(location, IResource.REPLACE, null);
-							} catch (CoreException e) {
-								OcamlPlugin.logError("ocaml plugin error", e);
-							}
-						}
-
-					}
-				}
-			}
-		}
 	}
 
 	public void restoreDefaults() {
@@ -138,9 +72,7 @@ public class OcamlPaths {
 		mainLoop: for (IFolder folder : folders) {
 			final String folderName = folder.getFullPath().lastSegment();
 			if (!folder.isLinked() && !folderName.equals(".settings")
-					&& Misc.getFolderProperty(folder, Misc.EXTERNAL_SOURCES_FOLDER).equals("")
-					&& !folderName.equals(OcamlBuilder.EXTERNALFILES)
-					&& !folderName.equals(Misc.HYPERLINKSDIR)) {
+					&& !folderName.equals(OcamlBuilder.EXTERNALFILES)) {
 				IPath path = folder.getFullPath();
 
 				for (String segment : path.segments()) {
@@ -281,11 +213,8 @@ public class OcamlPaths {
 							+ "OcamlPaths:addToPath: path not found or not a folder");
 				} else {
 					final String name = res.getName();
-					if (!res.isLinked()
-							&& !name.equals(".settings")
-							&& Misc.getResourceProperty(res, Misc.EXTERNAL_SOURCES_FOLDER).equals(
-									"") && !name.equals(OcamlBuilder.EXTERNALFILES)
-							&& !name.equals(Misc.HYPERLINKSDIR)) {
+					if (!res.isLinked() && !name.equals(".settings")
+							&& !name.equals(OcamlBuilder.EXTERNALFILES)) {
 						boolean found = false;
 						final String strPath = path.isEmpty() ? "." : path.toOSString();
 						for (int j = 0; j < pathsToAdd.length && !found; j++) {

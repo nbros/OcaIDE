@@ -27,11 +27,8 @@ public class CleanVisitor implements IResourceVisitor {
 
 	public boolean visit(IResource resource) throws CoreException {
 		
-		/* Ignore non-existing resources and the "external sources" folder (the one with
-		 * the EXTERNAL_SOURCES_FOLDER property)
-		 */
-		if (!resource.exists()
-				|| Misc.getResourceProperty(resource, Misc.EXTERNAL_SOURCES_FOLDER).equals("true")) {
+		/* Ignore non-existing resources */
+		if (!resource.exists()) {
 			return false;
 		}
 

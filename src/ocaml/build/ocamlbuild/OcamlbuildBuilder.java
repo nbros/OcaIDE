@@ -414,8 +414,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 					// ignore files in the _build directory
 					for (String segment : path.segments()) {
-						if (segment.equals("_build") || segment.equals(OcamlPaths.EXTERNAL_SOURCES)
-								|| segment.equals(Misc.HYPERLINKSDIR)) {
+						if (segment.equals("_build")) {
 							// System.err.println("Ignoring " + resource.getLocation().toOSString()
 							// + " ('_build' in path)");
 							return true;

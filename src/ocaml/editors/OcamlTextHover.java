@@ -38,10 +38,15 @@ public class OcamlTextHover implements ITextHover {
 	 * currently under the mouse cursor in the editor
 	 */
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
+		// the file in the workspace. null if the file is external
 		IFile file = ocamlEditor.getFileBeingEdited();
-		if(file == null)
+
+		// the full system path of the file
+		IPath filePath = ocamlEditor.getPathOfFileBeingEdited();
+
+		if (filePath == null)
 			return "<null file>";
-		
+
 		if (hoverRegion == null) {
 			ocaml.OcamlPlugin.logError("OcamlTextHover:getHoverInfo null region");
 			return "";
@@ -52,14 +57,18 @@ public class OcamlTextHover implements ITextHover {
 			String errorMessage = "";
 
 			int hoverOffset = hoverRegion.getOffset();
-			IMarker[] markers = file.findMarkers(null, true, 1);
-			for (IMarker marker : markers) {
-				int markerStart = marker.getAttribute(IMarker.CHAR_START, -1);
-				int markerEnd = marker.getAttribute(IMarker.CHAR_END, -1);
 
-				if (hoverOffset >= markerStart && hoverOffset <= markerEnd) {
-					String message = marker.getAttribute(IMarker.MESSAGE, "<Error reading marker>");
-					errorMessage = errorMessage + message.trim() + "\n";
+			if (file != null) {
+				IMarker[] markers = file.findMarkers(null, true, 1);
+				for (IMarker marker : markers) {
+					int markerStart = marker.getAttribute(IMarker.CHAR_START, -1);
+					int markerEnd = marker.getAttribute(IMarker.CHAR_END, -1);
+
+					if (hoverOffset >= markerStart && hoverOffset <= markerEnd) {
+						String message = marker.getAttribute(IMarker.MESSAGE,
+								"<Error reading marker>");
+						errorMessage = errorMessage + message.trim() + "\n";
+					}
 				}
 			}
 
@@ -76,9 +85,9 @@ public class OcamlTextHover implements ITextHover {
 				}
 			}
 
-			if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
-					PreferenceConstants.P_SHOW_TYPES_IN_POPUPS)) {
-				IPath filePath = file.getFullPath();
+			if (file != null
+					&& OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+							PreferenceConstants.P_SHOW_TYPES_IN_POPUPS)) {
 
 				File annotFile = Misc.getOtherFileFor(file.getProject(), filePath, ".annot");
 
@@ -190,11 +199,10 @@ public class OcamlTextHover implements ITextHover {
 	 * Put all the information on a single line (so that it can be displayed in the satus bar)
 	 */
 	public static String getAnnotAt(OcamlEditor editor, TextViewer viewer, int offset) {
-		IFile file = editor.getFileBeingEdited();
-		if(file == null)
+		IPath filePath = editor.getPathOfFileBeingEdited();
+
+		if (filePath == null)
 			return "<null file>";
-		
-		IPath filePath = file.getLocation();
 
 		String fileName = filePath.lastSegment();
 		if (fileName.endsWith(".ml")) {

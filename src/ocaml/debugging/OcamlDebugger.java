@@ -2,6 +2,7 @@ package ocaml.debugging;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -20,10 +21,13 @@ import ocaml.perspectives.OcamlPerspective;
 import ocaml.preferences.PreferenceConstants;
 import ocaml.util.OcamlPaths;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IProcess;
@@ -36,6 +40,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 
 /**
@@ -854,17 +859,16 @@ public class OcamlDebugger implements IExecEvents {
 
 	private void highlight(final String filename, final int offset) {
 		OcamlPaths opaths = new OcamlPaths(project);
-		String[] projectPaths = opaths.getPaths();
-		String[] paths = new String[projectPaths.length + 1];
-
-		// Add the "external sources" folder in the lookup paths
-		System.arraycopy(projectPaths, 0, paths, 0, projectPaths.length);
-		paths[projectPaths.length] = OcamlPaths.EXTERNAL_SOURCES;
-
-		IFile file = null;
+		String[] paths = opaths.getPaths();
+		
+		boolean bFound = false;
+		
 
 		// for each path in this project
 		for (String path : paths) {
+			
+			IFile file = null;
+			
 			if (path.equals(".")) {
 				IResource resource = project.findMember(filename);
 				if (resource != null && resource.getType() == IResource.FILE) {
@@ -880,9 +884,26 @@ public class OcamlDebugger implements IExecEvents {
 					}
 				}
 			}
-
-			if (file != null && file.exists()) {
-				final IFile fFile = file;
+			
+			
+			
+			final IFileStore fileStore;
+			try {
+				URI uri = null;
+				if(file != null)
+					uri = file.getLocationURI();
+				else
+					uri = new File(path, filename).toURI(); 
+				
+				fileStore = EFS.getStore(uri);
+			} catch (CoreException e) {
+				OcamlPlugin.logError("OcamlDebugger.highlight()", e);
+				return;
+			}
+			
+			if (fileStore != null && fileStore.fetchInfo().exists()) {
+				
+				bFound = true;
 
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
@@ -892,9 +913,9 @@ public class OcamlDebugger implements IExecEvents {
 							IWorkbenchPage page = window.getActivePage();
 							if (page != null) {
 								try {
-									IEditorPart part = page.openEditor(new FileEditorInput(fFile),
-											OcamlEditor.ML_EDITOR_ID, true);
-
+									
+									IEditorPart part = IDE.openEditorOnFileStore(page, fileStore);
+									
 									if (part instanceof OcamlEditor) {
 										OcamlEditor editor = (OcamlEditor) part;
 
@@ -915,7 +936,7 @@ public class OcamlDebugger implements IExecEvents {
 			}
 		}
 
-		if (file == null) {
+		if(!bFound) {
 			if (!missingSourceFiles.contains(filename)) {
 				missingSourceFiles.add(filename);
 				message("Source file " + filename + " not found. \n"

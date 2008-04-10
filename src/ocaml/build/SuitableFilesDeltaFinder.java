@@ -67,12 +67,6 @@ public class SuitableFilesDeltaFinder implements IResourceDeltaVisitor {
 
 		final IResource resource = delta.getResource();
 
-		// Si le delta fait partie d'EXTERNAL_SOURCES_FOLDER, ne rien faire.
-		if (resource.exists()
-				&& Misc.getResourceProperty(resource, Misc.EXTERNAL_SOURCES_FOLDER).equals("true")) {
-			return false;
-		}
-
 		// Le projet associé
 		final IProject project = resource.getProject();
 

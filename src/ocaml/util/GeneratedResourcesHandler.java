@@ -69,17 +69,17 @@ public class GeneratedResourcesHandler implements IResourceChangeListener {
 		for (IResource resource : generatedResources) {
 			// Rafraichir la ressource
 			resource.refreshLocal(IResource.DEPTH_ZERO, null);
-			//Si la ressource existe 
+			// Si la ressource existe
 			if (resource.exists()) {
 
 				// Le nom qualifié de la propriété IS_GEN
-				final QualifiedName isGenQualName =
-						new QualifiedName(OcamlPlugin.QUALIFIER, OcamlBuilder.IS_GEN);
+				final QualifiedName isGenQualName = new QualifiedName(OcamlPlugin.QUALIFIER,
+						OcamlBuilder.IS_GEN);
 				// Note : Ceci met la propriété également aux répertoires
 				// générés automatiquement.
 				resource.setPersistentProperty(isGenQualName, "true");
 			}
-			//la ressource n'existe pas
+			// la ressource n'existe pas
 			else {
 				return false;
 			}
@@ -88,21 +88,20 @@ public class GeneratedResourcesHandler implements IResourceChangeListener {
 	}
 
 	/**
-	 * méthode appelée lorsqu'un changement est détecté. On aimerait ne détecter
-	 * que les changements qui surviennent lors de la compilation, mais le
-	 * problème est qu'un rafraichissement du système de fichiers provoque un
-	 * évènement quelques instants après, juste le temps que la compilation se
-	 * termine.
+	 * méthode appelée lorsqu'un changement est détecté. On aimerait ne détecter que les changements
+	 * qui surviennent lors de la compilation, mais le problème est qu'un rafraichissement du
+	 * système de fichiers provoque un évènement quelques instants après, juste le temps que la
+	 * compilation se termine.
 	 * 
 	 */
 	public void resourceChanged(IResourceChangeEvent event) {
 		// Récupérer les infos
-		
-		//Debug
-		//final Object eventSource = event.getSource();
-		//final int buildKind = event.getBuildKind();
+
+		// Debug
+		// final Object eventSource = event.getSource();
+		// final int buildKind = event.getBuildKind();
 		final int eventType = event.getType();
-		
+
 		final IResourceDelta delta = event.getDelta();
 
 		// On écoute les évènements POST_CHANGE pour détecter les
@@ -119,15 +118,14 @@ public class GeneratedResourcesHandler implements IResourceChangeListener {
 				try {
 					delta.accept(new UserChangedGeneratedFilesHandler());
 				} catch (CoreException e) {
-					OcamlPlugin.logError("error when trying to remove"
-							+ " IS_GEN property", e);
+					OcamlPlugin.logError("error when trying to remove" + " IS_GEN property", e);
 				}
 			}
 		}
 		// On écoute les évènement PRE_BUILD uniquement pour récupérer le
 		// delta afin de faire la différence lors de POST_BUILD
 		else if (eventType == IResourceChangeEvent.PRE_BUILD) {
-			
+
 			// Il faut parcourir tout le delta, et vérifier si la ressource
 			// associée à un changement ou à un ajout existe bien (si l'on
 			// supprime un fichier pendant que le projet est fermé, à
@@ -136,30 +134,23 @@ public class GeneratedResourcesHandler implements IResourceChangeListener {
 			try {
 				delta.accept(new IResourceDeltaVisitor() {
 
-					public boolean visit(IResourceDelta delta)
-							throws CoreException {
+					public boolean visit(IResourceDelta delta) throws CoreException {
 
 						final IResource resource = delta.getResource();
-						
-						//Se protéger des projets fermés
+
+						// Se protéger des projets fermés
 						if (resource.getType() == IResource.PROJECT
 								&& !((IProject) resource).isOpen())
 							return false;
-						
+
 						// Eviter les dossiers de sources externes
-						if (resource != null
-								&& resource.exists()
-								&& Misc.getResourceProperty(resource,
-										Misc.EXTERNAL_SOURCES_FOLDER).equals(
-										"true")
-								|| resource.getName().equals(OcamlBuilder.EXTERNALFILES)
-								|| resource.getName().equals(Misc.HYPERLINKSDIR))
+						if (resource != null && resource.exists()
+								&& resource.getName().equals(OcamlBuilder.EXTERNALFILES))
 							return false;
 
 						// Si le changement correspond à un ajout ou une
 						// modification (sous entendu, pas une suppression)
-						if ((delta.getKind() == IResourceDelta.ADDED || delta
-								.getKind() == IResourceDelta.CHANGED)
+						if ((delta.getKind() == IResourceDelta.ADDED || delta.getKind() == IResourceDelta.CHANGED)
 								&& (resource != null)) {
 							// On est obligé de rafraichir le système de fichier
 							// si des fichiers ont été supprimés par un
@@ -167,8 +158,7 @@ public class GeneratedResourcesHandler implements IResourceChangeListener {
 							// quand on efface tous les fichiers générés
 							// automatiquement pendant qu'un projet se ferme)
 							resource.refreshLocal(IResource.DEPTH_ZERO, null);
-							if (resource.exists()
-									&& resource.getType() == IResource.FILE) {
+							if (resource.exists() && resource.getType() == IResource.FILE) {
 								// La resource doit exister réellement pour
 								// être prise en compte
 								deltaPreBuild.add(delta);
@@ -182,8 +172,7 @@ public class GeneratedResourcesHandler implements IResourceChangeListener {
 
 				});
 			} catch (CoreException e) {
-				OcamlPlugin.logError(
-						"error saving changements before compilation", e);
+				OcamlPlugin.logError("error saving changements before compilation", e);
 			}
 
 		}
@@ -193,7 +182,7 @@ public class GeneratedResourcesHandler implements IResourceChangeListener {
 		// correspondent a ce qui s'est passé strictement pendant la
 		// compilation.)
 		else if (eventType == IResourceChangeEvent.POST_BUILD) {
-			
+
 			// faire visiter les fichiers par un visiteur adéquat
 			try {
 				delta.accept(new NewFilesDeltaVisitor());
@@ -207,12 +196,11 @@ public class GeneratedResourcesHandler implements IResourceChangeListener {
 							+ "finish: return's value false");
 				}
 			} catch (CoreException e) {
-				OcamlPlugin.logError("error when trying to set "
-						+ "IS_GEN property ", e);
+				OcamlPlugin.logError("error when trying to set " + "IS_GEN property ", e);
 			}
 			// Dans tous les cas, réinitialiser la liste.
 			generatedResources.clear();
-			
+
 		}
 		// Avant de fermer un projet, on supprime tout ce qui a été généré
 		// automatiquement.
@@ -221,23 +209,18 @@ public class GeneratedResourcesHandler implements IResourceChangeListener {
 			final IProject project = (IProject) event.getResource();
 			if (project == null)
 				OcamlPlugin.logError("error  in GeneratedResourcesHandler:"
-						+ "resourceChanged: project is null",
-						new NullPointerException());
+						+ "resourceChanged: project is null", new NullPointerException());
 			final List<IFile> filesToDelete = new ArrayList<IFile>();
 			// Parcourir le projet pour trouver tous les fichiers générés
 			// automatiquement
 			try {
 				project.accept(new IResourceVisitor() {
 
-					public boolean visit(IResource resource)
-							throws CoreException {
+					public boolean visit(IResource resource) throws CoreException {
 						// Même règles pour CleanVisitor. On ne peut pas
 						// l'utiliser car on ne peut pas modifier le workspace
 						// pour l'instant
-						if (!resource.exists()
-								|| Misc.getResourceProperty(resource,
-										Misc.EXTERNAL_SOURCES_FOLDER).equals(
-										"true") || resource.isLinked())
+						if (!resource.exists() || resource.isLinked())
 							return false;
 
 						if ((resource.getType() == IResource.FILE)
@@ -258,11 +241,9 @@ public class GeneratedResourcesHandler implements IResourceChangeListener {
 					for (IFile file : filesToDelete) {
 						// file.delete(true,monitor) ne marche pas (surement
 						// parce que le projet est fermé).
-						monitor.subTask("deleting "
-								+ file.getProjectRelativePath());
-						//On efface directement via java.io.File
-						new java.io.File(file.getLocation().toOSString())
-								.delete();
+						monitor.subTask("deleting " + file.getProjectRelativePath());
+						// On efface directement via java.io.File
+						new java.io.File(file.getLocation().toOSString()).delete();
 					}
 					return Status.OK_STATUS;
 				}
@@ -275,9 +256,8 @@ public class GeneratedResourcesHandler implements IResourceChangeListener {
 	}
 
 	/**
-	 * Un moyen de se souvenir des changements avant le début de la compilation
-	 * afin de pouvoir faire la différence et détecter les fichiers générés
-	 * automatiquement.
+	 * Un moyen de se souvenir des changements avant le début de la compilation afin de pouvoir
+	 * faire la différence et détecter les fichiers générés automatiquement.
 	 */
 	private List<IResourceDelta> deltaPreBuild = null;
 
@@ -301,46 +281,37 @@ public class GeneratedResourcesHandler implements IResourceChangeListener {
 		 */
 		public boolean visit(IResourceDelta delta) throws CoreException {
 
-			
 			// La ressource associée
 			final IResource resource = delta.getResource();
 
-			//Passer sur la racine du workspace
+			// Passer sur la racine du workspace
 			if (resource.getType() == IResource.ROOT)
 				return true;
-			// N'examiner que les ressources  existantes.
+			// N'examiner que les ressources existantes.
 			if (!resource.exists()) {
 				return false;
 			}
 
-			
-			
 			// Se protéger des projets fermés ou n'ayant pas la bonne nature
 			final IProject project = resource.getProject();
-			if (project == null || !project.isOpen()
-					|| project.getNature(OcamlNature.ID) == null)
+			if (project == null || !project.isOpen() || project.getNature(OcamlNature.ID) == null)
 				return false;
 
-			// Ignorer les ressources EXTERNAL_SOURCES_FOLDER, ou EXTERNALFILES
-			if ((project != null && project.isOpen() && project
-					.getNature(OcamlNature.ID) == null)
-					|| Misc.getResourceProperty(resource,
-							Misc.EXTERNAL_SOURCES_FOLDER).equals("true")
-					|| resource.getName().equals(OcamlBuilder.EXTERNALFILES)
-					|| resource.getName().equals(Misc.HYPERLINKSDIR)) {
+			// Ignorer les EXTERNALFILES
+			if ((project != null && project.isOpen() && project.getNature(OcamlNature.ID) == null)
+					|| resource.getName().equals(OcamlBuilder.EXTERNALFILES)) {
 				return false;
 			}
-			
+
 			// Ne garder que les fichiers
 			if (resource.getType() != IResource.FILE)
 				// Il faut renvoyer true, car si l'on est sur un répertoire, on
 				// veut aller visiter ses membres.
 				return true;
-			
-			//Ignorer le fichier ".paths"
+
+			// Ignorer le fichier ".paths"
 			if (resource.getName().equals(OcamlPaths.PATHS_FILE))
 				return false;
-				
 
 			// Regarder en premier si la ressource était dans le deltaPreBuild
 			// avec le même kind, auquel cas elle ne correspond pas à quelque
@@ -391,23 +362,20 @@ public class GeneratedResourcesHandler implements IResourceChangeListener {
 
 			final IResource resource = delta.getResource();
 			final int resourceType = resource.getType();
-			
-			//Si on est sur un projet fermé, arrêter !
-			if( (resourceType == IResource.PROJECT) && !(((IProject)resource).isOpen())){
+
+			// Si on est sur un projet fermé, arrêter !
+			if ((resourceType == IResource.PROJECT) && !(((IProject) resource).isOpen())) {
 				return false;
 			}
 
 			// Ignorer les ressources non existantes ou ayant l'attribut
 			// EXTERNAL_SOURCES_FOLDER
-			if (!resource.exists()
-					|| Misc.getResourceProperty(resource,
-						Misc.EXTERNAL_SOURCES_FOLDER).equals("true")) {
+			if (!resource.exists()) {
 				return false;
 			}
 
 			// On s'interesse à tout fichier généré automatiquement.
-			if ((resourceType != IResource.FILE) 
-					|| (!Misc.isGeneratedFile((IFile) resource))) {
+			if ((resourceType != IResource.FILE) || (!Misc.isGeneratedFile((IFile) resource))) {
 				return true;
 			}
 

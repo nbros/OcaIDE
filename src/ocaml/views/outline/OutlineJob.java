@@ -85,8 +85,13 @@ public class OutlineJob extends Job {
 		// System.err.println("outline job" + nJob++);
 
 		// long before = System.currentTimeMillis();
+
+		// the file in the workspace. null if an external file
 		IFile file = editor.getFileBeingEdited();
-		if (file == null)
+
+		IPath filePath = editor.getPathOfFileBeingEdited();
+
+		if (filePath == null)
 			return Status.CANCEL_STATUS;
 
 		String strDocument = doc.get();
@@ -101,7 +106,7 @@ public class OutlineJob extends Job {
 
 			/* Create a temporary file so that we don't have to save the editor */
 			try {
-				String ext = file.getLocation().getFileExtension();
+				String ext = filePath.getFileExtension();
 				FileWriter writer;
 
 				if ("mli".equals(ext)) {
@@ -139,11 +144,13 @@ public class OutlineJob extends Job {
 			// preprocess the file with camlp4
 			preprocessor.preprocess(tempFile, monitor);
 
-			try {
-				// delete the previous error markers
-				file.deleteMarkers("Ocaml.ocamlSyntaxErrorMarker", false, IResource.DEPTH_ZERO);
-			} catch (Throwable e) {
-				OcamlPlugin.logError("error deleting error markers", e);
+			if (file != null) {
+				try {
+					// delete the previous error markers
+					file.deleteMarkers("Ocaml.ocamlSyntaxErrorMarker", false, IResource.DEPTH_ZERO);
+				} catch (Throwable e) {
+					OcamlPlugin.logError("error deleting error markers", e);
+				}
 			}
 
 			// camlp4 errors?
@@ -152,42 +159,45 @@ public class OutlineJob extends Job {
 
 			String errorOutput = preprocessor.getErrorOutput();
 
-			Matcher matcher = patternErrors.matcher(errorOutput);
-			if (!"".equals(errorOutput.trim())) {
-				try {
-					int line = 0;
-					int colStart = 0;
-					int colEnd = 1;
-					String message;
-					
-					if (matcher.find()) {
-						line = Integer.parseInt(matcher.group(1)) - 1;
-						colStart = Integer.parseInt(matcher.group(2)) - 1;
-						colEnd = Integer.parseInt(matcher.group(3)) - 1;
-						message = errorOutput.substring(matcher.end()).trim();
-					}else
-						message = errorOutput;
+			if (file != null) {
+				Matcher matcher = patternErrors.matcher(errorOutput);
+				if (!"".equals(errorOutput.trim())) {
+					try {
+						int line = 0;
+						int colStart = 0;
+						int colEnd = 1;
+						String message;
 
-					Hashtable<String, Integer> attributes = new Hashtable<String, Integer>();
-					
-					MarkerUtilities.setMessage(attributes, message);
-					attributes.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_ERROR));
+						if (matcher.find()) {
+							line = Integer.parseInt(matcher.group(1)) - 1;
+							colStart = Integer.parseInt(matcher.group(2)) - 1;
+							colEnd = Integer.parseInt(matcher.group(3)) - 1;
+							message = errorOutput.substring(matcher.end()).trim();
+						} else
+							message = errorOutput;
 
-					int lineOffset = doc.getLineOffset(line);
+						Hashtable<String, Integer> attributes = new Hashtable<String, Integer>();
 
-					int offsetStart = lineOffset + colStart;
-					int offsetEnd = lineOffset + colEnd + 1;
+						MarkerUtilities.setMessage(attributes, message);
+						attributes.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_ERROR));
 
-					MarkerUtilities.setCharStart(attributes, offsetStart);
-					MarkerUtilities.setCharEnd(attributes, offsetEnd);
-					MarkerUtilities.setLineNumber(attributes, line);
+						int lineOffset = doc.getLineOffset(line);
 
-					MarkerUtilities.createMarker(file, attributes, "Ocaml.ocamlSyntaxErrorMarker");
+						int offsetStart = lineOffset + colStart;
+						int offsetEnd = lineOffset + colEnd + 1;
 
-				} catch (Throwable e) {
-					OcamlPlugin.logError("error creating error markers", e);
+						MarkerUtilities.setCharStart(attributes, offsetStart);
+						MarkerUtilities.setCharEnd(attributes, offsetEnd);
+						MarkerUtilities.setLineNumber(attributes, line);
+
+						MarkerUtilities.createMarker(file, attributes,
+								"Ocaml.ocamlSyntaxErrorMarker");
+
+					} catch (Throwable e) {
+						OcamlPlugin.logError("error creating error markers", e);
+					}
+					return Status.OK_STATUS;
 				}
-				return Status.OK_STATUS;
 			}
 
 			// System.out.println(output);
@@ -218,8 +228,7 @@ public class OutlineJob extends Job {
 			strDocument = String.copyValueOf(sanitizedDocument);
 			sanitizedDocument = null;
 		} catch (OutOfMemoryError e) {
-			OcamlPlugin.logError("Not enough memory to parse the file "
-					+ file.getLocation().toOSString(), e);
+			OcamlPlugin.logError("Not enough memory to parse the file " + filePath.toOSString(), e);
 			return Status.CANCEL_STATUS;
 		}
 
@@ -253,7 +262,7 @@ public class OutlineJob extends Job {
 
 		Def root = null;
 		try {
-			String extension = file.getFullPath().getFileExtension();
+			String extension = filePath.getFileExtension();
 
 			if ("ml".equals(extension))
 				root = (Def) parser.parse(scanner);
@@ -317,15 +326,16 @@ public class OutlineJob extends Job {
 		initPreferences();
 		cleanOutline(outlineDefinitions);
 
-		final IFile ifile = file;
-		/*
-		 * if the source hasn't been modified since the last compilation, try to get the types
-		 * inferred by the compiler (in a ".annot" file)
-		 */
-		if (!editor.isDirty()
-				&& OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
-						PreferenceConstants.P_SHOW_TYPES_IN_OUTLINE))
-			addTypes(file, outlineDefinitions);
+		if (file != null) {
+			/*
+			 * if the source hasn't been modified since the last compilation, try to get the types
+			 * inferred by the compiler (in a ".annot" file)
+			 */
+			if (!editor.isDirty()
+					&& OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+							PreferenceConstants.P_SHOW_TYPES_IN_OUTLINE))
+				addTypes(file, outlineDefinitions);
+		}
 
 		if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 				PreferenceConstants.P_OUTLINE_UNNEST_IN)) {
@@ -336,6 +346,8 @@ public class OutlineJob extends Job {
 
 		final Def fOutlineDefinitions = outlineDefinitions;
 
+
+		final IFile ifile = file;
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 
