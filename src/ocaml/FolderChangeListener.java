@@ -22,6 +22,8 @@ import org.eclipse.core.runtime.CoreException;
 public class FolderChangeListener implements IResourceChangeListener {
 
 	public void resourceChanged(IResourceChangeEvent event) {
+		// TODO: batch changes?
+		
 		try {
 			event.getDelta().accept(new IResourceDeltaVisitor() {
 

@@ -107,7 +107,7 @@ public class OcamlMakefilePathsProperties extends PropertyPage implements IWorkb
 		pathsList = new List(composite, SWT.SINGLE | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 		final GridData listData = new GridData(SWT.FILL, SWT.FILL, true, true, 0, 4);
 		// listData.verticalAlignment = SWT.FILL;
-		// listData.heightHint = LIST_HEIGHT;
+		listData.heightHint = 300;
 		pathsList.setLayoutData(listData);
 		pathsList.addSelectionListener(new SelectionAdapter() {
 			@Override

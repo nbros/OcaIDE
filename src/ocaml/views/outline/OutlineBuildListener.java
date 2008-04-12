@@ -19,18 +19,19 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
 /**
- * This is a listener that gets notified of "post build" events, so as to trigger a rebuilding of the outline
- * to update it with the types inferred by the O'Caml compiler
+ * This is a listener that gets notified of "post build" events, so as to trigger a rebuilding of
+ * the outline to update it with the types inferred by the O'Caml compiler
  */
 public class OutlineBuildListener implements IResourceChangeListener {
 
 	boolean bAnnotModified = false;
 
 	public void resourceChanged(IResourceChangeEvent event) {
-		
-		if(!OcamlPlugin.getInstance().getPreferenceStore().getBoolean(PreferenceConstants.P_SHOW_TYPES_IN_OUTLINE))
+
+		if (!OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+				PreferenceConstants.P_SHOW_TYPES_IN_OUTLINE))
 			return;
-		
+
 		if (event.getType() == IResourceChangeEvent.POST_BUILD) {
 
 			bAnnotModified = false;
@@ -87,7 +88,11 @@ public class OutlineBuildListener implements IResourceChangeListener {
 					try {
 						IWorkbench workbench = PlatformUI.getWorkbench();
 						IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow();
+						if (workbenchWindow == null)
+							return;
 						IWorkbenchPage workbenchPage = workbenchWindow.getActivePage();
+						if (workbenchPage == null)
+							return;
 						IEditorPart editorPart = workbenchPage.getActiveEditor();
 						if (editorPart instanceof OcamlEditor)
 							((OcamlEditor) editorPart).rebuildOutline(500);
