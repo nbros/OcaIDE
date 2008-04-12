@@ -75,6 +75,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		/* If the project is null, that means the file is external (not in a project). In this case, 
 		 * parse only the file to be able to show hyperlinks for this file.
 		 */ 
+		/* TODO: Provide hyperlinks to other modules referenced by this file */  
 		else {
 			interfacesDefinitionsRoot = new Def("<root>", Def.Type.Root, 0, 0);
 			OcamlNewInterfaceParser parser = OcamlNewInterfaceParser.getInstance();

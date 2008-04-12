@@ -16,11 +16,15 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IConsoleConstants;
 
-/** Launch an O'Caml executable in normal or debug mode, using the previously created launch configuration */
+/**
+ * Launch an O'Caml executable in normal or debug mode, using the previously created launch
+ * configuration
+ */
 public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDelegate {
 
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch,
@@ -29,9 +33,9 @@ public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDel
 		String path = configuration.getAttribute(OcamlLaunchTab.ATTR_FULLPATH, "");
 		String projectName = configuration.getAttribute(OcamlLaunchTab.ATTR_PROJECTNAME, "");
 		String args = configuration.getAttribute(OcamlLaunchTab.ATTR_ARGS, "");
-		
+
 		String[] arguments = DebugPlugin.parseArguments(args);
-		
+
 		File file = new File(path);
 		if (!file.exists()) {
 			OcamlPlugin.logError(path + " is not a valid file name");
@@ -52,14 +56,27 @@ public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDel
 		}
 
 		if (mode.equals(ILaunchManager.DEBUG_MODE)) {
+
+			String ocamldebug = OcamlPlugin.getOcamldebugFullPath();
+			File ocamldebugFile = new File(ocamldebug);
+			if (!ocamldebugFile.exists()) {
+				Display.getDefault().syncExec(new Runnable() {
+					public void run() {
+						MessageDialog.openError(Display.getDefault().getActiveShell(), "Error",
+								"Ocamldebug path is not correctly set in preferences.");
+					}
+				});
+				
+				return;
+			}
+
 			Display.getDefault().syncExec(new Runnable() {
 				public void run() {
 					PlatformUI.getWorkbench().saveAllEditors(false);
 				}
 			});
 
-			
-			OcamlDebugger.getInstance().start(file, project, launch, arguments);
+			OcamlDebugger.getInstance().start(ocamldebug, file, project, launch, arguments);
 		}
 
 		else if (mode.equals(ILaunchManager.RUN_MODE)) {
@@ -79,7 +96,7 @@ public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDel
 
 			// show the console view, so that the user can see the program outputs
 			Misc.showView(IConsoleConstants.ID_CONSOLE_VIEW);
-			
+
 		}
 	}
 }
