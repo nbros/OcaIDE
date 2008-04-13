@@ -13,9 +13,12 @@ import org.eclipse.jface.text.formatter.IFormattingStrategyExtension;
  */
 public class OcamlFormattingStrategy implements IFormattingStrategy, IFormattingStrategyExtension {
 
+	// TODO format selection only (parse everything, but apply hints only to selection)
+	// FIXME comment formatting
+	
 	private IDocument document;
 
-	private int start, length;
+	private int start, end, length;
 
 	/** This method is called by the editor to give us the formatting context */
 	public void formatterStarts(IFormattingContext context) {
@@ -45,6 +48,7 @@ public class OcamlFormattingStrategy implements IFormattingStrategy, IFormatting
 			IRegion endLine = document.getLineInformationOfOffset(region.getOffset() + region.getLength());
 			int end = endLine.getOffset() + endLine.getLength();
 
+			this.end = end;
 			this.length = end - this.start;
 		}
 
@@ -58,6 +62,8 @@ public class OcamlFormattingStrategy implements IFormattingStrategy, IFormatting
 		try {
 			String text = document.get(start, length);
 			OcamlFormatter formatter = new OcamlFormatter();
+			
+			//String formattedText = formatter.format(document, start, end);
 			String formattedText = formatter.format(text);
 			
 			int firstChar = 0;

@@ -41,7 +41,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.part.FileEditorInput;
 
 /**
  * Main class of the debugger. Manages the debugger state in a finite state automaton. Communicates
@@ -458,7 +457,7 @@ public class OcamlDebugger implements IExecEvents {
 	Pattern patternLostConnection = Pattern.compile("Lost connection with process \\d+");
 
 	public synchronized void processNewError(String error) {
-		// System.err.print(error);
+		System.out.print(error);
 
 		if (bDebuggingInfoMessage) {
 			if (error.endsWith("has no debugging info.\n")) {
@@ -491,7 +490,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	public synchronized void processNewInput(String input) {
 
-		// System.out.print(input);
+		System.out.print(input);
 
 		debuggerOutput.append(input);
 
@@ -540,6 +539,7 @@ public class OcamlDebugger implements IExecEvents {
 				debuggerOutput.setLength(0);
 				state = State.Starting1a;
 				send("set loadingmode manual");
+				send("set socket localhost:1325");
 			} else if (state.equals(State.Starting1a)) {
 				debuggerOutput.setLength(0);
 				state = State.Starting1b;
@@ -669,6 +669,7 @@ public class OcamlDebugger implements IExecEvents {
 			String key = (String) it.next();
 			envp[i++] = key + "=" + env.get(key);
 		}
+		
 		envp[i] = "CAML_DEBUG_SOCKET=" + socket;
 
 		String[] commandLine = new String[args.length + 1];

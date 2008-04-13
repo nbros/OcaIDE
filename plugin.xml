@@ -1080,9 +1080,7 @@
 		<ignore pattern="._bcdi" enabled="true"/>
 		<ignore pattern="._ncdi" enabled="true"/>
   		<ignore pattern="*._old" enabled="true"/>
-  		<ignore pattern=".DebuggerSourceLookup" enabled="true"/>
   		<ignore pattern=".makefilepaths" enabled="true"/>
-  		<ignore pattern=".HyperlinksLinkedFiles" enabled="true"/>
   		<ignore pattern="_build" enabled="true"/>
   		<ignore pattern="*.byte" enabled="true"/>
   		<ignore pattern="*.native" enabled="true"/>
