@@ -659,29 +659,19 @@ public class OcamlDebugger implements IExecEvents {
 	}
 
 	private boolean loadProgram(String socket) {
-
-		// add the CAML_DEBUG_SOCKET variable to the current environment
-		Map<String, String> env = System.getenv();
-		Iterator<String> it = env.keySet().iterator();
-		String[] envp = new String[env.size() + 1];
-		int i = 0;
-		while (it.hasNext()) {
-			String key = (String) it.next();
-			envp[i++] = key + "=" + env.get(key);
-		}
 		
-		envp[i] = "CAML_DEBUG_SOCKET=" + socket;
-
-		String[] commandLine = new String[args.length + 1];
-		commandLine[0] = exeFile.getPath();
-
-		System.arraycopy(args, 0, commandLine, 1, args.length);
-
-		File workingDir = exeFile.getParentFile(); // project.getLocation().toFile();
+		ArrayList<String> commandLine = new ArrayList<String>();
+		commandLine.add(exeFile.getPath());
+		for(String arg : args)
+			commandLine.add(arg);
+		
 		try {
-			process = DebugPlugin.exec(commandLine, workingDir, envp);
-			IProcess iProcess = DebugPlugin.newProcess(launch, process, exeFile.getName());
-			launch.addProcess(iProcess);
+			ProcessBuilder processBuilder = new ProcessBuilder(commandLine);
+			processBuilder.directory(exeFile.getParentFile());
+			// add the CAML_DEBUG_SOCKET variable to the current environment
+			processBuilder.environment().put("CAML_DEBUG_SOCKET", socket);
+			process = processBuilder.start();		
+			DebugPlugin.newProcess(launch, process, exeFile.getName());
 		} catch (Exception e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
 			state = State.NotStarted;
