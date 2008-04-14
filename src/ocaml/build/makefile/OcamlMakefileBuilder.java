@@ -11,7 +11,6 @@ import ocaml.exec.CommandRunner;
 import ocaml.exec.ExecHelper;
 import ocaml.exec.IExecEvents;
 import ocaml.util.Misc;
-import ocaml.util.OcamlMakefilePaths;
 import ocaml.views.OcamlCompilerOutput;
 
 import org.eclipse.core.resources.IFile;

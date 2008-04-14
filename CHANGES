@@ -111,7 +111,7 @@
 	* Option to override ocamlbuild tools paths
 	* When a folder is added or removed in an ocaml project, this project's paths are automatically changed accordingly
 	* Ctrl+Clicking on "B" in "module A = B" now opens B.mli or B.ml
-	* Simplified synchronization in Ocamlbuild builder
+	* Simplified synchronization in Ocamlbuild builder and makefile builder
 	* Replaced linked external resources by uses of the new Eclipse File System API to open workspace-external files in editors. This means no more ".DebuggerSourceLookup" and ".HyperlinksLinkedFiles", which should also fix incompatibility with eclipsedarcs.
 	* Opening a module's/interface's counterpart now works on external resources
 	* Fixed a layout issue in project paths properties page

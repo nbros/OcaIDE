@@ -41,12 +41,17 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 	/** To make sure only one build can be active at any time */
 	private static final Object buildMutex = new Object();
 
+	/*
+	 * XXX If a build triggered by the user saving a file is canceled because another build is already
+	 * running, the running build might not compile the modified version of the file.
+	 */
+
 	public OcamlbuildBuilder() {
 	}
 
 	/**
-	 * Build the ocamlbuild command line which will compile the given project with the flags and
-	 * paths the user defined in the project properties page.
+	 * Build the ocamlbuild command line which will compile the given project with the flags and paths the
+	 * user defined in the project properties page.
 	 * 
 	 * @param project
 	 *            the project to build
@@ -229,9 +234,8 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 				// clean the output from the last compilation
 				/*
-				 * Display.getDefault().syncExec(new Runnable() { public void run() {
-				 * OcamlCompilerOutput output = OcamlCompilerOutput.get(); if (output != null)
-				 * output.clear(); } });
+				 * Display.getDefault().syncExec(new Runnable() { public void run() { OcamlCompilerOutput
+				 * output = OcamlCompilerOutput.get(); if (output != null) output.clear(); } });
 				 */
 
 				File dir = project.getLocation().toFile();
@@ -245,8 +249,8 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 				}
 
 				/*
-				 * Check at regular intervals whether the user canceled the build. When that
-				 * happens, we kill the "ocamlbuild" process.
+				 * Check at regular intervals whether the user canceled the build. When that happens, we kill
+				 * the "ocamlbuild" process.
 				 */
 				while (execHelper.isRunning()) {
 					if (buildMonitor.isCanceled())
@@ -273,9 +277,9 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 		}
 
 		/*
-		 * if (kind == IncrementalProjectBuilder.FULL_BUILD) { fullBuild(monitor); } else {
-		 * IResourceDelta delta = getDelta(getProject()); if (delta == null) { fullBuild(monitor); }
-		 * else { incrementalBuild(delta, monitor); } }
+		 * if (kind == IncrementalProjectBuilder.FULL_BUILD) { fullBuild(monitor); } else { IResourceDelta
+		 * delta = getDelta(getProject()); if (delta == null) { fullBuild(monitor); } else {
+		 * incrementalBuild(delta, monitor); } }
 		 */
 	}
 
@@ -290,8 +294,8 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 				try {
 					/*
-					 * Refresh the project to see modifications. Eclipse waits for the build Job to
-					 * finish before executing this refresh.
+					 * Refresh the project to see modifications. Eclipse waits for the build Job to finish
+					 * before executing this refresh.
 					 */
 					Display.getDefault().syncExec(new Runnable() {
 						public void run() {
@@ -307,10 +311,10 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 					monitor.beginTask("Decorating Project", files.length + 3);
 
 					/*
-					 * Delete all markers on the project (since we rebuilt it). This can be
-					 * problematic with warning markers, that will disappear at the next rebuild
-					 * (since files with only warnings won't be recompiled). The warning marker will
-					 * only reappear next time the file in which it appears is modified.
+					 * Delete all markers on the project (since we rebuilt it). This can be problematic with
+					 * warning markers, that will disappear at the next rebuild (since files with only
+					 * warnings won't be recompiled). The warning marker will only reappear next time the file
+					 * in which it appears is modified.
 					 */
 					try {
 						monitor.subTask("Deleting old markers");
@@ -339,8 +343,7 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 					}
 
 					/*
-					 * Put a "warning" property on files that generated at least a warning but not
-					 * any error
+					 * Put a "warning" property on files that generated at least a warning but not any error
 					 */
 					for (IFile f : problemMarkers.getFilesWithWarnings())
 						Misc.setFileProperty(f, OcamlBuilder.COMPILATION_WARNINGS, "true");
@@ -372,11 +375,9 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 						String extension = file.getFileExtension();
 						if ("byte".equals(extension)) {
-							Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE,
-									OcamlBuilder.BYTE_CODE);
+							Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.BYTE_CODE);
 						} else if ("native".equals(extension)) {
-							Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE,
-									OcamlBuilder.NATIVE);
+							Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.NATIVE);
 						}
 					}
 
@@ -393,14 +394,14 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 		job.schedule(250);
 
 		/*
-		 * Do not join on this job, since it refreshes the workspace, and this operation waits for
-		 * the build to finish first.
+		 * Do not join on this job, since it refreshes the workspace, and this operation waits for the build
+		 * to finish first.
 		 */
 	}
 
 	/**
-	 * Returns true if the delta contains modified source files (so as not to get into an infinite
-	 * loop in the builder, which rebuilds because it sees its own generated files changed)
+	 * Returns true if the delta contains modified source files (so as not to get into an infinite loop in the
+	 * builder, which rebuilds because it sees its own generated files changed)
 	 */
 	private boolean changed = false;
 
