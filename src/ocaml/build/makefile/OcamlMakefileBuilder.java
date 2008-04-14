@@ -56,13 +56,26 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 		}
 	}
 
-	private boolean building = false;
+	/** Is a build in progress? */
+	private static boolean building = false;
+
+	/** To make sure only one build can be active at any time */
+	private static final Object buildMutex = new Object();
 
 	private IProject project = null;
 
 	@Override
 	protected IProject[] build(final int kind, final Map args, final IProgressMonitor monitor)
 			throws CoreException {
+
+		// don't start two builds simultaneously
+		synchronized (buildMutex) {
+			if (building) {
+				// System.out.println("already building: aborting");
+				return null;
+			} else
+				building = true;
+		}
 
 		final IProgressMonitor buildMonitor;
 		if (monitor == null)
@@ -85,12 +98,7 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 			if (kind == IncrementalProjectBuilder.AUTO_BUILD)
 				return null;
 
-			if (building)
-				return null;
-
-			building = true;
-
-    		String makeCmd = "";
+			String makeCmd = "";
 			MakeUtility makeUtility = new MakeUtility(project);
 			switch (makeUtility.getVariant()) {
 			case GNU_MAKE:
@@ -101,10 +109,9 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 				break;
 			}
 			makeCmd = makeCmd.trim();
-			if(makeCmd.trim().equals("")){
-				OcamlPlugin.logError(
-						"The "+MakeUtility.getName(makeUtility.getVariant())+
-						" command couldn't be found. Please configure its path in the preferences.");
+			if (makeCmd.trim().equals("")) {
+				OcamlPlugin.logError("The " + MakeUtility.getName(makeUtility.getVariant())
+						+ " command couldn't be found. Please configure its path in the preferences.");
 				return null;
 			}
 
@@ -163,13 +170,10 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 			};
 
 			// clean the output from the last compilation
-			/*Display.getDefault().syncExec(new Runnable() {
-				public void run() {
-					OcamlCompilerOutput output = OcamlCompilerOutput.get();
-					if (output != null)
-						output.clear();
-				}
-			});*/
+			/*
+			 * Display.getDefault().syncExec(new Runnable() { public void run() { OcamlCompilerOutput output =
+			 * OcamlCompilerOutput.get(); if (output != null) output.clear(); } });
+			 */
 
 			File dir = project.getLocation().toFile();
 			ExecHelper execHelper = null;
@@ -201,22 +205,22 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 		} finally {
 			buildMonitor.worked(1);
 			buildMonitor.done();
+			building = false;
 		}
 	}
 
-	private String findMakePaths(IProject project) {
-		OcamlMakefilePaths opaths =  new OcamlMakefilePaths(project);
-		StringBuilder strBuilder = new StringBuilder();
-		for(String p : opaths.getPaths())
-			strBuilder.append(p + File.pathSeparatorChar);
-
-		// remove the last separator
-		strBuilder.setLength(strBuilder.length() - 1);
-		return strBuilder.toString();
-	}
+	// private String findMakePaths(IProject project) {
+	// OcamlMakefilePaths opaths = new OcamlMakefilePaths(project);
+	// StringBuilder strBuilder = new StringBuilder();
+	// for(String p : opaths.getPaths())
+	// strBuilder.append(p + File.pathSeparatorChar);
+	//
+	// // remove the last separator
+	// strBuilder.setLength(strBuilder.length() - 1);
+	// return strBuilder.toString();
+	// }
 
 	protected void cleanFinished(final IProject project) {
-		building = false;
 		/*
 		 * This is executed asynchronously because the refresh operation is waiting for the completion of the
 		 * build() method to run.
@@ -234,155 +238,138 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 
 	}
 
-	private final Object signal = new Object();
-	private boolean refreshed = true;
-
 	protected void makefileFinished(final String output, final IProject project) {
-		try {
-			refreshed = false;
-			/*
-			 * Refresh the project to see modifications. This is executed asynchronously because the refresh
-			 * operation is waiting for the completion of the build() method to run.
-			 */
-			final Object signal = new Object();
-			Display.getDefault().asyncExec(new Runnable() {
-				public void run() {
-					try {
-						project.refreshLocal(IProject.DEPTH_INFINITE, null);
-						synchronized (signal) {
-							refreshed = true;
-							signal.notifyAll();
+
+		// Execute a background job to decorate files with markers
+		Job job = new Job("Decorating Project") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+
+				try {
+					/*
+					 * Refresh the project to see modifications. Eclipse waits for the build Job to finish
+					 * before executing this refresh.
+					 */
+					Display.getDefault().syncExec(new Runnable() {
+						public void run() {
+							try {
+								project.refreshLocal(IProject.DEPTH_INFINITE, null);
+							} catch (CoreException e1) {
+								OcamlPlugin.logError("ocaml plugin error", e1);
+							}
 						}
-					} catch (CoreException e1) {
-						OcamlPlugin.logError("ocaml plugin error", e1);
+					});
+
+					IFile[] files = Misc.getProjectFiles(project);
+
+					monitor.beginTask("Decorating Project", files.length + 3);
+
+					/*
+					 * Delete all markers on the project (since we rebuilt it). This can be problematic with
+					 * warning markers, that will disappear at the next rebuild (since files with only
+					 * warnings won't be recompiled). The warning marker will only reappear next time the file
+					 * in which it appears is modified.
+					 */
+					try {
+						project.deleteMarkers(IMarker.PROBLEM, false, IResource.DEPTH_INFINITE);
+					} catch (CoreException e) {
+						OcamlPlugin.logError("ocaml plugin error", e);
 					}
-				}
-			});
 
-			// Execute a background job to decorate files with markers
-			Job job = new Job("Decorating Project") {
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
+					monitor.worked(1);
 
-					try {
-						synchronized (signal) {
-							while (!refreshed && !monitor.isCanceled()) {
-								signal.wait(1000);
-							}
-						}
+					/*
+					 * Parse the compiler output to find error and warning messages.
+					 */
+					ProblemMarkers problemMarkers = new ProblemMarkers(project);
+					problemMarkers.makeMarkers2(output.toString());
 
-						IFile[] files = Misc.getProjectFiles(project);
+					monitor.worked(1);
 
-						monitor.beginTask("Decorating Project", files.length + 3);
+					// Remove the "error" and "warning" property on each project file
+					for (IFile f : files) {
+						Misc.setFileProperty(f, OcamlBuilder.COMPILATION_ERRORS, null);
+						Misc.setFileProperty(f, OcamlBuilder.COMPILATION_WARNINGS, null);
+					}
 
-						/*
-						 * Delete all markers on the project (since we rebuilt it). This can be problematic
-						 * with warning markers, that will disappear at the next rebuild (since files with
-						 * only warnings won't be recompiled). The warning marker will only reappear next time
-						 * the file in which it appears is modified.
-						 */
-						try {
-							project.deleteMarkers(IMarker.PROBLEM, false, IResource.DEPTH_INFINITE);
-						} catch (CoreException e) {
-							OcamlPlugin.logError("ocaml plugin error", e);
-						}
+					/*
+					 * Put a "warning" property on files that generated at least a warning but not any error
+					 */
+					for (IFile f : problemMarkers.getFilesWithWarnings())
+						Misc.setFileProperty(f, OcamlBuilder.COMPILATION_WARNINGS, "true");
 
-						monitor.worked(1);
+					/* Put an "error" property on files that generated at least an error */
+					for (IFile f : problemMarkers.getFilesWithErrors())
+						Misc.setFileProperty(f, OcamlBuilder.COMPILATION_ERRORS, "true");
 
-						/*
-						 * Parse the compiler output to find error and warning messages.
-						 */
-						ProblemMarkers problemMarkers = new ProblemMarkers(project);
-						problemMarkers.makeMarkers2(output.toString());
+					Misc.updateDecoratorManager();
 
-						monitor.worked(1);
+					monitor.worked(1);
 
-						// Remove the "error" and "warning" property on each project file
-						for (IFile f : files) {
-							Misc.setFileProperty(f, OcamlBuilder.COMPILATION_ERRORS, null);
-							Misc.setFileProperty(f, OcamlBuilder.COMPILATION_WARNINGS, null);
-						}
+					/*
+					 * Test each file to determine whether it is an executable, using the "file" system
+					 * command. Depending on the result, mark them as byte-code or native executables.
+					 */
+					if (OcamlPlugin.runningOnLinuxCompatibleSystem()) {
+						String[] command = new String[2];
 
-						/*
-						 * Put a "warning" property on files that generated at least a warning but not any
-						 * error
-						 */
-						for (IFile f : problemMarkers.getFilesWithWarnings())
-							Misc.setFileProperty(f, OcamlBuilder.COMPILATION_WARNINGS, "true");
+						for (IFile file : files) {
+							monitor.worked(1);
 
-						/* Put an "error" property on files that generated at least an error */
-						for (IFile f : problemMarkers.getFilesWithErrors())
-							Misc.setFileProperty(f, OcamlBuilder.COMPILATION_ERRORS, "true");
+							if (monitor.isCanceled())
+								break;
 
-						Misc.updateDecoratorManager();
+							String name = file.getName();
+							if (name.equalsIgnoreCase("makefile") || name.equalsIgnoreCase("OCamlMakefile")
+									|| name.equalsIgnoreCase("OMakefile")
+									|| name.equalsIgnoreCase("OMakeroot"))
+								continue;
 
-						monitor.worked(1);
+							// Skip upper-case filenames (README, INSTALL)
+							if (name.equals(name.toUpperCase()))
+								continue;
 
-						/*
-						 * Test each file to determine whether it is an executable, using the "file" system
-						 * command. Depending on the result, mark them as byte-code or native executables.
-						 */
-						if (OcamlPlugin.runningOnLinuxCompatibleSystem()) {
-							String[] command = new String[2];
-
-							for (IFile file : files) {
-								monitor.worked(1);
-
-								if (monitor.isCanceled())
-									break;
-
-								String name = file.getName();
-								if (name.equalsIgnoreCase("makefile")
-										|| name.equalsIgnoreCase("OCamlMakefile")
-										|| name.equalsIgnoreCase("OMakefile")
-										|| name.equalsIgnoreCase("OMakeroot"))
-									continue;
-
-								// Skip upper-case filenames (README, INSTALL)
-								if (name.equals(name.toUpperCase()))
-									continue;
-
-								String extension = file.getFileExtension();
-								if (extension == null || extension.matches("exe|out|byte|opt")) {
-									command[0] = "file";
-									command[1] = file.getLocation().toOSString();
-									CommandRunner commandRunner = new CommandRunner(command, "/");
-									String result = commandRunner.getStdout();
-									if (result.contains("ocamlrun script"))
-										Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE,
-												OcamlBuilder.BYTE_CODE);
-									else if (result.contains("executable"))
-										Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE,
-												OcamlBuilder.NATIVE);
-								}
-							}
-						}
-						// on Windows, find "*.exe" files
-						else {
-							for (IFile file : files) {
-								monitor.worked(1);
-
-								String extension = file.getFileExtension();
-								if (extension != null && extension.equals("exe")) {
+							String extension = file.getFileExtension();
+							if (extension == null || extension.matches("exe|out|byte|opt")) {
+								command[0] = "file";
+								command[1] = file.getLocation().toOSString();
+								CommandRunner commandRunner = new CommandRunner(command, "/");
+								String result = commandRunner.getStdout();
+								if (result.contains("ocamlrun script"))
+									Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE,
+											OcamlBuilder.BYTE_CODE);
+								else if (result.contains("executable"))
 									Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.NATIVE);
-								}
 							}
 						}
-
-					} catch (Exception e) {
-						OcamlPlugin.logError("ocaml plugin error (file decorator)", e);
-					} finally {
-						monitor.done();
 					}
-					return Status.OK_STATUS;
+					// on Windows, find "*.exe" files
+					else {
+						for (IFile file : files) {
+							monitor.worked(1);
+
+							String extension = file.getFileExtension();
+							if (extension != null && extension.equals("exe")) {
+								Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.NATIVE);
+							}
+						}
+					}
+
+				} catch (Exception e) {
+					OcamlPlugin.logError("ocaml plugin error (file decorator)", e);
+				} finally {
+					monitor.done();
 				}
-			};
+				return Status.OK_STATUS;
+			}
+		};
 
-			job.setPriority(Job.DECORATE);
-			job.schedule(500);
+		job.setPriority(Job.DECORATE);
+		job.schedule(500);
 
-		} finally {
-			building = false;
-		}
+		/*
+		 * Do not join on this job, since it refreshes the workspace, and this operation waits for the build
+		 * to finish first.
+		 */
 	}
 }
