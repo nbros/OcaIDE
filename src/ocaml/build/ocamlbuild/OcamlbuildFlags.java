@@ -110,8 +110,6 @@ public class OcamlbuildFlags {
 
 	public void setCFlags(String strCFlags) {
 		cflags = new ArrayList<String>();
-		// TODO: tokenate strings with spaces (for paths)  
-		// String targets[] = DebugPlugin.parseArguments(strTargets);
 		String cflags[] = strCFlags.split(",");
 
 		for (String cflag : cflags)

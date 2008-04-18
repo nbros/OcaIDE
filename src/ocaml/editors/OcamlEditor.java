@@ -151,7 +151,6 @@ public class OcamlEditor extends TextEditor {
 
 	@Override
 	public void doSetInput(IEditorInput input) throws CoreException {
-		// TODO: this.outline is null here
 
 		super.doSetInput(input);
 

@@ -100,8 +100,6 @@ public class ToplevelQuickEvalAction implements IWorkbenchWindowActionDelegate {
 						if (!strSelected.endsWith(";;"))
 							strSelected = strSelected + ";;";
 
-						// TODO: find last focused custom toplevel too
-
 						// ask the last focused toplevel view to evaluate the selection
 						OcamlToplevelView.eval(strSelected);
 

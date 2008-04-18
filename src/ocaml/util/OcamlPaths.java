@@ -27,11 +27,6 @@ import org.eclipse.core.runtime.Path;
  * </ul>
  */
 
-/*
- * TODO: replace all this "external folder" and "DebuggerSourceLookup" nonsense by uses of
- * FileStoreEditorInput to open external files in editors (>= Eclipse 3.3)
- */
-
 public class OcamlPaths {
 
 	public static final String PATHS_FILE = ".paths";
