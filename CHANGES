@@ -109,7 +109,7 @@
 	* Spell checking of comments and documentation comments
 	* Keep leading and trailing newlines as-is when formatting a selection
 	* Hyperlink on open directive opens a ".ml" file when there is no ".mli" file
-	* Add referenced projects paths to available paths
+	* Project paths are now also contributed from referenced projects
 	* Option to override ocamlbuild tools paths
 	* When a folder is added or removed in an ocaml project, this project's paths are automatically changed accordingly
 	* Ctrl+Clicking on "B" in "module A = B" now opens B.mli or B.ml
@@ -118,7 +118,6 @@
 	* Opening a module's/interface's counterpart now works on external resources
 	* Fixed a layout issue in project paths properties page
 	* Improved O'Caml paths preference page
-	* Project paths are now also contributed from referenced projects
 	* Removed a check that prevented using the Cygwin version of ocamldebug on Windows
 	
 	
