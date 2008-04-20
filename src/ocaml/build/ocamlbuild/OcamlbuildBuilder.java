@@ -441,7 +441,6 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 			});
 		} catch (CoreException e) {
 			OcamlPlugin.logError("error in ocamlbuild resource delta visitor", e);
-			e.printStackTrace();
 		}
 
 		return changed;

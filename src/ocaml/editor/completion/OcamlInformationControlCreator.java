@@ -12,6 +12,7 @@ public class OcamlInformationControlCreator implements IInformationControlCreato
 	public IInformationControl createInformationControl(Shell parent) {
 		DefaultInformationControl.IInformationPresenter presenter = new OcamlInformationPresenter();
 		IInformationControl informationControl = new DefaultInformationControl(parent, SWT.V_SCROLL|SWT.H_SCROLL, presenter);
+		//informationControl.setSizeConstraints(800, 600);
 		return informationControl;
 	}
 

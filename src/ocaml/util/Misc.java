@@ -534,5 +534,34 @@ public class Misc {
 
 		return null;
 	}
+	
+	/**
+	 * Get the file with the given extension corresponding to the given ml file.
+	 * 
+	 * @param mlPath
+	 *            the full absolute filesystem path of the ml file
+	 * @param extension
+	 *            the extension of the wanted file (".annot", ".cmo", ...)
+	 */
+	public static File getOtherFileFor(IPath mlPath, String extension) {
+
+		if (mlPath.segmentCount() < 1)
+			return null;
+
+		String filename = mlPath.lastSegment();
+
+		if (filename.endsWith(".ml")) {
+			String annotFilename = filename.substring(0, filename.length() - 3) + extension;
+
+			IPath basePath = mlPath.removeLastSegments(1).append(annotFilename);
+
+			// first, try with a .annot in the same directory
+			File annotFile = new File(basePath.toOSString());
+			if (annotFile.exists())
+				return annotFile;
+		}
+
+		return null;
+	}	
 
 }

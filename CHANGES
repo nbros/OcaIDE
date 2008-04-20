@@ -87,7 +87,7 @@
 	* New menu action for opening the currently opened file counterpart (interface/implementation)
 	* Support for camlp4 preprocessing 	
 	
-* 1.2.0
+* 1.2.0 (April 20 2008)
 	* Code formatter rewrite : better formatting and more parameters
 	* Replaced build "N°" by corresponding Unicode character (as suggested by Ben Liblit)
 	* Removed unnecessary protection tokenization of ocamlbuild paths, which caused problems
@@ -96,7 +96,7 @@
 	* User setting for disabling automatic completion
 	* Changed a regular expression which was causing stack overflows on big inputs
 	* Interface files are now parsed with a real parser, instead of the old fuzzy one
-	* Can create custom toplevels
+	* Can now create custom toplevels (Run As > Ocaml Toplevel)
 	* In the toplevel, Ctrl+Enter always evaluates the expression, even when it is not terminated with ";;". This is useful to answer input queries, or when using a different syntax (revised syntax uses a single ";" for example).
 	* Changed the terminal type for toplevel, so that it doesn't try to send formatting characters  
 	* The debugger is now passed the paths defined for the project 

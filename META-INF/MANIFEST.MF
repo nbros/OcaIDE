@@ -15,7 +15,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.debug.ui,
  org.eclipse.ui.console,
  org.eclipse.help,
- org.eclipse.team.core,
  org.eclipse.core.filesystem
 Eclipse-LazyStart: true
 Bundle-ClassPath: lib/beaver-rt.jar,
