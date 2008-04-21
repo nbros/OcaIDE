@@ -21,10 +21,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IConsoleConstants;
 
-/**
- * Launch an O'Caml executable in normal or debug mode, using the previously created launch
- * configuration
- */
+/** Launch an O'Caml executable in normal or debug mode, using the previously created launch configuration */
 public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDelegate {
 
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch,
@@ -33,9 +30,9 @@ public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDel
 		String path = configuration.getAttribute(OcamlLaunchTab.ATTR_FULLPATH, "");
 		String projectName = configuration.getAttribute(OcamlLaunchTab.ATTR_PROJECTNAME, "");
 		String args = configuration.getAttribute(OcamlLaunchTab.ATTR_ARGS, "");
-
+		
 		String[] arguments = DebugPlugin.parseArguments(args);
-
+		
 		File file = new File(path);
 		if (!file.exists()) {
 			OcamlPlugin.logError(path + " is not a valid file name");
@@ -76,7 +73,20 @@ public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDel
 				}
 			});
 
-			OcamlDebugger.getInstance().start(ocamldebug, file, project, launch, arguments);
+			boolean remoteDebugEnable = configuration.getAttribute(
+				OcamlLaunchTab.ATTR_REMOTE_DEBUG_ENABLE, 
+				OcamlLaunchTab.DEFAULT_REMOTE_DEBUG_ENABLE
+			);
+			int remoteDebugPort = Integer.parseInt(
+				configuration.getAttribute(
+					OcamlLaunchTab.ATTR_REMOTE_DEBUG_PORT,
+					OcamlLaunchTab.DEFAULT_REMOTE_DEBUG_PORT
+				)
+			);
+
+			OcamlDebugger.getInstance().start(
+				ocamldebug, file, project, launch, arguments, remoteDebugEnable, remoteDebugPort
+			);
 		}
 
 		else if (mode.equals(ILaunchManager.RUN_MODE)) {
@@ -96,7 +106,7 @@ public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDel
 
 			// show the console view, so that the user can see the program outputs
 			Misc.showView(IConsoleConstants.ID_CONSOLE_VIEW);
-
+			
 		}
 	}
 }
