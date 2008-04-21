@@ -206,8 +206,6 @@ public class OcamlDebugger implements IExecEvents {
 			commandLineArgs.add(exeFile.getPath());
 			String[] commandLine = commandLineArgs.toArray(new String[commandLineArgs.size()]);
 
-			// TODO add projet paths
-
 			Process process = DebugPlugin.exec(commandLine, exeFile.getParentFile());
 			debuggerProcess = ExecHelper.exec(this, process);
 

@@ -56,5 +56,7 @@
 		<topic label="Call stack" href="docs/debugging/callstack.html"/>
 		<topic label="Variable watch" href="docs/debugging/var_watch.html"/>
 		<topic label="Stopping the debugger" href="docs/debugging/stop.html"/>
+		<topic label="Debugging under Windows" href="docs/debugging/windows.html"/>
+		<topic label="Debugging remote programs" href="docs/debugging/remote.html"/>
 	</topic>
 </toc>
