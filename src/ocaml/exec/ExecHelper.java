@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.util.Map;
 
 import ocaml.OcamlPlugin;
+import ocaml.util.Misc;
 
 /**
  * Execute an external process, and permits interactive communication with the process. To receive
@@ -154,7 +155,7 @@ public class ExecHelper implements Runnable {
 				// Read the InputStream in a loop until we find no more bytes to read.
 				for (int i = 0; i > -1; i = pInputStream.read(inBuffer)) {
 					// We have a new segment of input, so process it as a String.
-					processNewInput(new String(inBuffer, 0, i));
+					processNewInput(Misc.CRLFtoLF(new String(inBuffer, 0, i)));
 				}
 			} catch (IOException ex) {
 			}
@@ -164,7 +165,7 @@ public class ExecHelper implements Runnable {
 				// Read the ErrorStream in a loop until we find no more bytes to read.
 				for (int i = 0; i > -1; i = pErrorStream.read(errBuffer)) {
 					// We have a new segment of error, so process it as a String.
-					processNewError(new String(errBuffer, 0, i));
+					processNewError(Misc.CRLFtoLF(new String(errBuffer, 0, i)));
 				}
 			} catch (IOException ex) {
 			}

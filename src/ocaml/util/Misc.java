@@ -562,6 +562,11 @@ public class Misc {
 		}
 
 		return null;
-	}	
+	}
+	
+	/** Remove carriage returns */
+	public static String CRLFtoLF(String str){
+		return str.replace("\r", "");
+	}
 
 }

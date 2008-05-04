@@ -469,6 +469,7 @@ public class OcamlDebugger implements IExecEvents {
 		showPerspective(OcamlPerspective.ID);
 	}
 
+	Pattern patternBindFailed = Pattern.compile("^Unix error : 'bind' failed :");
 	Pattern patternLostConnection = Pattern.compile("Lost connection with process \\d+");
 
 	public synchronized void processNewError(String error) {
@@ -494,7 +495,8 @@ public class OcamlDebugger implements IExecEvents {
 			}
 		}
 
-		if (error.endsWith("Unix error : 'bind' failed : Address already in use\n")) {
+		Matcher matcherBindFailed = patternBindFailed.matcher(error);
+		if (matcherBindFailed.find()) {
 			message("Unable to start a remote debugging session on port " + 
 					remoteDebugPort + ", since that port is already in use. " +
 					"Please choose a different port in the launch configuration " +
@@ -506,8 +508,8 @@ public class OcamlDebugger implements IExecEvents {
 		}
 
 		/* If the debugger lost the connection with its process, then we stop the debugger */
-		Matcher matcher = patternLostConnection.matcher(error);
-		if (matcher.find()) {
+		Matcher matcherLostConnection = patternLostConnection.matcher(error);
+		if (matcherLostConnection.find()) {
 			message("Lost connection with the debugged process.");
 			if (isStarted())
 				kill();
