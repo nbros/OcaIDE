@@ -122,7 +122,10 @@
 	
 * 1.2.1 (April 21 2008)
 	* Remote debugging support, patch submitted by Jonathan Knowles
-	* Updated documentation for debugging under Windows and remote debugging 
+	* Updated documentation for debugging under Windows and remote debugging
+	
+* 1.2.2
+	* Support for ocamldebug under Windows, patch submitted by Dmitry Bely
 	
 	
 	
