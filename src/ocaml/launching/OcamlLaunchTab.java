@@ -30,7 +30,9 @@ import org.eclipse.swt.widgets.Text;
  */
 public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 
-	public static final String ATTR_FULLPATH = "attr_ocaml_launch_full_path";
+    public static final String ATTR_RUNPATH = "attr_ocaml_run_full_path";
+
+    public static final String ATTR_BYTEPATH = "attr_ocaml_byte_full_path";
 
 	public static final String ATTR_PROJECTNAME = "attr_ocaml_launch_project_name";
 
@@ -48,7 +50,9 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 
 	Composite composite;
 
-	Text textExePath;
+    Text textRunPath;
+
+	Text textBytePath;
 
 	Text textProjectName;
 
@@ -65,6 +69,9 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 		gridLayout.numColumns = 2;
 		composite.setLayout(gridLayout);
 
+        GridData layoutData = new GridData(SWT.FILL, SWT.TOP, true, false);
+        layoutData.widthHint = 200;
+
 		Label label1 = new Label(composite, SWT.NONE);
 		label1.setText("Project name:");
 		// dummy label, because we have two columns
@@ -72,41 +79,68 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 		textProjectName = new Text(composite, SWT.BORDER);
 		new Label(composite, SWT.NONE);
 
+        textProjectName.setLayoutData(layoutData);
+        textProjectName.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                setDirty(true);
+                updateLaunchConfigurationDialog();
+            }
+        });
+
 		Label label2 = new Label(composite, SWT.NONE);
-		label2.setText("Full path to the executable file:");
+		label2.setText("Executable file to run:");
 		// dummy label, because we have two columns
 		new Label(composite, SWT.NONE);
-		textExePath = new Text(composite, SWT.BORDER);
+		textRunPath = new Text(composite, SWT.BORDER);
 
-		GridData layoutData = new GridData(SWT.FILL, SWT.TOP, true, false);
-		layoutData.widthHint = 200;
-		textExePath.setLayoutData(layoutData);
-		textExePath.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				setDirty(true);
-				updateLaunchConfigurationDialog();
-			}
-		});
+        textRunPath.setLayoutData(layoutData);
+        textRunPath.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                setDirty(true);
+                updateLaunchConfigurationDialog();
+            }
+        });
 
-		textProjectName.setLayoutData(layoutData);
-		textProjectName.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				setDirty(true);
-				updateLaunchConfigurationDialog();
-			}
-		});
-
-		Button buttonBrowse = new Button(composite, SWT.PUSH);
-		buttonBrowse.setText("Browse...");
-		buttonBrowse.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				browse();
-			}
-		});
+        Button buttonBrowseRun = new Button(composite, SWT.PUSH);
+        buttonBrowseRun.setText("Browse...");
+        buttonBrowseRun.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                String path = browse();
+                if (path != null) {
+                    textRunPath.setText(path);
+                }
+            }
+        });
 
 		Label label3 = new Label(composite, SWT.NONE);
-		label3.setText("Command line arguments (separated by spaces)\n"
+        label3.setText("Bytecode file to load into debugger (if different from executable):");
+        // dummy label, because we have two columns
+        new Label(composite, SWT.NONE);
+        textBytePath = new Text(composite, SWT.BORDER);
+
+		textBytePath.setLayoutData(layoutData);
+        textBytePath.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                setDirty(true);
+                updateLaunchConfigurationDialog();
+            }
+        });
+
+        Button buttonBrowseByte = new Button(composite, SWT.PUSH);
+        buttonBrowseByte.setText("Browse...");
+        buttonBrowseByte.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                String path = browse();
+                if (path != null) {
+                    textBytePath.setText(path);
+                }
+            }
+        });
+
+		Label label4 = new Label(composite, SWT.NONE);
+		label4.setText("Command line arguments (separated by spaces)\n"
 				+ "You can use \" \" and \\ to quote strings");
 		// dummy label, because we have two columns
 		new Label(composite, SWT.NONE);
@@ -153,12 +187,12 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 			}
 		});
 		textRemoteDebugPort.setEnabled(false);
-		
+
 		new Label(composite, SWT.NONE);
 	}
 
 	/** Browse button was clicked */
-	protected void browse() {
+	protected String browse() {
 		FileDialog fileDialog = new FileDialog(composite.getShell());
 		try {
 			fileDialog.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
@@ -166,10 +200,7 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 			OcamlPlugin.logError("ocaml plugin error", e);
 		}
 
-		String path = fileDialog.open();
-		if (path != null) {
-			textExePath.setText(path.trim());
-		}
+		return fileDialog.open();
 	}
 
 	/** This method was copied from the JDT plug-in */
@@ -189,27 +220,31 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 	}
 
 	public void initializeFrom(ILaunchConfiguration configuration) {
-		String path = null;
+		String bytepath = null;
+		String runpath = null;
 		String project = null;
 		String args = null;
 		boolean remoteDebugEnable = false;
 		String remoteDebugPort = null;
 		try {
-			path = configuration.getAttribute(ATTR_FULLPATH, "");
+			runpath = configuration.getAttribute(ATTR_RUNPATH, "");
+            bytepath = configuration.getAttribute(ATTR_BYTEPATH, "");
 			project = configuration.getAttribute(ATTR_PROJECTNAME, "");
 			args = configuration.getAttribute(ATTR_ARGS, "");
 			remoteDebugEnable = configuration.getAttribute(ATTR_REMOTE_DEBUG_ENABLE, DEFAULT_REMOTE_DEBUG_ENABLE);
 			remoteDebugPort = configuration.getAttribute(ATTR_REMOTE_DEBUG_PORT, DEFAULT_REMOTE_DEBUG_PORT);
 		} catch (CoreException e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
-			path = "";
+			runpath = "";
+            bytepath = "";
 			project = "";
 			args = "";
 			remoteDebugEnable = DEFAULT_REMOTE_DEBUG_ENABLE;
 			remoteDebugPort = DEFAULT_REMOTE_DEBUG_PORT;
 		}
 
-		textExePath.setText(path);
+		textBytePath.setText(bytepath);
+		textRunPath.setText(runpath);
 		textProjectName.setText(project);
 		textArguments.setText(args);
 		buttonRemoteDebugEnable.setSelection(remoteDebugEnable);
@@ -219,7 +254,8 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 	}
 
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		configuration.setAttribute(ATTR_FULLPATH, textExePath.getText());
+        configuration.setAttribute(ATTR_RUNPATH, textRunPath.getText().trim());
+		configuration.setAttribute(ATTR_BYTEPATH, textBytePath.getText().trim());
 		configuration.setAttribute(ATTR_PROJECTNAME, textProjectName.getText());
 		configuration.setAttribute(ATTR_ARGS, textArguments.getText());
 		configuration.setAttribute(ATTR_REMOTE_DEBUG_ENABLE, buttonRemoteDebugEnable.getSelection());
@@ -228,7 +264,8 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 	}
 
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
-		configuration.setAttribute(ATTR_FULLPATH, "");
+        configuration.setAttribute(ATTR_RUNPATH, "");
+		configuration.setAttribute(ATTR_BYTEPATH, "");
 		configuration.setAttribute(ATTR_PROJECTNAME, "");
 		configuration.setAttribute(ATTR_ARGS, "");
 		configuration.setAttribute(ATTR_REMOTE_DEBUG_ENABLE, DEFAULT_REMOTE_DEBUG_ENABLE);
@@ -238,16 +275,19 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public boolean isValid(ILaunchConfiguration launchConfig) {
-		String path = null;
+		String bytepath = null;
+		String runpath = null;
 		String project = null;
 		String remoteDebugPort = null;
 		try {
-			path = launchConfig.getAttribute(ATTR_FULLPATH, "");
+            runpath = launchConfig.getAttribute(ATTR_RUNPATH, "");
+			bytepath = launchConfig.getAttribute(ATTR_BYTEPATH, "");
 			project = launchConfig.getAttribute(ATTR_PROJECTNAME, "");
 			remoteDebugPort = launchConfig.getAttribute(ATTR_REMOTE_DEBUG_PORT, DEFAULT_REMOTE_DEBUG_PORT);
 		} catch (CoreException e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
-			path = "";
+			bytepath = "";
+			runpath = "";
 			project = "";
 			remoteDebugPort = DEFAULT_REMOTE_DEBUG_PORT;
 		}
@@ -265,11 +305,19 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 			return false;
 		}
 
-		File file = new File(path);
-
-		if (! (file.exists() && file.isFile())) {
-			setErrorMessage("Invalid filename: " + path);
+		File runfile = new File(runpath);
+		if (! (runfile.exists() && runfile.isFile())) {
+			setErrorMessage("Invalid executable: " + runpath);
 			return false;
+		}
+
+		if (bytepath.length() > 0) {
+    		File bytefile = new File(bytepath);
+    
+    		if (! (bytefile.exists() && bytefile.isFile())) {
+    		    setErrorMessage("Invalid bytecode file: " + bytepath);
+    		    return false;
+            }
 		}
 
 		int remoteDebugPortValue = -1;

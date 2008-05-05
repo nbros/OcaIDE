@@ -89,7 +89,7 @@ public class OcamlLaunchShortcut implements ILaunchShortcut {
 					ILaunchConfiguration configuration = configs[i];
 					String configPath;
 					try {
-						configPath = configuration.getAttribute(OcamlLaunchTab.ATTR_FULLPATH, "");
+						configPath = configuration.getAttribute(OcamlLaunchTab.ATTR_RUNPATH, "");
 					} catch (CoreException e) {
 						OcamlPlugin.logError("ocaml plugin error", e);
 						return null;
@@ -119,7 +119,7 @@ public class OcamlLaunchShortcut implements ILaunchShortcut {
 			return null;
 		}
 
-		workingCopy.setAttribute(OcamlLaunchTab.ATTR_FULLPATH, filePath);
+		workingCopy.setAttribute(OcamlLaunchTab.ATTR_RUNPATH, filePath);
 		workingCopy.setAttribute(OcamlLaunchTab.ATTR_PROJECTNAME, projectName);
 		workingCopy.setAttribute(OcamlLaunchTab.ATTR_ARGS, "");
 

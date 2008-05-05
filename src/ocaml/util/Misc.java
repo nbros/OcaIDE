@@ -4,10 +4,12 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import ocaml.OcamlPlugin;
 import ocaml.build.OcamlBuilder;
+import ocaml.editor.syntaxcoloring.ILanguageWords;
 import ocaml.preferences.PreferenceConstants;
 import ocaml.views.OcamlCompilerOutput;
 
@@ -78,10 +80,6 @@ public class Misc {
 		}
 
 		return builder.toString().trim();
-	}
-
-	public static boolean isOcamlIdentifierChar(char c) {
-		return (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_' || c == '\'');
 	}
 
 	/**
@@ -567,6 +565,46 @@ public class Misc {
 	/** Remove carriage returns */
 	public static String CRLFtoLF(String str){
 		return str.replace("\r", "");
+	}
+	
+	private static HashSet<String> keywordsHashset;
+	
+	/** Can this character be part of an O'Caml identifier */
+	public static boolean isOcamlIdentifierChar(char c) {
+		return (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_' || c == '\'');
+	}
+
+	/** Can this character be the first character of an O'Caml identifier (lowercase)*/
+	public static boolean isOcamlIdentifierFirstChar(char c) {
+		return (c >= 'a' && c <= 'z' || c == '_');
+	}
+
+	/** Test whether this string is a valid O'Caml identifier (lowercase) */
+	public static boolean isValidOcamlIdentifier(String str) {
+		
+		if(str.length() < 1)
+			return false;
+		
+		char[] chars = new char[str.length()];
+		str.getChars(0, str.length(), chars, 0);
+		
+		if(!isOcamlIdentifierFirstChar(chars[0]))
+			return false;
+
+		for(int i = 1; i < chars.length; i++)
+			if(!isOcamlIdentifierChar(chars[i]))
+		return false;
+
+		if(keywordsHashset == null) {
+			keywordsHashset = new HashSet<String>(ILanguageWords.keywords.length);
+			for(String word : ILanguageWords.keywords)
+				keywordsHashset.add(word);
+		}
+		
+		if(keywordsHashset.contains(str))
+			return false;
+		
+		return true;
 	}
 
 }

@@ -27,19 +27,31 @@ public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDel
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch,
 			IProgressMonitor monitor) throws CoreException {
 
-		String path = configuration.getAttribute(OcamlLaunchTab.ATTR_FULLPATH, "");
+        String runpath = configuration.getAttribute(OcamlLaunchTab.ATTR_RUNPATH, "");
+	    String exepath = configuration.getAttribute(OcamlLaunchTab.ATTR_BYTEPATH, "");
 		String projectName = configuration.getAttribute(OcamlLaunchTab.ATTR_PROJECTNAME, "");
 		String args = configuration.getAttribute(OcamlLaunchTab.ATTR_ARGS, "");
 		
 		String[] arguments = DebugPlugin.parseArguments(args);
 		
-		File file = new File(path);
-		if (!file.exists()) {
-			OcamlPlugin.logError(path + " is not a valid file name");
+		File runfile = new File(runpath);
+		if (!runfile.exists()) {
+			OcamlPlugin.logError(runpath + " is not a valid executable");
 			return;
 		}
 
-		IProject project = null;
+		File bytefile;
+		if (exepath.length() > 0) {
+            bytefile = new File(exepath);
+            if (!bytefile.exists()) {
+                OcamlPlugin.logError(exepath + " is not a valid bytecode file");
+                return;
+            }
+		} else {
+		    bytefile = runfile;
+		}
+
+        IProject project = null;
 		IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
 		for (IProject p : projects)
 			if (p.getName().equals(projectName)) {
@@ -85,7 +97,7 @@ public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDel
 			);
 
 			OcamlDebugger.getInstance().start(
-				ocamldebug, file, project, launch, arguments, remoteDebugEnable, remoteDebugPort
+				ocamldebug, runfile, bytefile, project, launch, arguments, remoteDebugEnable, remoteDebugPort
 			);
 		}
 
@@ -97,11 +109,11 @@ public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDel
 			});
 
 			String[] commandLine = new String[arguments.length + 1];
-			commandLine[0] = path;
+			commandLine[0] = runpath;
 			System.arraycopy(arguments, 0, commandLine, 1, arguments.length);
 
-			Process process = DebugPlugin.exec(commandLine, file.getParentFile());
-			IProcess iProcess = DebugPlugin.newProcess(launch, process, file.getName());
+			Process process = DebugPlugin.exec(commandLine, runfile.getParentFile());
+			IProcess iProcess = DebugPlugin.newProcess(launch, process, bytefile.getName());
 			launch.addProcess(iProcess);
 
 			// show the console view, so that the user can see the program outputs

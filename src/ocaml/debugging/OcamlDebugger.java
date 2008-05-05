@@ -18,6 +18,7 @@ import ocaml.exec.IExecEvents;
 import ocaml.perspectives.OcamlDebugPerspective;
 import ocaml.perspectives.OcamlPerspective;
 import ocaml.preferences.PreferenceConstants;
+import ocaml.util.Misc;
 import ocaml.util.OcamlPaths;
 
 import org.eclipse.core.filesystem.EFS;
@@ -29,8 +30,11 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
@@ -39,6 +43,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
+import org.eclipse.ui.console.IOConsole;
+import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.eclipse.ui.ide.IDE;
 
 /**
@@ -70,6 +76,12 @@ public class OcamlDebugger implements IExecEvents {
 	/** The debugger output since the last action */
 	private StringBuilder debuggerOutput;
 
+	/** process executable console */
+	private IOConsoleOutputStream console;
+
+	/** debugger error output console */
+	private IOConsoleOutputStream errorConsole;
+
 	/**
 	 * A list of missing source files, so as to display an error message only once per missing file
 	 */
@@ -80,7 +92,9 @@ public class OcamlDebugger implements IExecEvents {
 
 	private ILaunch launch;
 
-	private File exeFile;
+	private File byteFile;
+
+	private File runFile;
 
 	private String[] args;
 
@@ -125,8 +139,10 @@ public class OcamlDebugger implements IExecEvents {
 	 * 
 	 * @param ocamldebug
 	 *            the full path of the ocamldebug executable
-	 * @param exeFile
-	 *            the executable to start under ocamldebug
+     * @param runFile
+     *            the executable to run
+     * @param byteFile
+     *            the bytecode file to debug
 	 * @param project
 	 *            the project in which the executable is started
 	 * 
@@ -140,10 +156,11 @@ public class OcamlDebugger implements IExecEvents {
 	 *            the port on which to listen if remote debugging is enabled
 	 */
 	public synchronized void start(
-			String ocamldebug, File exeFile, IProject project, ILaunch launch, 
+			String ocamldebug, File runFile, File byteFile, IProject project, ILaunch launch,
 			String[] args, boolean remoteDebugEnable, int remoteDebugPort)
 	{
-		this.exeFile = exeFile;
+		this.runFile = runFile;
+        this.byteFile = byteFile;
 		this.args = args;
 		this.project = project;
 		this.launch = launch;
@@ -159,7 +176,7 @@ public class OcamlDebugger implements IExecEvents {
 
 		debuggerOutput = new StringBuilder();
 
-		if (!exeFile.exists() || !exeFile.isFile()) {
+		if (!byteFile.exists() || !byteFile.isFile()) {
 			OcamlPlugin.logError("OcamlDebugger:start : not a file");
 			return;
 		}
@@ -203,10 +220,10 @@ public class OcamlDebugger implements IExecEvents {
 			commandLineArgs.add("-I");
 			commandLineArgs.add(project.getLocation().toOSString());
 			
-			commandLineArgs.add(exeFile.getPath());
+			commandLineArgs.add(byteFile.getPath());
 			String[] commandLine = commandLineArgs.toArray(new String[commandLineArgs.size()]);
 
-			Process process = DebugPlugin.exec(commandLine, exeFile.getParentFile());
+			Process process = DebugPlugin.exec(commandLine, byteFile.getParentFile());
 			debuggerProcess = ExecHelper.exec(this, process);
 
 		} catch (Exception e) {
@@ -420,9 +437,13 @@ public class OcamlDebugger implements IExecEvents {
 	 * synchronous, so it is blocking until the debugger answers back, or 2000ms ellapsed.
 	 */
 	public synchronized String display(String expression) {
+		
 		if (!checkStarted())
 			return "";
 
+		if(!Misc.isValidOcamlIdentifier(expression))
+			return "";
+		
 		if (state.equals(State.Idle)) {
 			state = State.Displaying;
 			displayExpression = "";
@@ -473,7 +494,9 @@ public class OcamlDebugger implements IExecEvents {
 	Pattern patternLostConnection = Pattern.compile("Lost connection with process \\d+");
 
 	public synchronized void processNewError(String error) {
-		// System.err.print(error);
+
+		if(!error.equals("done.\n"))
+			errorMessage(error);
 
 		if (bDebuggingInfoMessage) {
 			if (error.endsWith("has no debugging info.\n")) {
@@ -630,9 +653,30 @@ public class OcamlDebugger implements IExecEvents {
 				state = State.Starting4;
 				if (remoteDebugEnable) {
 					remoteConnectionRequestDialog.open();
+					console = null;
+					errorConsole = null;
 				} else {
-					if (!loadProgram(matcher.group(1)))
+				    IProcess runprocess = loadProgram(matcher.group(1));
+				    if (runprocess != null) {
+				    	
+				    	IOConsole ioConsole = ((IOConsole) DebugUITools.getConsole(runprocess));
+				    	
+			            console = ioConsole.newOutputStream();
+			            errorConsole = ioConsole.newOutputStream();
+			            
+			            /* set the color and font; must be on the UI thread */
+			            /* TODO: make this a preference */
+			            PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+			                public void run() {
+		                        console.setColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_MAGENTA));
+		                        console.setFontStyle(SWT.ITALIC);
+		                        
+		                        errorConsole.setColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
+			                }
+			            });
+				    } else {
 						state = State.NotStarted;
+				    }
 				}
 				debuggerOutput.setLength(0);
 			}
@@ -645,10 +689,11 @@ public class OcamlDebugger implements IExecEvents {
 					|| state.equals(State.SteppingOver) || state.equals(State.BackSteppingOver)
 					|| state.equals(State.Running) || state.equals(State.RunningBackwards)
 					|| state.equals(State.StepReturn) || state.equals(State.BackstepReturn)) {
-				processMessage(output);
+				if (!processMessage(output)) {
+    				state = State.Frame;
+    				send("frame");
+				}
 				debuggerOutput.setLength(0);
-				state = State.Frame;
-				send("frame");
 			} else if (state.equals(State.Starting1)) {
 				debuggerOutput.setLength(0);
 				state = State.Starting1a;
@@ -775,30 +820,28 @@ public class OcamlDebugger implements IExecEvents {
 		watchVariablesResult.set(currentWatchVariable, result);
 	}
 
-	private boolean loadProgram(String socket) {
+	private IProcess loadProgram(String socket) {
 
 		ArrayList<String> commandLine = new ArrayList<String>();
-		commandLine.add(exeFile.getPath());
+		commandLine.add(runFile.getPath());
 		for(String arg : args)
 			commandLine.add(arg);
-		
+
 		try {
 			ProcessBuilder processBuilder = new ProcessBuilder(commandLine);
-			processBuilder.directory(exeFile.getParentFile());
+			processBuilder.directory(runFile.getParentFile());
 			// add the CAML_DEBUG_SOCKET variable to the current environment
 			processBuilder.environment().put("CAML_DEBUG_SOCKET", socket);
 //			processBuilder.environment().put("OCAMLLIB", OcamlPlugin.getLibFullPath());
-			
-			process = processBuilder.start();		
-			DebugPlugin.newProcess(launch, process, exeFile.getName());
+
+			process = processBuilder.start();
+			return DebugPlugin.newProcess(launch, process, byteFile.getName());
 		} catch (Exception e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
 			state = State.NotStarted;
-			message("couldn't start " + exeFile.getName());
-			return false;
+			message("couldn't start " + runFile.getName());
+			return null;
 		}
-
-		return true;
 	}
 
 	private void emptyBreakpointsView() {
@@ -858,17 +901,29 @@ public class OcamlDebugger implements IExecEvents {
 
 	Pattern patternEnd = Pattern.compile("Time : \\d+\\nProgram exit.\\n\\(ocd\\) ");
 
-	private void processMessage(String output) {
+	Pattern patternException = Pattern.compile("Time : \\d+\\nProgram end.\\nUncaught exception: (.*\\n)\\(ocd\\) ");
+
+	private boolean processMessage(String output) {
 
 		if (patternEnd.matcher(output).find()) {
 			message("Program reached end");
-			DebugMarkers.getInstance().clearCurrentPosition();
-			refreshEditor();
+            state = State.Idle;
 		} else if (patternBeginning.matcher(output).find()) {
 			message("Program reached beginning");
-			DebugMarkers.getInstance().clearCurrentPosition();
-			refreshEditor();
+			state = State.Idle;
+		} else {
+		    Matcher matcher = patternException.matcher(output);
+		    if (matcher.find()) {
+		        message("Uncaught exception: " + matcher.group(1));
+	            state = State.BackStepping;
+	            send("backstep");
+		    } else {
+		        return false;
+		    }
 		}
+        DebugMarkers.getInstance().clearCurrentPosition();
+        refreshEditor();
+        return true;
 	}
 
 	Pattern patternBreakpoint = Pattern
@@ -1088,11 +1143,39 @@ public class OcamlDebugger implements IExecEvents {
 			}
 		});
 	}
-
+	
 	private void message(final String message) {
+		message(message, false);
+	}
+
+	private void errorMessage(final String message) {
+		message(message, true);
+	}
+
+	private void message(final String message, final boolean bError) {
+		final IOConsoleOutputStream console = bError ? this.errorConsole : this.console;
+		
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
-				MessageDialog.openInformation(null, "Ocaml Debugger", message);
+				/* delay just a little to let the executable's output finish */
+				Display.getDefault().timerExec(100, new Runnable() {
+					public void run() {
+						if (console != null) {
+							try {
+								console.write(message);
+								console.write("\n");
+								return;
+							} catch (IOException e) {
+								if(bError)
+									OcamlDebugger.this.errorConsole = null;
+								else
+									OcamlDebugger.this.console = null;
+							}
+						}
+						if(!bError)
+							MessageDialog.openInformation(null, "Ocaml Debugger", message);
+					}
+				});
 			}
 		});
 	}
