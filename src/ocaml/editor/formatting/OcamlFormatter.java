@@ -801,9 +801,9 @@ public class OcamlFormatter {
 		}
 
 		// remove spaces before commas
-		line = line.replaceAll(" ,", ",");
+		//line = line.replaceAll(" ,", ",");
 		// remove spaces before semicolons
-		line = line.replaceAll(" ;", ";");
+		//line = line.replaceAll(" ;", ";");
 
 		for (int nPattern = 0; nPattern <= 1; nPattern++) {
 			Pattern patternSpacing;

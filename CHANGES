@@ -128,6 +128,10 @@
 	* Support for ocamldebug under Windows, patch submitted by Dmitry Bely
 	* Can separate run file and debugged file (patch from forum member khooyp)
 	* Redirected messages to the console and handled uncaught exceptions (patch from forum member khooyp)
+	* Suppressed removal of spaces before commas and semicolons inside comments and strings
+	
+* 1.2.3
+	* Corrected spell-checking of ocamldoc comments
 	
 	
 	

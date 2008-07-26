@@ -203,6 +203,7 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 		final Reconciler reconciler = new Reconciler();
 		reconciler.setDocumentPartitioning(OcamlPartitionScanner.OCAML_PARTITIONING);
 		reconciler.setReconcilingStrategy(strategy, OcamlPartitionScanner.OCAML_MULTILINE_COMMENT);
+		reconciler.setReconcilingStrategy(strategy, OcamlPartitionScanner.OCAML_DOCUMENTATION_COMMENT);
 		reconciler.setIsIncrementalReconciler(false);
 		reconciler.setProgressMonitor(new NullProgressMonitor());
 		reconciler.setDelay(500);
