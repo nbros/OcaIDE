@@ -289,8 +289,8 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 					command.text = " -> ";
 				}
 			}
-			
-			command.text = tab;
+			else
+				command.text = tab;
 		}
 	}
 
