@@ -133,6 +133,8 @@
 * 1.2.3
 	* Corrected spell-checking of ocamldoc comments
 	* Restored special tab completions which had stopped working because of a bug
+	* Fixed regression : errors not highlighted in toplevel under Windows
+	
 	 
 	
 	

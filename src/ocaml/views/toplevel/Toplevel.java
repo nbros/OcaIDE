@@ -41,16 +41,9 @@ public class Toplevel {
 	private static final String newline;
 
 	/** End of line delimiter for regular expressions */
-	private static final String nl;
+	private static final String nl = "\\r?\\n";
 	static {
 		newline = System.getProperty("line.separator");
-
-		if (newline.equals("\r"))
-			nl = "\\r";
-		else if (newline.equals("\r\n"))
-			nl = "\\r\\n";
-		else
-			nl = "\\n";
 	}
 
 	/** The help message that is displayed when the user types "help" in the top-level view */
