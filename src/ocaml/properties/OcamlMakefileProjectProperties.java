@@ -33,6 +33,10 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 
 	private Button[] makeButton;
 
+	private Label optionsLabel;
+
+	private Text optionsText;
+
 	private Label targetsLabel;
 
 	private Text targetsText;
@@ -69,6 +73,12 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 		makeButton[1] = new Button(composite, SWT.RADIO);
 		makeButton[1].setText("OMake");
 		makeButton[1].setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+
+		optionsLabel = new Label(composite, SWT.LEFT);
+		optionsLabel.setText("additional make options (separated by spaces):");
+
+		optionsText = new Text(composite, SWT.SINGLE | SWT.BORDER);
+		optionsText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
 		targetsLabel = new Label(composite, SWT.LEFT);
 		targetsLabel.setText("make targets for rebuild (separated by commas):");
@@ -107,15 +117,26 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 			break;
 		}
 
+        //options
+		String[] options = makeUtility.getOptions();
+		
+		StringBuilder stringBuilder = new StringBuilder();
+		for (int i = 0; i < options.length - 1; i++)
+			stringBuilder.append(options[i] + " ");
+        if (options.length > 0)
+   		    stringBuilder.append(options[options.length - 1]);
+
+		optionsText.setText(stringBuilder.toString());
+		
 		// make
 		MakefileTargets makefileTargets = new MakefileTargets(project);
 		String[] targets = makefileTargets.getTargets();
 
-		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.setLength(0);
 		for (int i = 0; i < targets.length - 1; i++)
 			stringBuilder.append(targets[i] + ", ");
-
-		stringBuilder.append(targets[targets.length - 1]);
+        if (targets.length > 0)
+		    stringBuilder.append(targets[targets.length - 1]);
 
 		targetsText.setText(stringBuilder.toString());
 
@@ -125,8 +146,8 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 		stringBuilder.setLength(0);
 		for (int i = 0; i < targets.length - 1; i++)
 			stringBuilder.append(targets[i] + ", ");
-
-		stringBuilder.append(targets[targets.length - 1]);
+        if (targets.length > 0)
+		    stringBuilder.append(targets[targets.length - 1]);
 
 		cleanTargetsText.setText(stringBuilder.toString());
 
@@ -136,8 +157,8 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 		stringBuilder.setLength(0);
 		for (int i = 0; i < targets.length - 1; i++)
 			stringBuilder.append(targets[i] + ", ");
-
-		stringBuilder.append(targets[targets.length - 1]);
+        if (targets.length > 0)
+		    stringBuilder.append(targets[targets.length - 1]);
 
 		docTargetsText.setText(stringBuilder.toString());
 	}
@@ -150,6 +171,9 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 
 		MakeUtility makeUtility = new MakeUtility(project);
 		makeUtility.setVariant(clone);
+		
+		String[] options = optionsText.getText().split(" +");
+		makeUtility.setOptions(options);
 
 		String[] targets = targetsText.getText().split(",");
 		MakefileTargets makefileTargets = new MakefileTargets(this.project);
@@ -169,6 +193,7 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 	protected void performDefaults() {
 		makeButton[0].setSelection(true);
 		makeButton[1].setSelection(false);
+		optionsText.setText("");
 		targetsText.setText("all");
 		cleanTargetsText.setText("clean");
 		docTargetsText.setText("htdoc");

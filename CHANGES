@@ -124,19 +124,17 @@
 	* Remote debugging support, patch submitted by Jonathan Knowles
 	* Updated documentation for debugging under Windows and remote debugging
 	
-* 1.2.2
+* 1.2.2 (July 20 2008)
 	* Support for ocamldebug under Windows, patch submitted by Dmitry Bely
 	* Can separate run file and debugged file (patch from forum member khooyp)
 	* Redirected messages to the console and handled uncaught exceptions (patch from forum member khooyp)
 	* Suppressed removal of spaces before commas and semicolons inside comments and strings
 	
-* 1.2.3
+* 1.2.3 (October 21 2008)
 	* Corrected spell-checking of ocamldoc comments
 	* Restored special tab completions which had stopped working because of a bug
 	* Fixed regression : errors not highlighted in toplevel under Windows
-	
-	 
-	
-	
-	
-	
+	* Launch ocamldebug from the project's root directory [Dmitry Bely]
+	* Script file support for debugger [Dmitry Bely]
+	* Additional make options [Dmitry Bely] 
+	* Fixed exception when make target list is empty [Dmitry Bely]

@@ -55,7 +55,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	/** The possible states of the debugger */
 	public enum State {
-		NotStarted, Starting1, Starting1a, Starting1b, Starting1c, Starting1d, Starting2, Starting3, Starting4, Idle, Running, RunningBackwards, Stepping, BackStepping, SteppingOver, BackSteppingOver, Frame, Quitting, PuttingBreakpoint, StepReturn, BackstepReturn, Displaying, BackTrace, RemovingBreakpoint, RemovingBreakpoints, RemovedBreakpoints, Restarting, DisplayingWatchVars, DisplayWatchVars
+		NotStarted, Starting1, Starting1a, Starting1b, Starting1c, Starting1d, Starting2, Starting3, Starting3a, Starting4, Idle, Running, RunningBackwards, Stepping, BackStepping, SteppingOver, BackSteppingOver, Frame, Quitting, PuttingBreakpoint, StepReturn, BackstepReturn, Displaying, BackTrace, RemovingBreakpoint, RemovingBreakpoints, RemovedBreakpoints, Restarting, DisplayingWatchVars, DisplayWatchVars
 	};
 
 	/** The current state of the debugger: idle, not started, stepping... */
@@ -103,7 +103,9 @@ public class OcamlDebugger implements IExecEvents {
 
 	/** The port on which to listen when remote debugging is enabled. */
 	private int remoteDebugPort;
-
+	
+	private String scriptFile;
+	
 	/** The list of variables to display in the "variables watch" after each step */
 	private ArrayList<String> watchVariables;
 
@@ -154,10 +156,13 @@ public class OcamlDebugger implements IExecEvents {
 	 * 
 	 * @param remoteDebugPort
 	 *            the port on which to listen if remote debugging is enabled
+	 * 
+	 * @param scriptFile
+	 *            the script file to execute in debugger
 	 */
 	public synchronized void start(
 			String ocamldebug, File runFile, File byteFile, IProject project, ILaunch launch,
-			String[] args, boolean remoteDebugEnable, int remoteDebugPort)
+			String[] args, boolean remoteDebugEnable, int remoteDebugPort, String scriptFile)
 	{
 		this.runFile = runFile;
         this.byteFile = byteFile;
@@ -166,6 +171,7 @@ public class OcamlDebugger implements IExecEvents {
 		this.launch = launch;
 		this.remoteDebugEnable = remoteDebugEnable;
 		this.remoteDebugPort = remoteDebugPort;
+		this.scriptFile = scriptFile;
 
 		bDebuggingInfoMessage = true;
 
@@ -216,14 +222,10 @@ public class OcamlDebugger implements IExecEvents {
 				}
 			}
 			
-			// add the root of the project
-			commandLineArgs.add("-I");
-			commandLineArgs.add(project.getLocation().toOSString());
-			
 			commandLineArgs.add(byteFile.getPath());
 			String[] commandLine = commandLineArgs.toArray(new String[commandLineArgs.size()]);
 
-			Process process = DebugPlugin.exec(commandLine, byteFile.getParentFile());
+			Process process = DebugPlugin.exec(commandLine, project.getLocation().toFile());
 			debuggerProcess = ExecHelper.exec(this, process);
 
 		} catch (Exception e) {
@@ -650,7 +652,12 @@ public class OcamlDebugger implements IExecEvents {
 					+ "Waiting for connection...\\(the socket is (.*?)\\)\\n");
 			Matcher matcher = patternSocket.matcher(output);
 			if (matcher.find()) {
-				state = State.Starting4;
+				if (scriptFile.length() > 0) {
+					state = State.Starting3a;
+				}
+				else {
+					state = State.Starting4;
+				}
 				if (remoteDebugEnable) {
 					remoteConnectionRequestDialog.open();
 					console = null;
@@ -729,7 +736,18 @@ public class OcamlDebugger implements IExecEvents {
 				debuggerOutput.setLength(0);
 				state = State.Starting3;
 				send("goto 0");
+			} else if (state.equals(State.Starting3a)) {
+				debuggerOutput.setLength(0);
+				send("source "+scriptFile);
+				state = State.Starting4;
 			} else if (state.equals(State.Starting4)) {
+				if (scriptFile.length() > 0) {
+					String strippedOutput = output;
+					int lastEolIndex = output.lastIndexOf("\n");
+					if (lastEolIndex >= 0)
+						strippedOutput = output.substring(0, lastEolIndex);
+					message(strippedOutput);
+				}
 				debuggerOutput.setLength(0);
 				if (remoteDebugEnable)
 					remoteConnectionRequestDialog.signalRemoteProcessConnected();

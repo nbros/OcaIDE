@@ -96,8 +96,10 @@ public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDel
 				)
 			);
 
+			String scriptFile = configuration.getAttribute(OcamlLaunchTab.ATTR_SCRIPTPATH, "");
+
 			OcamlDebugger.getInstance().start(
-				ocamldebug, runfile, bytefile, project, launch, arguments, remoteDebugEnable, remoteDebugPort
+				ocamldebug, runfile, bytefile, project, launch, arguments, remoteDebugEnable, remoteDebugPort,  scriptFile
 			);
 		}
 

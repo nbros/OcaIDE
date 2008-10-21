@@ -41,6 +41,8 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 	public static final String ATTR_REMOTE_DEBUG_ENABLE = "attr_ocaml_remote_debug_enable";
 
 	public static final String ATTR_REMOTE_DEBUG_PORT = "attr_ocaml_remote_debug_port";
+	
+	public static final String ATTR_SCRIPTPATH = "attr_ocaml_script_full_path";
 
 	public static final boolean DEFAULT_REMOTE_DEBUG_ENABLE = false;
 
@@ -59,6 +61,8 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 	Text textArguments;
 
 	Text textRemoteDebugPort;
+	
+	Text textScriptPath;
 
 	public void createControl(Composite parent) {
 
@@ -187,8 +191,36 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 			}
 		});
 		textRemoteDebugPort.setEnabled(false);
-
+		
 		new Label(composite, SWT.NONE);
+
+		// script file
+		Label labelScriptFile = new Label(composite, SWT.NONE);
+		labelScriptFile.setText("Script file to execute in the debugger:");
+		// dummy label, because we have two columns
+		new Label(composite, SWT.NONE);
+		textScriptPath = new Text(composite, SWT.BORDER);
+		textScriptPath.setLayoutData(layoutData);
+		textScriptPath.addModifyListener(new ModifyListener () {
+			public void modifyText(ModifyEvent e) {
+				setDirty(true);
+				updateLaunchConfigurationDialog();
+			}
+		});
+
+        Button buttonBrowseScript = new Button(composite, SWT.PUSH);
+        buttonBrowseScript.setText("Browse...");
+        buttonBrowseScript.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                String path = browse();
+                if (path != null) {
+                    textScriptPath.setText(path);
+                }
+            }
+        });
+
+        new Label(composite, SWT.NONE);
 	}
 
 	/** Browse button was clicked */
@@ -226,6 +258,7 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 		String args = null;
 		boolean remoteDebugEnable = false;
 		String remoteDebugPort = null;
+		String scriptpath = null;
 		try {
 			runpath = configuration.getAttribute(ATTR_RUNPATH, "");
             bytepath = configuration.getAttribute(ATTR_BYTEPATH, "");
@@ -233,6 +266,7 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 			args = configuration.getAttribute(ATTR_ARGS, "");
 			remoteDebugEnable = configuration.getAttribute(ATTR_REMOTE_DEBUG_ENABLE, DEFAULT_REMOTE_DEBUG_ENABLE);
 			remoteDebugPort = configuration.getAttribute(ATTR_REMOTE_DEBUG_PORT, DEFAULT_REMOTE_DEBUG_PORT);
+			scriptpath = configuration.getAttribute(ATTR_SCRIPTPATH, "");
 		} catch (CoreException e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
 			runpath = "";
@@ -241,6 +275,7 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 			args = "";
 			remoteDebugEnable = DEFAULT_REMOTE_DEBUG_ENABLE;
 			remoteDebugPort = DEFAULT_REMOTE_DEBUG_PORT;
+			scriptpath = "";
 		}
 
 		textBytePath.setText(bytepath);
@@ -250,6 +285,7 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 		buttonRemoteDebugEnable.setSelection(remoteDebugEnable);
 		textRemoteDebugPort.setText(remoteDebugPort);
 		textRemoteDebugPort.setEnabled(remoteDebugEnable);
+		textScriptPath.setText(scriptpath);
 		setDirty(false);
 	}
 
@@ -260,6 +296,7 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 		configuration.setAttribute(ATTR_ARGS, textArguments.getText());
 		configuration.setAttribute(ATTR_REMOTE_DEBUG_ENABLE, buttonRemoteDebugEnable.getSelection());
 		configuration.setAttribute(ATTR_REMOTE_DEBUG_PORT, textRemoteDebugPort.getText());
+		configuration.setAttribute(ATTR_SCRIPTPATH, textScriptPath.getText());
 		setDirty(false);
 	}
 
@@ -270,6 +307,7 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 		configuration.setAttribute(ATTR_ARGS, "");
 		configuration.setAttribute(ATTR_REMOTE_DEBUG_ENABLE, DEFAULT_REMOTE_DEBUG_ENABLE);
 		configuration.setAttribute(ATTR_REMOTE_DEBUG_PORT, DEFAULT_REMOTE_DEBUG_PORT);
+		configuration.setAttribute(ATTR_SCRIPTPATH, "");
 		setDirty(false);
 	}
 
@@ -279,17 +317,20 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 		String runpath = null;
 		String project = null;
 		String remoteDebugPort = null;
+		String scriptpath = null;
 		try {
             runpath = launchConfig.getAttribute(ATTR_RUNPATH, "");
 			bytepath = launchConfig.getAttribute(ATTR_BYTEPATH, "");
 			project = launchConfig.getAttribute(ATTR_PROJECTNAME, "");
 			remoteDebugPort = launchConfig.getAttribute(ATTR_REMOTE_DEBUG_PORT, DEFAULT_REMOTE_DEBUG_PORT);
+            scriptpath = launchConfig.getAttribute(ATTR_SCRIPTPATH, "");
 		} catch (CoreException e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
 			bytepath = "";
 			runpath = "";
 			project = "";
 			remoteDebugPort = DEFAULT_REMOTE_DEBUG_PORT;
+			scriptpath = "";
 		}
 
 		IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
@@ -327,6 +368,15 @@ public class OcamlLaunchTab extends AbstractLaunchConfigurationTab {
 		if (remoteDebugPortValue < 1 || remoteDebugPortValue > 65535) {
 			setErrorMessage("Invalid remote debug port: " + remoteDebugPort);
 			return false;
+		}
+
+		if (scriptpath.length() > 0) {
+    		File scriptfile = new File(scriptpath);
+    
+    		if (! (scriptfile.exists() && scriptfile.isFile())) {
+    		    setErrorMessage("Invalid script file: " + scriptpath);
+    		    return false;
+            }
 		}
 
 		// Success.

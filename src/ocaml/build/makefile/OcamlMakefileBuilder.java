@@ -127,6 +127,9 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 				commandLine.add("-C" + path);
 				break;
 			}
+			
+			for (String option : makeUtility.getOptions())
+				commandLine.add(option);
 
 			MakefileTargets makefileTargets = new MakefileTargets(project);
 			String[] targets = null;
