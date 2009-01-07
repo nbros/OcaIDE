@@ -13,6 +13,9 @@ import ocaml.exec.CommandRunner;
 import ocaml.exec.ExecHelper;
 import ocaml.exec.IExecEvents;
 
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
@@ -20,7 +23,6 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 
@@ -85,6 +87,8 @@ public class Toplevel {
 	private final Color colorWhite;
 
 	private final Color colorRed;
+	
+	private IPropertyChangeListener fontChangeListener = null;
 
 	public Toplevel(final OcamlToplevelView view, final StyledText userText, final StyledText resultText) {
 
@@ -97,20 +101,20 @@ public class Toplevel {
 		colorWhite = new Color(display, 255, 255, 255);
 		colorRed = new Color(display, 255, 0, 0);
 
-		int defaultSize = 12;
-		Font defaultFont = org.eclipse.jface.resource.JFaceResources.getDefaultFont();
-		FontData[] fontDatas = defaultFont.getFontData();
-		if (fontDatas.length > 0)
-			defaultSize = fontDatas[0].getHeight();
-
-		Font font = null;
-		if (OcamlPlugin.runningOnLinuxCompatibleSystem())
-			font = new Font(userText.getDisplay(), "monospace", defaultSize, SWT.NONE);
-		else
-			font = new Font(userText.getDisplay(), "Courier New", defaultSize, SWT.NONE);
-
+		Font font = JFaceResources.getTextFont();
 		resultText.setFont(font);
 		userText.setFont(font);
+		
+		fontChangeListener = new IPropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent event) {
+				if(JFaceResources.TEXT_FONT.equals(event.getProperty())) {
+					Font font = JFaceResources.getTextFont();
+					resultText.setFont(font);
+					userText.setFont(font);
+				}
+			}
+		};
+		JFaceResources.getFontRegistry().addListener(fontChangeListener);
 
 		this.view = view;
 		this.userText = userText;
@@ -595,6 +599,12 @@ public class Toplevel {
 
 			scroll();
 		}
+	}
+	
+	/** Clean up */
+	public void dispose() {
+		if(fontChangeListener != null)
+			JFaceResources.getFontRegistry().removeListener(fontChangeListener);		
 	}
 
 }

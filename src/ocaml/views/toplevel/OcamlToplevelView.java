@@ -213,6 +213,7 @@ public class OcamlToplevelView extends ViewPart {
 	@Override
 	public void dispose() {
 		toplevel.kill();
+		toplevel.dispose();
 		super.dispose();
 
 		if (this.equals(OcamlPlugin.getLastFocusedToplevelInstance()))

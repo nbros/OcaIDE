@@ -138,3 +138,7 @@
 	* Script file support for debugger [Dmitry Bely]
 	* Additional make options [Dmitry Bely] 
 	* Fixed exception when make target list is empty [Dmitry Bely]
+	
+* 1.2.4
+	* Toplevel now uses Eclipse text font (which can be changed in preferences)
+	
