@@ -135,7 +135,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
 
 			// set the defaults for the debugger
-			store.setDefault(PreferenceConstants.P_DEBUGGER_CHECKPOINTS, true);
+			// checkpoints don't work on Windows
+			store.setDefault(PreferenceConstants.P_DEBUGGER_CHECKPOINTS, OcamlPlugin.runningOnLinuxCompatibleSystem());
 			store.setDefault(PreferenceConstants.P_DEBUGGER_SMALL_STEP, 1000);
 			store.setDefault(PreferenceConstants.P_DEBUGGER_BIG_STEP, 10000);
 			store.setDefault(PreferenceConstants.P_DEBUGGER_PROCESS_COUNT, 15);
@@ -455,7 +456,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 					ocamldoc = basepath + "\\bin\\ocamldoc.exe";
 					camlp4 = basepath + "\\bin\\camlp4.exe";
 					ocamlbuild = basepath + "\\bin\\ocamlbuild.exe";
-					// configure ocamldebug manually under Windows (with cygwin)
+					ocamldebug = basepath + "\\bin\\ocamldebug.exe";
 				}
 				
 				file = new File("C:\\Program Files\\OMake\\bin\\omake.exe");
