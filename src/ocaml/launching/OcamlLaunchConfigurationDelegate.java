@@ -28,9 +28,10 @@ public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDel
 			IProgressMonitor monitor) throws CoreException {
 
         String runpath = configuration.getAttribute(OcamlLaunchTab.ATTR_RUNPATH, "");
-	    String exepath = configuration.getAttribute(OcamlLaunchTab.ATTR_BYTEPATH, "");
+	    String exepath = configuration.getAttribute(OcamlDebugTab.ATTR_BYTEPATH, "");
 		String projectName = configuration.getAttribute(OcamlLaunchTab.ATTR_PROJECTNAME, "");
 		String args = configuration.getAttribute(OcamlLaunchTab.ATTR_ARGS, "");
+		boolean debuggerRootProject = configuration.getAttribute(OcamlDebugTab.ATTR_DEBUGGER_ROOT_PROJECT, false);
 		
 		String[] arguments = DebugPlugin.parseArguments(args);
 		
@@ -86,20 +87,21 @@ public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDel
 			});
 
 			boolean remoteDebugEnable = configuration.getAttribute(
-				OcamlLaunchTab.ATTR_REMOTE_DEBUG_ENABLE, 
-				OcamlLaunchTab.DEFAULT_REMOTE_DEBUG_ENABLE
+				OcamlDebugTab.ATTR_REMOTE_DEBUG_ENABLE, 
+				OcamlDebugTab.DEFAULT_REMOTE_DEBUG_ENABLE
 			);
 			int remoteDebugPort = Integer.parseInt(
 				configuration.getAttribute(
-					OcamlLaunchTab.ATTR_REMOTE_DEBUG_PORT,
-					OcamlLaunchTab.DEFAULT_REMOTE_DEBUG_PORT
+					OcamlDebugTab.ATTR_REMOTE_DEBUG_PORT,
+					OcamlDebugTab.DEFAULT_REMOTE_DEBUG_PORT
 				)
 			);
 
-			String scriptFile = configuration.getAttribute(OcamlLaunchTab.ATTR_SCRIPTPATH, "");
+			String scriptFile = configuration.getAttribute(OcamlDebugTab.ATTR_SCRIPTPATH, "");
 
 			OcamlDebugger.getInstance().start(
-				ocamldebug, runfile, bytefile, project, launch, arguments, remoteDebugEnable, remoteDebugPort,  scriptFile
+				ocamldebug, runfile, bytefile, project, launch, arguments, remoteDebugEnable, 
+				remoteDebugPort,  scriptFile, debuggerRootProject
 			);
 		}
 

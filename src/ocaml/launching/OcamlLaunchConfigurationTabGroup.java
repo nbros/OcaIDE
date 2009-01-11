@@ -15,6 +15,7 @@ public class OcamlLaunchConfigurationTabGroup extends AbstractLaunchConfiguratio
 	public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
 		ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
 				new OcamlLaunchTab(),
+				new OcamlDebugTab(),
 				new CommonTab()		
 			};
 		this.setTabs(tabs);	

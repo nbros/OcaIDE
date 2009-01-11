@@ -159,10 +159,13 @@ public class OcamlDebugger implements IExecEvents {
 	 * 
 	 * @param scriptFile
 	 *            the script file to execute in debugger
+	 *            
+	 * @param debuggerRootProject
+	 *            whether the debugger should be started from the project root instead of the executable folder 
 	 */
 	public synchronized void start(
 			String ocamldebug, File runFile, File byteFile, IProject project, ILaunch launch,
-			String[] args, boolean remoteDebugEnable, int remoteDebugPort, String scriptFile)
+			String[] args, boolean remoteDebugEnable, int remoteDebugPort, String scriptFile, boolean debuggerRootProject)
 	{
 		this.runFile = runFile;
         this.byteFile = byteFile;
@@ -222,10 +225,22 @@ public class OcamlDebugger implements IExecEvents {
 				}
 			}
 			
+			// add the root of the project
+			commandLineArgs.add("-I");
+			commandLineArgs.add(project.getLocation().toOSString());
+			
 			commandLineArgs.add(byteFile.getPath());
 			String[] commandLine = commandLineArgs.toArray(new String[commandLineArgs.size()]);
 
-			Process process = DebugPlugin.exec(commandLine, project.getLocation().toFile());
+			File debuggerRoot;
+			if(debuggerRootProject)
+				debuggerRoot = project.getLocation().toFile();
+			else
+				debuggerRoot = byteFile.getParentFile();
+			
+			
+			
+			Process process = DebugPlugin.exec(commandLine, debuggerRoot);
 			debuggerProcess = ExecHelper.exec(this, process);
 
 		} catch (Exception e) {
