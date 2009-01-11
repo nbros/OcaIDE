@@ -1,4 +1,6 @@
-package ocaml.debugging;
+package ocaml.debugging.actions;
+
+import ocaml.debugging.OcamlDebugger;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
@@ -6,15 +8,14 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
 /**
- * This action is called by the "Run" menu item in the "Debug" menu, in the O'Caml Debug
- * perspective.<br>
- * Ask the debugger to run until either a breakpoint or the end of the program is encountered.
+ * This action is called by the "Backstep" menu item in the "Debug" menu, in the O'Caml Debug perspective.<br>
+ * Ask the debugger to make one step back, entering in function calls.
  */
-public class RunAction implements IWorkbenchWindowActionDelegate {
+public class BackStepAction implements IWorkbenchWindowActionDelegate {
 
 	public void run(IAction action) {
 		OcamlDebugger debugger = OcamlDebugger.getInstance();
-		debugger.run();
+		debugger.backstep();
 	}
 
 	public void dispose() {

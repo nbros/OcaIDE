@@ -1,4 +1,6 @@
-package ocaml.debugging;
+package ocaml.debugging.actions;
+
+import ocaml.debugging.OcamlDebugger;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;

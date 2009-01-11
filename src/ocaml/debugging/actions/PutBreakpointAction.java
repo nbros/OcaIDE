@@ -1,5 +1,6 @@
-package ocaml.debugging;
+package ocaml.debugging.actions;
 
+import ocaml.debugging.OcamlDebugger;
 import ocaml.editors.OcamlEditor;
 
 import org.eclipse.core.runtime.IPath;
