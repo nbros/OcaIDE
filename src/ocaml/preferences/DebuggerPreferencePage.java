@@ -5,6 +5,7 @@ import ocaml.OcamlPlugin;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -28,8 +29,16 @@ public class DebuggerPreferencePage extends FieldEditorPreferencePage implements
 	@Override
 	public void createFieldEditors() {
 
-		this.addField(new BooleanFieldEditor(PreferenceConstants.P_DEBUGGER_CHECKPOINTS,
-				"Activate checkpoints", this.getFieldEditorParent()));
+		String checkpointsLabel;
+		if(OcamlPlugin.runningOnLinuxCompatibleSystem())
+			checkpointsLabel = "Activate checkpoints";
+		else
+			checkpointsLabel = "Activate checkpoints (not supported on Windows MSVC and Mingw ports)";
+		
+		Composite checkpointsFieldEditorParent = this.getFieldEditorParent();
+		BooleanFieldEditor checkpointsFieldEditor = new BooleanFieldEditor(PreferenceConstants.P_DEBUGGER_CHECKPOINTS,
+				checkpointsLabel, checkpointsFieldEditorParent);
+		this.addField(checkpointsFieldEditor);
 
 		fieldEditorSmallStep = new IntegerFieldEditor(PreferenceConstants.P_DEBUGGER_SMALL_STEP,
 				"Number of events between two checkpoints for a small step", this
