@@ -139,6 +139,10 @@
 	* Additional make options [Dmitry Bely] 
 	* Fixed exception when make target list is empty [Dmitry Bely]
 	
-* 1.2.4
+* 1.2.4 (January 11 2009)
 	* Toplevel now uses Eclipse text font (which can be changed in preferences)
-	
+	* Split launch configuration into two pages : main and debug
+	* Debugger root directory is now configurable (between project root and executable directory)
+	* Removed "Makefile Paths" properties page which was useless (see <a href="http://ocaml.eclipse.free.fr/forum/viewtopic.php?f=4&t=94&start=0">this forum post<a/>) 
+	* Preference initializer now sets default ocamldebug path on Windows (O'Caml 3.11)
+	* Checkpoints are disabled by default on Windows since they are not supported by ocamldebug on Windows

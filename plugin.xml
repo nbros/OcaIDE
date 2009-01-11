@@ -302,13 +302,6 @@
 			</enabledWhen>
 			<filter name="nature" value="ocaml.ocamlnatureMakefile"/>
 		</page>
-		<page class="ocaml.properties.OcamlMakefilePathsProperties"
-			id="ocaml.properties.OcamlMakefilePathsProperties" name="Makefile Paths">
-			<enabledWhen>
-				<instanceof value="org.eclipse.core.resources.IProject"/>
-			</enabledWhen>
-			<filter name="nature" value="ocaml.ocamlnatureMakefile"/>
-		</page>
 		<page class="ocaml.properties.LinkedFilesProperties"
 			id="ocaml.properties.LinkedFilesProperties"
 			name="Ocaml External File">
@@ -651,68 +644,68 @@
 				<separator name="slot2"/>
 				<separator name="slot3"/>
 			</menu>
-			<action class="ocaml.debugging.RemoveBreakpointsAction"
+			<action class="ocaml.debugging.actions.RemoveBreakpointsAction"
 				definitionId="Ocaml.removeBreakpointsCommand"
 				icon="icons/removeAll.gif"
 				id="Ocaml_debuggingActions_removeBreakpoints"
 				label="Remove Breakpoints" menubarPath="Ocaml_debugMenu/slot2"
 				style="push" toolbarPath="Ocaml_debugMenu/slot2"/>
-			<action class="ocaml.debugging.PutBreakpointAction"
+			<action class="ocaml.debugging.actions.PutBreakpointAction"
 				definitionId="Ocaml.putBreakpointCommand"
 				icon="icons/breakpoint.gif"
 				id="Ocaml_debuggingActions_putBreakpoint" label="Put Breakpoint"
 				menubarPath="Ocaml_debugMenu/slot2" style="push"
 				toolbarPath="Ocaml_debugMenu/slot2"/>
-			<action class="ocaml.debugging.RestartAction"
+			<action class="ocaml.debugging.actions.RestartAction"
 				definitionId="Ocaml.restartCommand" icon="icons/term_restart.gif"
 				id="Ocaml_debuggingActions_restart" label="Restart"
 				menubarPath="Ocaml_debugMenu/slot3" style="push"
 				toolbarPath="Ocaml_debugMenu/slot3"/>
-			<action class="ocaml.debugging.TerminateAction"
+			<action class="ocaml.debugging.actions.TerminateAction"
 				definitionId="Ocaml.terminateCommand" icon="icons/term_sbook.gif"
 				id="Ocaml_debuggingActions_terminate" label="Terminate"
 				menubarPath="Ocaml_debugMenu/slot3" style="push"
 				toolbarPath="Ocaml_debugMenu/slot3"/>
-			<action class="ocaml.debugging.StepReturnAction"
+			<action class="ocaml.debugging.actions.StepReturnAction"
 				definitionId="Ocaml.stepReturnCommand"
 				icon="icons/stepreturn.gif"
 				id="Ocaml_debuggingActions_stepreturn" label="Step Return"
 				menubarPath="Ocaml_debugMenu/slot1" style="push"
 				toolbarPath="Ocaml_debugMenu/slot1"/>
-			<action class="ocaml.debugging.BackstepReturnAction"
+			<action class="ocaml.debugging.actions.BackstepReturnAction"
 				definitionId="Ocaml.backstepReturnCommand"
 				icon="icons/stepreturnBackwards.gif"
 				id="Ocaml_debuggingActions_backstepReturn"
 				label="Backstep Return" menubarPath="Ocaml_debugMenu/slot1"
 				style="push" toolbarPath="Ocaml_debugMenu/slot1"/>
-			<action class="ocaml.debugging.StepOverAction"
+			<action class="ocaml.debugging.actions.StepOverAction"
 				definitionId="Ocaml.stepOverCommand" icon="icons/stepover.gif"
 				id="Ocaml_debuggingActions_stepover" label="Step Over"
 				menubarPath="Ocaml_debugMenu/slot1" style="push"
 				toolbarPath="Ocaml_debugMenu/slot1"/>
-			<action class="ocaml.debugging.BackStepOverAction"
+			<action class="ocaml.debugging.actions.BackStepOverAction"
 				definitionId="Ocaml.backstepOverCommand"
 				icon="icons/stepoverBackwards.gif"
 				id="Ocaml_debuggingActions_backstepOver" label="Backstep Over"
 				menubarPath="Ocaml_debugMenu/slot1" style="push"
 				toolbarPath="Ocaml_debugMenu/slot1"/>
-			<action class="ocaml.debugging.StepAction"
+			<action class="ocaml.debugging.actions.StepAction"
 				definitionId="Ocaml.stepCommand" icon="icons/stepinto.gif"
 				id="Ocaml_debuggingActions_step" label="Step"
 				menubarPath="Ocaml_debugMenu/slot1" style="push"
 				toolbarPath="Ocaml_debugMenu/slot1"/>
-			<action class="ocaml.debugging.BackStepAction"
+			<action class="ocaml.debugging.actions.BackStepAction"
 				definitionId="Ocaml.backstepCommand"
 				icon="icons/stepintoBackwards.gif"
 				id="Ocaml_debuggingActions_backstep" label="Backstep"
 				menubarPath="Ocaml_debugMenu/slot1" style="push"
 				toolbarPath="Ocaml_debugMenu/slot1"/>
-			<action class="ocaml.debugging.RunAction"
+			<action class="ocaml.debugging.actions.RunAction"
 				definitionId="Ocaml.runCommand" icon="icons/run.gif"
 				id="Ocaml_debuggingActions_run" label="Run"
 				menubarPath="Ocaml_debugMenu/slot3" style="push"
 				toolbarPath="Ocaml_debugMenu/slot3"/>
-			<action class="ocaml.debugging.ReverseAction"
+			<action class="ocaml.debugging.actions.ReverseAction"
 				definitionId="Ocaml.reverseCommand" icon="icons/runBackwards.gif"
 				id="Ocaml_debuggingActions_runBackwards" label="Reverse"
 				menubarPath="Ocaml_debugMenu/slot3" style="push"
