@@ -25,7 +25,7 @@ public final class ImageRepository {
 
 	public static String ICON_CAML16 = "caml16x16.gif";
 
-	public static String ICON_CAML32 = "caml32.gif";
+	public static String ICON_CAML32 = "caml32x32.gif";
 
 	public static String ICON_NATURE = "camlNature.gif";
 
