@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: OcaIDE
 Bundle-SymbolicName: Ocaml;singleton:=true
-Bundle-Version: 1.2.3
+Bundle-Version: 1.2.4
 Bundle-Activator: ocaml.OcamlPlugin
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui,
@@ -16,7 +16,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.console,
  org.eclipse.help,
  org.eclipse.core.filesystem
-Eclipse-LazyStart: true
+Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/beaver-rt.jar,
  lib/JFlex.jar,
  .
