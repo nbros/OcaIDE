@@ -124,10 +124,8 @@ public class OcamlNewInterfaceParser {
 		}
 
 		// return the cache entry (if we found one)
-		if (found != null) {
+		if (found != null)
 			return found;
-
-		}
 
 		if (!file.canRead())
 			return null;
@@ -341,11 +339,13 @@ public class OcamlNewInterfaceParser {
 
 	private void setBodies(Def def, String doc, boolean parseInterface) {
 		if (def.type != Def.Type.Root) {
-			if (parseInterface)
-				def
-						.setBody(doc.substring(def.defOffsetStart,
-								def.defOffsetEnd));
-			else {
+			if (parseInterface) {
+				if (def.defOffsetStart <= def.defOffsetEnd) {
+					def.setBody(doc.substring(def.defOffsetStart, def.defOffsetEnd));
+				} else {
+					OcamlPlugin.logWarning("Wrong offsets on " + def.type + " '" + def.name + "'");
+				}
+			} else {
 				def.setBody(def.name);
 			}
 		}
