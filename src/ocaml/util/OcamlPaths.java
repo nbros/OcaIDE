@@ -45,7 +45,7 @@ public class OcamlPaths {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
 
 			for (String path : paths)
-				if (path != null)
+				if (path != null && path.trim().length() > 0)
 					writer.write(path + "\n");
 
 			writer.close();

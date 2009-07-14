@@ -147,9 +147,13 @@
 	* Preference initializer now sets default ocamldebug path on Windows (O'Caml 3.11)
 	* Checkpoints are disabled by default on Windows since they are not supported by ocamldebug on Windows
 
-* 1.2.5
-	* Added an action to sort the outline
+* 1.2.5 (July 14 2009)
+	* Added the quick outline (Ctrl+O by default). Allows access to any element by name in the editor very quickly.
+	* Added an action to sort the outline view
+	* Added an "other flags" section to ocamlbuild parameters
+	* Added an option to disable generating type information with ocamlbuild
 	* Fixed a problem with definition offsets, which caused some files to be unavailable for code help (see <a href="http://ocaml.eclipse.free.fr/forum/viewtopic.php?f=2&t=213&start=0">this forum post<a/>)
+	* Fixed a problem when an empty path was passed to ocamlbuild
 	* Extracted sources and help into different plug-ins to avoid forcing users to download the whole documentation each time an update is done, since the help doesn't change nearly as often as the binaries.
 	
 	
