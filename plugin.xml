@@ -1008,9 +1008,6 @@
 				label="Generate Makefile" menubarPath="additions"/>
 		</objectContribution>
 	</extension>
-	<extension point="org.eclipse.help.toc">
-		<toc file="docs/toc.xml" primary="true"/>
-	</extension>
  <extension
        id="ocamlSyntaxErrorMarker"
        name="Ocaml syntax error marker"
