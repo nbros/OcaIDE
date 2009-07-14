@@ -114,6 +114,9 @@ public class PreferenceConstants
 	public static final String P_OUTLINE_SHOW_CLASSTYPE = "OutlineShowClassType";
 	public static final String P_OUTLINE_SHOW_VARIANT_CONS = "OutlineShowVariantCons";
 	public static final String P_OUTLINE_SHOW_RECORD_CONS = "OutlineShowRecordCons";
+
+	/** whether the outline must be sorted alphabetically */
+	public static final String P_OUTLINE_SORT = "OutlineSort";
 	
 	public static final String P_OUTLINE_LET_MINIMUM_CHARS = "OutlineLetMinChars";
 	public static final String P_OUTLINE_LET_IN_MINIMUM_CHARS = "OutlineLetInMinChars";

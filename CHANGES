@@ -147,6 +147,10 @@
 	* Preference initializer now sets default ocamldebug path on Windows (O'Caml 3.11)
 	* Checkpoints are disabled by default on Windows since they are not supported by ocamldebug on Windows
 
-1.2.5
+* 1.2.5
+	* Added an action to sort the outline
 	* Fixed a problem with definition offsets, which caused some files to be unavailable for code help (see <a href="http://ocaml.eclipse.free.fr/forum/viewtopic.php?f=2&t=213&start=0">this forum post<a/>)
+	* Extracted sources and help into different plug-ins to avoid forcing users to download the whole documentation each time an update is done, since the help doesn't change nearly as often as the binaries.
+	
+	
 	

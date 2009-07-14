@@ -109,6 +109,8 @@ public final class ImageRepository {
 	public static final String ICON_REFRESH_TREE = "refreshTree.gif";
 
 	public static final String ICON_CIRCLE = "circle.gif";
+	
+	public static final String ICON_SORT = "sort.gif";
 
 	public static String[] all = { ICON_BINARY, ICON_BUILDALL, ICON_BYTECODE, ICON_BYTECODE,
 			ICON_CAML16, ICON_CAML32, ICON_NATURE, ICON_PURPLECAML16, ICON_YACC, ICON_LEX,

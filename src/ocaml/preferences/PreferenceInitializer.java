@@ -132,6 +132,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
 			store.setDefault(PreferenceConstants.P_OUTLINE_UNNEST_IN, true);
 			store.setDefault(PreferenceConstants.P_OUTLINE_AND_BLUE, true);
+			
+			store.setDefault(PreferenceConstants.P_OUTLINE_SORT, false);
 
 
 			// set the defaults for the debugger

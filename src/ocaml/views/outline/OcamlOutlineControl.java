@@ -65,9 +65,6 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 		 */
 		IToolBarManager toolBarManager = pageSite.getActionBars().getToolBarManager();
 
-		ImageDescriptor iconExpandAll = ImageRepository
-				.getImageDescriptor(ImageRepository.ICON_EXPAND_ALL);
-
 		final OcamlOutlineControl outline = this;
 		Action actionExpandAll = new BooleanPropertyAction("Expand All", OcamlPlugin.getInstance()
 				.getPreferenceStore(), PreferenceConstants.P_OUTLINE_EXPAND_ALL) {
@@ -77,10 +74,24 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 				outline.update();
 			}
 		};
-
+		ImageDescriptor iconExpandAll = ImageRepository
+				.getImageDescriptor(ImageRepository.ICON_EXPAND_ALL);
 		actionExpandAll.setImageDescriptor(iconExpandAll);
-
 		toolBarManager.add(actionExpandAll);
+
+		Action actionSort = new BooleanPropertyAction("Sort", OcamlPlugin.getInstance()
+				.getPreferenceStore(), PreferenceConstants.P_OUTLINE_SORT) {
+			@Override
+			public void run() {
+				super.run();
+				outline.update();
+			}
+		};
+		ImageDescriptor iconSort = ImageRepository
+				.getImageDescriptor(ImageRepository.ICON_SORT);
+		actionSort.setImageDescriptor(iconSort);
+		toolBarManager.add(actionSort);
+
 
 		if (bOutlineDebugButton) {
 			/* Create an action in the outline toolbar to switch between debug mode and normal mode */
