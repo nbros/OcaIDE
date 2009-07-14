@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
-/** Implements the outline view for the O'Caml editor */
+/** Implements the outline view for the Yacc editor */
 public final class OcamlYaccOutlineControl extends ContentOutlinePage {
 
 	protected Object input;
