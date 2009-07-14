@@ -11,10 +11,8 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -52,7 +50,7 @@ public class QuickOutline extends PopupDialog {
 
 	public QuickOutline(Shell parent, Object input, OcamlEditor editor) {
 		super(parent, PopupDialog.INFOPOPUPRESIZE_SHELLSTYLE, true, true, true, true, true, null,
-				"");
+				null);
 		this.input = input;
 		this.editor = editor;
 	}
@@ -305,19 +303,6 @@ public class QuickOutline extends PopupDialog {
 		treeViewer.addFilter(new NamePatternFilter());
 
 		treeViewer.setAutoExpandLevel(AbstractTreeViewer.ALL_LEVELS);
-		
-		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			public void selectionChanged(SelectionChangedEvent event) {
-				ITreeSelection selection = (ITreeSelection) treeViewer.getSelection();
-				Object firstElement = selection.getFirstElement();
-				if (firstElement instanceof Def) {
-					Def def = (Def) firstElement;
-					if(def.ocamlType != null) {
-						setInfoText(def.ocamlType);
-					}
-				}
-			}
-		});
 		
 		return treeViewer;
 	}
