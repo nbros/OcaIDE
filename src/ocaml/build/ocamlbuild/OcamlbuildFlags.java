@@ -6,6 +6,7 @@ import ocaml.OcamlPlugin;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.debug.core.DebugPlugin;
 
 public class OcamlbuildFlags {
 
@@ -13,12 +14,15 @@ public class OcamlbuildFlags {
 	public static final String LIBS = "ocamlbuildProjectLibs";
 	public static final String CFLAGS = "ocamlbuildProjectCompilerFlags";
 	public static final String LFLAGS = "ocamlbuildProjectLinkerFlags";
+	public static final String OTHER_FLAGS = "ocamlbuildProjectOtherFlags";
+	public static final String GENERATE_TYPE_INFO = "ocamlbuildGenerateTypeInfo";
 
-	ArrayList<String> targets;
-	ArrayList<String> libs;
-	ArrayList<String> cflags;
-	ArrayList<String> lflags;
-	// TODO : add "other flags" (eg: --use-menhir) and corresponding GUI 
+	private ArrayList<String> targets;
+	private ArrayList<String> libs;
+	private ArrayList<String> cflags;
+	private ArrayList<String> lflags;
+	private ArrayList<String> otherFlags;
+	private boolean generateTypeInfo;
 
 	private final IProject project;
 
@@ -32,6 +36,7 @@ public class OcamlbuildFlags {
 		libs = new ArrayList<String>();
 		cflags = new ArrayList<String>();
 		lflags = new ArrayList<String>();
+		otherFlags = new ArrayList<String>();
 
 		try {
 			// load targets
@@ -61,6 +66,20 @@ public class OcamlbuildFlags {
 			if(strLFlags == null)
 				strLFlags = "";
 			setLFlags(strLFlags);
+			
+			// load otherFlags
+			String strOtherFlags = project.getPersistentProperty(new QualifiedName(
+					OcamlPlugin.QUALIFIER, OTHER_FLAGS));
+			if(strOtherFlags == null)
+				strOtherFlags = "";
+			setOtherFlags(strOtherFlags);
+			
+			// generate type info?
+			String strGenerateTypeInfo = project.getPersistentProperty(new QualifiedName(
+					OcamlPlugin.QUALIFIER, GENERATE_TYPE_INFO));
+			if (strGenerateTypeInfo == null)
+				strGenerateTypeInfo = "true";
+			setGenerateTypeInfo("true".equalsIgnoreCase(strGenerateTypeInfo));
 		} catch (Throwable e) {
 			OcamlPlugin.logError("problem loading ocamlbuild project properties", e);
 		}
@@ -84,6 +103,13 @@ public class OcamlbuildFlags {
 			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, LFLAGS),
 					getLFlags());
 
+			// save otherFlags
+			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, OTHER_FLAGS),
+					getOtherFlagsAsString());
+
+			// save generateTypeInfo
+			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER,
+					GENERATE_TYPE_INFO), Boolean.toString(isGenerateTypeInfo()));
 		} catch (Throwable e) {
 			OcamlPlugin.logError("problem saving ocamlbuild project properties", e);
 		}
@@ -126,6 +152,19 @@ public class OcamlbuildFlags {
 				this.lflags.add(lflag.trim());
 	}
 
+	public void setOtherFlags(String strOtherFlags) {
+		String[] flags = DebugPlugin.parseArguments(strOtherFlags);
+		otherFlags = new ArrayList<String>();
+
+		for (String flag : flags)
+			if (flag.trim().length() > 0)
+				this.otherFlags.add(flag.trim());
+	}
+	
+	public void setGenerateTypeInfo(boolean value) {
+		this.generateTypeInfo = value;
+	}
+	
 	public String getTargets() {
 		boolean bFirst = true;
 
@@ -187,5 +226,30 @@ public class OcamlbuildFlags {
 		
 		return strlflags.toString();
 	}
+	
+	public String[] getOtherFlags() {
+		return otherFlags.toArray(new String[otherFlags.size()]);
+	}
+	
+	public String getOtherFlagsAsString() {
+		StringBuilder strOtherFlags = new StringBuilder();
+		boolean bFirst = true;
+		for (String flag : this.otherFlags) {
+			if (bFirst)
+				bFirst = false;
+			else
+				strOtherFlags.append(" ");
+			
+			String trimmed = flag.trim();
+			if(trimmed.contains(" "))
+				trimmed = "\"" + trimmed + "\"";
+			strOtherFlags.append(trimmed);
+		}
+		
+		return strOtherFlags.toString();
+	}
 
+	public boolean isGenerateTypeInfo() {
+		return generateTypeInfo;
+	}
 }

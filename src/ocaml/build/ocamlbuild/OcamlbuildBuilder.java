@@ -95,8 +95,10 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 		// TODO: add compile and link paths (eg: -cflags -I /path)
 
-		commandLine.add("-tags");
-		commandLine.add("dtypes"); // TODO user preference?
+		if (ocamlbuildFlags.isGenerateTypeInfo()) {
+			commandLine.add("-tags");
+			commandLine.add("dtypes");
+		}
 		// commandLine.add("-log");
 		// commandLine.add("_build" + File.separator + "_log");
 		String libs = ocamlbuildFlags.getLibs();
@@ -113,6 +115,11 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 		if (!"".equals(lflags)) {
 			commandLine.add("-lflags");
 			commandLine.add(lflags);
+		}
+		String[] otherFlags = ocamlbuildFlags.getOtherFlags();
+		for (String otherFlag : otherFlags) {
+			if(otherFlag.trim().length() > 0)
+				commandLine.add(otherFlag);
 		}
 
 		if (!noTargets) {

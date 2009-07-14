@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -27,6 +28,8 @@ public class OcamlbuildProjectProperties extends PropertyPage {
 	private Text txtLibs;
 	private Text txtCFlags;
 	private Text txtLFlags;
+	private Text txtOtherFlags;
+	private Button cbGenerateTypeInfo;
 
 	@Override
 	protected Control createContents(Composite parent) {
@@ -88,6 +91,21 @@ public class OcamlbuildProjectProperties extends PropertyPage {
 		txtLFlags.setLayoutData(newGridDataText());
 		txtLFlags.setText(ocamlbuildFlags.getLFlags());
 		
+		Label lblOtherFlags = new Label(composite, SWT.NONE);
+		lblOtherFlags.setToolTipText("Other flags that must be passed to Ocamlbuild.");
+		lblOtherFlags.setText("Other flags (separated by spaces, use \" \" and \\ to quote strings)");
+		lblOtherFlags.setLayoutData(newGridDataLabel());
+		
+		txtOtherFlags = new Text(composite, SWT.BORDER | SWT.MULTI);
+		txtOtherFlags.setTextLimit(2000);
+		txtOtherFlags.setLayoutData(newGridDataText());
+		txtOtherFlags.setText(ocamlbuildFlags.getOtherFlagsAsString());
+		
+		cbGenerateTypeInfo = new Button(composite, SWT.CHECK);
+		cbGenerateTypeInfo.setText("Generate type information");
+		cbGenerateTypeInfo.setToolTipText("Whether to generate type information, "
+				+ "that is then displayed in the editor and outline.");
+		cbGenerateTypeInfo.setSelection(ocamlbuildFlags.isGenerateTypeInfo());
 		
 		return composite;
 	}
@@ -114,6 +132,8 @@ public class OcamlbuildProjectProperties extends PropertyPage {
 		ocamlbuildFlags.setLibs(txtLibs.getText());
 		ocamlbuildFlags.setCFlags(txtCFlags.getText());
 		ocamlbuildFlags.setLFlags(txtLFlags.getText());
+		ocamlbuildFlags.setOtherFlags(txtOtherFlags.getText());
+		ocamlbuildFlags.setGenerateTypeInfo(cbGenerateTypeInfo.getSelection());
 		
 		ocamlbuildFlags.save();
 		
