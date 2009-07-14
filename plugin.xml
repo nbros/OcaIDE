@@ -771,17 +771,21 @@
 				icon="icons/help.gif" id="Ocaml_sourceActions_ContextInformation"
 				label="Show Tooltip Description"
 				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
-   <action
-         class="ocaml.editor.actions.SwitchSpellCheckingAction"
-         definitionId="Ocaml.switchSpellCheckerCommand"
-         icon="icons/spellcheck.gif"
-         id="Ocaml_sourceActions_SwitchSpellChecker"
-         label="Switch Spell Checker"
-         pulldown="false"
-         state="false"
-         style="push"
-         toolbarPath="Ocaml_sourceMenu/slot1">
-   </action>
+			<action
+				class="ocaml.editor.actions.SwitchSpellCheckingAction"
+				definitionId="Ocaml.switchSpellCheckerCommand"
+				icon="icons/spellcheck.gif"
+				id="Ocaml_sourceActions_SwitchSpellChecker"
+				label="Switch Spell Checker"
+				pulldown="false"
+				state="false"
+				style="push"
+				toolbarPath="Ocaml_sourceMenu/slot1">
+			</action>
+			<action class="ocaml.editor.actions.OpenQuickOutlineAction"
+				definitionId="Ocaml.openQuickOutlineCommand"
+				id="Ocaml_sourceActions_QuickOutline" label="Quick Outline"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
 		</actionSet>
 	</extension>
 	<extension point="org.eclipse.ui.commands">
@@ -841,6 +845,8 @@
 			id="Ocaml.commentSelectionCommand" name="Comment/Uncomment Selection"/>
 		<command categoryId="Ocaml.commandscategory"
 			id="Ocaml.commentSelectionProtectedCommand" name="Comment/Uncomment Selection (Protected)"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.openQuickOutlineCommand" name="Quick Outline"/>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
 		<key
@@ -914,6 +920,10 @@
 			contextId="Ocaml.editor.context"
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
 			sequence="M1+M2+M3+C"/>
+		<key commandId="Ocaml.openQuickOutlineCommand"
+			contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+O"/>
 	</extension>
 	<extension point="org.eclipse.ui.contexts">
 		<context description="Context for editing Ocaml source"
