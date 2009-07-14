@@ -1,6 +1,7 @@
 package ocaml.parser;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import ocaml.OcamlPlugin;
 import ocaml.util.Misc;
@@ -217,14 +218,25 @@ public class Def extends beaver.Symbol {
 	}
 
 	private void collapseAux(Def node, ArrayList<Def> nodes, boolean bClean) {
-		if (node.type == Type.Dummy || bClean && node.type == Type.Identifier) {
-			for (Def d : node.children)
-				collapseAux(d, nodes, bClean);
-		} else {
-			nodes.add(node);
-			if (bClean)
-				node.clean();
+		// non-recursive depth-first search
+		LinkedList<Def> flatList = new LinkedList<Def>();
+		flatList.add(node);
+		while(!flatList.isEmpty()) {
+			Def def = flatList.removeFirst();
+			
+			if (def.type == Type.Dummy || bClean && def.type == Type.Identifier) {
+				for (int i = def.children.size() - 1; i>=0; i--) {
+					Def child = def.children.get(i);
+					flatList.addFirst(child);
+				}
+			} else {
+				nodes.add(def);
+				if (bClean)
+					def.clean();
+			}
 		}
+		
+		
 	}
 
 	/**
