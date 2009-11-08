@@ -16,13 +16,6 @@
  * - Nicolas Pouillard: initial version
  *)
 
-(* compile with:
-camlp4 -parser Camlp4OCamlRevisedParser -parser Camlp4OCamlRevisedParserParser -parser Camlp4QuotationCommon -parser Camlp4OCamlRevisedQuotationExpander -printer Ocaml "OptimizedPrinter.ml" > OptimizedPrinter.ml && ocamlc -c -I +camlp4 OptimizedPrinter.ml
-
-Then execute with:
-camlp4o OptimizedPrinter.cmo test.ml
-*)
-
 open Camlp4;
 open Format;
 
@@ -31,9 +24,8 @@ module Id = struct
   value version = Sys.ocaml_version;
 end;
 
-module Make (Syntax : Sig.Camlp4Syntax (*Camlp4.Sig.Syntax*)) = struct
-include Syntax;
-	(*module Ast = Syntax.Ast;*)
+module Make (Syntax : Sig.Camlp4Syntax) = struct
+  include Syntax;
 
   type sep = format unit formatter unit;
 
@@ -188,16 +180,15 @@ include Syntax;
     method set_curry_constr b = {< curry_constr = b >};
 
     method print_comments_before loc f =
+      do {
       match mode with
-      [ `comments ->
-          do_print_comments_before loc (fun c _ -> pp f "%s@ " c)
-            (CommentFilter.take_stream comment_filter)
+      [ `comments -> ()
       | `loc_and_comments ->
-          let () = fprintf f "(*%d:%d*)@ " (Loc.start_off loc) (Loc.stop_off loc) in
-          do_print_comments_before loc
-            (fun s -> pp f "%s(*comm_loc: %a*)@ " s Loc.dump)
-            (CommentFilter.take_stream comment_filter)
+          Format.fprintf f "(*%d:%d*)" (Loc.start_off loc) (Loc.stop_off loc)
       | _ -> () ];
+          do_print_comments_before loc (fun c _ -> pp f "%s " c)
+              (CommentFilter.take_stream comment_filter);
+      };
 
     method var f =
       fun
@@ -279,7 +270,7 @@ include Syntax;
             o#patt p o#under_pipe#expr w o#under_pipe#expr e ];
 
     method binding f bi =
-      let () = o#node f bi Ast.loc_of_binding in
+(*      let () = o#node f bi Ast.loc_of_binding in*)
       match bi with
       [ <:binding<>> -> ()
       | <:binding< $b1$ and $b2$ >> ->
@@ -298,7 +289,7 @@ include Syntax;
       | <:binding< $anti:s$ >> -> o#anti f s ];
 
     method record_binding f bi =
-      let () = o#node f bi Ast.loc_of_rec_binding in
+(*      let () = o#node f bi Ast.loc_of_rec_binding in*)
       match bi with
       [ <:rec_binding<>> -> ()
       | <:rec_binding< $i$ = $e$ >> ->
@@ -404,17 +395,20 @@ include Syntax;
         o#print_comments_before (loc_of_node node) f;
 
     method ident f i =
-    let () = o#node f i Ast.loc_of_ident in
+(*    let () = o#node f i Ast.loc_of_ident in*)
     match i with
     [ <:ident< $i1$.$i2$ >> -> pp f "%a.@,%a" o#ident i1 o#ident i2
     | <:ident< $i1$ $i2$ >> -> pp f "%a@,(%a)" o#ident i1 o#ident i2
-    | <:ident< $anti:s$ >> -> o#anti f s
-    | <:ident< $lid:s$ >> | <:ident< $uid:s$ >> -> o#var f s ];
+    | <:ident< $anti:s$ >> ->
+        o#anti f s
+    | <:ident< $lid:s$ >> | <:ident< $uid:s$ >> -> 
+        let () = o#node f i Ast.loc_of_ident in
+        o#var f s ];
 
     method private var_ident = {< var_conversion = True >}#ident;
 
     method expr f e =
-    let () = o#node f e Ast.loc_of_expr in
+(*    let () = o#node f e Ast.loc_of_expr in*)
     match e with
     [ ((<:expr< let $rec:_$ $_$ in $_$ >> |
         <:expr< let module $_$ = $_$ in $_$ >>) as e) when semi ->
@@ -474,7 +468,8 @@ include Syntax;
     | <:expr< assert False >> -> pp f "@[<2>assert@ false@]"
     | <:expr< assert $e$ >> -> pp f "@[<2>assert@ %a@]" o#dot_expr e
     | <:expr< let module $s$ = $me$ in $e$ >> ->
-          pp f "@[<2>let module %a =@ %a@]@ @[<2>in@ %a@]" o#var s o#module_expr me o#reset_semi#expr e
+        let () = o#node f e Ast.loc_of_expr in
+        pp f "@[<2>let module %a =@ %a@]@ @[<2>in@ %a@]" o#var s o#module_expr me o#reset_semi#expr e
     | <:expr< object $cst$ end >> ->
         pp f "@[<hv0>@[<hv2>object@ %a@]@ end@]" o#class_str_item cst
     | <:expr< object ($p$ : $t$) $cst$ end >> ->
@@ -486,13 +481,13 @@ include Syntax;
     | e -> o#apply_expr f e ];
 
     method apply_expr f e =
-    let () = o#node f e Ast.loc_of_expr in
+(*    let () = o#node f e Ast.loc_of_expr in*)
     match e with
     [ <:expr< new $i$ >> -> pp f "@[<2>new@ %a@]" o#ident i
     | e -> o#dot_expr f e ];
 
     method dot_expr f e =
-    let () = o#node f e Ast.loc_of_expr in
+(*    let () = o#node f e Ast.loc_of_expr in*)
     match e with
     [ <:expr< $e$.val >> -> pp f "@[<2>!@,%a@]" o#simple_expr e
     | <:expr< $e1$ . $e2$ >> -> pp f "@[<2>%a.@,%a@]" o#dot_expr e1 o#dot_expr e2
@@ -504,7 +499,7 @@ include Syntax;
     | e -> o#simple_expr f e ];
 
     method simple_expr f e =
-    let () = o#node f e Ast.loc_of_expr in
+(*    let () = o#node f e Ast.loc_of_expr in*)
     match e with
     [ <:expr<>> -> ()
     | <:expr< do { $e$ } >> ->
@@ -570,7 +565,8 @@ include Syntax;
       | Ast.BAnt s -> o#anti f s ];
 
     method patt f p =
-    let () = o#node f p Ast.loc_of_patt in match p with
+(*    let () = o#node f p Ast.loc_of_patt in *)
+    match p with
     [ <:patt< ( $p1$ as $p2$ ) >> -> pp f "@[<1>(%a@ as@ %a)@]" o#patt p1 o#patt p2
     | <:patt< $i$ = $p$ >> -> pp f "@[<2>%a =@ %a@]" o#var_ident i o#patt p
     | <:patt< $p1$; $p2$ >> -> pp f "%a;@ %a" o#patt p1 o#patt p2
@@ -617,7 +613,7 @@ include Syntax;
     | p -> o#simple_patt f p ];
 
     method simple_patt f p =
-    let () = o#node f p Ast.loc_of_patt in
+(*    let () = o#node f p Ast.loc_of_patt in*)
     match p with
     [ <:patt<>> -> ()
     | <:patt< $id:i$ >> -> o#var_ident f i
@@ -659,7 +655,7 @@ include Syntax;
       | p -> o#patt f p ];
 
     method simple_ctyp f t =
-    let () = o#node f t Ast.loc_of_ctyp in
+(*    let () = o#node f t Ast.loc_of_ctyp in*)
     match t with
     [ <:ctyp< $id:i$ >> -> o#ident f i
     | <:ctyp< $anti:s$ >> -> o#anti f s
@@ -690,7 +686,7 @@ include Syntax;
     | t -> pp f "@[<1>(%a)@]" o#ctyp t ];
 
     method ctyp f t =
-    let () = o#node f t Ast.loc_of_ctyp in
+(*    let () = o#node f t Ast.loc_of_ctyp in*)
     match t with
     [ <:ctyp< $t1$ as $t2$ >> -> pp f "@[<2>%a@ as@ %a@]" o#simple_ctyp t1 o#simple_ctyp t2
     | <:ctyp< $t1$ -> $t2$ >> -> pp f "@[<2>%a@ ->@ %a@]" o#ctyp1 t1 o#ctyp t2
@@ -732,14 +728,14 @@ include Syntax;
     method constructor_type f t =
     match t with
     [ <:ctyp@loc< $t1$ and $t2$ >> ->
-        let () = o#node f t (fun _ -> loc) in
+(*        let () = o#node f t (fun _ -> loc) in*)
         pp f "%a@ * %a" o#constructor_type t1 o#constructor_type t2
     | <:ctyp< $_$ -> $_$ >> -> pp f "(%a)" o#ctyp t
     | t -> o#ctyp f t ];
 
 
     method sig_item f sg =
-      let () = o#node f sg Ast.loc_of_sig_item in
+(*      let () = o#node f sg Ast.loc_of_sig_item in*)
       match sg with
       [ <:sig_item<>> -> ()
       | <:sig_item< $sg$; $<:sig_item<>>$ >> |
@@ -790,7 +786,7 @@ include Syntax;
           pp f "%a%(%)" o#anti s semisep ];
 
     method str_item f st =
-      let () = o#node f st Ast.loc_of_str_item in
+(*      let () = o#node f st Ast.loc_of_str_item in*)
       match st with
       [ <:str_item<>> -> ()
       | <:str_item< $st$; $<:str_item<>>$ >> |
@@ -818,6 +814,7 @@ include Syntax;
             pp f "@[<2>module %a :@ %a =@ %a%(%)@]"
               o#var s o#module_type mt o#module_expr me semisep
       | <:str_item< module $s$ = $me$ >> ->
+            let () = o#node f st Ast.loc_of_str_item in
             pp f "@[<2>module %a =@ %a%(%)@]" o#var s o#module_expr me semisep
       | <:str_item< module type $s$ = $mt$ >> ->
             pp f "@[<2>module type %a =@ %a%(%)@]"
@@ -843,7 +840,7 @@ include Syntax;
       | Ast.StExc _ _ (Ast.OAnt _) -> assert False ];
 
     method module_type f mt =
-    let () = o#node f mt Ast.loc_of_module_type in
+(*    let () = o#node f mt Ast.loc_of_module_type in*)
     match mt with
     [ <:module_type<>> -> assert False
     | <:module_type< $id:i$ >> -> o#ident f i
@@ -858,7 +855,7 @@ include Syntax;
           pp f "@[<2>%a@ with@ %a@]" o#module_type mt o#with_constraint wc ];
 
     method with_constraint f wc =
-    let () = o#node f wc Ast.loc_of_with_constr in
+(*    let () = o#node f wc Ast.loc_of_with_constr in*)
     match wc with
     [ <:with_constr<>> -> ()
     | <:with_constr< type $t1$ = $t2$ >> ->
@@ -870,7 +867,7 @@ include Syntax;
     | <:with_constr< $anti:s$ >> -> o#anti f s ];
 
     method module_expr f me =
-    let () = o#node f me Ast.loc_of_module_expr in
+(*    let () = o#node f me Ast.loc_of_module_expr in*)
     match me with
     [ <:module_expr<>> -> assert False
     | <:module_expr< ( struct $st$ end : sig $sg$ end ) >> ->
@@ -879,7 +876,7 @@ include Syntax;
     | _ -> o#simple_module_expr f me ];
 
     method simple_module_expr f me =
-    let () = o#node f me Ast.loc_of_module_expr in
+(*    let () = o#node f me Ast.loc_of_module_expr in*)
     match me with
     [ <:module_expr<>> -> assert False
     | <:module_expr< $id:i$ >> -> o#ident f i
@@ -894,7 +891,7 @@ include Syntax;
           pp f "@[<1>(%a :@ %a)@]" o#module_expr me o#module_type mt ];
 
     method class_expr f ce =
-    let () = o#node f ce Ast.loc_of_class_expr in
+(*    let () = o#node f ce Ast.loc_of_class_expr in*)
     match ce with
     [ <:class_expr< $ce$ $e$ >> ->
           pp f "@[<2>%a@ %a@]" o#class_expr ce o#expr e
@@ -929,7 +926,7 @@ include Syntax;
     | _ -> assert False ];
 
     method class_type f ct =
-    let () = o#node f ct Ast.loc_of_class_type in
+(*    let () = o#node f ct Ast.loc_of_class_type in*)
     match ct with
     [ <:class_type< $id:i$ >> ->
           pp f "@[<2>%a@]" o#ident i
@@ -956,7 +953,7 @@ include Syntax;
     | _ -> assert False ];
 
     method class_sig_item f csg =
-      let () = o#node f csg Ast.loc_of_class_sig_item in
+(*      let () = o#node f csg Ast.loc_of_class_sig_item in*)
       match csg with
       [ <:class_sig_item<>> -> ()
       | <:class_sig_item< $csg$; $<:class_sig_item<>>$ >> |
@@ -982,7 +979,7 @@ include Syntax;
             pp f "%a%(%)" o#anti s semisep ];
 
     method class_str_item f cst =
-      let () = o#node f cst Ast.loc_of_class_str_item in
+(*      let () = o#node f cst Ast.loc_of_class_str_item in*)
       match cst with
       [ <:class_str_item<>> -> ()
       | <:class_str_item< $cst$; $<:class_str_item<>>$ >> |
@@ -1100,7 +1097,5 @@ module MakeMore (Syntax : Sig.Camlp4Syntax)
 
 end;
 
-
 module M = Camlp4.Register.OCamlPrinter(Id)(MakeMore);
-
 
