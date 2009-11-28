@@ -156,5 +156,4 @@
 	* Fixed a problem when an empty path was passed to ocamlbuild
 	* Extracted sources and help into different plug-ins to avoid forcing users to download the whole documentation each time an update is done, since the help doesn't change nearly as often as the binaries.
 	
-	
-	
+* 1.2.6
