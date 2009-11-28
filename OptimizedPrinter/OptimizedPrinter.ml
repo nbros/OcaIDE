@@ -16,6 +16,13 @@
  * - Nicolas Pouillard: initial version
  *)
 
+(* compile with:
+camlp4 -parser Camlp4OCamlRevisedParser -parser Camlp4OCamlRevisedParserParser -parser Camlp4QuotationCommon -parser Camlp4OCamlRevisedQuotationExpander -printer Ocaml "OptimizedPrinter.ml" > OptimizedPrinter.ml && ocamlc -c -I +camlp4 OptimizedPrinter.ml
+ 
+Then execute with:
+camlp4o OptimizedPrinter.cmo test.ml
+*)
+
 open Camlp4;
 open Format;
 
