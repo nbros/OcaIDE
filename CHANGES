@@ -160,3 +160,9 @@
 	* Fixed a StackOverflowError while parsing very big files
 	* Implemented support for editing code templates
 	* Improved code template system
+	
+* 1.2.7 (November 28 2009)
+	* Fixed missing default templates file (templates.xml) in the build
+	
+* 1.2.8
+	* Added completion on the ocamlbuild targets field 
