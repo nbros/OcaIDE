@@ -424,7 +424,7 @@ public class OcamlPlugin extends AbstractUIPlugin {
 	/** @return true if the system is compatible with linux (that is: Linux or Mac Os X) */
 	public static boolean runningOnLinuxCompatibleSystem() {
 		String os = Platform.getOS();
-		return (os.equals(Platform.OS_LINUX) || os.equals(Platform.OS_MACOSX));
+		return !(os.equals(Platform.OS_WIN32));
 	}
 
 	/** Instance of the last focused top-level view. This is used to evaluate expressions in the top-level. */
