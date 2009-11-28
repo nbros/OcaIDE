@@ -1,28 +1,152 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><templates><template autoinsert="true" context="ocaml.editors.templates.contextType.ocamlFile" deleted="false" description="begin end block" enabled="true" name="begin end">begin&#13;
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates>
+
+<template 
+	autoinsert="true" 
+	context="ocaml.editors.templates.contextType.ocamlFile" 
+	deleted="false" 
+	description="begin end block" 
+	enabled="true" 
+	id="ocaml.editors.templates.beginEnd"
+	name="begin end">begin&#13;
 	${cursor}&#13;
 end&#13;
-</template><template autoinsert="true" context="ocaml.editors.templates.contextType.ocamlFile" deleted="false" description="class definition" enabled="true" name="class">class ${name} =&#13;
+</template>
+
+<template 
+	autoinsert="true" 
+	context="ocaml.editors.templates.contextType.ocamlFile" 
+	deleted="false" description="class definition" 
+	enabled="true" 
+	id="ocaml.editors.templates.class"
+	name="class">class ${name} =&#13;
 object (self)&#13;
 	${cursor}&#13;
 end&#13;
-</template><template autoinsert="true" context="ocaml.editors.templates.contextType.ocamlFile" deleted="false" description="exception definition" enabled="true" name="exception">exception ${exc};;</template><template autoinsert="true" context="ocaml.editors.templates.contextType.ocamlFile" deleted="false" description="loop" enabled="true" name="for">for ${i} = ${0} to ${10} do&#13;
+</template>
+
+<template 
+	autoinsert="true" 
+	context="ocaml.editors.templates.contextType.ocamlFile" 
+	deleted="false" description="exception definition" 
+	enabled="true" 
+	id="ocaml.editors.templates.exception"
+	name="exception">exception ${exc};;</template>
+	
+<template autoinsert="true" 
+	context="ocaml.editors.templates.contextType.ocamlFile" 
+	deleted="false" 
+	description="loop" 
+	enabled="true" 
+	id="ocaml.editors.templates.for"
+	name="for">for ${i} = ${0} to ${10} do&#13;
 	${cursor}&#13;
 done&#13;
-</template><template autoinsert="true" context="ocaml.editors.templates.contextType.ocamlFile" deleted="false" description="condition" enabled="true" id="org.eclipse.ant.ui.templates.javac1" name="if">if ${condition} then&#13;
+</template>
+
+<template 
+	autoinsert="true" 
+	context="ocaml.editors.templates.contextType.ocamlFile" 
+	deleted="false" 
+	description="condition" 
+	enabled="true" 
+	id="ocaml.editors.templates.if" 
+	name="if">if ${condition} then&#13;
 	${consequence}&#13;
 else&#13;
 	${alternative}&#13;
-</template><template autoinsert="true" context="ocaml.editors.templates.contextType.ocamlFile" deleted="false" description="let+match" enabled="true" name="let+match">let rec ${functionName} ${parameter} = match ${parameter} with&#13;
-	${cursor}</template><template autoinsert="true" context="ocaml.editors.templates.contextType.ocamlFile" deleted="false" description="match with" enabled="true" name="match">match ${name} with&#13;
-	| ${cursor}</template><template autoinsert="true" context="ocaml.editors.templates.contextType.ocamlFile" deleted="false" description="method definition" enabled="true" name="method">method ${name} = ${cursor}</template><template autoinsert="true" context="ocaml.editors.templates.contextType.ocamlFile" deleted="false" description="module" enabled="true" name="module">module ${Name} =&#13;
+</template>
+
+<template 
+	autoinsert="true" 
+	context="ocaml.editors.templates.contextType.ocamlFile" 
+	deleted="false" 
+	description="let+match" 
+	enabled="true" 
+	id="ocaml.editors.templates.letAndMatch"
+	name="let+match">let rec ${functionName} ${parameter} = match ${parameter} with&#13;
+	${cursor}</template>
+	
+<template 
+	autoinsert="true" 
+	context="ocaml.editors.templates.contextType.ocamlFile" 
+	deleted="false" 
+	description="match with" 
+	enabled="true" 
+	id="ocaml.editors.templates.match"
+	name="match">match ${name} with&#13;
+	| ${cursor}</template>
+	
+<template autoinsert="true" 
+	context="ocaml.editors.templates.contextType.ocamlFile" 
+	deleted="false" 
+	description="method definition" 
+	enabled="true" 
+	id="ocaml.editors.templates.method"
+	name="method">method ${name} = ${cursor}</template>
+	
+<template 
+	autoinsert="true" 
+	context="ocaml.editors.templates.contextType.ocamlFile" 
+	deleted="false" 
+	description="module" 
+	enabled="true" 
+	id="ocaml.editors.templates.module"
+	name="module">module ${Name} =&#13;
 struct&#13;
 	${cursor}&#13;
 end&#13;
-</template><template autoinsert="true" context="ocaml.editors.templates.contextType.ocamlFile" deleted="false" description="module type definition" enabled="true" name="module type">module type ${Name} =&#13;
+</template>
+
+<template 
+	autoinsert="true" 
+	context="ocaml.editors.templates.contextType.ocamlFile" 
+	deleted="false" 
+	description="module type definition" 
+	enabled="true" 
+	id="ocaml.editors.templates.moduleType"
+	name="module type">module type ${Name} =&#13;
 sig&#13;
 	${cursor}&#13;
 end&#13;
-</template><template autoinsert="true" context="ocaml.editors.templates.contextType.ocamlFile" deleted="false" description="record type definition" enabled="true" name="record">type ${name} = {${Cons1}: ${type1}; ${Cons2}: ${type2}}</template><template autoinsert="true" context="ocaml.editors.templates.contextType.ocamlFile" deleted="false" description="try with" enabled="true" name="try">try ${expr} with ${Exception} -&gt; ${cursor}</template><template autoinsert="true" context="ocaml.editors.templates.contextType.ocamlFile" deleted="false" description="variant type definition" enabled="true" name="variant">type ${name} = ${Cons1} of ${type1} | ${Cons2} of ${type2}</template><template autoinsert="true" context="ocaml.editors.templates.contextType.ocamlFile" deleted="false" description="while" enabled="true" name="while">while ${condition} do&#13;
+</template>
+
+<template 
+	autoinsert="true" 
+	context="ocaml.editors.templates.contextType.ocamlFile" 
+	deleted="false" 
+	description="record type definition" 
+	enabled="true" 
+	id="ocaml.editors.templates.recordType"
+	name="record">type ${name} = {${Cons1}: ${type1}; ${Cons2}: ${type2}}</template>
+	
+<template autoinsert="true" 
+	context="ocaml.editors.templates.contextType.ocamlFile" 
+	deleted="false" 
+	description="try with" 
+	enabled="true" 
+	id="ocaml.editors.templates.tryWith"
+	name="try">try ${expr} with ${Exception} -&gt; ${cursor}</template>
+	
+<template 
+	autoinsert="true" 
+	context="ocaml.editors.templates.contextType.ocamlFile" 
+	deleted="false" 
+	description="variant type definition" 
+	enabled="true" 
+	id="ocaml.editors.templates.variantDef"
+	name="variant">type ${name} = ${Cons1} of ${type1} | ${Cons2} of ${type2}</template>
+	
+<template autoinsert="true" 
+	context="ocaml.editors.templates.contextType.ocamlFile" 
+	deleted="false" 
+	description="while" 
+	enabled="true" 
+	id="ocaml.editors.templates.while"
+	name="while">while ${condition} do&#13;
 	${cursor}&#13;
 done&#13;
-</template></templates>
+</template>
+
+</templates>
