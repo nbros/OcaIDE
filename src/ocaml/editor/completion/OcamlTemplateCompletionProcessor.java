@@ -1,6 +1,8 @@
 package ocaml.editor.completion;
 
 import ocaml.OcamlPlugin;
+import ocaml.editor.templates.OcamlFileContextType;
+import ocaml.editor.templates.OcamlTemplateAccess;
 import ocaml.editors.OcamlEditor;
 import ocaml.util.ImageRepository;
 
@@ -12,12 +14,10 @@ import org.eclipse.jface.text.templates.TemplateCompletionProcessor;
 import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.swt.graphics.Image;
 
-// TODO: templates editor (in preferences)
-
 /** Process the completions for O'Caml language constructs */
 public class OcamlTemplateCompletionProcessor extends TemplateCompletionProcessor {
 
-	private int indent = 0;
+	private int currentIndent = 0;
 
 	@Override
 	protected TemplateContextType getContextType(ITextViewer viewer, IRegion region) {
@@ -29,27 +29,27 @@ public class OcamlTemplateCompletionProcessor extends TemplateCompletionProcesso
 			lineRegion = viewer.getDocument().getLineInformationOfOffset(offset);
 		} catch (BadLocationException e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
-			return new TemplateContextType("ocamltemplatecontext");
+			return new OcamlFileContextType();
 		}
 
-		indent = 0;
+		currentIndent = 0;
 		if (lineRegion != null) {
 			int tabSize = OcamlEditor.getTabSize();
 
 			int max = lineRegion.getOffset() + lineRegion.getLength();
 			for (int i = lineRegion.getOffset(); i < max; i++) {
 				if (doc.charAt(i) == '\t')
-					indent += tabSize;
+					currentIndent += tabSize;
 				else if (doc.charAt(i) == ' ')
-					indent++;
+					currentIndent++;
 				else
 					break;
 			}
 
-			indent /= tabSize;
+			currentIndent /= tabSize;
 		}
 
-		return new TemplateContextType("ocamltemplatecontext");
+		return new OcamlFileContextType();
 	}
 
 	@Override
@@ -57,60 +57,36 @@ public class OcamlTemplateCompletionProcessor extends TemplateCompletionProcesso
 		return ImageRepository.getImage(ImageRepository.ICON_TEMPLATES);
 	}
 
-	
 	private String tab;
-	
+
 	@Override
 	protected Template[] getTemplates(String contextTypeId) {
-		
+
 		this.tab = OcamlEditor.getTab();
 
-		Template t1 =
-				new Template("if", "condition", "ocamltemplatecontext", "if ${condition} then" + OcamlPlugin.newline
-						+ indent(indent + 1) + "${consequence}" + OcamlPlugin.newline + indent(indent) + "else\n"
-						+ indent(indent + 1) + "${alternative}" + OcamlPlugin.newline+indent(indent), true);
-		Template t2 =
-				new Template("for", "loop", "ocamltemplatecontext", "for ${i} = ${0} to ${10} do" + OcamlPlugin.newline
-						+ indent(indent + 1) + "${instruction}" + OcamlPlugin.newline + indent(indent) + "done" + OcamlPlugin.newline +indent(indent), true);
-		Template t3 =
-				new Template("let+match", "let+match", "ocamltemplatecontext",
-					"let rec ${function name} ${parameter} = match ${parameter} with", true);
-		Template t4 =
-				new Template("type1", "variant type", "ocamltemplatecontext",
-					"type ${name} = ${Cons1} of ${type1} | ${Cons2} of ${type2}", true);
-		Template t5 =
-				new Template("type2", "record type", "ocamltemplatecontext",
-					"type ${name} = {${Cons1}: ${type1}; ${Cons2}: ${type2}}", true);
-		Template t6 =
-				new Template("exception", "exception", "ocamltemplatecontext",
-					"exception ${exc};;", true);
-		Template t7 =
-				new Template("try", "try with", "ocamltemplatecontext",
-					"try ${expr} with ${Exception} -> ${expr2}", true);
-		Template t8 =
-				new Template("module", "module", "ocamltemplatecontext", "module ${Name} =" + OcamlPlugin.newline
-						+ indent(indent) + "struct" + OcamlPlugin.newline + indent(indent + 1) + "${body}" + OcamlPlugin.newline
-						+ indent(indent) + "end;;" + OcamlPlugin.newline + indent(indent), true);
-		Template t9 =
-				new Template("module type", "module signature", "ocamltemplatecontext",
-					"module type ${Name} =" + OcamlPlugin.newline+indent(indent) + "sig" + OcamlPlugin.newline +indent(indent+1) + "${body}" + OcamlPlugin.newline+indent(indent) + "end;;" + OcamlPlugin.newline+indent(indent), true);
-		Template t10 =
-				new Template("class", "class definition", "ocamltemplatecontext",
-					"class ${name} =" + OcamlPlugin.newline + indent(indent) + "object (self)" + OcamlPlugin.newline + indent(indent + 1)
-							+ "${body}" + OcamlPlugin.newline + indent(indent) + "end;;" + OcamlPlugin.newline+indent(indent), true);
-		Template t11 =
-			new Template("match", "match with", "ocamltemplatecontext",
-				"match ${name} with" + OcamlPlugin.newline + indent(indent+1) + "| ", true);
+		Template[] templates = OcamlTemplateAccess.getDefault().getTemplateStore().getTemplates(
+				contextTypeId);
+		Template[] indentedTemplates = new Template[templates.length];
+		for (int i = 0; i < templates.length; i++) {
+			Template template = templates[i];
+			indentedTemplates[i] = new Template(template.getName(), template.getDescription(),
+					template.getContextTypeId(), indentTemplatePattern(template.getPattern()),
+					template.isAutoInsertable());
+		}
 
-		Template t12 =
-			new Template("while", "while", "ocamltemplatecontext",
-				"while ${condition} do" + OcamlPlugin.newline + indent(indent+1) + "${expression}" + "" + OcamlPlugin.newline + indent(indent) + "done" + OcamlPlugin.newline, true);
+		return indentedTemplates;
+	}
 
-		Template t13 =
-			new Template("begin end", "begin end block", "ocamltemplatecontext",
-				"begin" + OcamlPlugin.newline + indent(indent+1) + "${}" + OcamlPlugin.newline + indent(indent) + "end" + OcamlPlugin.newline, true);
+	private String indentTemplatePattern(String pattern) {
+		String[] lines = pattern.split("\\r?\\n");
+		StringBuilder result = new StringBuilder();
 
-		return new Template[] { t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13};
+		for (int i = 0; i < lines.length; i++) {
+			String initialIndent = (i == 0 ? "" : indent(currentIndent));
+			result.append(initialIndent + lines[i] + OcamlPlugin.newline);
+		}
+
+		return result.toString();
 	}
 
 	/** return a string containing <code>count</code> tabulations */

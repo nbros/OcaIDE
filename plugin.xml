@@ -43,6 +43,12 @@
         id="ocaml.preferences.DebuggerPreferencePage"
         name="Debugger">
   </page>
+  <page
+        category="ocaml.preferences.RootPreferencePage"
+        class="ocaml.editor.templates.OcamlTemplatePreferencePage"
+        id="ocaml.preferences.TemplatesPreferencePage"
+        name="Templates">
+  </page>
 	</extension>
 	
 	<extension point="org.eclipse.core.runtime.preferences">
@@ -1084,5 +1090,16 @@
   		<ignore pattern="_build" enabled="true"/>
   		<ignore pattern="*.byte" enabled="true"/>
   		<ignore pattern="*.native" enabled="true"/>
+ </extension>
+ <extension
+       point="org.eclipse.ui.editors.templates">
+    <contextType
+          class="ocaml.editor.templates.OcamlFileContextType"
+          id="ocaml.editors.templates.contextType.ocamlFile"
+          name="Ocaml">
+    </contextType>
+    <include
+          file="templates.xml">
+    </include>
  </extension>
 </plugin>

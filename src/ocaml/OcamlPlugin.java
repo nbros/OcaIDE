@@ -215,6 +215,14 @@ public class OcamlPlugin extends AbstractUIPlugin {
 	}
 
 	/**
+	 * @param exception
+	 *            The exception to log.
+	 */
+	public static void logError(Throwable exception) {
+		instance.getLog().log(new Status(IStatus.ERROR, "ocaml", 0, exception.getMessage(), exception));
+	}
+
+	/**
 	 * Returns the plug-in instance.
 	 */
 	public static OcamlPlugin getInstance() {
