@@ -18,7 +18,7 @@ public class OcamlFormattingStrategy implements IFormattingStrategy, IFormatting
 	
 	private IDocument document;
 
-	private int start, end, length;
+	private int start, /*end,*/ length;
 
 	/** This method is called by the editor to give us the formatting context */
 	public void formatterStarts(IFormattingContext context) {
@@ -48,7 +48,7 @@ public class OcamlFormattingStrategy implements IFormattingStrategy, IFormatting
 			IRegion endLine = document.getLineInformationOfOffset(region.getOffset() + region.getLength());
 			int end = endLine.getOffset() + endLine.getLength();
 
-			this.end = end;
+			//this.end = end;
 			this.length = end - this.start;
 		}
 

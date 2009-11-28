@@ -1,7 +1,6 @@
 package ocaml.editor.completion;
 
 import java.util.ArrayList;
-import java.util.TreeSet;
 
 import ocaml.OcamlPlugin;
 import ocaml.editor.syntaxcoloring.OcamlPartitionScanner;
@@ -159,30 +158,30 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		return allProposals.toArray(new ICompletionProposal[] {});
 	}
 
-	/** Return the completions from the module */
-	private ICompletionProposal[] findModuleCompletionProposals(Def root, int offset, int length,
-			String completion) {
-		TreeSet<SimpleCompletionProposal> proposals = new TreeSet<SimpleCompletionProposal>();
+//	/** Return the completions from the module */
+//	private ICompletionProposal[] findModuleCompletionProposals(Def root, int offset, int length,
+//			String completion) {
+//		TreeSet<SimpleCompletionProposal> proposals = new TreeSet<SimpleCompletionProposal>();
+//
+//		findModuleCompletionProposalsAux(root, offset, length, completion, proposals);
+//
+//		return proposals.toArray(new ICompletionProposal[0]);
+//	}
 
-		findModuleCompletionProposalsAux(root, offset, length, completion, proposals);
-
-		return proposals.toArray(new ICompletionProposal[0]);
-	}
-
-	/** Fill the list "<code>proposals</code>" with the completions found recursively */
-	private void findModuleCompletionProposalsAux(Def def, int offset, int length, String completion,
-			TreeSet<SimpleCompletionProposal> proposals) {
-		String name = def.name.trim();
-		Def.Type type = def.type;
-
-		if (name.startsWith(completion) && !name.equals("") && !name.equals("()") && !name.equals("_")
-				&& !type.equals(Def.Type.Open) && !type.equals(Def.Type.Include)
-				&& !type.equals(Def.Type.Root) && !type.equals(Def.Type.LetIn))
-			proposals.add(new SimpleCompletionProposal(def, name, offset - length, length, name.length()));
-
-		for (Def child : def.children)
-			findModuleCompletionProposalsAux(child, offset, length, completion, proposals);
-	}
+//	/** Fill the list "<code>proposals</code>" with the completions found recursively */
+//	private void findModuleCompletionProposalsAux(Def def, int offset, int length, String completion,
+//			TreeSet<SimpleCompletionProposal> proposals) {
+//		String name = def.name.trim();
+//		Def.Type type = def.type;
+//
+//		if (name.startsWith(completion) && !name.equals("") && !name.equals("()") && !name.equals("_")
+//				&& !type.equals(Def.Type.Open) && !type.equals(Def.Type.Include)
+//				&& !type.equals(Def.Type.Root) && !type.equals(Def.Type.LetIn))
+//			proposals.add(new SimpleCompletionProposal(def, name, offset - length, length, name.length()));
+//
+//		for (Def child : def.children)
+//			findModuleCompletionProposalsAux(child, offset, length, completion, proposals);
+//	}
 
 	/**
 	 * Find the completions matching the argument <code>completion</code> from all the definitions found in

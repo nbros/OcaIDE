@@ -42,7 +42,7 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 	private boolean expandAll;
 
 	/** Is the debug button visible? */
-	public static final boolean bOutlineDebugButton = false;
+	public static boolean bOutlineDebugButton = false;
 	/** Debug mode for the outline */
 	protected static boolean bDebug = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 			PreferenceConstants.P_OUTLINE_DEBUG_MODE);

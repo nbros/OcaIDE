@@ -183,7 +183,7 @@ public class OcamlEditor extends TextEditor {
 	 * We give the outline to Eclipse when it asks for an adapter with the outline class.
 	 */
 	@Override
-	public Object getAdapter(Class required) {
+	public Object getAdapter(@SuppressWarnings("unchecked") Class required) {
 		IPath file = this.getPathOfFileBeingEdited();
 
 		if (file != null && IContentOutlinePage.class.equals(required)) {

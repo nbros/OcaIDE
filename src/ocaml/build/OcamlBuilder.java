@@ -211,7 +211,7 @@ public class OcamlBuilder extends IncrementalProjectBuilder {
 	private static int nBuild = 1;
 
 	@Override
-	protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
+	protected IProject[] build(int kind, @SuppressWarnings("unchecked") Map args, IProgressMonitor monitor) throws CoreException {
 
 		Misc.appendToOcamlConsole("===== Build \u2116" + nBuild++ + " =====");
 

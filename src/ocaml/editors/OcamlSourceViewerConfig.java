@@ -221,6 +221,7 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 									IAnnotationModel annotationModel = sourceViewer.getAnnotationModel();
 									if (annotationModel == null)
 										return;
+									@SuppressWarnings("unchecked")
 									Iterator<Annotation> annotationIterator = annotationModel
 											.getAnnotationIterator();
 

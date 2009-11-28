@@ -37,7 +37,7 @@ public class OcamldocCommentRule implements IPredicateRule {
 					if (ch != '*') {
 						boolean bStar = false;
 						int codeNestingLevel = 0;
-						boolean bEscapeNextChar = false;
+						//boolean bEscapeNextChar = false;
 						
 						boolean firstChar = true;
 
@@ -63,12 +63,12 @@ public class OcamldocCommentRule implements IPredicateRule {
 								codeNestingLevel--;*/
 								
 
-							bEscapeNextChar = false;
+							//bEscapeNextChar = false;
 
 							if (ch == '*' && codeNestingLevel == 0)
 								bStar = true;
-							else if (ch == '\\')
-								bEscapeNextChar = true;
+							else if (ch == '\\');
+								//bEscapeNextChar = true;
 							else if (ch == ')' && bStar)
 								return token;
 							/*

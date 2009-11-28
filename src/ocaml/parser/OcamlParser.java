@@ -974,6 +974,7 @@ public class OcamlParser extends Parser {
 			},
 			new Action() {	// [38] structure_item = LET.l rec_flag.r let_bindings.a
 				public Symbol reduce(Symbol[] _symbols, int offset) {
+					@SuppressWarnings("unused")
 					final Symbol l = _symbols[offset + 1];
 					final Symbol r = _symbols[offset + 2];
 					final Symbol a = _symbols[offset + 3];

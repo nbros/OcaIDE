@@ -87,7 +87,7 @@ public class LoadInToplevelAction implements IObjectActionDelegate {
 		this.files.clear();
 		if (selection instanceof IStructuredSelection) {
 			IStructuredSelection sel = (IStructuredSelection) selection;
-			Iterator<IStructuredSelection> it = sel.iterator();
+			Iterator<?> it = sel.iterator();
 			while (it.hasNext()) {
 				Object o = it.next();
 				if (o instanceof IFile)

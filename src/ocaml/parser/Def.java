@@ -387,9 +387,6 @@ public class Def extends beaver.Symbol {
 	 * and adding it to the parent, right after the 'let in' node
 	 */
 	public void unnestIn() {
-		if (false)
-			return;
-
 		ArrayList<Def> newChildren = new ArrayList<Def>();
 		ArrayList<Def> recChildren = new ArrayList<Def>();
 

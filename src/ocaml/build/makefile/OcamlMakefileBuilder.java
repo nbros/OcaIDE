@@ -63,8 +63,9 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 
 	private IProject project = null;
 
+	
 	@Override
-	protected IProject[] build(final int kind, final Map args, final IProgressMonitor monitor)
+	protected IProject[] build(final int kind, @SuppressWarnings("unchecked")final Map args, final IProgressMonitor monitor)
 			throws CoreException {
 
 		// don't start two builds simultaneously

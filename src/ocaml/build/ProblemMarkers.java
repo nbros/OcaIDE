@@ -333,7 +333,7 @@ public class ProblemMarkers {
 		return filesWithWarnings.toArray(new IFile[filesWithWarnings.size()]);
 	}
 
-	private class WarningFile implements Comparable {
+	private class WarningFile implements Comparable<Object> {
 		final IFile file;
 
 		public WarningFile(IFile file) {
@@ -369,7 +369,7 @@ public class ProblemMarkers {
 
 	}
 
-	private class ErrorFile implements Comparable {
+	private class ErrorFile implements Comparable<Object> {
 		final IFile file;
 
 		public ErrorFile(IFile file) {
