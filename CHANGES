@@ -164,8 +164,10 @@
 * 1.2.7 (November 28 2009)
 	* Fixed missing default templates file (templates.xml) in the build
 	
-* 1.2.8
+* 1.2.8 (November 29 2009)
 	* Added completion on the ocamlbuild targets field
-	* Don't automatically add "_build" folder or one of its sub-directories to project paths
+	* Don't automatically add "_build" or ".*" folders or one of their sub-directories to project paths
 	* Display a message box on Windows when building with Ocamlbuild and Cygwin is not installed
+	* Fix template variables capitalization
+
 
