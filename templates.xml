@@ -32,7 +32,7 @@ end&#13;
 	deleted="false" description="exception definition" 
 	enabled="true" 
 	id="ocaml.editors.templates.exception"
-	name="exception">exception ${exc};;</template>
+	name="exception">exception ${Exc};;</template>
 	
 <template autoinsert="true" 
 	context="ocaml.editors.templates.contextType.ocamlFile" 
@@ -119,7 +119,7 @@ end&#13;
 	description="record type definition" 
 	enabled="true" 
 	id="ocaml.editors.templates.recordType"
-	name="record">type ${name} = {${Cons1}: ${type1}; ${Cons2}: ${type2}}</template>
+	name="record">type ${name} = {${field1}: ${type1}; ${field2}: ${type2}}</template>
 	
 <template autoinsert="true" 
 	context="ocaml.editors.templates.contextType.ocamlFile" 
