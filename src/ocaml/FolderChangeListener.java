@@ -43,9 +43,13 @@ public class FolderChangeListener implements IResourceChangeListener {
 							switch (delta.getKind()) {
 							case IResourceDelta.ADDED: {
 
-								// ignore special directories
-								if (res.getName().startsWith(".") || res.getName().equals("_build"))
+								// ignore
+								if (res.getName().startsWith("."))
 									break;
+								
+								// don't add _build or its sub-directories 
+								if(res.getName().equals("_build"))
+									return false;
 
 								// add this path to the project paths
 								OcamlPaths paths = new OcamlPaths(project);

@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 
 public class OcamlbuildBuilder extends IncrementalProjectBuilder {
@@ -75,6 +76,8 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 		commandLine.add(ocamlbuild);
 		commandLine.add("-classic-display");
 		commandLine.add("-no-log");
+		if(!OcamlPlugin.runningOnLinuxCompatibleSystem())
+			commandLine.add("-no-links");
 
 		addToolsPaths(commandLine);
 
@@ -171,12 +174,15 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 	@Override
 	protected IProject[] build(int kind, @SuppressWarnings("unchecked") Map args, IProgressMonitor monitor) throws CoreException {
 
+		if (!checkCygwin())
+			return null;
+		
 		// System.out.println("building");
 
 		// don't start two builds simultaneously
 		synchronized (buildMutex) {
 			if (building) {
-				// System.out.println("already building: aborting");
+				OcamlPlugin.logWarning("Starting new build while already building: aborting");
 				return null;
 			} else
 				building = true;
@@ -288,6 +294,27 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 		 * delta = getDelta(getProject()); if (delta == null) { fullBuild(monitor); } else {
 		 * incrementalBuild(delta, monitor); } }
 		 */
+	}
+
+	private boolean checkCygwin() {
+		if (!OcamlPlugin.runningOnLinuxCompatibleSystem()) {
+			final String testString = "FoundBash";
+			CommandRunner commandRunner = new CommandRunner(new String[] { "bash", "-c",
+					"echo " + testString }, null);
+			String result = commandRunner.getStdout();
+			if (result == null || !result.startsWith(testString)) {
+				Display.getDefault().asyncExec(new Runnable() {
+					public void run() {
+						MessageDialog.openWarning(null, "Bash not found",
+								"You need Cygwin on Windows to build with Ocamlbuild.\n"
+										+ "Please install it from http://www.cygwin.com/ "
+										+ "and add Cygwin's bin directory to your system path.");
+					}
+				});
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private void buildFinished(final String output, final IProject project) {

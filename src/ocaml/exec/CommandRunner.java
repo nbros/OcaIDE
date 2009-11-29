@@ -39,7 +39,9 @@ public class CommandRunner {
 	 * @param command
 	 *            the command to execute, with its parameters
 	 * @param folderPath
-	 *            the path in which to execute the command
+	 *            the working directory of the subprocess, or <code>null</code>
+	 *            if the subprocess should inherit the working directory of the
+	 *            current process.
 	 */
 	public CommandRunner(String[] command, String folderPath) {
 		if (command.length == 0) {
@@ -76,6 +78,9 @@ public class CommandRunner {
 
 	/** Get the exit value of the command (returned by exit()) */
 	public synchronized int getExitValue() {
+		if(this.process == null) {
+			return -1;
+		}
 		try {
 			this.process.waitFor();
 		} catch (InterruptedException e) {
@@ -86,11 +91,17 @@ public class CommandRunner {
 
 	/** Get the error output */
 	public synchronized String getStderr() {
+		if(this.errorGobbler == null) {
+			return null;
+		}
 		return this.errorGobbler.waitAndGetResult();
 	}
 
 	/** Get the standard output */
 	public synchronized String getStdout() {
+		if(this.outputGobbler == null) {
+			return null;
+		}
 		return this.outputGobbler.waitAndGetResult();
 	}
 
