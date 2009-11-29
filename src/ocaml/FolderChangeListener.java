@@ -43,9 +43,9 @@ public class FolderChangeListener implements IResourceChangeListener {
 							switch (delta.getKind()) {
 							case IResourceDelta.ADDED: {
 
-								// ignore
+								// ignore special directories (.settings, .git, .cvsignore, etc.)
 								if (res.getName().startsWith("."))
-									break;
+									return false;
 								
 								// don't add _build or its sub-directories 
 								if(res.getName().equals("_build"))
