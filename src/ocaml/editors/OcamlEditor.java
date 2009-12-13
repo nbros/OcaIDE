@@ -1,6 +1,8 @@
 package ocaml.editors;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import ocaml.OcamlPlugin;
 import ocaml.debugging.DebugVisuals;
@@ -37,6 +39,7 @@ import org.eclipse.jface.text.source.MatchingCharacterPainter;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -45,17 +48,18 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 /**
- * Configures the O'Caml editor, and manages the events raised by this editor, by overloading
- * methods of the TextEditor class.
+ * Configures the O'Caml editor, and manages the events raised by this editor,
+ * by overloading methods of the TextEditor class.
  */
 public class OcamlEditor extends TextEditor {
 
 	/**
-	 * used to notify that the outline job is finished (notified by OutlineJob to
-	 * OcamlHyperlinkDetector)
+	 * used to notify that the outline job is finished (notified by OutlineJob
+	 * to OcamlHyperlinkDetector)
 	 */
 	public Object outlineSignal = new Object();
 
@@ -68,6 +72,12 @@ public class OcamlEditor extends TextEditor {
 	private OutlineJob outlineJob = null;
 
 	private SynchronizeOutlineJob synchronizeOutlineJob = null;
+
+	public interface ICursorPositionListener {
+		void cursorPositionChanged(ITextEditor textEditor, Point selectedRange);
+	}
+
+	private List<ICursorPositionListener> cursorPositionListeners = new ArrayList<ICursorPositionListener>();
 
 	public static final String ML_EDITOR_ID = "ocaml.editors.mlEditor";
 	public static final String MLI_EDITOR_ID = "ocaml.editors.mliEditor";
@@ -97,8 +107,10 @@ public class OcamlEditor extends TextEditor {
 			paintManager.addPainter(matchingCharacterPainter);
 
 			/*
-			 * AnnotationPainter annotationPainter = new AnnotationPainter(getSourceViewer(), null);
-			 * annotationPainter.addAnnotationType("Ocaml.ocamlSyntaxErrorMarker");
+			 * AnnotationPainter annotationPainter = new
+			 * AnnotationPainter(getSourceViewer(), null);
+			 * annotationPainter.addAnnotationType
+			 * ("Ocaml.ocamlSyntaxErrorMarker");
 			 * 
 			 * paintManager.addPainter(annotationPainter);
 			 */
@@ -180,7 +192,8 @@ public class OcamlEditor extends TextEditor {
 	}
 
 	/**
-	 * We give the outline to Eclipse when it asks for an adapter with the outline class.
+	 * We give the outline to Eclipse when it asks for an adapter with the
+	 * outline class.
 	 */
 	@Override
 	public Object getAdapter(@SuppressWarnings("unchecked") Class required) {
@@ -199,7 +212,8 @@ public class OcamlEditor extends TextEditor {
 	}
 
 	/*
-	 * public Hashtable<Integer,String> getHashTypes() { return this.hashtableTypes; }
+	 * public Hashtable<Integer,String> getHashTypes() { return
+	 * this.hashtableTypes; }
 	 */
 
 	@Override
@@ -220,8 +234,8 @@ public class OcamlEditor extends TextEditor {
 	}
 
 	/**
-	 * Return a string representing a tabulation as defined by user preferences. Can be a single tab
-	 * character or multiple spaces.
+	 * Return a string representing a tabulation as defined by user preferences.
+	 * Can be a single tab character or multiple spaces.
 	 */
 	public static String getTab() {
 		if (!spacesForTabs())
@@ -321,7 +335,7 @@ public class OcamlEditor extends TextEditor {
 		// file external to the workspace
 		if (editorInput instanceof FileStoreEditorInput) {
 			FileStoreEditorInput fileStoreEditorInput = (FileStoreEditorInput) editorInput;
-			
+
 			return new Path(new File(fileStoreEditorInput.getURI()).getPath());
 		}
 
@@ -329,8 +343,8 @@ public class OcamlEditor extends TextEditor {
 	}
 
 	/*
-	 * public String getAnnotFileName(String filename) { return filename.substring(0,
-	 * filename.lastIndexOf(".")) + ".annot"; }
+	 * public String getAnnotFileName(String filename) { return
+	 * filename.substring(0, filename.lastIndexOf(".")) + ".annot"; }
 	 */
 
 	public String getFullPathFileName(String filename) {
@@ -364,8 +378,9 @@ public class OcamlEditor extends TextEditor {
 		}
 
 		/*
-		 * If this project is a makefile project, then we compile manually each time the user saves
-		 * (because the automatic compiling provided by Eclipse is disabled on makefile projects)
+		 * If this project is a makefile project, then we compile manually each
+		 * time the user saves (because the automatic compiling provided by
+		 * Eclipse is disabled on makefile projects)
 		 */
 		if (bMakefileNature) {
 			IWorkspace ws = ResourcesPlugin.getWorkspace();
@@ -376,16 +391,19 @@ public class OcamlEditor extends TextEditor {
 	}
 
 	/*
-	 * @Override protected void editorContextMenuAboutToShow(IMenuManager menu) { IFile file =
-	 * this.getFileBeingEdited(); super.editorContextMenuAboutToShow(menu);
+	 * @Override protected void editorContextMenuAboutToShow(IMenuManager menu)
+	 * { IFile file = this.getFileBeingEdited();
+	 * super.editorContextMenuAboutToShow(menu);
 	 * 
-	 * MenuManager ocamlGroup = new MenuManager("OCaml"); menu.add(new Separator());
-	 * menu.add(ocamlGroup); ocamlGroup.add(new GenDocAction("GenDoc", file)); }
+	 * MenuManager ocamlGroup = new MenuManager("OCaml"); menu.add(new
+	 * Separator()); menu.add(ocamlGroup); ocamlGroup.add(new
+	 * GenDocAction("GenDoc", file)); }
 	 */
 
 	/*
-	 * public OcamlOutlineControl getOutlinePage() { if (this.fOutlinePage == null)
-	 * this.fOutlinePage = new OcamlOutlineControl(this.getDocumentProvider(), this); return
+	 * public OcamlOutlineControl getOutlinePage() { if (this.fOutlinePage ==
+	 * null) this.fOutlinePage = new
+	 * OcamlOutlineControl(this.getDocumentProvider(), this); return
 	 * this.fOutlinePage; }
 	 */
 
@@ -415,11 +433,15 @@ public class OcamlEditor extends TextEditor {
 		outlineJob.schedule(delay);
 	}
 
-	/** when the caret position changes, we synchronize the outline with the editor */
+	/**
+	 * when the caret position changes, we synchronize the outline with the
+	 * editor
+	 */
 	@Override
 	public void handleCursorPositionChanged() {
 		super.handleCursorPositionChanged();
 		synchronizeOutline();
+		fireCursorPositionChanged(getTextViewer().getSelectedRange());
 
 		if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 				PreferenceConstants.P_SHOW_TYPES_IN_STATUS_BAR)) {
@@ -443,7 +465,10 @@ public class OcamlEditor extends TextEditor {
 	private Def codeDefinitionsTree = null;
 	private Def codeOutlineDefinitionsTree = null;
 
-	/** Allows the code parsing Job to send back the definitions tree to the editor */
+	/**
+	 * Allows the code parsing Job to send back the definitions tree to the
+	 * editor
+	 */
 	public synchronized void setDefinitionsTree(Def def) {
 		this.codeDefinitionsTree = def;
 	}
@@ -481,6 +506,23 @@ public class OcamlEditor extends TextEditor {
 
 	public OcamlOutlineControl getOutline() {
 		return outline;
+	}
+
+	public void addCursorPositionListener(ICursorPositionListener cursorPositionListener) {
+		if (!this.cursorPositionListeners.contains(cursorPositionListener)
+				&& cursorPositionListener != null)
+			this.cursorPositionListeners.add(cursorPositionListener);
+	}
+
+	public void removeCursorPositionListener(ICursorPositionListener cursorPositionListener) {
+		this.cursorPositionListeners.remove(cursorPositionListener);
+
+	}
+
+	public void fireCursorPositionChanged(Point selectedRange) {
+		for (ICursorPositionListener cursorPositionListener : this.cursorPositionListeners) {
+			cursorPositionListener.cursorPositionChanged(this, selectedRange);
+		}
 	}
 
 }

@@ -132,6 +132,15 @@
 			class="ocaml.debugging.views.OcamlWatchView"
 			icon="icons/watchlist.gif" id="Ocaml.WatchView"
 			name="Ocaml Variable Watch"/>
+  <view
+        allowMultiple="false"
+        category="ocaml.views.Category"
+        class="ocaml.views.ast.OcamlASTView"
+        fastViewWidthRatio="40"
+        id="Ocaml.ocamlASTView"
+        name="AST"
+        restorable="true">
+  </view>
 	</extension>
 	
 	<extension point="org.eclipse.ui.newWizards">
