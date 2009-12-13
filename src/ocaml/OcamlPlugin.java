@@ -196,12 +196,12 @@ public class OcamlPlugin extends AbstractUIPlugin {
 
 	/** Log a warning message (in Eclipse log) */
 	public static void logWarning(String msg) {
-		instance.getLog().log(new Status(IStatus.WARNING, "ocaml", 0, msg, null));
+		instance.getLog().log(new Status(IStatus.WARNING, "ocaml", 0, msg + getPosition(), null));
 	}
 
 	/** Log an error message (in Eclipse log) */
 	public static void logError(String msg) {
-		instance.getLog().log(new Status(IStatus.ERROR, "ocaml", 0, msg, null));
+		instance.getLog().log(new Status(IStatus.ERROR, "ocaml", 0, msg + getPosition(), null));
 	}
 
 	/**
@@ -221,6 +221,18 @@ public class OcamlPlugin extends AbstractUIPlugin {
 	public static void logError(Throwable e) {
 		instance.getLog().log(new Status(IStatus.ERROR, "ocaml", 0, e.getMessage(), e));
 	}
+	
+	private static String getPosition() {
+		try {
+			// get the stack element corresponding to the caller of the log method
+			StackTraceElement element = new Exception().getStackTrace()[2];
+			return " \n[" + element.getClassName() + "#" + element.getMethodName() + " : "
+					+ element.getLineNumber() + "]";
+		} catch (Throwable e) {
+			return "";
+		}
+	}
+
 
 	/**
 	 * Returns the plug-in instance.
