@@ -100,8 +100,9 @@ public class Indexer implements IExecEvents {
 	private synchronized void start() throws IOException {
 		state = State.Starting;
 		// TODO: use ocamlrun path from preferences
-		execHelper = ExecHelper.exec(this, new String[] { "ocamlrun",
-				"C:\\Users\\Nicolas\\workspaceOcaIDE\\OcamlPDB\\_build\\main.byte" }, null, null);
+		// "-b" : print stack traces
+		execHelper = ExecHelper.exec(this, new String[] { "ocamlrun", "-b",
+				"C:\\Users\\Nicolas\\workspaceOcaIDE\\OcamlPDB\\_build\\main.d.byte" }, null, null);
 	}
 
 	private synchronized void send(String command) {
