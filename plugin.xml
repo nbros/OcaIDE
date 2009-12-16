@@ -137,6 +137,7 @@
         category="ocaml.views.Category"
         class="ocaml.views.ast.OcamlASTView"
         fastViewWidthRatio="40"
+        icon="icons/astview.gif"
         id="Ocaml.ocamlASTView"
         name="AST"
         restorable="true">
