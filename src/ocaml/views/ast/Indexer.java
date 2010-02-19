@@ -102,7 +102,7 @@ public class Indexer implements IExecEvents {
 		// TODO: use ocamlrun path from preferences
 		// "-b" : print stack traces
 		execHelper = ExecHelper.exec(this, new String[] { "ocamlrun", "-b",
-				"C:\\Users\\Nicolas\\workspaceOcaIDE\\OcamlPDB\\_build\\main.d.byte" }, null, null);
+				"/home/nicolas/PSTL/Projet/OcamlPDB/_build/main.byte" }, null, null);
 	}
 
 	private synchronized void send(String command) {
