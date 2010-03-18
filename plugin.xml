@@ -1051,6 +1051,10 @@
           markerType="Ocaml.ocamlSyntaxErrorMarker"
           name="Ocaml.ocamlSyntaxErrorAnnotationType">
     </type>
+    <type
+    	  markerType="Ocaml.ocamlOccurrencesMarker"
+    	  name="Ocaml.ocamlOccurrencesAnnotationType">
+	</type>
  </extension>
  <extension
        point="org.eclipse.ui.editors.markerAnnotationSpecification">
@@ -1065,6 +1069,29 @@
           isGoToNextNavigationTarget="false"
           isGoToPreviousNavigationTarget="false"
           label="Ocaml Syntax Error"
+          overviewRulerPreferenceKey="syntaxerror.rulers.overview"
+          overviewRulerPreferenceValue="true"
+          presentationLayer="1"
+          showInNextPrevDropdownToolbarAction="false"
+          symbolicIcon="error"
+          textPreferenceKey="syntaxerror.text"
+          textPreferenceValue="true"
+          textStylePreferenceKey="syntaxerror.textstyle"
+          textStylePreferenceValue="SQUIGGLES"
+          verticalRulerPreferenceKey="syntaxerror.rulers.vertical"
+          verticalRulerPreferenceValue="false">
+    </specification>
+    <specification
+          annotationType="Ocaml.ocamlOccurrencsAnnotationType"
+          colorPreferenceKey="syntaxerror.color"
+          colorPreferenceValue="255,140,0"
+          contributesToHeader="true"
+          highlightPreferenceKey="syntaxerror.highlight"
+          highlightPreferenceValue="false"
+          includeOnPreferencePage="true"
+          isGoToNextNavigationTarget="false"
+          isGoToPreviousNavigationTarget="false"
+          label="Ocaml Occurrences"
           overviewRulerPreferenceKey="syntaxerror.rulers.overview"
           overviewRulerPreferenceValue="true"
           presentationLayer="1"

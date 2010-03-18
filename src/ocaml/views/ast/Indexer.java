@@ -19,7 +19,7 @@ public class Indexer implements IExecEvents {
 
 	/** The possible states of the debugger */
 	private enum State {
-		NotStarted, Starting, Idle, ParseAstToXml
+		NotStarted, Starting, Idle, ParseAstToXml, AstOccVar
 	};
 
 	/** The current state of the debugger: idle, not started, stepping... */
@@ -61,6 +61,29 @@ public class Indexer implements IExecEvents {
 					for (String line : lines) {
 						send(line);
 					}
+				} else {
+					OcamlPlugin.logError("Indexer busy (" + state + ")");
+				}
+				return OK_STATUS;
+			}
+		};
+		job.setPriority(Job.LONG);
+		job.schedule();
+	}
+	
+	public synchronized void getAstOccVar(final String name, final int startOffset, final int endOffset, final String path, final ICallBack callBack) {
+		Job job = new Job("Ast Occurrences Variable") {
+			@Override
+			protected IStatus run(IProgressMonitor arg0) {
+				waitReady(); //
+				if (state == State.Idle) {
+					state = State.AstOccVar;
+					Indexer.this.callBack = callBack;
+					send("astOccVar");
+					send(name);
+					send(startOffset+","+endOffset);
+					send(path);
+					System.out.println("getAstOccVar");
 				} else {
 					OcamlPlugin.logError("Indexer busy (" + state + ")");
 				}
@@ -125,11 +148,16 @@ public class Indexer implements IExecEvents {
 	}
 
 	public synchronized void processNewInput(final String input) {
-		System.out.println(input);
+		
+		//System.out.println("processNewInput state : "+state);
+		
 		indexerOutput.append(input);
 		final String output = indexerOutput.toString();
 
 		final int length = output.length();
+		
+		//System.out.println("lenght ="+length+"   "+input);
+		
 		if (length > 0 && output.charAt(length - 1) == EOT) {
 			final String result = output.substring(0, length - 1);
 			switch (state) {
@@ -147,6 +175,12 @@ public class Indexer implements IExecEvents {
 				}
 				state = State.Idle;
 				break;
+			case AstOccVar:
+				if(callBack != null) {
+					callBack.receiveAstOccVar(result);
+				}
+				state = State.Idle;
+				break;
 			case Idle:
 				OcamlPlugin.logError("Received unexpected result from indexer: '" + result + "'");
 				break;
@@ -158,5 +192,4 @@ public class Indexer implements IExecEvents {
 			indexerOutput.setLength(0);
 		}
 	}
-
 }

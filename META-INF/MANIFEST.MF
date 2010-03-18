@@ -21,3 +21,5 @@ Bundle-ClassPath: lib/beaver-rt.jar,
  lib/JFlex.jar,
  .
 Bundle-Vendor: Université Pierre et Marie Curie - Paris 6
+Import-Package: org.jdom,
+ org.jdom.input
