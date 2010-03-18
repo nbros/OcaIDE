@@ -37,7 +37,7 @@ public class OccurrencesMarker {
 		   if (!marker.exists())
 		      return;
 		   try {
-		      marker.setAttribute(IMarker.MESSAGE, "");
+		      //marker.setAttribute(IMarker.MESSAGE, "");
 		      marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
 		      marker.setAttribute(IMarker.CHAR_START, start);
 		      marker.setAttribute(IMarker.CHAR_END, end);
@@ -52,7 +52,6 @@ public class OccurrencesMarker {
 			target.deleteMarkers("Ocaml.ocamlOccurrencesMarker", false, IResource.DEPTH_ZERO);
 			target.deleteMarkers("Ocaml.ocamlWriteOccurrencesMarker", false, IResource.DEPTH_ZERO);
 		} catch (CoreException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
