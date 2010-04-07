@@ -1,16 +1,10 @@
 package ocaml.views.ast;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -21,7 +15,6 @@ import ocaml.editors.OcamlEditor;
 import ocaml.editors.OcamlEditor.ICursorPositionListener;
 import ocaml.views.outline.SynchronizeOutlineJob;
 
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -43,16 +36,10 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.part.Page;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.jdom.Attribute;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -66,14 +53,12 @@ public class OcamlASTPage extends Page implements ICursorPositionListener,
 	private Job synchronizeASTViewJob = null;
 	private Job parseJob = null;
 	private boolean ignoreSelectionEvent;
-	
-	private OccurrencesJob occurrencesJob = null;
 
 	public OcamlASTPage(OcamlEditor editor) {
 		this.editor = editor;
 		editor.addCursorPositionListener(OcamlASTPage.this);
 		document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-		document.addDocumentListener(this);		
+		document.addDocumentListener(this);
 	}
 
 	@Override
@@ -90,7 +75,7 @@ public class OcamlASTPage extends Page implements ICursorPositionListener,
 		// get the text of the document currently opened in the associated
 		// editor
 		String doc = document.get();
-		
+
 		Indexer.getInstance().getXMLAstFromInput(doc, new CallBackAdapter() {
 			@Override
 			public void receiveXMLFromInput(final String xml) {
@@ -102,71 +87,6 @@ public class OcamlASTPage extends Page implements ICursorPositionListener,
 				});
 			}
 		});
-		
-		/* Récupération du chemin du fichier : OK  tant que pas de modif en cours sur le fichier (sinon chemin dans temp !)... 
-		 * Possibilité de forcer la sauvegarde mais pas top (avec editor.doSave(monitor); ?) */
-		IEditorInput editorInput = null;
-		editorInput = editor.getEditorInput();
-		System.out.println(editorInput);
-		((IFileEditorInput) editorInput).getFile();
-		String path = ((IFileEditorInput) editorInput).getFile().getLocation().toOSString();
-		System.out.println(path);
-		/* ou */
-		//String path2 = editor.getPathOfFileBeingEdited().toString();
-		/**/
-						
-		Indexer.getInstance().getAstOccVar("ab", 47, 49, /*path*//*path2*/"C:\\Users\\Pauline\\Documents\\Cours\\PSTL\\workspace_ocaide\\Test\\test.ml",new CallBackAdapter() {
-			@Override
-			public void receiveAstOccVar(final String xml) {
-				Display.getDefault().asyncExec(new Runnable() {
-					public void run() {
-						
-						System.out.println("receiveAstOccVar");
-
-						try {
-							SAXBuilder builder = new SAXBuilder(); 
-							org.jdom.Document doc = builder.build(new InputSource(new StringReader(xml)));
-							org.jdom.Element root = doc.getRootElement();
-							System.out.println(root.getName());
-							List children = root.getChildren(); 
-							Iterator it = children.iterator();
-							HashMap<Integer, Integer> locMap = new HashMap<Integer, Integer>();
-							
-							for(int i=0;i<children.size();i++)
-							{
-								org.jdom.Element child = (org.jdom.Element)it.next();
-								Attribute att = child.getAttribute("loc");
-								Loc loc = getLoc(att.getValue());
-								System.out.println(loc.startOffset+","+loc.endOffset);
-								int length = loc.endOffset - loc.startOffset;
-								//int offset = translateLocToDocumentOffset(document, loc.startOffset); //donne offset-2... donc on garde startOffset de loc comme offset ds doc ?
-								
-								locMap.put(loc.startOffset, length);
-							}
-							
-						} catch (JDOMException e) {
-							e.printStackTrace();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-						 
-						
-						
-						
-						//recup des loc
-						// loc to offsets
-						//startoffset -> translateLocTooffest...
-						//lenght = Loc.end - Loc.start
-						
-						//tout ça dans une meth de classse occurrencesJob qui ressemble à outlinejob ???
-						
-						//markers
-					}
-				});
-		
-		
-			}
-		});
 	}
 
 	@Override
@@ -175,7 +95,7 @@ public class OcamlASTPage extends Page implements ICursorPositionListener,
 	}
 
 	private Object parseXML(String xml) {
-		System.out.println(xml);
+		// System.out.println(xml);
 
 		try {
 			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -190,7 +110,6 @@ public class OcamlASTPage extends Page implements ICursorPositionListener,
 			return null;
 		}
 	}
-	
 
 	public void selectionChanged(SelectionChangedEvent event) {
 		ISelection selection = event.getSelection();
@@ -280,21 +199,6 @@ public class OcamlASTPage extends Page implements ICursorPositionListener,
 		}
 		return null;
 	}
-	
-	//Moi
-	private static Loc getLoc(String loc) {
-		String[] parts = loc.split(",");
-		if (parts.length == 2) {
-			try {
-				int startOffset = Integer.parseInt(parts[0]);
-				int endOffset = Integer.parseInt(parts[1]);
-				return new Loc(startOffset, endOffset);
-			} catch (NumberFormatException e) {
-				OcamlPlugin.logError(e);
-			}
-		}
-		return null;
-	}
 
 	private static class Match {
 		ASTNode node;
@@ -310,9 +214,7 @@ public class OcamlASTPage extends Page implements ICursorPositionListener,
 		if (this.ignoreSelectionEvent)
 			return;
 
-		//System.out.println(selectedRange.x);
-		
-		System.out.println("OffSet = "+selectedRange.x);
+		System.out.println(selectedRange.x);
 
 		if (synchronizeASTViewJob != null) {
 			if (synchronizeASTViewJob.getState() == SynchronizeOutlineJob.RUNNING) {
@@ -337,11 +239,6 @@ public class OcamlASTPage extends Page implements ICursorPositionListener,
 
 		synchronizeASTViewJob.setPriority(CompletionJob.DECORATE);
 		synchronizeASTViewJob.schedule(100);
-		
-		
-		// ME
-		if (this.occurrencesJob == null)
-			occurencesJob = new OccurrencesJob("Occurrences Job");
 	}
 
 	/** find the element with the smallest range around the cursor */
@@ -515,5 +412,4 @@ public class OcamlASTPage extends Page implements ICursorPositionListener,
 		parseJob.schedule(100);
 
 	}
-
-}               
+}

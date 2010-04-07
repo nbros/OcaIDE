@@ -19,7 +19,7 @@ public class Indexer implements IExecEvents {
 
 	/** The possible states of the debugger */
 	private enum State {
-		NotStarted, Starting, Idle, ParseAstToXml, AstOccVar
+		NotStarted, Starting, Idle, ParseAstToXml
 	};
 
 	/** The current state of the debugger: idle, not started, stepping... */
@@ -70,30 +70,8 @@ public class Indexer implements IExecEvents {
 		job.setPriority(Job.LONG);
 		job.schedule();
 	}
+		
 	
-	public synchronized void getAstOccVar(final String name, final int startOffset, final int endOffset, final String path, final ICallBack callBack) {
-		Job job = new Job("Ast Occurrences Variable") {
-			@Override
-			protected IStatus run(IProgressMonitor arg0) {
-				waitReady(); //
-				if (state == State.Idle) {
-					state = State.AstOccVar;
-					Indexer.this.callBack = callBack;
-					send("astOccVar");
-					send(name);
-					send(startOffset+","+endOffset);
-					send(path);
-					System.out.println("getAstOccVar");
-				} else {
-					OcamlPlugin.logError("Indexer busy (" + state + ")");
-				}
-				return OK_STATUS;
-			}
-		};
-		job.setPriority(Job.LONG);
-		job.schedule();
-	}
-
 	private void waitReady() {
 		int timeout = 30;
 		synchronized (this) {
@@ -125,7 +103,7 @@ public class Indexer implements IExecEvents {
 		// TODO: use ocamlrun path from preferences
 		// "-b" : print stack traces
 		execHelper = ExecHelper.exec(this, new String[] { "ocamlrun", "-b",
-				"C:\\Users\\Pauline\\Documents\\Cours\\PSTL\\workspace\\OcamlPDB\\_build\\main.byte" }, null, null);
+				/*"C:\\Users\\Pauline\\Documents\\Cours\\PSTL\\workspace\\OcamlPDB\\_build\\main.byte"*/"/home/user/workspace/OcamlPDB/_build/main.byte" }, null, null);
 	}
 
 	private synchronized void send(String command) {
@@ -172,12 +150,6 @@ public class Indexer implements IExecEvents {
 			case ParseAstToXml:
 				if (callBack != null) {
 					callBack.receiveXMLFromInput(result);
-				}
-				state = State.Idle;
-				break;
-			case AstOccVar:
-				if(callBack != null) {
-					callBack.receiveAstOccVar(result);
 				}
 				state = State.Idle;
 				break;
