@@ -12,7 +12,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ocaml.OcamlPlugin;
-import ocaml.editor.indexer.IndexerJob;
 import ocaml.editors.OcamlEditor;
 import ocaml.parser.Def;
 import ocaml.parser.ErrorReporting;

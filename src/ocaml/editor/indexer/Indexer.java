@@ -82,15 +82,11 @@ public class Indexer implements IExecEvents {
 					send("astOccVarFromInput");
 					String[] lines = input.split("\\r?\\n");
 					send("" + lines.length);
-					//System.out.println(lines.length);
 					for (String line : lines) {
 						send(line);
-						//System.out.println(line);
 					}
 					send(name);
-					//System.out.println(name);
 					send(startOffset+","+endOffset);
-					//System.out.println(startOffset+","+endOffset);
 					System.out.println("getAstOccVarFromInput");
 				} else {
 					OcamlPlugin.logError("Indexer busy (" + state + ")");
@@ -180,14 +176,10 @@ public class Indexer implements IExecEvents {
 
 	public synchronized void processNewInput(final String input) {
 		
-		//System.out.println("processNewInput state : "+state);
-		
 		indexerOutput.append(input);
 		final String output = indexerOutput.toString();
 
 		final int length = output.length();
-		
-		//System.out.println("lenght ="+length+"   "+input);
 		
 		if (length > 0 && output.charAt(length - 1) == EOT) {
 			final String result = output.substring(0, length - 1);

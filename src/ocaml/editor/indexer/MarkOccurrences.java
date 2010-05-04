@@ -41,7 +41,7 @@ import org.xml.sax.SAXParseException;
 
 
 
-public class IndexerJob implements ICursorPositionListener, /*ISelectionChangedListener,*/ IDocumentListener {
+public class MarkOccurrences implements ICursorPositionListener, /*ISelectionChangedListener,*/ IDocumentListener {
 
 	private final OcamlEditor editor;
 	private boolean ignoreSelectionEvent;
@@ -51,9 +51,9 @@ public class IndexerJob implements ICursorPositionListener, /*ISelectionChangedL
 	
 	public static boolean toggleOccurrences;
 	
-	public IndexerJob(OcamlEditor editor) {
+	public MarkOccurrences(OcamlEditor editor) {
 		this.editor = editor;
-		editor.addCursorPositionListener(IndexerJob.this);
+		editor.addCursorPositionListener(MarkOccurrences.this);
 		document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
 		document.addDocumentListener(this);
 		
@@ -97,7 +97,7 @@ public class IndexerJob implements ICursorPositionListener, /*ISelectionChangedL
 			Document doc = documentBuilder.parse(new InputSource(new StringReader(xml)));
 			return doc;
 		} catch (SAXParseException e) {
-			OcamlPlugin.logError("parseXML - SAXParseException "+e); // Sugg 2
+			OcamlPlugin.logError("parseXML - SAXParseException "+e);
 			return null;
 		} catch (Exception e) {
 			OcamlPlugin.logError(e);
@@ -130,7 +130,6 @@ public class IndexerJob implements ICursorPositionListener, /*ISelectionChangedL
 			if(match != null) {
 				Loc loc2 = new Loc(match.loc.startOffset,match.loc.endOffset);
 				String name = match.name;
-				// System.out.println("Name = "+name+", Loc Avant = "+match.loc.startOffset+","+match.loc.endOffset+", Loc Trans = "+loc2.startOffset+","+loc2.endOffset);
 
 				String doc = document.get();
 
@@ -147,7 +146,6 @@ public class IndexerJob implements ICursorPositionListener, /*ISelectionChangedL
 									SAXBuilder builder = new SAXBuilder(); 
 									org.jdom.Document doc = builder.build(new InputSource(new StringReader(xml)));
 									org.jdom.Element root = doc.getRootElement();
-									//System.out.println("Root :"+root.getName());
 									List children = root.getChildren(); 
 									Iterator it = children.iterator();
 									for(int i=0;i<children.size();i++)
@@ -178,7 +176,7 @@ public class IndexerJob implements ICursorPositionListener, /*ISelectionChangedL
 
 									}
 								} catch (JDOMException e) {
-									OcamlPlugin.logError("getAstOccVarFromInput - JDOMException "+e); // Sugg 2
+									OcamlPlugin.logError("getAstOccVarFromInput - JDOMException "+e);
 								} catch (IOException e) {
 									OcamlPlugin.logError(e);
 								} catch (Exception e) {
@@ -277,17 +275,11 @@ public class IndexerJob implements ICursorPositionListener, /*ISelectionChangedL
 					match.node = node;
 					match.element = element;
 					match.length = loc.endOffset - loc.startOffset;
-				
-					// ME
-					match.loc = loc;
-					
+					match.loc = loc;					
 					match.name = "";
 					if(node.getNodeName().equals("IdLid")) {
-						//System.out.println("IdLid  "+node.getFirstChild().getFirstChild().getNodeValue());
 						match.name = node.getFirstChild().getFirstChild().getNodeValue();
-					}
-					// \ME
-						
+					}						
 					matches.add(match);
 				}
 			}
@@ -431,7 +423,7 @@ public class IndexerJob implements ICursorPositionListener, /*ISelectionChangedL
 		};
 
 		parseJob.setPriority(Job.DECORATE);
-		parseJob.schedule(100);  // delay = 100 augmenter delay ??? 500
+		parseJob.schedule(100);
 	}
 	
 	

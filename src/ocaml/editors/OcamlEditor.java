@@ -7,7 +7,7 @@ import java.util.List;
 import ocaml.OcamlPlugin;
 import ocaml.debugging.DebugVisuals;
 import ocaml.editor.completion.CompletionJob;
-import ocaml.editor.indexer.IndexerJob;
+import ocaml.editor.indexer.MarkOccurrences;
 import ocaml.editors.util.OcamlCharacterPairMatcher;
 import ocaml.natures.OcamlNatureMakefile;
 import ocaml.parser.Def;
@@ -141,9 +141,7 @@ public class OcamlEditor extends TextEditor {
 			OcamlPlugin.logError("ocaml plugin error", e);
 		}
 		
-		// ME
-		IndexerJob indexer = new IndexerJob(this);
-		// \ME
+		MarkOccurrences indexer = new MarkOccurrences(this);
 
 		try {
 			OcamlPlugin.getInstance().checkPaths();
