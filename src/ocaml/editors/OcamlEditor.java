@@ -141,7 +141,7 @@ public class OcamlEditor extends TextEditor {
 			OcamlPlugin.logError("ocaml plugin error", e);
 		}
 		
-		MarkOccurrences indexer = new MarkOccurrences(this);
+		new MarkOccurrences(this);
 
 		try {
 			OcamlPlugin.getInstance().checkPaths();

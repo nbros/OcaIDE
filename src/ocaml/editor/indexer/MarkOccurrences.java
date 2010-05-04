@@ -146,8 +146,8 @@ public class MarkOccurrences implements ICursorPositionListener, /*ISelectionCha
 									SAXBuilder builder = new SAXBuilder(); 
 									org.jdom.Document doc = builder.build(new InputSource(new StringReader(xml)));
 									org.jdom.Element root = doc.getRootElement();
-									List children = root.getChildren(); 
-									Iterator it = children.iterator();
+									List<?> children = root.getChildren(); 
+									Iterator<?> it = children.iterator();
 									for(int i=0;i<children.size();i++)
 									{
 										org.jdom.Element child = (org.jdom.Element)it.next();
@@ -227,7 +227,6 @@ public class MarkOccurrences implements ICursorPositionListener, /*ISelectionCha
 	
 	private static class Match {
 		Node node;
-		Element element;
 		int length;
 		Loc loc;
 		String name;
@@ -273,7 +272,6 @@ public class MarkOccurrences implements ICursorPositionListener, /*ISelectionCha
 				if (offset >= loc.startOffset && offset <= loc.endOffset) {
 					Match match = new Match();
 					match.node = node;
-					match.element = element;
 					match.length = loc.endOffset - loc.startOffset;
 					match.loc = loc;					
 					match.name = "";
