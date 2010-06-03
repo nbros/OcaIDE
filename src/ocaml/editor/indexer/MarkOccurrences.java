@@ -41,14 +41,13 @@ import org.xml.sax.SAXParseException;
 
 
 
-public class MarkOccurrences implements ICursorPositionListener, /*ISelectionChangedListener,*/ IDocumentListener {
+public class MarkOccurrences implements ICursorPositionListener, IDocumentListener {
 
 	private final OcamlEditor editor;
 	private boolean ignoreSelectionEvent;
 	private IDocument document;
 	private Document AST;
 	private Job parseJob;
-	
 	public static boolean toggleOccurrences;
 	
 	public MarkOccurrences(OcamlEditor editor) {
@@ -66,12 +65,11 @@ public class MarkOccurrences implements ICursorPositionListener, /*ISelectionCha
 				
 		AST = null;
 		parseJob = null;
-		
 		toggleOccurrences = true;
 		
 		update();
 	}
-	
+
 	
 	public void update() {
 		String doc = document.get();
@@ -89,7 +87,7 @@ public class MarkOccurrences implements ICursorPositionListener, /*ISelectionCha
 	
 
 	private Document parseXML(String xml) {
-		System.out.println("Parse XML : "+xml);
+		//System.out.println("Parse XML : "+xml);
 
 		try {
 			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -105,13 +103,12 @@ public class MarkOccurrences implements ICursorPositionListener, /*ISelectionCha
 		}
 	}
 	
-	
-	/** Synchronize the AST view with the cursor offset in the editor */
+
 	public void cursorPositionChanged(ITextEditor textEditor, Point selectedRange) {
 		if (this.ignoreSelectionEvent)
 			return;
 
-		System.out.println("OffSet = "+selectedRange.x);
+//		System.out.println("OffSet = "+selectedRange.x);
 		
 		try {
 			editor.getFileBeingEdited().deleteMarkers("Ocaml.ocamlOccurrencesMarker", false, IResource.DEPTH_ZERO);
@@ -130,6 +127,7 @@ public class MarkOccurrences implements ICursorPositionListener, /*ISelectionCha
 			if(match != null) {
 				Loc loc2 = new Loc(match.loc.startOffset,match.loc.endOffset);
 				String name = match.name;
+//				System.out.println("name = "+name);
 
 				String doc = document.get();
 
@@ -139,8 +137,8 @@ public class MarkOccurrences implements ICursorPositionListener, /*ISelectionCha
 						Display.getDefault().asyncExec(new Runnable() {
 							public void run() {
 
-								System.out.println("receiveAstOccVar");
-								System.out.println("-xmlOcc-"+xml+"-fin xmlOcc-");
+//								System.out.println("receiveAstOccVar");
+//								System.out.println("-xmlOcc-"+xml+"-fin xmlOcc-");
 
 								try {
 									SAXBuilder builder = new SAXBuilder(); 
@@ -148,13 +146,14 @@ public class MarkOccurrences implements ICursorPositionListener, /*ISelectionCha
 									org.jdom.Element root = doc.getRootElement();
 									List<?> children = root.getChildren(); 
 									Iterator<?> it = children.iterator();
+	
 									for(int i=0;i<children.size();i++)
 									{
 										org.jdom.Element child = (org.jdom.Element)it.next();
 										Attribute attLoc = child.getAttribute("loc");
 										Loc loc = getLoc(attLoc.getValue());
 										Loc loc2 = new Loc(translateLocToDocumentOffset(document,loc.startOffset),translateLocToDocumentOffset(document,loc.endOffset));
-										System.out.println("Loc Avant = "+loc.startOffset+","+loc.endOffset+", Loc Trans = "+loc2.startOffset+","+loc2.endOffset);
+//										System.out.println("Loc Avant = "+loc.startOffset+","+loc.endOffset+", Loc Trans = "+loc2.startOffset+","+loc2.endOffset);
 
 										Attribute attWrite = child.getAttribute("write");
 
@@ -172,8 +171,6 @@ public class MarkOccurrences implements ICursorPositionListener, /*ISelectionCha
 										} catch (CoreException e) {
 											OcamlPlugin.logError(e);
 										}
-
-
 									}
 								} catch (JDOMException e) {
 									OcamlPlugin.logError("getAstOccVarFromInput - JDOMException "+e);
@@ -191,8 +188,8 @@ public class MarkOccurrences implements ICursorPositionListener, /*ISelectionCha
 			}
 		}
 	}
+
 	
-		
 	private static class Loc {
 		int startOffset;
 		int endOffset;
@@ -253,8 +250,14 @@ public class MarkOccurrences implements ICursorPositionListener, /*ISelectionCha
 		
 		if (matches.size() > 0)
 		{
-			if (matches.get(0).node.getNodeName().equals("IdLid"))
-				return matches.get(0);
+//			for(int i =0; i<matches.size();i++) {System.out.println("matches "+i+" "+matches.get(i).node.getNodeName()+" "+matches.get(i).name);}
+			
+//			if (matches.get(0).node.getNodeName().equals("IdLid"))
+//				return matches.get(0);
+			for(int i =0; i<matches.size();i++) {
+				if(matches.get(i).node.getNodeName().equals("IdLid"))
+					return matches.get(i);
+			}
 			return matches.get(1);
 		}
 					
@@ -405,7 +408,6 @@ public class MarkOccurrences implements ICursorPositionListener, /*ISelectionCha
 		if (parseJob != null) {
 			if (parseJob.getState() == Job.RUNNING) {
 				// only one job at a time
-				System.out.println("\nPARSEJOB ALREADY RUNNING\n");
 				return;
 			} else {
 				parseJob.cancel();
@@ -423,12 +425,5 @@ public class MarkOccurrences implements ICursorPositionListener, /*ISelectionCha
 		parseJob.setPriority(Job.DECORATE);
 		parseJob.schedule(100);
 	}
-	
-	
-	
-	
-	
-	
-	
 	
 }

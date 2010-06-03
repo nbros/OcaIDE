@@ -87,7 +87,7 @@ public class Indexer implements IExecEvents {
 					}
 					send(name);
 					send(startOffset+","+endOffset);
-					System.out.println("getAstOccVarFromInput");
+//					System.out.println("getAstOccVarFromInput");
 				} else {
 					OcamlPlugin.logError("Indexer busy (" + state + ")");
 				}
