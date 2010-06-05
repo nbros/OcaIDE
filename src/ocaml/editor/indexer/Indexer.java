@@ -87,7 +87,6 @@ public class Indexer implements IExecEvents {
 					}
 					send(name);
 					send(startOffset+","+endOffset);
-//					System.out.println("getAstOccVarFromInput");
 				} else {
 					OcamlPlugin.logError("Indexer busy (" + state + ")");
 				}
@@ -102,7 +101,7 @@ public class Indexer implements IExecEvents {
 		Job job = new Job("Ast Occurrences Variable") {
 			@Override
 			protected IStatus run(IProgressMonitor arg0) {
-				waitReady(); //
+				waitReady(); 
 				if (state == State.Idle) {
 					state = State.AstOccVar;
 					Indexer.this.callBack = callBack;
@@ -110,7 +109,6 @@ public class Indexer implements IExecEvents {
 					send(name);
 					send(startOffset+","+endOffset);
 					send(path);
-					System.out.println("getAstOccVarFromFile");
 				} else {
 					OcamlPlugin.logError("Indexer busy (" + state + ")");
 				}
@@ -152,7 +150,7 @@ public class Indexer implements IExecEvents {
 		// TODO: use ocamlrun path from preferences
 		// "-b" : print stack traces
 		execHelper = ExecHelper.exec(this, new String[] { "ocamlrun", "-b",
-				"C:\\Users\\Pauline\\Documents\\Cours\\PSTL\\workspace\\OcamlPDB\\_build\\main.byte"/*"/home/user/workspace/OcamlPDB/_build/main.byte"*/ }, null, null);
+				"C:\\Users\\Pauline\\Documents\\Cours\\PSTL\\workspace\\OcamlPDB\\_build\\main.byte" }, null, null);
 	}
 
 	private synchronized void send(String command) {

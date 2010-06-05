@@ -87,8 +87,6 @@ public class MarkOccurrences implements ICursorPositionListener, IDocumentListen
 	
 
 	private Document parseXML(String xml) {
-		//System.out.println("Parse XML : "+xml);
-
 		try {
 			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -107,8 +105,6 @@ public class MarkOccurrences implements ICursorPositionListener, IDocumentListen
 	public void cursorPositionChanged(ITextEditor textEditor, Point selectedRange) {
 		if (this.ignoreSelectionEvent)
 			return;
-
-//		System.out.println("OffSet = "+selectedRange.x);
 		
 		try {
 			editor.getFileBeingEdited().deleteMarkers("Ocaml.ocamlOccurrencesMarker", false, IResource.DEPTH_ZERO);
@@ -127,7 +123,6 @@ public class MarkOccurrences implements ICursorPositionListener, IDocumentListen
 			if(match != null) {
 				Loc loc2 = new Loc(match.loc.startOffset,match.loc.endOffset);
 				String name = match.name;
-//				System.out.println("name = "+name);
 
 				String doc = document.get();
 
@@ -136,9 +131,6 @@ public class MarkOccurrences implements ICursorPositionListener, IDocumentListen
 					public void receiveAstOccVar(final String xml) {
 						Display.getDefault().asyncExec(new Runnable() {
 							public void run() {
-
-//								System.out.println("receiveAstOccVar");
-//								System.out.println("-xmlOcc-"+xml+"-fin xmlOcc-");
 
 								try {
 									SAXBuilder builder = new SAXBuilder(); 
@@ -153,7 +145,6 @@ public class MarkOccurrences implements ICursorPositionListener, IDocumentListen
 										Attribute attLoc = child.getAttribute("loc");
 										Loc loc = getLoc(attLoc.getValue());
 										Loc loc2 = new Loc(translateLocToDocumentOffset(document,loc.startOffset),translateLocToDocumentOffset(document,loc.endOffset));
-//										System.out.println("Loc Avant = "+loc.startOffset+","+loc.endOffset+", Loc Trans = "+loc2.startOffset+","+loc2.endOffset);
 
 										Attribute attWrite = child.getAttribute("write");
 
@@ -250,10 +241,6 @@ public class MarkOccurrences implements ICursorPositionListener, IDocumentListen
 		
 		if (matches.size() > 0)
 		{
-//			for(int i =0; i<matches.size();i++) {System.out.println("matches "+i+" "+matches.get(i).node.getNodeName()+" "+matches.get(i).name);}
-			
-//			if (matches.get(0).node.getNodeName().equals("IdLid"))
-//				return matches.get(0);
 			for(int i =0; i<matches.size();i++) {
 				if(matches.get(i).node.getNodeName().equals("IdLid"))
 					return matches.get(i);
