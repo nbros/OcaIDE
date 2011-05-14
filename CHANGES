@@ -170,4 +170,6 @@
 	* Display a message box on Windows when building with Ocamlbuild and Cygwin is not installed
 	* Fix template variables capitalization
 
-
+* 1.2.9 (May 14 2011)
+    * OcaIDE now supports O'Caml 3.12 [Dmitry Bely]
+    * Fixed formatting of exponential numbers [Dmitry Bely]
