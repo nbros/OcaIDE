@@ -1,4 +1,4 @@
-// java -jar ~/Desktop/lib/beaver.jar -t -c src/ocaml/parser/OcamlParser.g 
+// java -jar lib/beaver.jar -t -c src/ocaml/parser/OcamlParser.g
 
 
 %package "ocaml.parser";
@@ -6,16 +6,16 @@
 %import "java.util.ArrayList";
 
 %embed {:
-	public ErrorReporting errorReporting; 
-	
-	
+	public ErrorReporting errorReporting;
+
+
 	/** This list of definitions is used as a backup in case the parsing cannot build the AST up to
 		the root node (typically, when the user is changing code). In this case, we use this
-		tree instead of the root returned by the parser to build the outline. <p> 
+		tree instead of the root returned by the parser to build the outline. <p>
 		We must take care not to add the children of elements which are also in this list. So,
 		we use the "bTop" boolean to know if this definition should be added to the outline */
 	public ArrayList<Def> recoverDefs = new ArrayList<Def>();
-	
+
 	/** backup a node, so as to be able to later recover from a parsing error */
 	private void backup(Def def){
 		recoverDefs.add(def);
@@ -23,18 +23,18 @@
 			//child.bTop = false;
 			unsetTop(child);
 	}
-	
+
 	private void unsetTop(Def def){
 		def.bTop = false;
 		for(Def child: def.children)
 			unsetTop(child);
 	}
-	
+
 	/** Can this variable name be a parameter? (that is, it starts with a lowercase letter) */
 	public boolean isParameter(String name) {
 		return name.length() > 0 && Character.isLowerCase(name.charAt(0));
 	}
-	
+
 :};
 
 %init {:
@@ -50,6 +50,7 @@
 %terminals AS;
 %terminals ASSERT;
 %terminals BACKQUOTE;
+%terminals BANG;
 %terminals BAR;
 %terminals BARBAR;
 %terminals BARRBRACKET;
@@ -123,6 +124,7 @@
 %terminals OPTLABEL;
 %terminals OR;
 %terminals PLUS;
+%terminals PLUSDOT;
 %terminals PREFIXOP;
 %terminals PRIVATE;
 %terminals QUESTION;
@@ -166,17 +168,17 @@
 
 
 
-%nonassoc BACKQUOTE, BEGIN, CHAR, FALSE, FLOAT, INT, INT32, INT64, LBRACE, LBRACELESS, LBRACKET, LBRACKETBAR, LIDENT, LPAREN, NEW, NATIVEINT, PREFIXOP, STRING, TRUE, UIDENT;
+%nonassoc BACKQUOTE, BANG, BEGIN, CHAR, FALSE, FLOAT, INT, INT32, INT64, LBRACE, LBRACELESS, LBRACKET, LBRACKETBAR, LIDENT, LPAREN, NEW, NATIVEINT, PREFIXOP, STRING, TRUE, UIDENT;
 %nonassoc DOT;
 %nonassoc below_DOT;
 %nonassoc SHARP;
 %nonassoc below_SHARP;
 %nonassoc prec_constr_appl;
 %nonassoc prec_constant_constructor;
-%nonassoc prec_unary_minus;
+%nonassoc prec_unary_minus, prec_unary_plus;
 %right    INFIXOP4;
 %left     INFIXOP3, STAR;
-%left     INFIXOP2, PLUS, MINUS, MINUSDOT;
+%left     INFIXOP2, PLUS, PLUSDOT, MINUS, MINUSDOT;
 %right    COLONCOLON;
 %right    INFIXOP1;
 %left     INFIXOP0, EQUAL, LESS, GREATER;
@@ -208,16 +210,16 @@
 
 
 implementation =
-    structure.s    
-    {: 
+    structure.s
+    {:
     	Def root = new Def("root", Def.Type.Root, 0, 0);
     	root.add(s);
     	root.collapse();
     	return root;
     :}
 
-  | structure.s error    
-    {: 
+  | structure.s error
+    {:
     	Def root = new Def("root", Def.Type.Root, 0, 0);
     	root.add(s);
     	root.collapse();
@@ -227,7 +229,7 @@ implementation =
 
 interfaces=
     signature.s                  /*      { ArrayList.$1 }*/
-    {: 
+    {:
     	Def root = new Def("root", Def.Type.Root, 0, 0);
     	root.add(s);
     	root.collapse();
@@ -243,7 +245,7 @@ toplevel_phrase=
     {: return s; :}
   | toplevel_directive.d SEMISEMI          /*{ $1 }*/
     {: return d; :}
-  
+
 ;
 
 top_structure=
@@ -279,7 +281,7 @@ module_expr=
     mod_longident.a
     {: return a; :}
   | STRUCT.s structure.b END
-    {: 
+    {:
     	Def def = new Def("<structure>", Def.Type.Struct, s.getStart(), s.getEnd());
     	def.add(b);
     	def.collapse();
@@ -287,7 +289,7 @@ module_expr=
     	return def;
     :}
   | STRUCT.a structure.s error
-    {: 
+    {:
     	Def def = new Def("<structure>", Def.Type.Struct, a.getStart(), a.getEnd());
     	def.add(s);
     	def.collapse();
@@ -295,7 +297,7 @@ module_expr=
     	return def;
     :}
   | FUNCTOR LPAREN UIDENT.i COLON module_type.a RPAREN MINUSGREATER module_expr.b
-    {: 
+    {:
     	Def def = new Def("<functor>", Def.Type.Functor, i.getStart(), i.getEnd());
     	def.add(a);
     	def.add(b);
@@ -315,46 +317,50 @@ module_expr=
   	{: return a; :}
   | LPAREN module_expr error
     {: return new Def(); :}
+  | LPAREN VAL expr.a COLON package_type.b RPAREN
+  	{: return Def.root(a,b); :}
+  | LPAREN VAL expr COLON error
+    {: return new Def(); :}
 ;
 
 structure=
-    structure_tail.s  
+    structure_tail.s
     {: return s; :}
-  | seq_expr.a structure_tail.b   
+  | seq_expr.a structure_tail.b
     {: return Def.root(a,b); :}
 ;
 
 structure_tail=
-    /* empty */  
+    /* empty */
     {: return new Def(); :}
-  | SEMISEMI     
+  | SEMISEMI
     {: return new Def(); :}
-  | SEMISEMI seq_expr.a structure_tail.b 
+  | SEMISEMI seq_expr.a structure_tail.b
     {: return Def.root(a,b); :}
   | SEMISEMI structure_item.a structure_tail.b
     {: return Def.root(a,b); :}
-  | structure_item.a structure_tail.b         
+  | structure_item.a structure_tail.b
     {: return Def.root(a,b); :}
-  | error         
+  | error
     {: return new Def(); :}
 ;
 
 structure_item=
-    LET.l rec_flag.r let_bindings.a 
-	{: 
+    LET.l rec_flag.r let_bindings.a
+	{:
 		Def da = (Def)a;
 		Def rec = (Def)r;
-	
+
   		// add the "rec" flag
   		ArrayList<Def> lets = new ArrayList<Def>();
   		da.findLets(lets);
   		for(Def let: lets)
   			let.bRec = rec.bRec;
-  			
-		return a; 
+
+		return a;
 	:}
-  | EXTERNAL val_ident_colon.i core_type.a EQUAL primitive_declaration.b
-    {: 
+  | EXTERNAL val_ident.i COLON core_type.a EQUAL primitive_declaration.b
+    {:
 		Def ident = (Def)i;
     	Def def = new Def(ident.name, Def.Type.External, ident.posStart, ident.posEnd);
     	def.add(a);
@@ -366,7 +372,7 @@ structure_item=
   | TYPE type_declarations.t
     {: return t; :}
   | EXCEPTION UIDENT.id constructor_arguments.a
-    {: 
+    {:
     	Def def = new Def((String)id.value, Def.Type.Exception, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
@@ -374,7 +380,7 @@ structure_item=
     	return def;
     :}
   | EXCEPTION UIDENT.id EQUAL constr_longident.a
-    {: 
+    {:
     	Def def = new Def((String)id.value, Def.Type.Exception, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
@@ -382,7 +388,7 @@ structure_item=
     	return def;
     :}
   | MODULE UIDENT.id module_binding.a
-    {: 
+    {:
     	Def def = new Def((String)id.value, Def.Type.Module, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
@@ -392,7 +398,7 @@ structure_item=
   | MODULE REC module_rec_bindings.a
   	{: return a; :}
   | MODULE TYPE ident.id EQUAL module_type.a
-    {: 
+    {:
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.ModuleType, ident.posStart, ident.posEnd);
     	def.add(a);
@@ -401,7 +407,7 @@ structure_item=
     	return def;
     :}
   | OPEN mod_longident.id
-    {: 
+    {:
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.Open, ident.posStart, ident.posEnd);
     	backup(def);
@@ -412,7 +418,7 @@ structure_item=
   | CLASS TYPE class_type_declarations.a
   	{: return a; :}
   | INCLUDE module_expr.id
-    {: 
+    {:
     	Def ident = (Def)id;
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Include, ident.posStart, ident.posEnd);
@@ -434,18 +440,18 @@ module_binding=
    	{: return Def.root(a,b); :}
 ;
 module_rec_bindings=
-    module_rec_binding.a                          
+    module_rec_binding.a
     {: return a; :}
   | module_rec_bindings.a AND module_rec_binding.b
-  	{: 
+  	{:
   		Def db = (Def)b;
 		db.bAnd = true;
-  		return Def.root(a,b); 
+  		return Def.root(a,b);
   	:}
 ;
 module_rec_binding=
-    UIDENT.id COLON module_type.a EQUAL module_expr.b    
-    {: 
+    UIDENT.id COLON module_type.a EQUAL module_expr.b
+    {:
     	Def def = new Def((String)id.value, Def.Type.Module, id.getStart(), id.getEnd());
     	def.add(a);
     	def.add(b);
@@ -461,7 +467,7 @@ module_type=
     mty_longident.id
     {: return id; :}
   | SIG.s signature.a END
-    {: 
+    {:
     	Def def = new Def("<signature>", Def.Type.Sig, s.getStart(), s.getEnd());
     	def.add(a);
     	def.collapse();
@@ -472,7 +478,7 @@ module_type=
   	{: return new Def(); :}
   | FUNCTOR LPAREN UIDENT.id COLON module_type.a RPAREN MINUSGREATER module_type.b
   	@ below_WITH
-    {: 
+    {:
     	Def def = new Def((String)id.value, Def.Type.Functor, id.getStart(), id.getEnd());
     	def.add(a);
     	def.add(b);
@@ -482,6 +488,8 @@ module_type=
     :}
   | module_type.a WITH with_constraints.b
    	{: return Def.root(a,b); :}
+  | MODULE TYPE OF module_expr.a
+  	{: return a; :}
   | LPAREN module_type.a RPAREN
   	{: return a; :}
   | LPAREN module_type error
@@ -496,21 +504,21 @@ signature=
    	{: return Def.root(a,b); :}
 ;
 signature_item=
-    VAL.v val_ident_colon.id core_type.a
-    {: 
+    VAL.v val_ident.id COLON core_type.a
+    {:
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.Let, ident.posStart, ident.posEnd);
     	def.add(a);
     	def.collapse();
-  		
+
   		// add the start position of the definition
   		def.defPosStart = v.getStart();
-    	
+
     	backup(def);
     	return def;
     :}
-  | EXTERNAL.e val_ident_colon.id core_type.a EQUAL primitive_declaration.b
-    {: 
+  | EXTERNAL.e val_ident.id COLON core_type.a EQUAL primitive_declaration.b
+    {:
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.External, ident.posStart, ident.posEnd);
   		def.defPosStart = e.getStart();
@@ -521,15 +529,15 @@ signature_item=
     	return def;
     :}
   | TYPE.t type_declarations.a
-  	{: 
+  	{:
   		Def da = (Def)a;
   		Def first = da.findFirstOfType(Def.Type.Type);
   		first.defPosStart = t.getStart();
-  		
-  		return a; 
+
+  		return a;
   	:}
   | EXCEPTION.e UIDENT.id constructor_arguments.a
-    {: 
+    {:
     	Def def = new Def((String)id.value, Def.Type.Exception, id.getStart(), id.getEnd());
     	def.defPosStart = e.getStart();
     	def.add(a);
@@ -538,7 +546,7 @@ signature_item=
     	return def;
     :}
   | MODULE.m UIDENT.id module_declaration.a
-    {: 
+    {:
     	Def def = new Def((String)id.value, Def.Type.Module, id.getStart(), id.getEnd());
     	def.defPosStart = m.getStart();
     	def.add(a);
@@ -547,15 +555,15 @@ signature_item=
     	return def;
     :}
   | MODULE.m REC module_rec_declarations.a
-  	{: 
+  	{:
   		Def da = (Def)a;
   		Def first = da.findFirstOfType(Def.Type.Module);
   		first.defPosStart = m.getStart();
-  	
-  		return a; 
+
+  		return a;
   	:}
   | MODULE.m TYPE ident.id
-    {: 
+    {:
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.ModuleType, ident.posStart, ident.posEnd);
     	def.defPosStart = m.getStart();
@@ -563,7 +571,7 @@ signature_item=
     	return def;
     :}
   | MODULE.m TYPE ident.id EQUAL module_type.a
-    {: 
+    {:
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.ModuleType, ident.posStart, ident.posEnd);
     	def.defPosStart = m.getStart();
@@ -573,7 +581,7 @@ signature_item=
     	return def;
     :}
   | OPEN.o mod_longident.id
-    {: 
+    {:
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.Open, ident.posStart, ident.posEnd);
     	def.defPosStart = o.getStart();
@@ -581,7 +589,7 @@ signature_item=
     	return def;
     :}
   | INCLUDE.i module_type.id
-    {: 
+    {:
     	Def ident = (Def)id;
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Include, ident.posStart, ident.posEnd);
@@ -592,20 +600,20 @@ signature_item=
 	    return new Def();
     :}
   | CLASS.c class_descriptions.a
-  	{: 
+  	{:
   		Def da = (Def)a;
   		Def first = da.findFirstOfType(Def.Type.Class);
   		first.defPosStart = c.getStart();
-  	
-  		return a; 
+
+  		return a;
   	:}
   | CLASS.c TYPE class_type_declarations.a
-  	{: 
+  	{:
   		Def da = (Def)a;
   		Def first = da.findFirstOfType(Def.Type.ClassType);
   		first.defPosStart = c.getStart();
-  	
-  		return a; 
+
+  		return a;
   	:}
 //  | error
 //  	{: return new Def(); :}
@@ -621,16 +629,16 @@ module_rec_declarations=
     module_rec_declaration.a
     {: return a; :}
   | module_rec_declarations.a AND.n module_rec_declaration.b
-  	{: 
+  	{:
   		Def db = (Def)b;
   		db.defPosStart = n.getStart();
 		db.bAnd = true;
-  		return Def.root(a,b); 
+  		return Def.root(a,b);
   	:}
 ;
 module_rec_declaration=
     UIDENT.id COLON module_type.a
-    {: 
+    {:
     	Def def = new Def((String)id.value, Def.Type.Module, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
@@ -643,17 +651,17 @@ module_rec_declaration=
 
 class_declarations=
     class_declarations.a AND class_declaration.b
-  	{: 
+  	{:
   		Def db = (Def)b;
 		db.bAnd = true;
-  		return Def.root(a,b); 
+  		return Def.root(a,b);
   	:}
-  | class_declaration.a                           
+  | class_declaration.a
     {: return a; :}
 ;
 class_declaration=
     virtual_flag class_type_parameters.a LIDENT.id class_fun_binding.b
-    {: 
+    {:
     	Def def = new Def((String)id.value, Def.Type.Class, id.getStart(), id.getEnd());
     	def.add(a);
     	def.add(b);
@@ -671,7 +679,7 @@ class_fun_binding=
   {: return Def.root(a,b); :}
 ;
 class_type_parameters=
-    /*empty*/      
+    /*empty*/
     {: return new Def(); :}
   | LBRACKET type_parameter_list.a RBRACKET
   	{: return a; :}
@@ -690,10 +698,10 @@ class_expr=
   | class_simple_expr.a simple_labeled_expr_list.b
     {: return Def.root(a,b); :}
   | LET rec_flag.r let_bindings.a IN class_expr.b
-  	{: 
+  	{:
   		Def da = (Def)a;
   		Def rec = (Def)r;
-  		
+
   		// transform the "lets" into "let ins" and add the "rec" flag
   		ArrayList<Def> lets = new ArrayList<Def>();
   		da.findLets(lets);
@@ -701,7 +709,7 @@ class_expr=
   			let.type = Def.Type.LetIn;
   			let.bRec = rec.bRec;
   		}
-  		
+
   		if(lets.size() > 0){
   			Def last = lets.get(lets.size() - 1);
   			Def in = new Def("<in>", Def.Type.In, 0, 0);
@@ -714,7 +722,7 @@ class_expr=
   			return a;
   		}
 
-  		return Def.root(a,b); 
+  		return Def.root(a,b);
   	:}
 ;
 class_simple_expr=
@@ -723,14 +731,14 @@ class_simple_expr=
   | class_longident.a
     {: return a; :}
   | OBJECT.o class_structure.a END
-    {: 
+    {:
     	Def def = new Def("<object>", Def.Type.Object, o.getStart(), o.getEnd());
     	def.add(a);
     	def.collapse();
     	backup(def);
     	return def;
     :}
-    
+
   | OBJECT class_structure error
   	{: return new Def(); :}
   | LPAREN class_expr.a COLON class_type.b RPAREN
@@ -757,21 +765,21 @@ class_self_pattern=
 class_fields=
     /* empty */
     {: return new Def(); :}
-  | class_fields.a INHERIT class_expr.b parent_binder.c
-  	{: return Def.root(a,b,c); :}
+  | class_fields.a INHERIT override_flag.b  class_expr.c parent_binder.d
+  	{: return Def.root(a,b,c,d); :}
   | class_fields.a VAL.v virtual_value.id
-    {: 
+    {:
     	Def ident = (Def)id;
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
-    		def.defPosStart = v.getStart(); 
+    		def.defPosStart = v.getStart();
     		backup(def);
 	    	return Def.root(a, def);
 	    }
 	    return Def.root(a,id);
     :}
   | class_fields.a VAL.v value.id
-    {: 
+    {:
     	Def ident = (Def)id;
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
@@ -786,7 +794,7 @@ class_fields=
   | class_fields.a concrete_method.b
   	{: return Def.root(a,b); :}
   | class_fields.a CONSTRAINT.c constrain.b
-    {: 
+    {:
     	Def def = new Def("<constraint>", Def.Type.Constraint, c.getStart(), c.getEnd());
     	def.add(b);
     	def.collapse();
@@ -794,7 +802,7 @@ class_fields=
     	return Def.root(a, def);
     :}
   | class_fields.a INITIALIZER.i seq_expr.b
-    {: 
+    {:
     	Def def = new Def("initializer", Def.Type.Initializer, i.getStart(), i.getEnd());
     	def.defPosStart = i.getStart();
     	def.add(b);
@@ -805,19 +813,20 @@ class_fields=
 ;
 parent_binder=
     AS LIDENT.id
-    {: 
+    {:
     	return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
     :}
   | /* empty */
   	{: return new Def(); :}
 ;
 virtual_value=
-    MUTABLE.m VIRTUAL label.id COLON core_type.a
-    {: 
+    override_flag.o MUTABLE.m VIRTUAL label.id COLON core_type.a
+    {:
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
-    	def.defPosStart = m.getStart();
+    	int pos = ((Def)o).posStart;
+    	def.defPosStart = (pos != 0 ? pos : m.getStart());
     	def.add(a);
     	def.collapse();
     	def.bAlt = true;
@@ -825,7 +834,7 @@ virtual_value=
 	    return def;
     :}
   | VIRTUAL.v mutable_flag.m label.id COLON core_type.a
-    {: 
+    {:
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
@@ -838,37 +847,39 @@ virtual_value=
     :}
 ;
 value=
-    mutable_flag.m label.id EQUAL seq_expr.a
-    {: 
+    override_flag.o mutable_flag.m label.id EQUAL seq_expr.a
+    {:
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
-    	int pos = ((Def)m).posStart;
-    	def.defPosStart = (pos != 0 ? pos : ident.posStart);
+    	int pos1 = ((Def)o).posStart;
+    	int pos2 = ((Def)m).posStart;
+    	def.defPosStart = (pos1 != 0 ? pos1 : (pos2 != 0 ? pos2 : ident.posStart));
     	def.add(a);
     	def.collapse();
-    	def.bAlt = ((Def)m).bAlt;
+    	def.bAlt = ((Def)o).bAlt || ((Def)m).bAlt;
     	backup(def);
 	    return def;
     :}
-  | mutable_flag.m label.id type_constraint.a EQUAL seq_expr.b
-    {: 
+  | override_flag.o mutable_flag.m label.id type_constraint.a EQUAL seq_expr.b
+    {:
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
-    	int pos = ((Def)m).posStart;
-    	def.defPosStart = (pos != 0 ? pos : ident.posStart);
+    	int pos1 = ((Def)o).posStart;
+    	int pos2 = ((Def)m).posStart;
+    	def.defPosStart = (pos1 != 0 ? pos1 : (pos2 != 0 ? pos2 : ident.posStart));
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	def.bAlt = ((Def)m).bAlt;
+    	def.bAlt = ((Def)o).bAlt || ((Def)m).bAlt;
     	backup(def);
 	    return def;
     :}
 ;
 virtual_method=
-    METHOD.m PRIVATE VIRTUAL label.id COLON poly_type.a
-    {: 
+    METHOD.m override_flag.o PRIVATE VIRTUAL label.id COLON poly_type.a
+    {:
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
@@ -879,34 +890,34 @@ virtual_method=
     	backup(def);
 	    return def;
     :}
-  | METHOD.m VIRTUAL private_flag.p label.id COLON poly_type.a
-    {: 
+  | METHOD.m override_flag.o VIRTUAL private_flag.p label.id COLON poly_type.a
+    {:
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
     	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
-    	def.bAlt = ((Def)p).bAlt;
+    	def.bAlt = ((Def)o).bAlt || ((Def)p).bAlt;
     	backup(def);
 	    return def;
     :}
 ;
 concrete_method =
-    METHOD.m private_flag.p label.id strict_binding.a
-    {: 
+    METHOD.m override_flag.o private_flag.p label.id strict_binding.a
+    {:
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
     	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
-    	def.bAlt = ((Def)p).bAlt;
+    	def.bAlt = ((Def)o).bAlt || ((Def)p).bAlt;
     	backup(def);
 	    return def;
     :}
-  | METHOD.m private_flag.p label.id COLON poly_type.a EQUAL seq_expr.b
-    {: 
+  | METHOD.m override_flag.o private_flag.p label.id COLON poly_type.a EQUAL seq_expr.b
+    {:
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
@@ -914,18 +925,7 @@ concrete_method =
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	def.bAlt = ((Def)p).bAlt;
-    	backup(def);
-	    return def;
-    :}
-  | METHOD.m private_flag.p LABEL.id poly_type.a EQUAL seq_expr.b
-    {: 
-    	Def def = new Def((String)id.value, Def.Type.Method, id.getStart(), id.getEnd());
-    	def.defPosStart = m.getStart();
-    	def.add(a);
-    	def.add(b);
-    	def.collapse();
-    	def.bAlt = ((Def)p).bAlt;
+    	def.bAlt = ((Def)o).bAlt || ((Def)p).bAlt;
     	backup(def);
 	    return def;
     :}
@@ -952,7 +952,7 @@ class_signature=
   | clty_longident
   	{: return new Def(); :}
   | OBJECT.o class_sig_body.a END
-    {: 
+    {:
     	Def def = new Def("<object>", Def.Type.Object, o.getStart(), o.getEnd());
     	def.add(a);
     	def.collapse();
@@ -978,12 +978,12 @@ class_sig_fields=
   | class_sig_fields.s INHERIT class_signature.a    /*{ Pctf_inher $3 :: $1 }*/
   	{: return Def.root(s,a); :}
   | class_sig_fields.s VAL.v value_type.a             /*{ Pctf_val   $3 :: $1 }*/
-  	{: 
+  	{:
   		Def da = (Def)a;
   		da.defPosStart = v.getStart();
-  		return Def.root(s,a); 
+  		return Def.root(s,a);
   	:}
-  | class_sig_fields.s virtual_method.a             /*{ Pctf_virt  $2 :: $1 }*/
+  | class_sig_fields.s virtual_method_type.a        /*{ Pctf_virt  $2 :: $1 }*/
   	{: return Def.root(s,a); :}
   | class_sig_fields.s method_type.a                /*{ Pctf_meth  $2 :: $1 }*/
   	{: return Def.root(s,a); :}
@@ -992,7 +992,7 @@ class_sig_fields=
 ;
 value_type=
     VIRTUAL mutable_flag.m label.id COLON core_type.a
-    {: 
+    {:
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
@@ -1003,7 +1003,7 @@ value_type=
 	    return def;
     :}
   | MUTABLE virtual_flag label.id COLON core_type.a
-    {: 
+    {:
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
@@ -1014,7 +1014,7 @@ value_type=
 	    return def;
     :}
   | label.id COLON core_type.a
-    {: 
+    {:
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
@@ -1026,11 +1026,35 @@ value_type=
 ;
 method_type=
     METHOD.m private_flag label.id COLON poly_type.a
-    {: 
+    {:
     	Def ident = (Def)id;
     	assert (ident.type == Def.Type.Identifier);
     	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
-    	def.defPosStart = m.getStart(); 
+    	def.defPosStart = m.getStart();
+	    def.add(a);
+	    def.collapse();
+	    backup(def);
+	    return def;
+    :}
+;
+virtual_method_type=
+    METHOD.m PRIVATE VIRTUAL label.id COLON poly_type.a
+    {:
+    	Def ident = (Def)id;
+    	assert (ident.type == Def.Type.Identifier);
+    	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
+	    def.add(a);
+	    def.collapse();
+	    backup(def);
+	    return def;
+    :}
+  | METHOD.m VIRTUAL private_flag label.id COLON poly_type.a
+    {:
+    	Def ident = (Def)id;
+    	assert (ident.type == Def.Type.Identifier);
+    	Def def = new Def(ident.name, Def.Type.Method, ident.posStart, ident.posEnd);
+    	def.defPosStart = m.getStart();
 	    def.add(a);
 	    def.collapse();
 	    backup(def);
@@ -1043,18 +1067,18 @@ constrain=
 ;
 class_descriptions=
     class_descriptions.a AND.n class_description.b
-  	{: 
+  	{:
   		Def db = (Def)b;
   		db.defPosStart = n.getStart();
 		db.bAnd = true;
-  		return Def.root(a,b); 
+  		return Def.root(a,b);
   	:}
   | class_description.a
   	{: return a; :}
 ;
 class_description=
     virtual_flag class_type_parameters LIDENT.id COLON class_type.a
-    {: 
+    {:
     	Def def = new Def((String)id.value, Def.Type.Class, id.getStart(), id.getEnd());
 	    def.add(a);
 	    def.collapse();
@@ -1064,18 +1088,18 @@ class_description=
 ;
 class_type_declarations=
     class_type_declarations.a AND.n class_type_declaration.b
-  	{: 
+  	{:
   		Def db = (Def)b;
   		db.defPosStart = n.getStart();
 		db.bAnd = true;
-  		return Def.root(a,b); 
+  		return Def.root(a,b);
   	:}
-  | class_type_declaration.a 
+  | class_type_declaration.a
   	{: return a; :}
-;	
+;
 class_type_declaration=
     virtual_flag class_type_parameters LIDENT.id EQUAL class_signature.a
-    {: 
+    {:
     	Def def = new Def((String)id.value, Def.Type.ClassType, id.getStart(), id.getEnd());
 	    def.add(a);
 	    def.collapse();
@@ -1093,7 +1117,7 @@ seq_expr=
    {: return a; :}
   | expr.a SEMI seq_expr.b
    {: return Def.root(a,b); :}
-  
+
 ;
 labeled_simple_pattern=
     QUESTION LPAREN label_let_pattern.a opt_default.b RPAREN
@@ -1101,35 +1125,35 @@ labeled_simple_pattern=
   | QUESTION label_var.a
     {: return a; :}
   | OPTLABEL.id LPAREN let_pattern.a opt_default.b RPAREN
-    {: 
+    {:
     	Def ident = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
-    	return Def.root(ident,a,b); 
+    	return Def.root(ident,a,b);
     :}
   | OPTLABEL.id pattern_var.a
-    {: 
+    {:
     	Def ident = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
-    	return Def.root(ident,a); 
+    	return Def.root(ident,a);
     :}
   | TILDE LPAREN label_let_pattern.a RPAREN
   	{: return a; :}
   | TILDE label_var.a
     {: return a; :}
   | LABEL.id simple_pattern.a
-    {: 
+    {:
     	Def ident = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
-    	return Def.root(ident,a); 
+    	return Def.root(ident,a);
     :}
-      
+
   | simple_pattern.a
   	{: return a; :}
 ;
 pattern_var=
     LIDENT.id            /*{ mkpat(Ppat_var $1) }*/
-    {: 
+    {:
     	return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
     :}
   | UNDERSCORE.id        /*{ mkpat Ppat_any }*/
-    {: 
+    {:
     	return new Def("_", Def.Type.Identifier, id.getStart(), id.getEnd());
     :}
 ;
@@ -1147,10 +1171,10 @@ label_let_pattern=
 ;
 label_var=
     LIDENT.id
-    {: 
+    {:
     	return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
     :}
-    
+
 ;
 let_pattern=
     pattern.a
@@ -1160,11 +1184,11 @@ let_pattern=
 ;
 expr=
     simple_expr.a  @ below_SHARP
-    {: return a; :} 
+    {: return a; :}
   | simple_expr.a simple_labeled_expr_list.b
   	{: return Def.root(a,b); :}
   | LET rec_flag.r let_bindings.a IN seq_expr.b
-  	{: 
+  	{:
   		Def da = (Def)a;
   		Def rec = (Def)r;
 
@@ -1175,11 +1199,11 @@ expr=
   			let.type = Def.Type.LetIn;
   			let.bRec = rec.bRec;
   		}
-  		
+
   		if(lets.size() > 0){
   			Def last = lets.get(lets.size() - 1);
   			Def in = new Def("<in>", Def.Type.In, 0, 0);
-  			
+
   			in.add(b);
   			in.collapse();
   			last.children.add(in);
@@ -1187,11 +1211,11 @@ expr=
   			backup(last);
   			return a;
   		}
-	  		
-  		return Def.root(a,b); 
+
+  		return Def.root(a,b);
   	:}
   | LET MODULE UIDENT.id module_binding.a IN seq_expr.b
-    {: 
+    {:
     	Def def = new Def((String)id.value, Def.Type.Module, id.getStart(), id.getEnd());
     	def.add(a);
     	def.add(b);
@@ -1199,18 +1223,30 @@ expr=
     	backup(def);
     	return def;
     :}
+  | LET OPEN mod_longident.id IN seq_expr.a
+    {:
+    	Def ident = (Def)id;
+    	Def def = new Def(ident.name, Def.Type.Open, ident.posStart, ident.posEnd);
+		Def in = new Def("<in>", Def.Type.In, 0, 0);
+		in.add(a);
+		in.collapse();
+		def.children.add(in);
+		def.collapse();
+    	backup(def);
+    	return def;
+    :}
   | FUNCTION opt_bar.a match_cases.b
   	{: return Def.root(a,b); :}
   | FUN labeled_simple_pattern.a fun_def.b
-  	{: 
+  	{:
   		// find the identifiers defined in this pattern, and
   		// transform them into "parameter" nodes
   		ArrayList<Def> idents = new ArrayList<Def>();
     	Def pat = (Def)a;
     	pat.findIdents(idents);
-    	
+
     	Def root = new Def();
-    	
+
     	Def last = null;
     	boolean bFirst = true;
     	for(int i = 0; i < idents.size(); i++){
@@ -1227,7 +1263,7 @@ expr=
 	    		root.add(def);
     		}
     	}
-    	
+
     	if(last != null){
     		last.add(b);
     		last.collapse();
@@ -1236,17 +1272,26 @@ expr=
     		return Def.root(a, b);
     	}
   	:}
+  | FUN LPAREN TYPE LIDENT.id RPAREN fun_def.a
+  	{:
+    	Def root = new Def();
+    	Def def = new Def((String)id.value, Def.Type.Parameter, id.getStart(), id.getEnd());
+   		root.add(def);
+   		def.add(a);
+   		def.collapse();
+   		return root;
+  	:}
   | MATCH seq_expr.a WITH opt_bar.b match_cases.c
-    {: return Def.root(a,b,c); :}  
+    {: return Def.root(a,b,c); :}
   | TRY seq_expr.a WITH opt_bar.b match_cases.c
     {: return Def.root(a,b,c); :}
   | TRY seq_expr WITH error
     {: return new Def(); :}
   | expr_comma_list.a @ below_COMMA
     {: return a; :}
-  | constr_longident.a simple_expr.b @ below_SHARP 
+  | constr_longident.a simple_expr.b @ below_SHARP
     {: return Def.root(a,b); :}
-  | name_tag.a simple_expr.b @ below_SHARP 
+  | name_tag.a simple_expr.b @ below_SHARP
     {: return Def.root(a,b); :}
   | IF seq_expr.a THEN expr.b ELSE expr.c
     {: return Def.root(a,b,c); :}
@@ -1255,14 +1300,14 @@ expr=
   | WHILE seq_expr.a DO seq_expr.b DONE
     {: return Def.root(a,b); :}
   | FOR val_ident.ident EQUAL seq_expr.b direction_flag seq_expr.c DO seq_expr.d DONE
-    {: 
+    {:
 	    Def i = (Def)ident;
 	    Def def = new Def(i.name, Def.Type.Parameter, i.posStart, i.posEnd);
 	    def.add(b);
 	    def.add(c);
 	    def.add(d);
 	    def.collapse();
-    	return def; 
+    	return def;
     :}
   | expr.a COLONCOLON expr.b
     {: return Def.root(a,b); :}
@@ -1279,6 +1324,8 @@ expr=
   | expr.a INFIXOP4 expr.b
     {: return Def.root(a,b); :}
   | expr.a PLUS expr.b
+    {: return Def.root(a,b); :}
+  | expr.a PLUSDOT expr.b
     {: return Def.root(a,b); :}
   | expr.a MINUS expr.b
     {: return Def.root(a,b); :}
@@ -1304,6 +1351,8 @@ expr=
     {: return Def.root(a,b); :}
   | subtractive expr.a @ prec_unary_minus
     {: return a; :}
+  | additive expr.a @ prec_unary_plus
+    {: return a; :}
   | simple_expr.a DOT label_longident.b LESSMINUS expr.c
     {: return Def.root(a,b,c); :}
   | simple_expr.a DOT LPAREN seq_expr.b RPAREN LESSMINUS expr.c
@@ -1315,11 +1364,11 @@ expr=
   | label.a LESSMINUS expr.b
     {: return Def.root(a,b); :}
   | ASSERT simple_expr.a @ below_SHARP
-    {: return a; :}  
-  | LAZY simple_expr.a @ below_SHARP 
-    {: return a; :}  
+    {: return a; :}
+  | LAZY simple_expr.a @ below_SHARP
+    {: return a; :}
   | OBJECT.o class_structure.a END
-    {: 
+    {:
     	Def def = new Def("<object>", Def.Type.Object, o.getStart(), o.getEnd());
     	def.add(a);
     	def.collapse();
@@ -1334,9 +1383,9 @@ simple_expr=
     {: return a; :}
   | constant.a
   	{: return a; :}
-  | constr_longident.a @ prec_constant_constructor 
+  | constr_longident.a @ prec_constant_constructor
     {: return a; :}
-  | name_tag.a @ prec_constant_constructor 
+  | name_tag.a @ prec_constant_constructor
     {: return a; :}
   | LPAREN seq_expr.a RPAREN
     {: return a; :}
@@ -1351,6 +1400,10 @@ simple_expr=
   | LPAREN seq_expr.a type_constraint.b RPAREN
     {: return Def.root(a,b); :}
   | simple_expr.a DOT label_longident.b
+    {: return Def.root(a,b); :}
+  | mod_longident.a DOT LPAREN seq_expr.b RPAREN
+    {: return Def.root(a,b); :}
+  | mod_longident.a DOT LPAREN seq_expr.b error
     {: return Def.root(a,b); :}
   | simple_expr.a DOT LPAREN seq_expr.b RPAREN
   	{: return Def.root(a,b); :}
@@ -1380,6 +1433,8 @@ simple_expr=
     {: return Def.root(a,b); :}
   | PREFIXOP simple_expr.a
     {: return a; :}
+  | BANG simple_expr.a
+    {: return a; :}
   | NEW class_longident.a
     {: return a; :}
   | LBRACELESS field_expr_list.a opt_semi.b GREATERRBRACE
@@ -1390,6 +1445,10 @@ simple_expr=
     {: return new Def(); :}
   | simple_expr.a SHARP label.b
     {: return Def.root(a,b); :}
+  | LPAREN MODULE module_expr.a COLON package_type.b RPAREN
+    {: return Def.root(a,b); :}
+  | LPAREN MODULE module_expr.a COLON error
+    {: return a; :}
 ;
 simple_labeled_expr_list=
     labeled_simple_expr.a
@@ -1410,7 +1469,7 @@ label_expr=
   	{: return a; :}
   | QUESTION label_ident.a
  	{: return a; :}
-  | OPTLABEL simple_expr.a @ below_SHARP 
+  | OPTLABEL simple_expr.a @ below_SHARP
     {: return a; :}
 ;
 label_ident=
@@ -1421,17 +1480,17 @@ label_ident=
 ;
 let_bindings=
     let_binding.b
-    {: return b; :}                      
-  | let_bindings.a AND let_binding.b                
-  	{: 
+    {: return b; :}
+  | let_bindings.a AND let_binding.b
+  	{:
   		Def db = (Def)b;
 		db.bAnd = true;
-  		return Def.root(a,b); 
+  		return Def.root(a,b);
   	:}
 ;
 let_binding=
     val_ident.i fun_binding.f
-    {: 
+    {:
     	Def ident = (Def)i;
     	Def def = new Def(ident.name, Def.Type.Let, ident.posStart, ident.posEnd);
     	def.add(f);
@@ -1439,37 +1498,46 @@ let_binding=
     	backup(def);
     	return def;
     :}
+  | val_ident.i COLON typevar_list DOT core_type EQUAL seq_expr.b
+    {:
+    	Def ident = (Def)i;
+    	Def def = new Def(ident.name, Def.Type.Let, ident.posStart, ident.posEnd);
+    	def.add(b);
+    	def.collapse();
+    	backup(def);
+    	return def;
+    :}
   | pattern.p EQUAL seq_expr.b
-  	{: 
+  	{:
   		// find the identifiers defined in this pattern, and
   		// create and return a new node for them
-  		
+
   		ArrayList<Def> idents = new ArrayList<Def>();
     	Def pat = (Def)p;
-    	
+
     	pat.findIdents(idents);
-    	
+
     	Def root = new Def();
-    	
+
     	Def last = null;
     	for(int i = 0; i < idents.size(); i++){
     		Def ident = idents.get(i);
-    	
+
     		Def def = new Def(ident.name, Def.Type.Let, ident.posStart, ident.posEnd);
     		if(i != 0)
     			def.bAnd = true;
-    			
+
     		root.add(def);
     		last = def;
     	}
-    	
+
     	if(last != null){
     		last.add(b);
     		last.collapse();
     		backup(root);
-    		return root;	
+    		return root;
     	}
-    	
+
     	return Def.root(p, b);
   	:}
 ;
@@ -1483,14 +1551,14 @@ strict_binding=
     EQUAL seq_expr.a
     {: return a; :}
   | labeled_simple_pattern.p fun_binding.b
-  	{: 
+  	{:
   		ArrayList<Def> idents = new ArrayList<Def>();
     	Def pat = (Def)p;
-    	
+
     	pat.findIdents(idents);
-    	
+
     	Def root = new Def();
-    	
+
     	Def last = null;
     	boolean bFirst = true;
     	for(int i = 0; i < idents.size(); i++){
@@ -1507,30 +1575,39 @@ strict_binding=
 	    		root.add(def);
     		}
     	}
-    	
+
     	if(last != null){
     		last.add(b);
     		last.collapse();
     		backup(root);
-    		return root;	
+    		return root;
     	}
-    	
+
     	return Def.root(p, b);
+  	:}
+  | LPAREN TYPE LIDENT.id RPAREN fun_binding.a
+  	{:
+    	Def root = new Def();
+    	Def def = new Def((String)id.value, Def.Type.Parameter, id.getStart(), id.getEnd());
+   		root.add(def);
+   		def.add(a);
+   		def.collapse();
+   		return root;
   	:}
 ;
 match_cases=
     pattern.p match_action.b
-  	{: 
+  	{:
   		// find the identifiers defined in this pattern, and
   		// create and return a new node for them
-  		
+
   		ArrayList<Def> idents = new ArrayList<Def>();
     	Def pat = (Def)p;
-    	
+
     	pat.findIdents(idents);
-    	
+
     	Def root = new Def();
-    	
+
     	Def last = null;
     	boolean bFirst = true;
     	for(int i = 0; i < idents.size(); i++){
@@ -1547,27 +1624,27 @@ match_cases=
 	    		root.add(def);
     		}
     	}
-    	
+
     	if(last != null){
     		last.add(b);
     		last.collapse();
     		return root;
     	}
-    	
+
     	return Def.root(p, b);
-  	:} 
+  	:}
   | match_cases.a BAR pattern.b match_action.c
-  	{: 
+  	{:
   		// find the identifiers defined in this pattern, and
   		// create and return a new node for them
-  		
+
   		ArrayList<Def> idents = new ArrayList<Def>();
     	Def pat = (Def)b;
-    	
+
     	pat.findIdents(idents);
-    	
+
     	Def root = new Def();
-    	
+
     	Def last = null;
     	boolean bFirst = true;
     	for(int i = 0; i < idents.size(); i++){
@@ -1584,31 +1661,31 @@ match_cases=
 	    		root.add(def);
     		}
     	}
-    	
+
     	if(last != null){
     		last.add(c);
     		last.collapse();
     		return Def.root(a, root);
     	}
-    	
+
     	return Def.root(a, b, c);
-  	:} 
+  	:}
 ;
 fun_def=
-    match_action.a            
+    match_action.a
     {: return a; :}
   | labeled_simple_pattern.p fun_def.b
-  	{: 
+  	{:
   		// find the identifiers defined in this pattern, and
   		// create and return a new node for them
-  		
+
   		ArrayList<Def> idents = new ArrayList<Def>();
     	Def pat = (Def)p;
-    	
+
     	pat.findIdents(idents);
-    	
+
     	Def root = new Def();
-    	
+
     	Def last = null;
     	boolean bFirst = true;
     	for(int i = 0; i < idents.size(); i++){
@@ -1625,15 +1702,24 @@ fun_def=
 	    		root.add(def);
     		}
     	}
-    	
+
     	if(last != null){
     		last.add(b);
     		last.collapse();
     		return root;
     	}
-    	
+
     	return Def.root(root, b);
-  	:} 
+  	:}
+  | LPAREN TYPE LIDENT.id RPAREN fun_def.a
+  	{:
+    	Def root = new Def();
+    	Def def = new Def((String)id.value, Def.Type.Parameter, id.getStart(), id.getEnd());
+   		root.add(def);
+   		def.add(a);
+   		def.collapse();
+   		return root;
+  	:}
 ;
 match_action=
     MINUSGREATER seq_expr.a
@@ -1644,20 +1730,24 @@ match_action=
 expr_comma_list=
     expr_comma_list.a COMMA expr.b
     {: return Def.root(a,b); :}
-  | expr.a COMMA expr.b     
+  | expr.a COMMA expr.b
   	{: return Def.root(a,b); :}
 ;
 record_expr=
     simple_expr.a WITH lbl_expr_list.b opt_semi.c
     {: return Def.root(a,b,c); :}
-  | lbl_expr_list.a opt_semi.b  
+  | lbl_expr_list.a opt_semi.b
   	{: return Def.root(a,b); :}
 ;
 lbl_expr_list=
     label_longident.a EQUAL expr.b
     {: return Def.root(a,b); :}
+  | label_longident.a
+    {: return a; :}
   | lbl_expr_list.a SEMI label_longident.b EQUAL expr.c
     {: return Def.root(a,b,c); :}
+  | lbl_expr_list.a SEMI label_longident.b
+    {: return Def.root(a,b); :}
 ;
 field_expr_list=
     label.a EQUAL expr.b
@@ -1667,7 +1757,7 @@ field_expr_list=
 ;
 expr_semi_list=
     expr.a
-    {: return a; :}                   
+    {: return a; :}
   | expr_semi_list.a SEMI expr.b
   	{: return Def.root(a,b); :}
 ;
@@ -1692,10 +1782,10 @@ pattern=
   | pattern.a AS val_ident.b
   	{: return Def.root(a,b); :}
   | pattern_comma_list.a  @ below_COMMA
-  	{: return a; :} 
-  | constr_longident.a pattern.b @ prec_constr_appl 
+  	{: return a; :}
+  | constr_longident.a pattern.b @ prec_constr_appl
     {: return Def.root(a,b); :}
-  | name_tag.a pattern.b @ prec_constr_appl 
+  | name_tag.a pattern.b @ prec_constr_appl
     {: return Def.root(a,b); :}
   | pattern.a COLONCOLON pattern.b
   	{: return Def.root(a,b); :}
@@ -1703,9 +1793,11 @@ pattern=
   	{: return Def.root(a,b); :}
   | pattern.a BAR pattern.b
 	{: return Def.root(a,b); :}
+  | LAZY simple_pattern.a
+  	{: return a; :}
 ;
 simple_pattern=
-    val_ident.a @ below_EQUAL 
+    val_ident.a @ below_EQUAL
     {: return a; :}
   | UNDERSCORE.id
   	{: return new Def("_", Def.Type.Identifier, id.getStart(), id.getEnd()); :}
@@ -1719,7 +1811,7 @@ simple_pattern=
     {: return a; :}
   | SHARP type_longident.a
     {: return a; :}
-  | LBRACE lbl_pattern_list.a opt_semi RBRACE
+  | LBRACE lbl_pattern_list.a record_pattern_end RBRACE
     {: return a; :}
   | LBRACE lbl_pattern_list.a opt_semi error
     {: return a; :}
@@ -1744,9 +1836,9 @@ simple_pattern=
 ;
 
 pattern_comma_list=
-    pattern_comma_list.a COMMA pattern.b 
+    pattern_comma_list.a COMMA pattern.b
     {: return Def.root(a,b); :}
-  | pattern.a COMMA pattern.b  
+  | pattern.a COMMA pattern.b
     {: return Def.root(a,b); :}
 ;
 pattern_semi_list=
@@ -1758,15 +1850,24 @@ pattern_semi_list=
 lbl_pattern_list=
     label_longident.a EQUAL pattern.b
     {: return Def.root(a,b); :}
+  | label_longident.a
+  	{: return a; :}
   | lbl_pattern_list.a SEMI label_longident.b EQUAL pattern.c
     {: return Def.root(a,b,c); :}
-  
+  | lbl_pattern_list.a SEMI label_longident.b
+    {: return Def.root(a,b); :}
+;
+record_pattern_end=
+    opt_semi.a
+  	{: return a; :}
+  | SEMI UNDERSCORE opt_semi.a
+  	{: return a; :}
 ;
 
 /* Primitive declarations */
 
 primitive_declaration=
-    STRING               
+    STRING
     {: return new Def(); :}
   | STRING primitive_declaration.a
    	{: return a; :}
@@ -1778,17 +1879,17 @@ type_declarations=
     type_declaration.a                            /*{ [$1] }*/
     {: return a; :}
   | type_declarations.a AND.n type_declaration.b      /*{ $3 :: $1 }*/
-  	{: 
+  	{:
   		Def db = (Def)b;
 		db.bAnd = true;
 		db.defPosStart = n.getStart();
-  		return Def.root(a,b); 
+  		return Def.root(a,b);
   	:}
 ;
 
 type_declaration=
     type_parameters LIDENT.id type_kind.a constraints
-    {: 
+    {:
     	Def def = new Def((String)id.value, Def.Type.Type, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
@@ -1807,6 +1908,8 @@ type_kind=
     {: return new Def(); :}
   | EQUAL core_type
     {: return new Def(); :}
+  | EQUAL PRIVATE core_type
+    {: return new Def(); :}
   | EQUAL constructor_declarations.a
     {: return a; :}
   | EQUAL PRIVATE constructor_declarations.a
@@ -1819,8 +1922,6 @@ type_kind=
     {: return a; :}
   | EQUAL core_type EQUAL private_flag LBRACE label_declarations.a opt_semi RBRACE
     {: return a; :}
-  | EQUAL PRIVATE core_type
-    {: return new Def(); :}
 ;
 type_parameters=
     /*empty*/                                   /*{ [] }*/
@@ -1862,28 +1963,28 @@ constructor_declaration=
 ;
 constructor_arguments=
     /*empty*/                                   /*{ [] }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | OF core_type_list                           /*{ List.rev $2 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 
 /* record type constructors */
 label_declarations=
-    label_declaration.a             
-	{: return a; :}    
+    label_declaration.a
+	{: return a; :}
   | label_declarations.a SEMI label_declaration.b
-	{: return Def.root(a,b); :}    
+	{: return Def.root(a,b); :}
 ;
 label_declaration=
-    mutable_flag.m label.a COLON poly_type 
-	{: 
-		// transform the generic identifier into a type constructor 
+    mutable_flag.m label.a COLON poly_type
+	{:
+		// transform the generic identifier into a type constructor
 		Def def = (Def) a;
 		Def da = new Def(def.name, Def.Type.RecordTypeConstructor, def.posStart, def.posEnd);
     	int pos = ((Def)m).posStart;
     	da.defPosStart = (pos != 0 ? pos : def.posStart);
 		return da;
-	:}    
+	:}
 
 ;
 
@@ -1891,173 +1992,195 @@ label_declaration=
 
 with_constraints=
     with_constraint                             /*{ [$1] }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | with_constraints AND with_constraint        /*{ $3 :: $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 with_constraint=
     TYPE type_parameters label_longident with_type_binder core_type constraints
-	{: return new Def(); :}    
+	{: return new Def(); :}
+  | TYPE type_parameters label_longident COLONEQUAL core_type
+	{: return new Def(); :}
   | MODULE mod_longident EQUAL mod_ext_longident
-	{: return new Def(); :}    
+	{: return new Def(); :}
+  | MODULE mod_longident COLONEQUAL mod_ext_longident
+	{: return new Def(); :}
 ;
 with_type_binder=
-    EQUAL   
-	{: return new Def(); :}    
+    EQUAL
+	{: return new Def(); :}
   | EQUAL PRIVATE
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 
 /* Polymorphic types */
 
 typevar_list=
         QUOTE ident                             /*{ [$2] }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
       | typevar_list QUOTE ident                /*{ $3 :: $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 poly_type=
         core_type
-	{: return new Def(); :}    
+	{: return new Def(); :}
       | typevar_list DOT core_type
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 
 /* Core types */
 
 core_type=
     core_type2
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | core_type2 AS QUOTE ident
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 core_type2=
     simple_core_type_or_tuple
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | QUESTION LIDENT COLON core_type2 MINUSGREATER core_type2
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | OPTLABEL core_type2 MINUSGREATER core_type2
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | LIDENT COLON core_type2 MINUSGREATER core_type2
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | core_type2 MINUSGREATER core_type2
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 
 simple_core_type=
     simple_core_type2  @ below_SHARP
-	{: return new Def(); :}    
-  | LPAREN core_type_comma_list RPAREN @ below_SHARP 
-	{: return new Def(); :}    
+	{: return new Def(); :}
+  | LPAREN core_type_comma_list RPAREN @ below_SHARP
+	{: return new Def(); :}
 ;
 simple_core_type2=
     QUOTE ident
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | UNDERSCORE
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | type_longident
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | simple_core_type2 type_longident
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | LPAREN core_type_comma_list RPAREN type_longident
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | LESS meth_list GREATER
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | LESS GREATER
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | SHARP class_longident opt_present
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | simple_core_type2 SHARP class_longident opt_present
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | LPAREN core_type_comma_list RPAREN SHARP class_longident opt_present
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | LBRACKET tag_field RBRACKET
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | LBRACKET BAR row_field_list RBRACKET
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | LBRACKET row_field BAR row_field_list RBRACKET
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | LBRACKETGREATER opt_bar row_field_list RBRACKET
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | LBRACKETGREATER RBRACKET
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | LBRACKETLESS opt_bar row_field_list RBRACKET
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | LBRACKETLESS opt_bar row_field_list GREATER name_tag_list RBRACKET
-	{: return new Def(); :}    
+	{: return new Def(); :}
+  | LPAREN MODULE package_type RPAREN
+	{: return new Def(); :}
+;
+package_type=
+    mty_longident
+	{: return new Def(); :}
+  | mty_longident WITH package_type_cstrs
+	{: return new Def(); :}
+;
+package_type_cstr=
+    TYPE LIDENT EQUAL core_type
+	{: return new Def(); :}
+;
+package_type_cstrs=
+    package_type_cstr
+	{: return new Def(); :}
+  | package_type_cstr AND package_type_cstrs
+	{: return new Def(); :}
 ;
 row_field_list=
     row_field                                   /*{ [$1] }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | row_field_list BAR row_field                /*{ $3 :: $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 row_field=
     tag_field                                   /*{ $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | simple_core_type2                           /*{ Rinherit $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 tag_field=
     name_tag OF opt_ampersand amper_type_list
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | name_tag
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 opt_ampersand=
     AMPERSAND                                   /*{ true }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | /* empty */                                 /*{ false }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 amper_type_list=
     core_type                                   /*{ [$1] }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | amper_type_list AMPERSAND core_type         /*{ $3 :: $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 opt_present=
     LBRACKETGREATER name_tag_list RBRACKET      /*{ List.rev $2 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | /* empty */                                 /*{ [] }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 name_tag_list=
     name_tag                                    /*{ [$1] }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | name_tag_list name_tag                      /*{ $2 :: $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 simple_core_type_or_tuple=
     simple_core_type                            /*{ $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | simple_core_type STAR core_type_list
-	{: return new Def(); :}    
+	{: return new Def(); :}
       /*{ mktyp(Ptyp_tuple($1 :: List.rev $3)) }*/
 ;
 core_type_comma_list=
     core_type                                   /*{ [$1] }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | core_type_comma_list COMMA core_type        /*{ $3 :: $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 core_type_list=
     simple_core_type                            /*{ [$1] }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | core_type_list STAR simple_core_type        /*{ $3 :: $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 meth_list=
     field SEMI meth_list                        /*{ $1 :: $3 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | field opt_semi                              /*{ [$1] }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | DOTDOT                                      /*{ [mkfield Pfield_var] }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 field=
     label COLON poly_type                       /*{ mkfield(Pfield($1, $3)) }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 label=
     LIDENT.id                                      /*{ $1 }*/
@@ -2068,33 +2191,43 @@ label=
 
 constant=
     INT                                         /*{ Const_int $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | CHAR                                        /*{ Const_char $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | STRING                                      /*{ Const_string $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | FLOAT                                       /*{ Const_float $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | INT32                                       /*{ Const_int32 $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | INT64                                       /*{ Const_int64 $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | NATIVEINT                                   /*{ Const_nativeint $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
 ;
 signed_constant=
     constant                                    /*{ $1 }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | MINUS INT                                   /*{ Const_int(- $2) }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | MINUS FLOAT                                 /*{ Const_float("-" ^ $2) }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | MINUS INT32                                 /*{ Const_int32(Int32.neg $2) }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | MINUS INT64                                 /*{ Const_int64(Int64.neg $2) }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
   | MINUS NATIVEINT                             /*{ Const_nativeint(Nativeint.neg $2) }*/
-	{: return new Def(); :}    
+	{: return new Def(); :}
+  | PLUS INT                                    /*{ Const_int $2 }*/
+	{: return new Def(); :}
+  | PLUS FLOAT                                  /*{ Const_float $2 }*/
+	{: return new Def(); :}
+  | PLUS INT32                                  /*{ Const_int32 $2 }*/
+	{: return new Def(); :}
+  | PLUS INT64                                  /*{ Const_int64 $2 }*/
+	{: return new Def(); :}
+  | PLUS NATIVEINT                              /*{ Const_nativeint $2 }*/
+	{: return new Def(); :}
 ;
 /* Identifiers and long identifiers */
 
@@ -2108,21 +2241,10 @@ val_ident=
     LIDENT.id                                    /*{ $1 }*/
     {: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
   | LPAREN operator.o RPAREN                      /*{ $2 }*/
-    {: 
+    {:
     	Def op = (Def)o;
-    	return new Def(op.name, Def.Type.Identifier, op.posStart, op.posEnd); 
+    	return new Def(op.name, Def.Type.Identifier, op.posStart, op.posEnd);
     :}
-;
-val_ident_colon=
-    LIDENT.id COLON                                /*{ $1 }*/
-    {: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
-  | LPAREN operator.o RPAREN COLON                /*{ $2 }*/
-    {: 
-    	Def op = (Def)o;
-    	return new Def(op.name, Def.Type.Identifier, op.posStart, op.posEnd); 
-    :}
-  | LABEL.id                                       /*{ $1 }*/
-    {: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
 ;
 operator=
     PREFIXOP.id                                    /*{ $1 }*/
@@ -2137,7 +2259,11 @@ operator=
     {: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
   | INFIXOP4.id                                    /*{ $1 }*/
     {: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
+  | BANG.id                                        /*{ "!" }*/
+    {: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
   | PLUS.id                                        /*{ "+" }*/
+    {: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
+  | PLUSDOT.id                                     /*{ "+." }*/
     {: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
   | MINUS.id                                       /*{ "-" }*/
     {: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
@@ -2164,10 +2290,10 @@ operator=
 ;
 constr_ident=
     UIDENT.id                                      /*{ $1 }*/
-    {: 
+    {:
     	Def def = new Def((String)id.value, Def.Type.TypeConstructor, id.getStart(), id.getEnd());
-    	def.defPosStart = id.getStart(); 
-    	return def; 
+    	def.defPosStart = id.getStart();
+    	return def;
     :}
   | LPAREN.a RPAREN.b                               /*{ "()" }*/
     {: return new Def("()", Def.Type.TypeConstructor, a.getStart(), b.getEnd()); :}
@@ -2183,10 +2309,10 @@ val_longident=
     val_ident.a
     {: return a; :}
   | mod_longident.a DOT val_ident.b
-  	{: 
+  	{:
   		Def da = (Def)a;
   		Def db = (Def)b;
-  		return new Def(da.name + "." + db.name, Def.Type.Identifier, da.posStart, db.posEnd); 
+  		return new Def(da.name + "." + db.name, Def.Type.Identifier, da.posStart, db.posEnd);
   	:}
 ;
 constr_longident=
@@ -2209,70 +2335,70 @@ label_longident=
     LIDENT.id                                      /*{ Lident $1 }*/
 	{: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
   | mod_longident.a DOT LIDENT.id                    /*{ Ldot($1, $3) }*/
-  	{: 
+  	{:
   		Def da = (Def)a;
-  		return new Def(da.name + "." + (String)id.value, Def.Type.Identifier, da.posStart, id.getEnd()); 
+  		return new Def(da.name + "." + (String)id.value, Def.Type.Identifier, da.posStart, id.getEnd());
   	:}
 ;
 type_longident=
     LIDENT.id                                      /*{ Lident $1 }*/
 	{: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
   | mod_ext_longident.a DOT LIDENT.id                /*{ Ldot($1, $3) }*/
-  	{: 
+  	{:
   		Def da = (Def)a;
-  		return new Def(da.name + "." + (String)id.value, Def.Type.Identifier, da.posStart, id.getEnd()); 
+  		return new Def(da.name + "." + (String)id.value, Def.Type.Identifier, da.posStart, id.getEnd());
   	:}
 ;
 mod_longident=
     UIDENT.id                                      /*{ Lident $1 }*/
 	{: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
   | mod_longident.a DOT UIDENT.id                    /*{ Ldot($1, $3) }*/
-  	{: 
+  	{:
   		Def da = (Def)a;
-  		return new Def(da.name + "." + (String)id.value, Def.Type.Identifier, da.posStart, id.getEnd()); 
+  		return new Def(da.name + "." + (String)id.value, Def.Type.Identifier, da.posStart, id.getEnd());
   	:}
 ;
 mod_ext_longident=
     UIDENT.id                                      /*{ Lident $1 }*/
 	{: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
   | mod_ext_longident.a DOT UIDENT.id                /*{ Ldot($1, $3) }*/
-  	{: 
+  	{:
   		Def da = (Def)a;
-  		return new Def(da.name + "." + (String)id.value, Def.Type.Identifier, da.posStart, id.getEnd()); 
+  		return new Def(da.name + "." + (String)id.value, Def.Type.Identifier, da.posStart, id.getEnd());
   	:}
   | mod_ext_longident.a LPAREN mod_ext_longident.b RPAREN.par /*{ Lapply($1, $3) }*/
-  	{: 
+  	{:
   		Def da = (Def)a;
   		Def db = (Def)b;
-  		return new Def(da.name + "(" + db.name + ")", Def.Type.Identifier, da.posStart, par.getEnd()); 
+  		return new Def(da.name + "(" + db.name + ")", Def.Type.Identifier, da.posStart, par.getEnd());
   	:}
 ;
 mty_longident=
     ident.a                                       /*{ Lident $1 }*/
     {: return a; :}
   | mod_ext_longident.a DOT ident.b                 /*{ Ldot($1, $3) }*/
-  	{: 
+  	{:
   		Def da = (Def)a;
   		Def db = (Def)b;
-  		return new Def(da.name + "." + db.name, Def.Type.Identifier, da.posStart, db.posEnd); 
+  		return new Def(da.name + "." + db.name, Def.Type.Identifier, da.posStart, db.posEnd);
   	:}
 ;
 clty_longident=
     LIDENT.id                                      /*{ Lident $1 }*/
     {: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
   | mod_ext_longident.a DOT LIDENT.id                /*{ Ldot($1, $3) }*/
-  	{: 
+  	{:
   		Def da = (Def)a;
-  		return new Def(da.name + "." + (String)id.value, Def.Type.Identifier, da.posStart, id.getEnd()); 
+  		return new Def(da.name + "." + (String)id.value, Def.Type.Identifier, da.posStart, id.getEnd());
   	:}
 ;
 class_longident=
     LIDENT.id                                      /*{ Lident $1 }*/
     {: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
   | mod_longident.a DOT LIDENT.id                    /*{ Ldot($1, $3) }*/
-  	{: 
+  	{:
   		Def da = (Def)a;
-  		return new Def(da.name + "." + (String)id.value, Def.Type.Identifier, da.posStart, id.getEnd()); 
+  		return new Def(da.name + "." + (String)id.value, Def.Type.Identifier, da.posStart, id.getEnd());
   	:}
 ;
 
@@ -2329,6 +2455,12 @@ virtual_flag=
   | VIRTUAL.v                                   /*{ Virtual }*/
     {: Def def = new Def(); def.bAlt=true; def.posStart = v.getStart(); return def; :}
 ;
+override_flag=
+    /* empty */                                 /*{ Fresh }*/
+    {: return new Def(); :}
+  | BANG.b                                      /*{ Override }*/
+    {: Def def = new Def(); def.bAlt=true; def.posStart = b.getStart(); return def; :}
+;
 opt_bar=
     /* empty */                                 /*{ () }*/
     {: return new Def(); :}
@@ -2345,5 +2477,11 @@ subtractive=
     MINUS                                       /*{ "-" }*/
     {: return new Def(); :}
   | MINUSDOT                                    /*{ "-." }*/
+    {: return new Def(); :}
+;
+additive=
+    PLUS                                        /*{ "+" }*/
+    {: return new Def(); :}
+  | PLUSDOT                                     /*{ "+." }*/
     {: return new Def(); :}
 ;

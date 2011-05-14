@@ -1,4 +1,4 @@
-// java -jar lib/JFlex.jar src/ocaml/parser/ocaml.flex
+// java -jar lib/JFlex.jar src/ocaml/editor/newFormatter/ocaml.flex
 
 // This lexer is a duplicate from ocaml.parser.ocaml.flex,
 // but it generates the good symbols for OcamlFormatterParser
@@ -225,10 +225,12 @@ Float_literal = [0-9][0-9\_]*("."[0-9\_]*)?([eE][+-]?[0-9][0-9\_]*)?
 // ">]" { return new Symbol(Terminals.GREATERRBRACKET); } // not used
    "}"  { return new Symbol(Terminals.RBRACE, yyline, yycolumn, yytext().length(), yytext()); }
    ">}" { return new Symbol(Terminals.GREATERRBRACE, yyline, yycolumn, yytext().length(), yytext()); }
+   "!"  { return new Symbol(Terminals.BANG, yyline, yycolumn, yytext().length(), yytext()); }
 
    "!=" 
         { return new Symbol(Terminals.INFIXOP0, yyline, yycolumn, yytext().length(), yytext()); }
    "+"  { return new Symbol(Terminals.PLUS, yyline, yycolumn, yytext().length(), yytext()); }
+   "+." { return new Symbol(Terminals.PLUSDOT, yyline, yycolumn, yytext().length(), yytext()); }
    "-"  { return new Symbol(Terminals.MINUS, yyline, yycolumn, yytext().length(), yytext()); }
    "-." { return new Symbol(Terminals.MINUSDOT, yyline, yycolumn, yytext().length(), yytext()); }
 

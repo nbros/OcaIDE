@@ -30,7 +30,7 @@ import ocaml.parser.OcamlParser.Terminals;
 %line
 %column
 
-%state STRING		
+%state STRING
 %state COMMENT
 
 Newline = \r|\n|\r\n
@@ -46,11 +46,11 @@ Bin_literal = 0 [bB] [0-1] [0-1\_]*
 Int_literal = {Dec_literal} | {Hex_literal} | {Oct_literal} | {Bin_literal}
 Float_literal = [0-9][0-9\_]*("."[0-9\_]*)?([eE][+-]?[0-9][0-9\_]*)?
 
- 
+
 %%
 
 <STRING> {
-    \" { 
+    \" {
     	eStringsComments type = stackStringsComments.pop();
     	if(type == eStringsComments.IN_COMMENT)
     		yybegin(COMMENT);
@@ -59,7 +59,7 @@ Float_literal = [0-9][0-9\_]*("."[0-9\_]*)?([eE][+-]?[0-9][0-9\_]*)?
     		return new Symbol(Terminals.STRING);
     	}
     }
-    
+
     \\ {Newline} [ \t]* {}
     \\ [\\\'\"ntbr] {}
     \\ [0-9] [0-9] [0-9] {}
@@ -70,23 +70,23 @@ Float_literal = [0-9][0-9\_]*("."[0-9\_]*)?([eE][+-]?[0-9][0-9\_]*)?
 }
 
 <COMMENT> {
- 
-    "*)" { 
+
+    "*)" {
     	eStringsComments type = stackStringsComments.pop();
     	if(type == eStringsComments.IN_COMMENT)
     		yybegin(COMMENT);
     	else
     		yybegin(YYINITIAL);
-    		
+
     	//return new Symbol(Terminals.STRING);
     }
 
     \'\"\' {}
 
     \" { stackStringsComments.push(eStringsComments.IN_COMMENT); yybegin(STRING); }
-    
+
     "(*" { stackStringsComments.push(eStringsComments.IN_COMMENT); yybegin(COMMENT); }
-    
+
     {Newline} {}
     . {}
 }
@@ -147,7 +147,7 @@ Float_literal = [0-9][0-9\_]*("."[0-9\_]*)?([eE][+-]?[0-9][0-9\_]*)?
     "lsl" { return new Symbol(Terminals.INFIXOP4, yyline, yycolumn, yytext().length(), yytext()); }
     "lsr" { return new Symbol(Terminals.INFIXOP4, yyline, yycolumn, yytext().length(), yytext()); }
     "asr" { return new Symbol(Terminals.INFIXOP4, yyline, yycolumn, yytext().length(), yytext()); }
-    
+
 
     {Newline} {}
     {Blank} {}
@@ -163,21 +163,21 @@ Float_literal = [0-9][0-9\_]*("."[0-9\_]*)?([eE][+-]?[0-9][0-9\_]*)?
     "=" { return new Symbol(Terminals.EQUAL, yyline, yycolumn, yytext().length(), yytext()); }
     {Int_literal} [lLn]? { return new Symbol(Terminals.INT, yyline, yycolumn, yytext().length(), yytext()); }
     {Float_literal} { return new Symbol(Terminals.FLOAT, yyline, yycolumn, yytext().length(), yytext()); }
-    
+
     "\"" { stackStringsComments.push(eStringsComments.IN_INITIAL); yybegin(STRING); }
-    
+
     "'" [^\\\'\r\n] "'" { return new Symbol(Terminals.CHAR, yyline, yycolumn, yytext().length(), yytext()); }
-    
+
     "'\\" [\\\'\"ntbr] "'" { return new Symbol(Terminals.CHAR, yyline, yycolumn, yytext().length(), yytext()); }
-    
+
     "'\\" [0-9][0-9][0-9] "'" { return new Symbol(Terminals.CHAR, yyline, yycolumn, yytext().length(), yytext()); }
 
     "'\\" "x" [0-9a-fA-F][0-9a-fA-F] "'" { return new Symbol(Terminals.CHAR, yyline, yycolumn, yytext().length(), yytext()); }
-    
+
     "(*" { stackStringsComments.push(eStringsComments.IN_INITIAL); yybegin(COMMENT); }
-    
+
     "#" [ \t]* [0-9]+ [ \t]* ("\"" [^\r\n\"] "\"")? [^\r\n]* {Newline} {}
-  
+
    "#"  { return new Symbol(Terminals.SHARP, yyline, yycolumn, yytext().length(), yytext()); }
    "&"  { return new Symbol(Terminals.AMPERSAND, yyline, yycolumn, yytext().length(), yytext()); }
    "&&" { return new Symbol(Terminals.AMPERAMPER, yyline, yycolumn, yytext().length(), yytext()); }
@@ -213,10 +213,12 @@ Float_literal = [0-9][0-9\_]*("."[0-9\_]*)?([eE][+-]?[0-9][0-9\_]*)?
 // ">]" { return new Symbol(Terminals.GREATERRBRACKET); } // not used
    "}"  { return new Symbol(Terminals.RBRACE, yyline, yycolumn, yytext().length(), yytext()); }
    ">}" { return new Symbol(Terminals.GREATERRBRACE, yyline, yycolumn, yytext().length(), yytext()); }
+   "!"  { return new Symbol(Terminals.BANG, yyline, yycolumn, yytext().length(), yytext()); }
 
-   "!=" 
+   "!="
         { return new Symbol(Terminals.INFIXOP0, yyline, yycolumn, yytext().length(), yytext()); }
    "+"  { return new Symbol(Terminals.PLUS, yyline, yycolumn, yytext().length(), yytext()); }
+   "+." { return new Symbol(Terminals.PLUSDOT, yyline, yycolumn, yytext().length(), yytext()); }
    "-"  { return new Symbol(Terminals.MINUS, yyline, yycolumn, yytext().length(), yytext()); }
    "-." { return new Symbol(Terminals.MINUSDOT, yyline, yycolumn, yytext().length(), yytext()); }
 
@@ -235,9 +237,9 @@ Float_literal = [0-9][0-9\_]*("."[0-9\_]*)?([eE][+-]?[0-9][0-9\_]*)?
    [\*\/\%] {Symbolchar} *
             { return new Symbol(Terminals.INFIXOP3, yyline, yycolumn, yytext().length(), yytext()); }
 
-    
-    
-    
+
+
+
     //";;" { return new Symbol(Terminals.SEMISEMI, yyline, yycolumn, yytext().length(), yytext()); }
 
 }
