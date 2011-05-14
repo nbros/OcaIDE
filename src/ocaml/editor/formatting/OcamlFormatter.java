@@ -344,6 +344,9 @@ public class OcamlFormatter {
 	/** a string (that can have embedded '\"' (escaped double quote character) ) */
 	private Pattern patternString = Pattern.compile("\"(\\\\\"|.)*?\"");
 
+	/** a float literal */
+	private Pattern patternFloatLiteral = Pattern.compile("[0-9][0-9_]*(\\.[0-9_]*)?([eE][+-]?[0-9][0-9_]*)?");
+
 	/**
 	 * A whole line comment (no code on this line). The group inside is the body of the comment (groups are
 	 * what's inside parenthesis in regular expressions).
@@ -779,6 +782,13 @@ public class OcamlFormatter {
 					continue remSpaces;
 			}
 
+			// if we are inside a float literal, then we skip this replacing
+			Matcher matcherFloatLiteral = patternFloatLiteral.matcher(line);
+			while (matcherFloatLiteral.find()) {
+				if ((matcherFloatLiteral.start() <= offset && offset < matcherFloatLiteral.end()))
+					continue remSpaces;
+			}
+
 			// If we are inside a comment, then we skip this replacing
 			Matcher matcherComment = patternComment.matcher(line);
 			while (matcherComment.find()) {
@@ -833,6 +843,13 @@ public class OcamlFormatter {
 				Matcher matcherString = patternString.matcher(line);
 				while (matcherString.find()) {
 					if (matcherString.start() <= offset && offset < matcherString.end())
+						continue addSpaces;
+				}
+
+				// if we are inside a float literal, then we skip this replacing
+				Matcher matcherFloatLiteral = patternFloatLiteral.matcher(line);
+				while (matcherFloatLiteral.find()) {
+					if ((matcherFloatLiteral.start() <= offset && offset < matcherFloatLiteral.end()))
 						continue addSpaces;
 				}
 
