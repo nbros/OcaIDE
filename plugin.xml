@@ -260,6 +260,8 @@
   		<filter pattern=".makefilepaths" selected="true"/>
   		<filter pattern=".HyperlinksLinkedFiles" selected="true"/>
   		<filter pattern="_build" selected="false"/>
+        <filter pattern=".svn" selected="true"/>
+        <filter pattern=".git" selected="true"/>
 	</extension>
 	
    <extension point="org.eclipse.team.core.fileTypes">
