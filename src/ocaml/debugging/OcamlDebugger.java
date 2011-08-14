@@ -103,9 +103,9 @@ public class OcamlDebugger implements IExecEvents {
 
 	/** The port on which to listen when remote debugging is enabled. */
 	private int remoteDebugPort;
-	
+
 	private String scriptFile;
-	
+
 	/** The list of variables to display in the "variables watch" after each step */
 	private ArrayList<String> watchVariables;
 
@@ -120,7 +120,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	/**
 	 * private constructor (so that the user cannot create an instance of the debugger)
-	 * 
+	 *
 	 * @see #getInstance
 	 */
 	private OcamlDebugger() {
@@ -138,7 +138,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	/**
 	 * Start the debugger
-	 * 
+	 *
 	 * @param ocamldebug
 	 *            the full path of the ocamldebug executable
      * @param runFile
@@ -147,21 +147,21 @@ public class OcamlDebugger implements IExecEvents {
      *            the bytecode file to debug
 	 * @param project
 	 *            the project in which the executable is started
-	 * 
+	 *
 	 * @param launch
 	 *            the launch object, to which we add the started process
-	 * 
+	 *
 	 * @param remoteDebugEnable
 	 *            whether or not remote debugging should be enabled
-	 * 
+	 *
 	 * @param remoteDebugPort
 	 *            the port on which to listen if remote debugging is enabled
-	 * 
+	 *
 	 * @param scriptFile
 	 *            the script file to execute in debugger
-	 *            
+	 *
 	 * @param debuggerRootProject
-	 *            whether the debugger should be started from the project root instead of the executable folder 
+	 *            whether the debugger should be started from the project root instead of the executable folder
 	 */
 	public synchronized void start(
 			String ocamldebug, File runFile, File byteFile, IProject project, ILaunch launch,
@@ -201,12 +201,12 @@ public class OcamlDebugger implements IExecEvents {
 			emptyCallStackView();
 			resetWatchVariables();
 
-			
+
 			/*
 			 * FIXME launch shortcuts on exe symbolic links don't work (debugger can't find other
 			 * modules)
 			 */
-			
+
 			// Build the command line arguments for ocamldebug
 			List<String> commandLineArgs = new ArrayList<String>();
 			commandLineArgs.add(ocamldebug);
@@ -214,7 +214,7 @@ public class OcamlDebugger implements IExecEvents {
 				commandLineArgs.add("-s");
 				commandLineArgs.add("0.0.0.0:" + remoteDebugPort);
 			}
-			
+
 			OcamlPaths ocamlPaths = new OcamlPaths(project);
 			String[] paths = ocamlPaths.getPaths();
 			for (String path : paths) {
@@ -224,11 +224,11 @@ public class OcamlDebugger implements IExecEvents {
 					commandLineArgs.add(path);
 				}
 			}
-			
+
 			// add the root of the project
 			commandLineArgs.add("-I");
 			commandLineArgs.add(project.getLocation().toOSString());
-			
+
 			commandLineArgs.add(byteFile.getPath());
 			String[] commandLine = commandLineArgs.toArray(new String[commandLineArgs.size()]);
 
@@ -237,9 +237,9 @@ public class OcamlDebugger implements IExecEvents {
 				debuggerRoot = project.getLocation().toFile();
 			else
 				debuggerRoot = byteFile.getParentFile();
-			
-			
-			
+
+
+
 			Process process = DebugPlugin.exec(commandLine, debuggerRoot);
 			debuggerProcess = ExecHelper.exec(this, process);
 
@@ -419,7 +419,7 @@ public class OcamlDebugger implements IExecEvents {
 	public synchronized void quit() {
 		if (!checkStarted())
 			return;
-		
+
 		if(state == State.Quitting){
 			// the user clicked twice on the "quit" button
 			kill();
@@ -454,13 +454,13 @@ public class OcamlDebugger implements IExecEvents {
 	 * synchronous, so it is blocking until the debugger answers back, or 2000ms ellapsed.
 	 */
 	public synchronized String display(String expression) {
-		
+
 		if (!checkStarted())
 			return "";
 
 		if(!Misc.isValidOcamlIdentifier(expression))
 			return "";
-		
+
 		if (state.equals(State.Idle)) {
 			state = State.Displaying;
 			displayExpression = "";
@@ -537,7 +537,7 @@ public class OcamlDebugger implements IExecEvents {
 
 		Matcher matcherBindFailed = patternBindFailed.matcher(error);
 		if (matcherBindFailed.find()) {
-			message("Unable to start a remote debugging session on port " + 
+			message("Unable to start a remote debugging session on port " +
 					remoteDebugPort + ", since that port is already in use. " +
 					"Please choose a different port in the launch configuration " +
 					"dialog and try again.");
@@ -559,15 +559,15 @@ public class OcamlDebugger implements IExecEvents {
 	/**
 	 * A message dialog that instructs the user to start the remote
 	 * process they wish to debug.
-	 * 
+	 *
 	 * Invoking the {@link #open()} method will cause the dialog to
 	 * be displayed. (Only one dialog can be displayed at any given
 	 * time.)
-	 * 
-	 * When the user starts the remote process, invoking the {@link 
+	 *
+	 * When the user starts the remote process, invoking the {@link
 	 * #signalRemoteProcessConnected()} method will cause the dialog
 	 * previously opened with {@link #open()} to disappear.
-	 * 
+	 *
 	 * However, if the user instead selects the cancel button, the
 	 * thread originally spawned by {@link #open()} will invoke the
 	 * {@link OcamlDebugger#kill()} method itself, thus immediately
@@ -592,7 +592,7 @@ public class OcamlDebugger implements IExecEvents {
 			Display.getDefault().asyncExec(new Runnable () {
 				public void run() {
 					dialog = new MessageDialog(
-						null, "OCaml Debugger", 
+						null, "OCaml Debugger",
 						null, "Waiting for connection on port " + remoteDebugPort + "...\n",
 						MessageDialog.INFORMATION,
 						new String[] { IDialogConstants.CANCEL_LABEL }, 0
@@ -625,7 +625,7 @@ public class OcamlDebugger implements IExecEvents {
 		}
 
 		/**
-		 * Signals that a remote process has successfully connected, 
+		 * Signals that a remote process has successfully connected,
 		 * and closes the message dialog automatically.
 		 */
 		synchronized void signalRemoteProcessConnected () {
@@ -637,7 +637,7 @@ public class OcamlDebugger implements IExecEvents {
 	/* Singleton reference to remote connection request dialog. */
 	private RemoteConnectionRequestDialog remoteConnectionRequestDialog =
 		new RemoteConnectionRequestDialog ();
-	
+
 	public synchronized void processNewInput(String input) {
 
 		// System.out.print(input);
@@ -680,19 +680,19 @@ public class OcamlDebugger implements IExecEvents {
 				} else {
 				    IProcess runprocess = loadProgram(matcher.group(1));
 				    if (runprocess != null) {
-				    	
+
 				    	IOConsole ioConsole = ((IOConsole) DebugUITools.getConsole(runprocess));
-				    	
+
 			            console = ioConsole.newOutputStream();
 			            errorConsole = ioConsole.newOutputStream();
-			            
+
 			            /* set the color and font; must be on the UI thread */
 			            /* TODO: make this a preference */
 			            PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 			                public void run() {
 		                        console.setColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_MAGENTA));
 		                        console.setFontStyle(SWT.ITALIC);
-		                        
+
 		                        errorConsole.setColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
 			                }
 			            });
@@ -833,7 +833,7 @@ public class OcamlDebugger implements IExecEvents {
 				notify();
 				debuggerOutput.setLength(0);
 				state = State.Idle;
-			} 
+			}
 			else if (state.equals(State.Quitting)) {
 				// do nothing
 			}
@@ -1061,6 +1061,7 @@ public class OcamlDebugger implements IExecEvents {
 	}
 
 	private void highlight(final String filename, final int offset) {
+		String ufilename = filename.substring(0, 1).toUpperCase() + filename.substring(1);
 		OcamlPaths opaths = new OcamlPaths(project);
 		String[] paths = opaths.getPaths();
 
@@ -1075,6 +1076,11 @@ public class OcamlDebugger implements IExecEvents {
 				IResource resource = project.findMember(filename);
 				if (resource != null && resource.getType() == IResource.FILE) {
 					file = (IFile) resource;
+				} else {
+					resource = project.findMember(ufilename);
+					if (resource != null && resource.getType() == IResource.FILE) {
+						file = (IFile) resource;
+					}
 				}
 			} else {
 				IResource resource = project.findMember(path);
@@ -1083,6 +1089,11 @@ public class OcamlDebugger implements IExecEvents {
 					IResource resource2 = folder.findMember(filename);
 					if (resource2 != null && resource2.getType() == IResource.FILE) {
 						file = (IFile) resource2;
+					} else {
+						resource2 = folder.findMember(ufilename);
+						if (resource2 != null && resource2.getType() == IResource.FILE) {
+							file = (IFile) resource2;
+						}
 					}
 				}
 			}
@@ -1176,7 +1187,7 @@ public class OcamlDebugger implements IExecEvents {
 			}
 		});
 	}
-	
+
 	private void message(final String message) {
 		message(message, false);
 	}
@@ -1187,7 +1198,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	private void message(final String message, final boolean bError) {
 		final IOConsoleOutputStream console = bError ? this.errorConsole : this.console;
-		
+
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				/* delay just a little to let the executable's output finish */
