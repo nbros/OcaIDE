@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description name="OcaIDE" url="http://www.algo-prog.info/ocaide/">
+      OCaml plug-in for Eclipse (OcaIDE) update site
+   </description>
+   <feature url="features/OcaIDEFeature_1.2.10.jar" id="OcaIDEFeature" version="1.2.10">
+      <category name="OcaIDE Category"/>
+   </feature>
+   <category-def name="OcaIDE Category" label="OcaIDE Category">
+      <description>
+         Category for OcaIDE (OCaml plug-in for Eclipse).
+      </description>
+   </category-def>
+</site>

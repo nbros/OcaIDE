@@ -1,0 +1,182 @@
+* 1.0.0 (July 13 2007)
+	* First public release (version 1.0.0)
+
+* 1.0.1 (July 14 2007)
+    * fixed some bugs
+    * added a compatibility option (in the preferences) to disable Unicode characters which can cause problems on some systems (namely Windows...)
+    * added options to enable or disable displaying of types in the outline, editor popups, and editor's status bar.
+    * modified the install to unpack the plug-in's jar after installation, because Windows couldn't find some image resources in the jar file (although this worked on other systems)
+    * changed the generated "makefile" file in Makefile Projects to "Makefile" (capitalized) 
+    
+* 1.0.2 (July 21 2007)
+    * Plug-in is compiled with Java 1.5 compatibility options again (I forgot it in 1.0.1, sorry!). This should fix "Bad version number in .class file" errors.
+    * Toplevel process now inherits parent environment
+    * Fixed a bug in "Load in Toplevel" action under Windows 
+    
+* 1.0.3 (July 22 2007)
+    * This update fixes (hopefully!) the Java 1.5 compatibility problems. The previous version still wasn't compatible with Java 1.5 due to a bug (feature?) in the Eclipse plug-in build system: the plug-in was always built using the general settings instead of the project-specific ones.
+    * The plug-in is no longer unpacked on install, since the bug which prevented loading of icons from the jar on Windows has been fixed. 
+
+* 1.0.4 (July 23 2007)
+	* Fixed a bug with hyperlinks that happened when a definition had the same name as one in Pervasives
+	* Completion proposals can now look in linked resources (patch submitted by Gregory)
+	* Syntax coloring now works correctly with comments inside strings inside comments and ocamldoc comments (strings must be terminated inside comments in Ocaml)
+	* "unexpected end of line" syntax error now appears at the end of the file instead of the beginning
+	* changed the formatter so that it doesn't add a space before a colon, since that can cause naming labels to become incorrect ("~a:1" became "~a : 1")
+	* added a preference page for the formatter
+	* added a preference page for filtering the contents of the outline
+	* added a preference page for the debugger 
+	* updated OcamlMakefile (generic makefile) to the latest version
+	* added "/bin" (on a Unix system, if it exists) and the Ocaml library path to the makefile paths of a new makefile project
+	* fixed a bug that caused the whole interface to freeze while the outline was being rebuilt
+	
+* 1.0.5 (July 24 2007)
+	* fixed a bug that caused the debugger to get stuck when the executable being debugged was killed
+	* completion box now automatically closes after typing a space
+	* added a facility to change all the paths at once in the paths preference page
+	* added an option to always expand some elements in the outline (modules, classes)
+	* added an option (both in the preferences and in the outline toolbar) to always fully expand the outline
+	* fixed a bug in the parser with complex patterns in 'let in' expressions
+	* added editing support for ml4 files (but no parser and no outline)    
+	
+* 1.0.6 (July 25 2007)
+	* hyperlinks now find renamed modules in current module
+	* hyperlinks now work correctly with definitions like: "let a = 2;; let a = a in let a = a in a;;" 
+	* modified the paths preference page to make it more intuitive
+	* added an option to "unnest" "let in" definitions (activated by default)
+	* added "while" and "begin end" templates 
+	* improved outline speed
+	
+* 1.0.7 (July 27 2007)
+	* Completion, hyperlinks, and the module browser are now based on the new parser (major refactoring)
+	* Drastic speed-up of hyperlinks which open other modules
+	* Tweaked the 'unnest in' option, and corrected a bug which caused definitions to appear out of order.
+	* Split the outline preference page into two pages, because it was too long.
+	* Fixed a bug with definitions that appeared several times in the outline when the code was not syntactically correct.
+	* Fixed a bug with syntax coloring of ocamldoc comments
+	* If the debugger doesn't want to exit after clicking on "terminate", a second click on the "terminate" button will kill it, together with the debugged process
+	* Added an option (for the editor) to automatically add the closing double-quote
+	* "Convert revised syntax to standard syntax" and "Format with camlp4" actions now display the potential error message
+	* Definitions cache now uses soft references
+	* Added an option to not display 'and' definitions in blue in the outline
+	
+* 1.0.8 (July 29 2007)
+	* Now, completion gives elements found in other modules even if there is no associated mli
+	* Corrected a rare bug with syntax-coloring of ocamldoc comments
+	* Now, a different (red) icon appears in completion results for modules that couldn't be parsed
+	* Changed the 'let in' icon in the outline: now, the (+) icon only appears when the definition is at toplevel
+	* The integrated lexer now supports linenum directives
+	* Added an outline for ocamlyacc files (showing non-terminals) 
+	* Fixed a bug with non-rec definitions that would act as rec in hyperlinks
+	* Corrected some bugs with the 'unnest let in definitions' option in outline
+	
+* 1.1.0 (Aug 02 2007)
+	* Added support for ocamlbuild projects (reset the O'Caml perspective to get the project shortcut)
+	* Type annotations are searched first in ml folder, then in _build + ml folder 
+	* Big change in Ocaml Browser: now you can add new locations (right-click on tree), and the loading and parsing is done lazily (when you expand a node)
+	* Fixed yet another bug with hyperlinks  
+	* Fixed a bug in the lexer (with line labels)   
+	* Fixed another bug in the lexer with the '"' character inside comments    
+	* Added separate color preferences for 'let','in' and 'fun','function' keywords
+	* Added optional syntax coloring of punctuation 
+	* Corrected a bug in the paths preference page on Windows
+	* Added '*.obj' and '_build' in the list of navigator filters 
+	* Hid some resources from versioning system (*.cmo, *.annot, ...). If you ever need to commit these resources, see "Window > Preferences > Team > Ignored Resources".   
+	 
+* 1.1.1 (August 21 2007) 
+	* New menu action for opening the currently opened file counterpart (interface/implementation)
+	* Support for camlp4 preprocessing 	
+	
+* 1.2.0 (April 20 2008)
+	* Code formatter rewrite : better formatting and more parameters
+	* Replaced build "N°" by corresponding Unicode character (as suggested by Ben Liblit)
+	* Removed unnecessary protection tokenization of ocamlbuild paths, which caused problems
+	* Use parsed ml files in completion when there is no corresponding mli file
+	* Removed the underscore from colorized punctuation characters
+	* User setting for disabling automatic completion
+	* Changed a regular expression which was causing stack overflows on big inputs
+	* Interface files are now parsed with a real parser, instead of the old fuzzy one
+	* Can now create custom toplevels (Run As > Ocaml Toplevel)
+	* In the toplevel, Ctrl+Enter always evaluates the expression, even when it is not terminated with ";;". This is useful to answer input queries, or when using a different syntax (revised syntax uses a single ";" for example).
+	* Changed the terminal type for toplevel, so that it doesn't try to send formatting characters  
+	* The debugger is now passed the paths defined for the project 
+	* Commenting and uncommenting of code blocks in the editor (protected and not protected)
+	* Integrated a patch for OMake support contributed by Dmitry Bely
+	* Replaced Unix newlines by platform newlines
+	* Optimized an often used function
+	* Added 'insert spaces instead of tabulations' option for the O'Caml editor
+	* Added conversion from tabs to spaces
+	* Spell checking of comments and documentation comments
+	* Keep leading and trailing newlines as-is when formatting a selection
+	* Hyperlink on open directive opens a ".ml" file when there is no ".mli" file
+	* Project paths are now also contributed from referenced projects
+	* Option to override ocamlbuild tools paths
+	* When a folder is added or removed in an ocaml project, this project's paths are automatically changed accordingly
+	* Ctrl+Clicking on "B" in "module A = B" now opens B.mli or B.ml
+	* Simplified synchronization in Ocamlbuild builder and makefile builder
+	* Replaced linked external resources by uses of the new Eclipse File System API to open workspace-external files in editors. This means no more ".DebuggerSourceLookup" and ".HyperlinksLinkedFiles", which should also fix incompatibility with eclipsedarcs.
+	* Opening a module's/interface's counterpart now works on external resources
+	* Fixed a layout issue in project paths properties page
+	* Improved O'Caml paths preference page
+	* Removed a check that prevented using the Cygwin version of ocamldebug on Windows
+	
+* 1.2.1 (April 21 2008)
+	* Remote debugging support, patch submitted by Jonathan Knowles
+	* Updated documentation for debugging under Windows and remote debugging
+	
+* 1.2.2 (July 20 2008)
+	* Support for ocamldebug under Windows, patch submitted by Dmitry Bely
+	* Can separate run file and debugged file (patch from forum member khooyp)
+	* Redirected messages to the console and handled uncaught exceptions (patch from forum member khooyp)
+	* Suppressed removal of spaces before commas and semicolons inside comments and strings
+	
+* 1.2.3 (October 21 2008)
+	* Corrected spell-checking of ocamldoc comments
+	* Restored special tab completions which had stopped working because of a bug
+	* Fixed regression : errors not highlighted in toplevel under Windows
+	* Launch ocamldebug from the project's root directory [Dmitry Bely]
+	* Script file support for debugger [Dmitry Bely]
+	* Additional make options [Dmitry Bely] 
+	* Fixed exception when make target list is empty [Dmitry Bely]
+	
+* 1.2.4 (January 11 2009)
+	* Toplevel now uses Eclipse text font (which can be changed in preferences)
+	* Split launch configuration into two pages : main and debug
+	* Debugger root directory is now configurable (between project root and executable directory)
+	* Removed "Makefile Paths" properties page which was useless (see <a href="http://ocaml.eclipse.free.fr/forum/viewtopic.php?f=4&t=94&start=0">this forum post<a/>) 
+	* Preference initializer now sets default ocamldebug path on Windows (O'Caml 3.11)
+	* Checkpoints are disabled by default on Windows since they are not supported by ocamldebug on Windows
+
+* 1.2.5 (July 14 2009)
+	* Added the quick outline (Ctrl+O by default). Allows access to any element by name in the editor very quickly.
+	* Added an action to sort the outline view
+	* Added an "other flags" section to ocamlbuild parameters
+	* Added an option to disable generating type information with ocamlbuild
+	* Fixed a problem with definition offsets, which caused some files to be unavailable for code help (see <a href="http://ocaml.eclipse.free.fr/forum/viewtopic.php?f=2&t=213&start=0">this forum post<a/>)
+	* Fixed a problem when an empty path was passed to ocamlbuild
+	* Extracted sources and help into different plug-ins to avoid forcing users to download the whole documentation each time an update is done, since the help doesn't change nearly as often as the binaries.
+	
+* 1.2.6 (November 28 2009)
+	* Fixed a StackOverflowError while parsing very big files
+	* Implemented support for editing code templates
+	* Improved code template system
+	
+* 1.2.7 (November 28 2009)
+	* Fixed missing default templates file (templates.xml) in the build
+	
+* 1.2.8 (November 29 2009)
+	* Added completion on the ocamlbuild targets field
+	* Don't automatically add "_build" or ".*" folders or one of their sub-directories to project paths
+	* Display a message box on Windows when building with Ocamlbuild and Cygwin is not installed
+	* Fix template variables capitalization
+
+* 1.2.9 (May 14 2011)
+    * OcaIDE now supports O'Caml 3.12 [Dmitry Bely]
+    * Fixed formatting of exponential numbers [Dmitry Bely]
+
+* 1.2.10 (August 13 2011)
+    * don't add directories under a directory starting by a dot to the project paths
+    * add .svn and .git to the list of available filters
+
+* 1.2.11 (August 14 2011)
+	* fix for debugger cannot find capitalized source file [Dmitry Bely]

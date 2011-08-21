@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>
+Compiling OcaIDE for Eclipse 3.2
+</title>
+
+<script type="text/javascript">
+	if(self.location==top.location)self.location="index.html?eclipse32.html";
+</script>
+
+</head>
+
+<body>
+
+<h1>Compiling OcaIDE for Eclipse 3.2</h1>
+
+OcaIDE is compiled for Eclipse 3.3, but since it doesn't yet use
+features specific to the 3.3 version, you can still compile it for
+Eclipse 3.2 without having to change any code.<font color="red"> (tested with 1.0.6)</font>
+
+<p>
+
+Here is how to do that:
+
+<p>
+
+<ul>
+
+<li>First, make sure that your Eclipse is running on Sun's JVM and not GCJ
+(which is commonly used by default on many Linux distributions). Look
+in <b>Help > About Eclipse SDK > Configuration Details</b>, or start it on
+a command line, and it will tell you what it is running on.
+<p>
+If it is choosing GCJ or any version of Java prior to 5.0, run eclipse
+on the command line (or a script), with a command like:
+"eclipse -vm /usr/lib/jvm/java-1.5.0-sun-1.5.0.11/jre/bin/java"
+(specifying the java executable as parameter after the '-vm' switch)</p>
+</li>
+
+<li>Then, install OcaIDE into your Eclipse 3.2 workspace by following the
+normal install procedure (described <a href="install.html">here</a>).
+</li>
+
+<li>In the preferences, look in <b>Java > Compiler</b> and set the compiler
+compliance level to "5.0".
+</li>
+
+<li>In <b>Java > Installed JREs</b>, make sure a Java 1.5 JRE is installed and
+configured (and selected), by clicking browse and selecting your Java
+1.5 install path (for example "/usr/lib/jvm/java-1.5.0-sun-1.5.0.11")
+</li>
+
+<li>Rebuild the plug-in (normally, Eclipse will ask you to when you change
+the JRE; if not, select <b>Project > Clean</b>).
+</li>
+
+<li>If there are errors, you might need to add dependencies: open "META-INF/MANIFEST.MF"
+and add the missing dependencies. 
+</li>
+
+<li>Now, select the "Ocaml" project, click <b>File > Export > Plug-in
+development > Deployable Plug-ins and fragments</b>, click next, select a
+destination directory (out of the workspace), and click finish.
+</li>
+
+<li>Now, uninstall the plug-in (compiled for Eclipse 3.3) you had
+installed at the beginning, by following the procedure described 
+<a href="install.html">at the bottom of the "install" page</a>
+ (also uninstall any old version of OcaIDE you might have
+installed previously).
+</li>
+
+<li>
+
+Now, you can finally install the plug-in in Eclipse 3.2:
+<ul style="circle">
+<li>Put the jar you exported in one of your configured "plugins"
+directories (you can see and add install locations in Eclipse in the
+<b>Help > Software Updates > Manage Configuration</b> dialog box).</li>
+
+<li>Restart Eclipse.</li>
+
+<li>If the plug-in is not detected, try to start Eclipse with the "-clean"
+option (on command line).</li>
+</ul>
+
+</li>
+
+</ul>
+
+
+<p>
+
+<b>Note 1:</b> Don't install updates afterwards, as you would get a version compiled for Eclipse 3.3.
+If you want to install an update, repeat the whole procedure.
+
+<p>
+
+<b>Note 2:</b> This is not guaranteed to work with future versions of the plug-in,
+since later versions may use features only available in Eclipse 3.3. 
+
+
+
+</body>
+
+</html>
