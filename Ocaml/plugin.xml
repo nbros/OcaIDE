@@ -57,7 +57,7 @@
 	</extension>
 	
 	<extension point="org.eclipse.ui.perspectives">
-		<perspective name="O&apos;Caml" icon="icons/caml16x16.gif"
+		<perspective name="OCaml" icon="icons/caml16x16.gif"
 			class="ocaml.perspectives.OcamlPerspective"
 			id="ocaml.perspectives.OcamlPerspective">
 		</perspective>
