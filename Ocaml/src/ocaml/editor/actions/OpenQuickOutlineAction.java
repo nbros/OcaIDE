@@ -12,7 +12,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
-/** This action opens the quick outline in the O'Caml editor. */
+/** This action opens the quick outline in the OCaml editor. */
 public class OpenQuickOutlineAction implements IWorkbenchWindowActionDelegate {
 
 	private IWorkbenchWindow window;

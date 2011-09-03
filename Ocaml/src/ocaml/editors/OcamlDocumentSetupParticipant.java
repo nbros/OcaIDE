@@ -9,7 +9,7 @@ import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.rules.FastPartitioner;
 
-/** Configures the O'Caml editor with the partitioning rules */
+/** Configures the OCaml editor with the partitioning rules */
 public class OcamlDocumentSetupParticipant implements IDocumentSetupParticipant {
 
 	public void setup(IDocument document) {

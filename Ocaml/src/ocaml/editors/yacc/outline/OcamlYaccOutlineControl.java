@@ -37,7 +37,7 @@ public final class OcamlYaccOutlineControl extends ContentOutlinePage {
 			viewer.setInput(this.input);
 	}
 
-	/** Selection in the outline changed: we reselect the corresponding line in the O'Caml editor */
+	/** Selection in the outline changed: we reselect the corresponding line in the OCaml editor */
 	@Override
 	public void selectionChanged(SelectionChangedEvent event) {
 		super.selectionChanged(event);

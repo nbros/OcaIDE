@@ -12,7 +12,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
 /**
- * This action is called by the "Put Breakpoint" menu item in the "Debug" menu, in the O'Caml Debug
+ * This action is called by the "Put Breakpoint" menu item in the "Debug" menu, in the OCaml Debug
  * perspective.<br>
  * Ask the debugger to put a breakpoint at the position of the caret in the editor.
  */

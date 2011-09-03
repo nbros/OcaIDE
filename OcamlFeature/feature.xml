@@ -6,7 +6,7 @@
       provider-name="Université Pierre et Marie Curie - Paris 6">
 
    <description url="http://ocaml.eclipse.ortsa.com/">
-      OcaIDE is an Objective Caml plug-in for Eclipse.
+      OcaIDE is an OCaml plug-in for Eclipse.
    </description>
 
    <copyright>

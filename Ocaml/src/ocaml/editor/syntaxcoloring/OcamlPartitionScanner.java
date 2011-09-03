@@ -6,7 +6,7 @@ import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.Token;
 
 /**
- * Partitioning of an O'Caml module file into 4 partitions:
+ * Partitioning of an OCaml module file into 4 partitions:
  * <ul>
  * <li> strings " ... "
  * <li> comments (* ... *)

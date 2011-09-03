@@ -19,7 +19,7 @@ import org.eclipse.ui.IWorkbenchPart;
 
 /**
  * This action is called when the user clicks on the "make project" menu item in the contextual menu for
- * O'Caml makefile projects. Calls the Builder to build the project.
+ * OCaml makefile projects. Calls the Builder to build the project.
  */
 public class CompileProjectAction implements IObjectActionDelegate {
 	private IProject project = null;
@@ -48,7 +48,7 @@ public class CompileProjectAction implements IObjectActionDelegate {
 				}
 			};
 
-			// open the "O'Caml compiler output" view to show the output of the make
+			// open the "OCaml compiler output" view to show the output of the make
 			Misc.showView(OcamlCompilerOutput.ID);
 
 			job.setPriority(Job.BUILD);

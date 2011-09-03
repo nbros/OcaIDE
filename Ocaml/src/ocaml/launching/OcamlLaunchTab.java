@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 /**
- * Implements a properties page that will appear amongst the O'Caml launch configuration tabs and that will
+ * Implements a properties page that will appear amongst the OCaml launch configuration tabs and that will
  * allow the user to configure the name of the executable, the name of the project, and the command-line
  * arguments of the executable.
  */

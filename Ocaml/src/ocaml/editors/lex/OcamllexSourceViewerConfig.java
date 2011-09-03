@@ -21,7 +21,7 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.SWT;
 
-/** Configures the O'Caml Lex editor with a double-click strategy, auto-edit strategies, a partitioning, 
+/** Configures the OCaml Lex editor with a double-click strategy, auto-edit strategies, a partitioning, 
  * completion, and syntax coloring. */
 public class OcamllexSourceViewerConfig extends SourceViewerConfiguration {
 	private OcamllexEditor ocamllexEditor;
@@ -40,7 +40,7 @@ public class OcamllexSourceViewerConfig extends SourceViewerConfiguration {
 	}
 
 	/**
-	 * Returns the auto-edit strategies (the same ones as for the O'Caml editor)
+	 * Returns the auto-edit strategies (the same ones as for the OCaml editor)
 	 */
 	@Override
 	public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
@@ -61,7 +61,7 @@ public class OcamllexSourceViewerConfig extends SourceViewerConfiguration {
 	}
 
 	/**
-	 * "Reconciler" for the O'Caml Lex editor
+	 * "Reconciler" for the OCaml Lex editor
 	 */
 	@Override
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {

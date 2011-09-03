@@ -5,7 +5,7 @@ import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.Token;
 
-/** A rule to match O'Caml characters */
+/** A rule to match OCaml characters */
 public class CharacterRule  implements IRule {
 	
 	/** The token we return if the rule matched on the input */

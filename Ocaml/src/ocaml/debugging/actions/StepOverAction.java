@@ -8,7 +8,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
 /**
- * This action is called by the "Step Over" menu item in the "Debug" menu, in the O'Caml Debug
+ * This action is called by the "Step Over" menu item in the "Debug" menu, in the OCaml Debug
  * perspective.<br>
  * Ask the debugger make one step forward in the execution (skipping eventual function calls)
  */

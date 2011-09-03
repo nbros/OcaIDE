@@ -8,7 +8,7 @@ import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.Token;
 
-/** Configure partitioning in the O'Caml lex editor */
+/** Configure partitioning in the OCaml lex editor */
 public class OcamllexPartitionScanner extends RuleBasedPartitionScanner {
 	public final static String OCAMLLEX_PARTITIONING = "__ocamllex_partitioning"; //$NON-NLS-1$
 

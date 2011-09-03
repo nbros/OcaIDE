@@ -36,7 +36,7 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.part.ViewPart;
 
 /**
- * Implements the O'Caml browser view, which allows the user to browse O'Caml libraries, and see all
+ * Implements the OCaml browser view, which allows the user to browse OCaml libraries, and see all
  * the definitions found in the library mli files.
  * <p>
  * The creation of nodes is done lazily by using a virtual tree. When a node becomes visible, the

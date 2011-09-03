@@ -20,7 +20,7 @@ import org.eclipse.ui.PlatformUI;
 
 /**
  * This is a listener that gets notified of "post build" events, so as to trigger a rebuilding of
- * the outline to update it with the types inferred by the O'Caml compiler
+ * the outline to update it with the types inferred by the OCaml compiler
  */
 public class OutlineBuildListener implements IResourceChangeListener {
 

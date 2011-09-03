@@ -9,7 +9,7 @@ import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.Token;
 
-/** Matches words from the O'Caml keywords list */
+/** Matches words from the OCaml keywords list */
 public final class SimpleWordRule implements IRule {
 	/** The hash set of all words this rule must recognize */
 	HashSet<String> words;

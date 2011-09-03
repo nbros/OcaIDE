@@ -3,7 +3,7 @@ import ocaml.OcamlPlugin;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
-/** Store the O'Caml editor colors, so as to minimize memory use */
+/** Store the OCaml editor colors, so as to minimize memory use */
 public class OcamlEditorColors {
 	
 	

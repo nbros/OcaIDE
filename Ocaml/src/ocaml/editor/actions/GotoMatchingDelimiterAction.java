@@ -17,7 +17,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
 /**
- * This action makes the caret in the O'Caml editor jump from the delimiter under the caret to the
+ * This action makes the caret in the OCaml editor jump from the delimiter under the caret to the
  * corresponding delimiter (for example, if an opening parenthesis is under the caret, then this action will
  * move the caret to the corresponding closing parenthesis).
  */

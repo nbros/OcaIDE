@@ -28,7 +28,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
-/** Implements the O'Caml top-level view */
+/** Implements the OCaml top-level view */
 public class OcamlToplevelView extends ViewPart {
 
 	/**

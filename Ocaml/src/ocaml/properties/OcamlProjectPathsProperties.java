@@ -407,7 +407,7 @@ public class OcamlProjectPathsProperties extends PropertyPage implements IWorkbe
 		return true;
 	}
 
-	/** restore the defaults: O'Caml library + project directories */
+	/** restore the defaults: OCaml library + project directories */
 	@Override
 	protected void performDefaults() {
 		OcamlPaths paths = new OcamlPaths(project);

@@ -5,7 +5,7 @@ import org.eclipse.debug.ui.CommonTab;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 
-/** Represents the tabs on the options panel for the configuration of an O'Caml launch configuration */
+/** Represents the tabs on the options panel for the configuration of an OCaml launch configuration */
 public class OcamlLaunchConfigurationTabGroup extends AbstractLaunchConfigurationTabGroup {
 
 	public OcamlLaunchConfigurationTabGroup() {

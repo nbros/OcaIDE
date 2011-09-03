@@ -62,7 +62,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
- * Plug-in activator, the singleton instance of the O'Caml plug-in. This class is loaded only once by Eclipse
+ * Plug-in activator, the singleton instance of the OCaml plug-in. This class is loaded only once by Eclipse
  * when one of the features of the plug-in is used.
  */
 public class OcamlPlugin extends AbstractUIPlugin {
@@ -241,7 +241,7 @@ public class OcamlPlugin extends AbstractUIPlugin {
 		return instance;
 	}
 
-	/** Returns the O'Caml plug-in install directory URL */
+	/** Returns the OCaml plug-in install directory URL */
 	public static URL getInstallURL() {
 		return instance.getBundle().getEntry("/");
 	}

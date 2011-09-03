@@ -8,7 +8,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
-/** Extends the O'Caml top-level view to provide custom toplevels */
+/** Extends the OCaml top-level view to provide custom toplevels */
 public class OcamlCustomToplevelView extends OcamlToplevelView {
 
 	public OcamlCustomToplevelView() {

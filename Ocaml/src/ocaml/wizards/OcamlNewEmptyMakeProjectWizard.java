@@ -25,7 +25,7 @@ public class OcamlNewEmptyMakeProjectWizard extends BasicNewProjectResourceWizar
 		IWizardPage[] pages = super.getPages();
 		if (pages.length > 0)
 			pages[0].setDescription("Create an empty OCaml Makefile project (useful for importing projects)");
-		super.setWindowTitle("New Empty O'Caml Makefile Project");
+		super.setWindowTitle("New Empty OCaml Makefile Project");
 	}
 
 	@Override

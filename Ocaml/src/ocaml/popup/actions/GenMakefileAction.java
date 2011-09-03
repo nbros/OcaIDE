@@ -32,7 +32,7 @@ import org.eclipse.ui.IWorkbenchPart;
 
 /**
  * This action is called when the user clicks on the "Generate Makefile" menu item in the pop-up for the
- * O'Caml managed projects.
+ * OCaml managed projects.
  * 
  * We visit the graph layers, and generate the makefile as we go along.
  * 

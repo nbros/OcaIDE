@@ -283,7 +283,7 @@ public class CompilerVisitor implements ILayersVisitor {
 
 	/**
 	 * Run the building command (without linking) at the project root. The command includes the paths given in
-	 * the project properties. Display the error messages on the O'Caml output view and refresh the error and
+	 * the project properties. Display the error messages on the OCaml output view and refresh the error and
 	 * warning markers.
 	 * 
 	 * @param file

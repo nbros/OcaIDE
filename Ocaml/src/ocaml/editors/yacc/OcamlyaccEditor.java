@@ -30,7 +30,7 @@ import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
-/** The O'Caml Yacc editor (for .mly files) */
+/** The OCaml Yacc editor (for .mly files) */
 public class OcamlyaccEditor extends TextEditor {
 	protected PaintManager paintManager;
 	protected MatchingCharacterPainter matchingCharacterPainter;

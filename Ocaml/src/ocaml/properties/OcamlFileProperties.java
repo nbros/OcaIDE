@@ -27,7 +27,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 
 /**
- * Implements a property page (accessible by opening the properties through the pop-up menu of an O'Caml
+ * Implements a property page (accessible by opening the properties through the pop-up menu of an OCaml
  * module) that allows the user to specify whether he wants to create an executable from this module, to give
  * the name of this executable, and to specify the list of options that should be passed to the compiler while
  * compiling this file.

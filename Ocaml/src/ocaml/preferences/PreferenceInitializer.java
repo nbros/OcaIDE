@@ -440,7 +440,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			// on Windows:
 			else if (Platform.getOS().equals(Platform.OS_WIN32)) {
 				/*
-				 * Since we can't access the register, we take the O'Caml installer's default
+				 * Since we can't access the register, we take the OCaml installer's default
 				 * install directory
 				 */
 

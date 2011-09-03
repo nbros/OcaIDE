@@ -14,7 +14,7 @@ import org.eclipse.jface.text.templates.TemplateCompletionProcessor;
 import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.swt.graphics.Image;
 
-/** Process the completions for O'Caml language constructs */
+/** Process the completions for OCaml language constructs */
 public class OcamlTemplateCompletionProcessor extends TemplateCompletionProcessor {
 
 	private int currentIndent = 0;

@@ -21,7 +21,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
 /**
- * Parse error messages returned by the O'Caml compiler, and create error markers for the
+ * Parse error messages returned by the OCaml compiler, and create error markers for the
  * corresponding resources in the project.
  */
 public class ProblemMarkers {
@@ -61,7 +61,7 @@ public class ProblemMarkers {
 	private final Pattern patternFile = Pattern
 			.compile("^\\s*File (\"?)(.+?)\\1[:,] line (\\d+), characters (\\d+)-(\\d+):?\\s*$");
 
-	/** Create the markers for error messages coming from the O'Caml compiler. */
+	/** Create the markers for error messages coming from the OCaml compiler. */
 	public void makeMarkers(String compilerOutput) {
 
 		String[] lines = compilerOutput.split("\\r?\\n");

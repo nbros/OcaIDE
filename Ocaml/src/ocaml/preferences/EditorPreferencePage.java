@@ -10,7 +10,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
  * Implements a preference page (Windows->Preferences->OCaml->Paths) that allows the user to parameter the
- * paths of the O'Caml tools (compilers, toplevel, documentation generator...)
+ * paths of the OCaml tools (compilers, toplevel, documentation generator...)
  */
 public class EditorPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 

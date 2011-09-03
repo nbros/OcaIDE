@@ -23,8 +23,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.Document;
 
 /**
- * An O'Caml interface parser. Allows us to extract all the definitions from an
- * O'Caml interface, together with the documentation associated to each
+ * An OCaml interface parser. Allows us to extract all the definitions from an
+ * OCaml interface, together with the documentation associated to each
  * definition, so as to be able to display it to the user when needed. <br>
  * This class makes use of the singleton design pattern, to cache all searches.
  */
@@ -40,7 +40,7 @@ public class OcamlNewInterfaceParser {
 	/**
 	 * singleton design pattern
 	 * 
-	 * @return the singleton instance of the O'Caml interface parser
+	 * @return the singleton instance of the OCaml interface parser
 	 */
 	public static OcamlNewInterfaceParser getInstance() {
 		if (instance == null)
@@ -69,11 +69,11 @@ public class OcamlNewInterfaceParser {
 	private LinkedList<Comment> sectionComments;
 
 	/**
-	 * Parse the O'Caml interface to extract definitions and ocamldoc comments
+	 * Parse the OCaml interface to extract definitions and ocamldoc comments
 	 * attached to them, and put the result in the cache.
 	 * <p>
 	 * We use a File instead of an IFile because the file can be out of the
-	 * workspace (O'Caml library files, typically)
+	 * workspace (OCaml library files, typically)
 	 * 
 	 * @param file
 	 *            the file to parse (interface or module)

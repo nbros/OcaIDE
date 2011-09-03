@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
 
-/** Configures the editor for O'Caml lex files */
+/** Configures the editor for OCaml lex files */
 public class OcamllexEditor extends TextEditor {
 
 	protected PaintManager paintManager;

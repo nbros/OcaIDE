@@ -11,7 +11,7 @@ import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.console.IConsoleConstants;
 
 /**
- * Configures the default positioning of views inside the O'Caml main perspective, associates the debug
+ * Configures the default positioning of views inside the OCaml main perspective, associates the debug
  * actions, and create shortcuts to often used views and wizards.
  */
 public class OcamlPerspective implements IPerspectiveFactory {
@@ -26,7 +26,7 @@ public class OcamlPerspective implements IPerspectiveFactory {
 		
 		//layout.addPerspectiveShortcut();
 		
-		// add shortcuts to the O'Caml wizards so that they appear in the File->New menu
+		// add shortcuts to the OCaml wizards so that they appear in the File->New menu
 		layout.addNewWizardShortcut("ocaml.wizards.OcamlNewModuleWizard");
 		layout.addNewWizardShortcut("ocaml.wizards.OcamlNewInterfaceWizard");
 		layout.addNewWizardShortcut("ocaml.wizards.OcamlNewYaccWizard");
@@ -43,7 +43,7 @@ public class OcamlPerspective implements IPerspectiveFactory {
 		layout.addNewWizardShortcut("org.eclipse.ui.wizards.new.file");
 		layout.addNewWizardShortcut("org.eclipse.ui.wizards.new.folder");
 		
-		// add shortcuts to the most often used views in an O'Caml project 
+		// add shortcuts to the most often used views in an OCaml project 
 		layout.addShowViewShortcut(OcamlCompilerOutput.ID);
 		layout.addShowViewShortcut(OcamlBrowserView.ID);
 		layout.addShowViewShortcut(OcamlToplevelView.ID);

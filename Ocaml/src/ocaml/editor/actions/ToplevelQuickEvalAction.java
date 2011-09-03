@@ -21,7 +21,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 /**
- * Action from the O'Caml editor to evaluate a piece of code in the last focused toplevel.
+ * Action from the OCaml editor to evaluate a piece of code in the last focused toplevel.
  */
 public class ToplevelQuickEvalAction implements IWorkbenchWindowActionDelegate {
 	private IWorkbenchWindow window;

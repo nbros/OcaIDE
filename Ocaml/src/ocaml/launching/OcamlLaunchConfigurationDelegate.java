@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IConsoleConstants;
 
-/** Launch an O'Caml executable in normal or debug mode, using the previously created launch configuration */
+/** Launch an OCaml executable in normal or debug mode, using the previously created launch configuration */
 public class OcamlLaunchConfigurationDelegate implements ILaunchConfigurationDelegate {
 
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch,

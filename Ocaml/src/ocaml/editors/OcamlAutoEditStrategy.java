@@ -151,7 +151,7 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 
 		/*
 		 * <enter> : parse the line to determine the logical indentation of the next line, and to add some
-		 * O'Caml language constructs automatically
+		 * OCaml language constructs automatically
 		 */
 
 		else if (command.text.equals(eol)) {
@@ -261,7 +261,7 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 					command.length = lineLength;
 				}
 			}
-			/* ::<tab> inserts [] (empty list in O'Caml) */
+			/* ::<tab> inserts [] (empty list in OCaml) */
 			else if (offsetInLine > 2 && line.charAt(offsetInLine - 1) == ':'
 					&& line.charAt(offsetInLine - 2) == ':') {
 				if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(

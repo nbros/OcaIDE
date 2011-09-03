@@ -15,7 +15,7 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 
-/** A wizard to create new O'Caml managed projects, and associate them the ocamlnature nature */
+/** A wizard to create new OCaml managed projects, and associate them the ocamlnature nature */
 public class OcamlNewProjectWizard extends BasicNewProjectResourceWizard {
 	
 	@Override

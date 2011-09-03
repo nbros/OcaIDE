@@ -14,7 +14,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
-/** This action activates an information popup on the element under the caret in the O'Caml editor. */
+/** This action activates an information popup on the element under the caret in the OCaml editor. */
 public class ContextInformationAction implements IWorkbenchWindowActionDelegate {
 
 	private IWorkbenchWindow window;

@@ -1,6 +1,6 @@
 package ocaml.editors.lex;
 
-/** The reserved language words in an O'Caml Yacc file */
+/** The reserved language words in an OCaml Yacc file */
 public interface ILexLanguageWords {
 	String[] keywords =
 	{ "and", "as", "assert", "asr"/*?*/, "begin", "class", "constraint", "do", "done", "downto",

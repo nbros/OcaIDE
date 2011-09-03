@@ -21,9 +21,9 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
 /**
- * This class is responsible for managing completion in the O'Caml editor.
+ * This class is responsible for managing completion in the OCaml editor.
  * <p>
- * Find the expression before the cursor in the O'Caml editor, find completion proposals by going through the
+ * Find the expression before the cursor in the OCaml editor, find completion proposals by going through the
  * definitions tree, find context informations that will appear after a completion proposal is selected...
  */
 public class OcamlCompletionProcessor implements IContentAssistProcessor {

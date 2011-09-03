@@ -19,7 +19,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 /**
- * A view to display the output of the O'Caml compiler, and the make command
+ * A view to display the output of the OCaml compiler, and the make command
  * 
  * @see ViewPart
  */
@@ -102,7 +102,7 @@ public class OcamlCompilerOutput extends ViewPart {
 	 */
 
 	/**
-	 * Get the O'Caml compiler output view (must be called from a UI-Thread).
+	 * Get the OCaml compiler output view (must be called from a UI-Thread).
 	 */
 	public static OcamlCompilerOutput get() {
 		OcamlCompilerOutput console = null;

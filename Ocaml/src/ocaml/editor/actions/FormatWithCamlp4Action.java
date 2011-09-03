@@ -24,7 +24,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
-/** This action formats the contents of the O'Caml editor using camlp4. */
+/** This action formats the contents of the OCaml editor using camlp4. */
 public class FormatWithCamlp4Action implements IWorkbenchWindowActionDelegate {
 
 	private IWorkbenchWindow window;

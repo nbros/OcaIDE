@@ -47,7 +47,7 @@ import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
 import org.eclipse.ui.texteditor.spelling.SpellingService;
 
 /**
- * Configures the O'Caml code editor: auto edit strategies, formatter, partitioning, completion assistant,
+ * Configures the OCaml code editor: auto edit strategies, formatter, partitioning, completion assistant,
  * hyper-link detector, ...
  */
 public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
@@ -101,7 +101,7 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 	}
 
 	/**
-	 * Return the "Reconciler" for the O'Caml editor (see Eclipse documentation)
+	 * Return the "Reconciler" for the OCaml editor (see Eclipse documentation)
 	 */
 	@Override
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {

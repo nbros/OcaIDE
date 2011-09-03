@@ -19,7 +19,7 @@ import ocaml.preferences.PreferenceConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 
 /**
- * This class is responsible for formatting O'Caml code. It indents code, adds spaces where they are missing,
+ * This class is responsible for formatting OCaml code. It indents code, adds spaces where they are missing,
  * delete those that are redundant, splits comments on several lines if they are too long, merge consecutive
  * comments if they are too short, turn multi-line comments into single-line comments.
  */

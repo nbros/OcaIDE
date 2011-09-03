@@ -13,12 +13,12 @@ import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.console.IConsoleConstants;
 
 /**
- * Configures the default positioning of views inside the O'Caml debug perspective, associates the debug
+ * Configures the default positioning of views inside the OCaml debug perspective, associates the debug
  * actions, and create shortcuts to often used views
  */
 public class OcamlDebugPerspective implements IPerspectiveFactory {
 
-	/** The identifier of the O'Caml debug perspective */
+	/** The identifier of the OCaml debug perspective */
 	public static String ID = "ocaml.perspectives.OcamlDebugPerspective";
 
 	public void createInitialLayout(IPageLayout layout) {

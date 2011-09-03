@@ -20,7 +20,7 @@ import org.eclipse.ui.IWorkbenchPart;
 
 /**
  * This action is called when the user clicks on the "Generate Interface" menu item in the pop-up for a module
- * in an O'Caml managed project.
+ * in an OCaml managed project.
  */
 public class GenMliAction implements IObjectActionDelegate {
 

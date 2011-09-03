@@ -24,8 +24,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 /**
- * Implements a properties page that will appear amongst the O'Caml launch configuration tabs and
- * that will allow the user to configure the debug configuration for the O'Caml debugger.
+ * Implements a properties page that will appear amongst the OCaml launch configuration tabs and
+ * that will allow the user to configure the debug configuration for the OCaml debugger.
  */
 public class OcamlDebugTab extends AbstractLaunchConfigurationTab {
 

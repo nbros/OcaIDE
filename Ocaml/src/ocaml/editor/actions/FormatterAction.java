@@ -15,7 +15,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
 /**
- * This action calls the formatter on the current selection in the O'Caml editor
+ * This action calls the formatter on the current selection in the OCaml editor
  * (or all the code in the editor if nothing is selected). The formatter
  * indents, formats comments, adjusts spaces between words...
  */

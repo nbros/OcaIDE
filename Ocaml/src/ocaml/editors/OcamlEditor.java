@@ -52,7 +52,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 /**
- * Configures the O'Caml editor, and manages the events raised by this editor,
+ * Configures the OCaml editor, and manages the events raised by this editor,
  * by overloading methods of the TextEditor class.
  */
 public class OcamlEditor extends TextEditor {
@@ -131,7 +131,7 @@ public class OcamlEditor extends TextEditor {
 			OcamlPlugin.logError("ocaml plugin error", e);
 		}
 
-		// parse the O'Caml libraries in a background thread
+		// parse the OCaml libraries in a background thread
 		try {
 			CompletionJob job = new CompletionJob("Parsing ocaml library mli files", null);
 			job.setPriority(CompletionJob.DECORATE);
@@ -156,7 +156,7 @@ public class OcamlEditor extends TextEditor {
 	}
 
 	@Override
-	/** Initializes the context for the O'Caml editor shortcuts */
+	/** Initializes the context for the OCaml editor shortcuts */
 	protected void initializeKeyBindingScopes() {
 		setKeyBindingScopes(new String[] { "Ocaml.editor.context" });
 	}

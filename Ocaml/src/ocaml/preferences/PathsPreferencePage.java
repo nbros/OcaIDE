@@ -28,7 +28,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
  * Implements a preference page (Windows->Preferences->OCaml->Paths) that allows the user to parameter the
- * paths of the O'Caml tools (compilers, toplevel, documentation generator...)
+ * paths of the OCaml tools (compilers, toplevel, documentation generator...)
  */
 public class PathsPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
@@ -85,7 +85,7 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements IW
 		// group.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 
 		final Label binLabel = new Label(group, SWT.NONE);
-		binLabel.setText("O'Caml Binaries Directory:");
+		binLabel.setText("OCaml Binaries Directory:");
 		GridData binLabelData = new GridData();
 		binLabelData.horizontalSpan = 4;
 		binLabel.setLayoutData(binLabelData);
@@ -110,7 +110,7 @@ public class PathsPreferencePage extends FieldEditorPreferencePage implements IW
 			public void widgetSelected(SelectionEvent e) {
 				DirectoryDialog dialog = new DirectoryDialog(browseButton.getShell());
 				dialog.setText("Select Directory");
-				dialog.setMessage("Select O'Caml Binaries Directory");
+				dialog.setMessage("Select OCaml Binaries Directory");
 				dialog.setFilterPath(currentOcamlPath);
 				String dir = dialog.open();
 				if (dir != null)

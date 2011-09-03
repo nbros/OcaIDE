@@ -20,7 +20,7 @@ import org.eclipse.ui.IWorkbenchPart;
 
 /**
  * This action is called when the user clicks on the "Load in Toplevel" menu item in the pop-up for
- * O'Caml modules.
+ * OCaml modules.
  * 
  * It tries to load the object file with the same base name as the selected ml file, with the
  * "#load" command.

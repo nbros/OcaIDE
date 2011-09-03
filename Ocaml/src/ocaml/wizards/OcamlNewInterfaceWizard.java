@@ -16,7 +16,7 @@ import org.eclipse.ui.dialogs.WizardNewFileCreationPage;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
-/** A wizard to create new O'Caml interface (mli) files */
+/** A wizard to create new OCaml interface (mli) files */
 public final class OcamlNewInterfaceWizard extends BasicNewResourceWizard {
 	private WizardNewFileCreationPage mainPage;
 

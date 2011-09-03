@@ -6,7 +6,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 
 /**
- * This is used to test the property "is this resource a file in an O'Caml managed project?". This property is
+ * This is used to test the property "is this resource a file in an OCaml managed project?". This property is
  * used by plugin.xml to choose what property pages to display.
  */
 public class HasOcamlNaturePropertyTester extends org.eclipse.core.expressions.PropertyTester {

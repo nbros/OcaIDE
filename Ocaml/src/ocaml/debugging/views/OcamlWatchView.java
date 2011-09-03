@@ -24,7 +24,7 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.part.ViewPart;
 
 /**
- * Implements a view to show and add variables to watch while debugging an O'Caml program. After each step of
+ * Implements a view to show and add variables to watch while debugging an OCaml program. After each step of
  * the debugger, the value of each of these variables will be evaluated and shown in this view. This can be
  * slow if there are too many variables, so the user is advised to delete unneeded variables from this list.
  */

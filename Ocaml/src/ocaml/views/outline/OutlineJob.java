@@ -453,7 +453,7 @@ public class OutlineJob extends Job {
 	}
 
 	/**
-	 * Add O'Caml types to the definitions if a ".annot" file is present and up-to-date
+	 * Add OCaml types to the definitions if a ".annot" file is present and up-to-date
 	 */
 	private void addTypes(IFile file, Def root) {
 		if (file == null || root == null)

@@ -26,7 +26,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 
 /**
- * This Eclipse Job is used to parse the O'Caml library files in the background with a progress
+ * This Eclipse Job is used to parse the OCaml library files in the background with a progress
  * indicator, so that the first completion is fast (the following ones are always going to be fast,
  * because we cache the results).
  * 
@@ -72,7 +72,7 @@ public class CompletionJob extends Job {
 
 	/**
 	 * Build the super-tree of all definitions found in mli files in the project directories (this
-	 * normally includes the O'Caml standard library). This method is defined in class
+	 * normally includes the OCaml standard library). This method is defined in class
 	 * CompletionJob, but it is not a job, it is executed in the same thread as the caller.
 	 * 
 	 * @param bUsingEditor
@@ -255,7 +255,7 @@ public class CompletionJob extends Job {
 			// get all the mli files from the directory
 			String[] mlmliFiles = null;
 
-			// no project => parse O'Caml library files
+			// no project => parse OCaml library files
 			if (this.project == null) {
 				File dir = new File(OcamlPlugin.getLibFullPath());
 				if (!dir.exists() || !dir.isDirectory()) {

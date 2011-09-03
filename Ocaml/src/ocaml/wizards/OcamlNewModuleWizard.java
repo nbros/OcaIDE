@@ -16,7 +16,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
 
-/** A wizard to create O'Caml modules (ml files) */
+/** A wizard to create OCaml modules (ml files) */
 public final class OcamlNewModuleWizard extends BasicNewResourceWizard {
 	private WizardNewFileCreationPage mainPage;
 	@Override

@@ -23,7 +23,7 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.SWT;
 
 /**
- * Configures the O'Caml Yacc editor with a double-click strategy, auto-edit strategies, a document
+ * Configures the OCaml Yacc editor with a double-click strategy, auto-edit strategies, a document
  * partitioning, completion, a hyper-link detector, and syntax coloring.
  */
 public class OcamlyaccSourceViewerConfig extends SourceViewerConfiguration {
@@ -63,7 +63,7 @@ public class OcamlyaccSourceViewerConfig extends SourceViewerConfiguration {
 	}
 
 	/**
-	 * "Reconciler" for the O'Caml Yacc editor
+	 * "Reconciler" for the OCaml Yacc editor
 	 */
 	@Override
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {

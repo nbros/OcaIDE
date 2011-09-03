@@ -6,7 +6,7 @@ import java.io.IOException;
 import ocaml.OcamlPlugin;
 import ocaml.parser.Def;
 
-/** An entry in the O'Caml interfaces definitions cache. */
+/** An entry in the OCaml interfaces definitions cache. */
 class CachedDef {
 	private final Def def;
 	private final Object path;

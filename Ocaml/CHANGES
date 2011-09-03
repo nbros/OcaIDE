@@ -71,7 +71,7 @@
 	* Corrected some bugs with the 'unnest let in definitions' option in outline
 	
 * 1.1.0 (Aug 02 2007)
-	* Added support for ocamlbuild projects (reset the O'Caml perspective to get the project shortcut)
+	* Added support for ocamlbuild projects (reset the OCaml perspective to get the project shortcut)
 	* Type annotations are searched first in ml folder, then in _build + ml folder 
 	* Big change in Ocaml Browser: now you can add new locations (right-click on tree), and the loading and parsing is done lazily (when you expand a node)
 	* Fixed yet another bug with hyperlinks  
@@ -104,7 +104,7 @@
 	* Integrated a patch for OMake support contributed by Dmitry Bely
 	* Replaced Unix newlines by platform newlines
 	* Optimized an often used function
-	* Added 'insert spaces instead of tabulations' option for the O'Caml editor
+	* Added 'insert spaces instead of tabulations' option for the OCaml editor
 	* Added conversion from tabs to spaces
 	* Spell checking of comments and documentation comments
 	* Keep leading and trailing newlines as-is when formatting a selection
@@ -117,7 +117,7 @@
 	* Replaced linked external resources by uses of the new Eclipse File System API to open workspace-external files in editors. This means no more ".DebuggerSourceLookup" and ".HyperlinksLinkedFiles", which should also fix incompatibility with eclipsedarcs.
 	* Opening a module's/interface's counterpart now works on external resources
 	* Fixed a layout issue in project paths properties page
-	* Improved O'Caml paths preference page
+	* Improved OCaml paths preference page
 	* Removed a check that prevented using the Cygwin version of ocamldebug on Windows
 	
 * 1.2.1 (April 21 2008)
@@ -144,7 +144,7 @@
 	* Split launch configuration into two pages : main and debug
 	* Debugger root directory is now configurable (between project root and executable directory)
 	* Removed "Makefile Paths" properties page which was useless (see <a href="http://ocaml.eclipse.free.fr/forum/viewtopic.php?f=4&t=94&start=0">this forum post<a/>) 
-	* Preference initializer now sets default ocamldebug path on Windows (O'Caml 3.11)
+	* Preference initializer now sets default ocamldebug path on Windows (OCaml 3.11)
 	* Checkpoints are disabled by default on Windows since they are not supported by ocamldebug on Windows
 
 * 1.2.5 (July 14 2009)
@@ -171,12 +171,13 @@
 	* Fix template variables capitalization
 
 * 1.2.9 (May 14 2011)
-    * OcaIDE now supports O'Caml 3.12 [Dmitry Bely]
+    * OcaIDE now supports OCaml 3.12 [Dmitry Bely]
     * Fixed formatting of exponential numbers [Dmitry Bely]
 
 * 1.2.10 (August 13 2011)
     * don't add directories under a directory starting by a dot to the project paths
     * add .svn and .git to the list of available filters
 
-* 1.2.11 (August 14 2011)
+* 1.2.11 (September 03 2011)
 	* fix for debugger cannot find capitalized source file [Dmitry Bely]
+	* renamed occurrences of "Objective Caml" and "O'Caml" to "OCaml" (as per http://caml.inria.fr/ocaml/name.en.html)

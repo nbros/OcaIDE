@@ -5,7 +5,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextViewer;
 
-/** Defines what to do when we double-click in the O'Caml editor: select the double-clicked word, or select
+/** Defines what to do when we double-click in the OCaml editor: select the double-clicked word, or select
  * everything from the double-clicked delimiter (bracket) to the corresponding one.*/
 public class OcamlDoubleClickStrategy implements ITextDoubleClickStrategy {
 	private final char[] openChars = { '(', '{', '[' };

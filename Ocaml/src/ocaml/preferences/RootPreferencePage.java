@@ -9,7 +9,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
- * This is the root page for all O'Caml preferences.
+ * This is the root page for all OCaml preferences.
  */
 
 public class RootPreferencePage extends FieldEditorPreferencePage implements

@@ -20,7 +20,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**
- * This action is called when the user clicks on "Create Documentation" in the pop-up menu for O'Caml makefile
+ * This action is called when the user clicks on "Create Documentation" in the pop-up menu for OCaml makefile
  * projects. It calls the "make" command with the documentation target configured in the project properties
  */
 public class GenDocAction implements IObjectActionDelegate {
@@ -73,7 +73,7 @@ public class GenDocAction implements IObjectActionDelegate {
 				}
 			};
 
-			// open the "O'Caml compiler output" view to show the output of the make command
+			// open the "OCaml compiler output" view to show the output of the make command
 			Misc.showView(OcamlCompilerOutput.ID);
 
 			job.setPriority(Job.BUILD);

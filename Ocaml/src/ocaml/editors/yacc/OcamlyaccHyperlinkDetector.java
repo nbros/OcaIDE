@@ -24,7 +24,7 @@ public class OcamlyaccHyperlinkDetector implements IHyperlinkDetector {
 		definitions = new ArrayList<Definition>();
 	}
 
-	// a pattern to match the definitions in an O'Caml Yacc file
+	// a pattern to match the definitions in an OCaml Yacc file
 	private final Pattern patternDefinition = Pattern
 			.compile("(?:^ *(\\w+) *:)|(?:^ *%(?:token|nonassoc|left|right) *(?:<.*?> *)?((?:\\w| )+))");
 

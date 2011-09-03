@@ -14,7 +14,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
-/** This action activates completion in the O'Caml editor. */
+/** This action activates completion in the OCaml editor. */
 public class ContentAssistAction implements IWorkbenchWindowActionDelegate {
 
 	private IWorkbenchWindow window;

@@ -243,9 +243,9 @@ public class Misc {
 	}
 
 	/**
-	 * Return the paths chosen by the user in the "O'Caml project Paths" preference dialog, as a
+	 * Return the paths chosen by the user in the "OCaml project Paths" preference dialog, as a
 	 * string made from a succession of "-I";"path" so that they can be used as a parameter for the
-	 * O'Caml compiler. Some paths are relative to the workspace, and some others are absolute.
+	 * OCaml compiler. Some paths are relative to the workspace, and some others are absolute.
 	 */
 	public static ArrayList<String> getProjectPaths(IProject project) {
 		final ArrayList<String> strPaths = new ArrayList<String>();
@@ -409,7 +409,7 @@ public class Misc {
 	}
 
 	/**
-	 * Append text to the O'Caml compiler output (in a UI-Thread)
+	 * Append text to the OCaml compiler output (in a UI-Thread)
 	 */
 	public static void appendToOcamlConsole(final String msg) {
 
@@ -569,17 +569,17 @@ public class Misc {
 	
 	private static HashSet<String> keywordsHashset;
 	
-	/** Can this character be part of an O'Caml identifier */
+	/** Can this character be part of an OCaml identifier */
 	public static boolean isOcamlIdentifierChar(char c) {
 		return (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_' || c == '\'');
 	}
 
-	/** Can this character be the first character of an O'Caml identifier (lowercase)*/
+	/** Can this character be the first character of an OCaml identifier (lowercase)*/
 	public static boolean isOcamlIdentifierFirstChar(char c) {
 		return (c >= 'a' && c <= 'z' || c == '_');
 	}
 
-	/** Test whether this string is a valid O'Caml identifier (lowercase) */
+	/** Test whether this string is a valid OCaml identifier (lowercase) */
 	public static boolean isValidOcamlIdentifier(String str) {
 		
 		if(str.length() < 1)

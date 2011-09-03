@@ -49,7 +49,7 @@ import org.eclipse.ui.ide.IDE;
 
 /**
  * Main class of the debugger. Manages the debugger state in a finite state automaton. Communicates
- * with the O'Caml debugger through its standard input and output.
+ * with the OCaml debugger through its standard input and output.
  */
 public class OcamlDebugger implements IExecEvents {
 

@@ -28,7 +28,7 @@ public class OutlinePreferencePage extends FieldEditorPreferencePage implements
 	public void createFieldEditors() {
 
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_SHOW_TYPES_IN_OUTLINE,
-				"Show the O'Caml types after each element in the outline", this
+				"Show the OCaml types after each element in the outline", this
 						.getFieldEditorParent()));
 
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_OUTLINE_EXPAND_MODULES,

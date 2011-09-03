@@ -8,7 +8,7 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 
 /**
- * This class represents the O'Caml managed projects (i.e. without makefile) nature.
+ * This class represents the OCaml managed projects (i.e. without makefile) nature.
  */
 public class OcamlNature implements IProjectNature {
 	private IProject project;

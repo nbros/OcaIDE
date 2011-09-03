@@ -15,7 +15,7 @@ import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.swt.SWT;
 
-/** Define rules for the syntax coloring of O'Caml Lex files */
+/** Define rules for the syntax coloring of OCaml Lex files */
 public class OcamllexRuleScanner extends RuleBasedScanner implements ILexLanguageWords {
 	public OcamllexRuleScanner() {
 

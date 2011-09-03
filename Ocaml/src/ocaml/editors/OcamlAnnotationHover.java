@@ -13,7 +13,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
-/** Display a pop-up when the mouse hovers over an annotation in the margin of the O'Caml editor */
+/** Display a pop-up when the mouse hovers over an annotation in the margin of the OCaml editor */
 public class OcamlAnnotationHover implements IAnnotationHover {
 
 	public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {

@@ -5,7 +5,7 @@ import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.Token;
 
-/** Matches O'Caml numbers (either integers or decimals) */
+/** Matches OCaml numbers (either integers or decimals) */
 public class OcamlNumberRule implements IRule {
 
 	/** The token we return if the rule matched an integer */
@@ -26,7 +26,7 @@ public class OcamlNumberRule implements IRule {
 		int nRead = 1;
 
 		if (Character.isDigit(ch)) {
-			// remark: this rule is less strict than the O'Caml grammar
+			// remark: this rule is less strict than the OCaml grammar
 			do {
 				ch = scanner.read();
 				nRead++;

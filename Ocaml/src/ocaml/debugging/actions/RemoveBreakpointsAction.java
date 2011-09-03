@@ -9,7 +9,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
 
 /**
- * This action is called by the "Remove Breakpoints" menu item in the "Debug" menu, in the O'Caml Debug
+ * This action is called by the "Remove Breakpoints" menu item in the "Debug" menu, in the OCaml Debug
  * perspective.<br>
  * Ask the debugger to remove all breakpoints that were previously created.
  */

@@ -29,7 +29,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 
 /**
- * Implements a property page for an O'Caml managed project. It allows the user to choose what module files to
+ * Implements a property page for an OCaml managed project. It allows the user to choose what module files to
  * make executable (this can also be done through a property page on each individual ml file), and to choose
  * the compilation mode.
  */

@@ -9,7 +9,7 @@ package ocaml.editor.formatting;
 //import ocaml.preferences.PreferenceConstants;
 //
 ///**
-// * This class is responsible for formatting O'Caml code. It indents code, adds spaces where they are
+// * This class is responsible for formatting OCaml code. It indents code, adds spaces where they are
 // * missing, delete those that are redundant, splits comments on several lines if they are too long,
 // * merge consecutive comments if they are too short, turn multi-line comments into single-line
 // * comments, and remove embedded "(*" and "*)" in comments (because they hinder the plug-in
@@ -87,7 +87,7 @@ package ocaml.editor.formatting;
 //	/** a string (that can have embedded '\"' (escaped double quote character) ) */
 //	private Pattern patternString = Pattern.compile("\"(\\\\\"|.)*?\"");
 //
-//	/** A pattern which matches O'Caml characters we want to remove because they hinder the parser */
+//	/** A pattern which matches OCaml characters we want to remove because they hinder the parser */
 //	private Pattern patternAnnoyingChars = Pattern.compile("'\\('|'\\)'|'\\{'|'\\}|'\\['|'\\]'");
 //
 //	/**

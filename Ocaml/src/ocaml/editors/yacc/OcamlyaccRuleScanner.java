@@ -16,7 +16,7 @@ import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.swt.SWT;
 
-/** Configures the rules to recognize the O'Caml Yacc syntax elements to color */
+/** Configures the rules to recognize the OCaml Yacc syntax elements to color */
 public class OcamlyaccRuleScanner extends RuleBasedScanner implements ILanguageWords, IYaccKeywords {
 	public OcamlyaccRuleScanner() {
 

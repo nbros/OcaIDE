@@ -28,9 +28,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
 
 /**
- * This class is responsible for building a standard O'Caml project (without makefile).<br>
+ * This class is responsible for building a standard OCaml project (without makefile).<br>
  * It is instantiated when the project is created or opened. There is an instance of this class for each
- * standard O'Caml project.
+ * standard OCaml project.
  * 
  */
 public class OcamlBuilder extends IncrementalProjectBuilder {
@@ -67,13 +67,13 @@ public class OcamlBuilder extends IncrementalProjectBuilder {
 	public static final String COMPIL_MODE = "compil_mode";
 
 	/**
-	 * Name of a file persistent property. This property, when present (value=true) on an O'Caml file, means
+	 * Name of a file persistent property. This property, when present (value=true) on an OCaml file, means
 	 * that the file contains warnings from the compiler.
 	 */
 	public static final String COMPILATION_WARNINGS = "compilation_warnings";
 
 	/**
-	 * Name of a file persistent property. This property, when present (value=true) on an O'Caml file, means
+	 * Name of a file persistent property. This property, when present (value=true) on an OCaml file, means
 	 * that the file contains errors from the compiler.
 	 */
 	public static final String COMPILATION_ERRORS = "compilation_errors";

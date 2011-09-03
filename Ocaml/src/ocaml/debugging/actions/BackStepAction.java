@@ -8,7 +8,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
 /**
- * This action is called by the "Backstep" menu item in the "Debug" menu, in the O'Caml Debug perspective.<br>
+ * This action is called by the "Backstep" menu item in the "Debug" menu, in the OCaml Debug perspective.<br>
  * Ask the debugger to make one step back, entering in function calls.
  */
 public class BackStepAction implements IWorkbenchWindowActionDelegate {

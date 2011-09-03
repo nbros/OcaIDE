@@ -1,6 +1,6 @@
 package ocaml.editor.syntaxcoloring;
 
-/** The O'Caml reserved language words */
+/** The OCaml reserved language words */
 public interface ILanguageWords {
 
 	String[] keywords =

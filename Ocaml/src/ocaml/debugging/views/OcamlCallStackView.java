@@ -8,7 +8,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.ui.part.ViewPart;
 
-/** Implements a view to show the call stack while debugging an O'Caml program */
+/** Implements a view to show the call stack while debugging an OCaml program */
 public class OcamlCallStackView extends ViewPart{
 
 	public static final String ID = "Ocaml.CallStackView";

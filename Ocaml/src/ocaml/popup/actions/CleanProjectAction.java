@@ -15,7 +15,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
-/** This action is called when the user clicks on the "Clean Project" contextual pop-up menu item on O'Caml makefile projects */
+/** This action is called when the user clicks on the "Clean Project" contextual pop-up menu item on OCaml makefile projects */
 public class CleanProjectAction implements IObjectActionDelegate {
 
 	private IProject project = null;
@@ -34,7 +34,7 @@ public class CleanProjectAction implements IObjectActionDelegate {
 				}
 			};
 			
-			// open the "O'Caml compiler output" view to show the output of the make
+			// open the "OCaml compiler output" view to show the output of the make
 			Misc.showView(OcamlCompilerOutput.ID);
 
 			job.setPriority(Job.BUILD);

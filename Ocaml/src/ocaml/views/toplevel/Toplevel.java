@@ -343,7 +343,7 @@ public class Toplevel {
 					Map<String, String> environment = new HashMap<String, String>();
 					environment.putAll(System.getenv());
 					/*
-					 * The O'Caml toplevel prints special formatting characters when it detects a compatible
+					 * The OCaml toplevel prints special formatting characters when it detects a compatible
 					 * terminal. So, we set the TERM variable to a kind of terminal it doesn't know (so that
 					 * it will print the standard "^^^" characters to show errors.
 					 */

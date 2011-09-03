@@ -7,7 +7,7 @@ import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.Token;
 
-/** A rule to match O'Caml Yacc keywords like "%token" */
+/** A rule to match OCaml Yacc keywords like "%token" */
 public class OcamlyaccKeywordRule implements IRule {
 	/** The hash set that contains all the keywords */
 	HashSet<String> words;
