@@ -1,5 +1,5 @@
 #!/bin/bash
-SOURCE="/cygdrive/c/Users/Nicolas/workspaces/OcaIDE/OcamlSite"
+SOURCE="/cygdrive/c/Users/Nicolas/git/OcaIDE/OcamlSite"
 TMP=/tmp/OcaIDESite
 
 mkdir -p $TMP

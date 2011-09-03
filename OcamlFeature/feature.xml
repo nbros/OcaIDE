@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="OcaIDEFeature"
-      label="OcaIDE Feature"
-      version="1.2.10"
+      label="OcaIDE"
+      version="1.2.11.qualifier"
       provider-name="Université Pierre et Marie Curie - Paris 6">
 
-   <description url="http://ocaml.eclipse.ortsa.com/">
+   <description url="http://www.algo-prog.info/ocaide/">
       OcaIDE is an OCaml plug-in for Eclipse.
    </description>
 
@@ -573,7 +573,7 @@ Version 1.0 dated 2006-09-05.
    </license>
 
    <url>
-      <update label="OcaIDE plug-in update site" url="http://ocaml.eclipse.ortsa.com/"/>
+      <update label="OcaIDE plug-in update site" url="http://www.algo-prog.info/ocaide/"/>
    </url>
 
    <requires>

@@ -3,12 +3,15 @@
    <description name="OcaIDE" url="http://www.algo-prog.info/ocaide/">
       OCaml plug-in for Eclipse (OcaIDE) update site
    </description>
-   <feature url="features/OcaIDEFeature_1.2.10.jar" id="OcaIDEFeature" version="1.2.10">
-      <category name="OcaIDE Category"/>
+   <feature url="features/OcaIDE.help.feature_1.2.11.201109031404.jar" id="OcaIDE.help.feature" version="1.2.11.201109031404">
+      <category name="OcaIDE.category"/>
    </feature>
-   <category-def name="OcaIDE Category" label="OcaIDE Category">
+   <feature url="features/OcaIDEFeature_1.2.11.201109031404.jar" id="OcaIDEFeature" version="1.2.11.201109031404">
+      <category name="OcaIDE.category"/>
+   </feature>
+   <category-def name="OcaIDE.category" label="OcaIDE">
       <description>
-         Category for OcaIDE (OCaml plug-in for Eclipse).
+         OcaIDE : an OCaml plug-in for Eclipse
       </description>
    </category-def>
 </site>

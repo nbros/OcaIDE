@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Ocaml help
+Bundle-Name: OcaIDE help
 Bundle-SymbolicName: Ocaml.help; singleton:=true
-Bundle-Version: 1.2.5
+Bundle-Version: 1.2.11.qualifier
 Require-Bundle: org.eclipse.help
