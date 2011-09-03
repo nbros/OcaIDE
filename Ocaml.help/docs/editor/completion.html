@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Completion</title>
+</head>
+
+
+<body bgcolor="white">
+
+<h2> Completion </h2>
+
+<p>
+
+Code completion is available in the OCaml modules and interfaces editor.<br>
+
+<p>
+
+To activate it, type <b>Ctrl + Space</b> (by default). You will get a list of completion
+propositions available in the current context.
+
+<p>
+
+For example, if you type an uppercase "B" in an empty module file and then hit <b>Ctrl + Space</b>,
+you will get the following completion box, showing all the modules starting with a "B": 
+
+<p>
+
+<img src="screens/completionModules.png" alt="completion box for modules">
+
+<p>
+
+You can then continue to type to further narrow down the list of propositions. You can also
+select a proposition by using the <b>Up</b>, <b>Down</b>, <b>Page Up</b>, <b>Page Down</b>, or 
+by clicking on it. 
+
+<p>
+
+Each time you select a proposition, the help pop-up on the right
+changes to reflect your selection, by displaying useful informations on the selected element
+extracted from the interface (mli) file in which this element is located.
+
+<p>
+
+Once the element you were looking for is selected, type <b>Enter</b> to insert it into 
+the editor at the current position. You can also double-click on the element to insert it. 
+
+<p>
+
+In our example, this would insert the word "Buffer" into the editor.
+
+<p>
+
+Then, if we type a "." (period), we get a list of members found inside the "Buffer" module:
+
+<p>
+
+<img src="screens/completionMembers.png" alt="completion box for module members">
+
+<p>
+
+
+<b>Note:</b> for completion to work, the path of the OCaml standard library
+must be defined in the preferences (see <a href="../basics/paths.html">Configuring paths</a>),
+along with the paths used in the project (see <a href="../compiling/paths.html">Configuring project paths</a>).  
+
+</body>
+
+</html>

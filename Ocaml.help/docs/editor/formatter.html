@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Code formatter</title>
+</head>
+
+
+<body bgcolor="white">
+
+<h2> Code formatter </h2>
+
+<p>
+
+The OCaml plug-in includes a code formatter for module files. You trigger it 
+by clicking on <b>Ocaml &gt; Format</b> or by pressing the <b>F3</b> key
+(configurable in the key preferences).
+
+<p>
+
+If several lines are selected in the editor, only those lines will be reformatted.
+Otherwise, the whole contents of the editor will be reformatted.
+
+<p>
+
+This formatter does the following:
+<ul>
+<li> Indentation based on nesting level
+<li> Spacing between words (variables, separators, etc.)
+<li> Wrapping of long comments
+<li> Merging of consecutive small comments
+<li> Deleting of redundant blank lines
+</ul>
+
+<p>
+
+If you want to protect a comment from the formatter (for example if you have made
+some ASCII-art), start your comment with <b>(*|</b> instead of <b>(*</b>. Ocamldoc comments
+are never modified by the formatter.
+
+<p> 
+
+<b>Note:</b> Make the difference between this formatter and the automatic indentation
+provided by the editor (see <a href="indentation.html">Indentation</a>). The automatic
+indentation happens as you enter code for the first time, whereas the code formatter
+is called on existing code.
+
+
+
+</body>
+
+</html>

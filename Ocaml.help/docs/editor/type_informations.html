@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Type informations</title>
+</head>
+
+
+<body bgcolor="white">
+
+<h2> Type informations </h2>
+
+<p>
+
+The OCaml compiler provides the "-dtypes" command line option to make it display
+the types it inferred for all the elements in the files it was asked to compile.
+
+<p>
+
+The OCaml plug-in uses this functionality to show the types in pop-ups when you
+hover the mouse over an element in the editor:
+
+<p>
+
+<img src="screens/dtypes.png" alt="dtypes informations">
+
+<p>
+
+For it to work, the current file must be compiled with the "-dtypes" option, and
+mustn't have been modified since the last time it was compiled.
+
+<p>
+
+The "-dtypes" option is automatically put on <b>OCaml Managed Projects</b>, and
+is defined in the <b>OCaml Makefile Projects</b>, but you have to set it manually
+if you are using an <b>OCaml Empty Makefile Project</b>.
+
+
+</body>
+
+</html>

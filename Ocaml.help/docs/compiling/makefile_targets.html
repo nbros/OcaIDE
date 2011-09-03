@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Configuring Makefile targets</title>
+</head>
+
+
+<body bgcolor="white">
+
+<h2> Configuring Makefile targets </h2>
+
+<p>
+
+If your project is an <b>OCaml Empty Makefile Project</b>, you must tell the OCaml plug-in
+what Makefile targets it must use when calling the <b>make</b> command to build your project,
+clean it, or create its documentation.
+
+<p>
+
+To do that, open the project properties by right-clicking on the project in the navigator and
+selecting <b>Properties</b>, and then click on the <b>Makefile</b> category on the left.
+You should get the following properties dialog:
+
+<p>
+
+<img src="screens/make_targets.png" alt="make targets properties page">
+
+<p>
+
+There are three fields you can change:
+<ul>
+<li> rebuild target: specify the name of the makefile target that must be used
+to compile the project (usually "all")
+<li> clean target: specify the name of the makefile target that must be used
+to clean the project (usually "clean")
+<li> doc target: specify the name of the makefile target that must be used
+to generate documentation for the project
+</ul>
+
+<p>
+
+Any of these fields can contain several targets, separated by commas, that will be
+called in the order they appear.
+
+<p>
+
+The correct names of the targets that must be used can usually be found in a README
+or INSTALL file included with the project, or directly by analyzing the makefile itself.
+
+<p>
+
+</body>
+
+</html>

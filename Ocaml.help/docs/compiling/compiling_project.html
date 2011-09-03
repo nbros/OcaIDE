@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Compiling an OCaml project</title>
+</head>
+
+
+<body bgcolor="white">
+
+<h2> Compiling an OCaml project </h2>
+
+<p>
+
+There are several ways to compile an OCaml project depending on the project type 
+and on the options you set:
+<ul>
+<li> If <b>Project &gt; Build Automatically</b> is checked, saving a modified file will
+trigger a recompilation of the project. So, to force a file to recompile, you can modify it
+(adding and then removing a space for example) and save it.
+<li> If <b>Project &gt; Build Automatically</b> is not checked, you can compile a project by selecting 
+the project in the navigator view and then clicking on <b>Project &gt; Build Project</b>, or by
+right-clicking on the project in the navigator view and clicking <b>Build Project</b> in the
+context menu. The project will only be rebuilt if one of its files was modified.
+<li> You can force a full recompilation of a project by cleaning it 
+(see <a href="../projects/clean.html">Cleaning a project</a>).
+<li> For an <b>OCaml Makefile Project</b> or an <b>OCaml Empty Makefile Project</b>, right-click
+on the project in the navigator view, and select <b>Make Project</b> (the Makefile targets must
+be correctly configured, see <a href="makefile_targets.html">Configuring Makefile targets</a>)
+</ul>
+
+<p>
+
+When the project is compiled, the <b>OCaml Compiler Output</b> view is updated with
+the messages returned by the tools called to build the project
+(ocamlc, ocamlopt, make, ...):
+
+<p>
+
+<img src="screens/compiler_output.png" alt="compiler output view">
+
+
+</body>
+
+</html>

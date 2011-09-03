@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Generating interfaces</title>
+</head>
+
+
+<body bgcolor="white">
+
+<h2> Generating interfaces </h2>
+
+<p>
+
+With the <b>OCaml Managed Project</b> type, interfaces are automatically created for you every time
+the project is compiled. You can then modify these interfaces to remove definitions you don't
+want to export. Once an interface has been modified, it will not be overwritten by the compiler.
+So, if you want an interface to be regenerated, you can delete it, and it will reappear the
+next time your project is compiled.
+
+<p>
+
+With the other kinds of projects, interfaces are
+not generated automatically, but you can generate them manually by right-clicking on a module
+in the navigator, and then selecting <b>Generate Interface</b> in the pop-up menu that appears: 
+
+<p>
+
+<img src="screens/gen_interface.png" alt="">
+
+<p>
+
+</body>
+
+</html>

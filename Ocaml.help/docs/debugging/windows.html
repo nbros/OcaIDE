@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Debugging under Windows</title>
+</head>
+
+
+<body bgcolor="white">
+
+<h2> Debugging under Windows </h2>
+
+<p>
+
+To make the debugger work under Windows, follow these steps:
+
+<ul>
+<li>Install <a href="http://www.cygwin.com/">Cygwin</a> (install the devel packages, but don't install the OCaml version from Cygwin)
+<li>Download <a href="http://caml.inria.fr/download.en.html">OCaml sources</a>
+<li>Compile OCaml with Cygwin, and install it
+<li>Set environment variables:
+<ul>
+<li>Right-click <b>My Computer</b>, and then click <b>Properties</b>
+<li>Click the <b>Advanced</b> tab
+<li>Click <b>Environment variables</b>
+<li>Remove any references to any other installation of OCaml from your path 
+<li>Add the folder you installed OCaml in to your system path <br>(for example, "c:\cygwin\usr\local\bin")
+<li>Set the OCAMLLIB variable in your system variables<br>(for example, OCAMLLIB = "c:\cygwin\usr\local\lib\ocaml")
+</ul>
+</ul>
+
+<p>
+
+Then, start the debugger <a href="start.html">as usual</a>.
+
+</body>
+
+</html>

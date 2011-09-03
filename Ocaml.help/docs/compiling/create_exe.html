@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Creating executables</title>
+</head>
+
+
+<body bgcolor="white">
+
+<h2> Creating executables </h2>
+
+<p>
+
+For <b>OCaml Makefile Projects</b>, the makefile determines how to create executables.<br>
+
+<p>
+
+For <b>Ocamlbuild Projects</b>, specify a target (in the project properties)
+ with the same base name as your module file, and with
+one of the following extensions:
+<ul>
+<li> <b>.byte</b> to generate a byte-code executable without debugging information
+<li> <b>.d.byte</b> to generate a byte-code executable with debugging information
+<li> <b>.native</b> to generate a native executable
+<li> <b>.p.native</b> to generate a native executable with profiling information (not supported by OcaIDE)
+</ul>
+
+<p>
+
+The rest of this page explains how to create executables in <b>OCaml Managed Projects</b>.
+
+<p> 
+
+To indicate that you want an executable to be created from a module file, right-click on 
+this module file in the navigator view, select <b>Properties</b>, and select the
+<b>Ocaml Module</b> section. You should get this dialog box:
+
+<p>
+
+<img src="screens/module_properties.png" alt="module properties page">
+
+<p>
+
+Here, click on the <b>Make executable named</b> checkbox, and give the executable a
+name in the associated text field.
+
+<p>
+
+There is also a way to choose multiple executables at once, by opening a project's properties
+(by right-clicking on it, and selecting <b>Properties</b>) and choosing the <b>OCaml Project</b>
+category:
+
+<p>
+
+<img src="screens/project_properties2.png" alt="Project properties">
+
+<p> 
+
+Here, you can choose which modules must become executables, by clicking on each one's 
+corresponding checkbox.
+
+<p>
+
+This property page is also used to set the compilation mode: you can choose between <b>byte-code</b> and
+<b>native</b> executables.
+
+<p>
+
+<b>Note:</b> In the navigator view, modules marked as executable will appear with the following icon: 
+<img src="screens/exe_icon.png" alt="exe icon" width="16" align="top">
+
+</body>
+
+</html>
