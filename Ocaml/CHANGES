@@ -181,3 +181,7 @@
 * 1.2.11 (September 03 2011)
 	* fix for debugger cannot find capitalized source file [Dmitry Bely]
 	* renamed occurrences of "Objective Caml" and "O'Caml" to "OCaml" (as per http://caml.inria.fr/ocaml/name.en.html)
+
+* 1.2.12 (October 01 2011)
+	* FIXED issue # 3: No indication of when ocamldebug is busy
+	* FIXED issue # 4: Store project settings beside .project file for CVS/SVN

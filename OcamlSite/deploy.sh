@@ -22,3 +22,4 @@ tar czf site.tgz *
 scp site.tgz nicolas@www.algo-prog.info:
 ssh nicolas@www.algo-prog.info ./deploy
 
+rm -rf $TMP/*
