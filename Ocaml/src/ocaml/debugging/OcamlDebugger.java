@@ -1264,7 +1264,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	private synchronized void send(String command) {
 		try {
-			System.out.println("[" + command + "]");
+			//System.out.println("[" + command + "]");
 			debuggerProcess.sendLine(command);
 		} catch (IOException e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
