@@ -262,6 +262,10 @@
   		<filter pattern="_build" selected="false"/>
         <filter pattern=".svn" selected="true"/>
         <filter pattern=".git" selected="true"/>
+        <filter
+              pattern=".projectSettings"
+              selected="true">
+        </filter>
 	</extension>
 	
    <extension point="org.eclipse.team.core.fileTypes">

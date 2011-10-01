@@ -1,19 +1,18 @@
 package ocaml.properties;
 
 import ocaml.OcamlPlugin;
-import ocaml.build.makefile.MakeUtility;
-import ocaml.build.makefile.MakefileTargets;
+import ocaml.build.makefile.MakefileProperties;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.ui.dialogs.PropertyPage;
 
 /**
@@ -74,12 +73,6 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 		makeButton[1].setText("OMake");
 		makeButton[1].setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
-		optionsLabel = new Label(composite, SWT.LEFT);
-		optionsLabel.setText("additional make options (separated by spaces):");
-
-		optionsText = new Text(composite, SWT.SINGLE | SWT.BORDER);
-		optionsText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
-
 		targetsLabel = new Label(composite, SWT.LEFT);
 		targetsLabel.setText("make targets for rebuild (separated by commas):");
 
@@ -98,15 +91,22 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 		docTargetsText = new Text(composite, SWT.SINGLE | SWT.BORDER);
 		docTargetsText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
+		optionsLabel = new Label(composite, SWT.LEFT);
+		optionsLabel.setText("additional make options (separated by spaces):");
+
+		optionsText = new Text(composite, SWT.SINGLE | SWT.BORDER);
+		optionsText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+		
 		load();
 
 		return composite;
 	}
 
 	private void load() {
+		MakefileProperties properties = new MakefileProperties(project);
+		
 		// make variant
-		MakeUtility makeUtility = new MakeUtility(project);
-		switch (makeUtility.getVariant()) {
+		switch (properties.getVariant()) {
 		case GNU_MAKE:
 			makeButton[0].setSelection(true);
 			makeButton[1].setSelection(false);
@@ -118,7 +118,7 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 		}
 
         //options
-		String[] options = makeUtility.getOptions();
+		String[] options = properties.getOptions();
 		
 		StringBuilder stringBuilder = new StringBuilder();
 		for (int i = 0; i < options.length - 1; i++)
@@ -129,8 +129,7 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 		optionsText.setText(stringBuilder.toString());
 		
 		// make
-		MakefileTargets makefileTargets = new MakefileTargets(project);
-		String[] targets = makefileTargets.getTargets();
+		String[] targets = properties.getTargets();
 
 		stringBuilder.setLength(0);
 		for (int i = 0; i < targets.length - 1; i++)
@@ -141,7 +140,7 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 		targetsText.setText(stringBuilder.toString());
 
 		// clean
-		targets = makefileTargets.getCleanTargets();
+		targets = properties.getCleanTargets();
 
 		stringBuilder.setLength(0);
 		for (int i = 0; i < targets.length - 1; i++)
@@ -152,7 +151,7 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 		cleanTargetsText.setText(stringBuilder.toString());
 
 		// doc
-		targets = makefileTargets.getDocTargets();
+		targets = properties.getDocTargets();
 
 		stringBuilder.setLength(0);
 		for (int i = 0; i < targets.length - 1; i++)
@@ -165,27 +164,31 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 
 	@Override
 	public boolean performOk() {
-		MakeUtility.Variants clone;
-		if (makeButton[1].getSelection()) clone = MakeUtility.Variants.OMAKE;
-		else clone = MakeUtility.Variants.GNU_MAKE;
+		MakefileProperties properties = new MakefileProperties(this.project);
+		
+		MakefileProperties.Variants variant;
+		if (makeButton[1].getSelection()) 
+			variant = MakefileProperties.Variants.OMAKE;
+		else 
+			variant = MakefileProperties.Variants.GNU_MAKE;
 
-		MakeUtility makeUtility = new MakeUtility(project);
-		makeUtility.setVariant(clone);
+		properties.setVariant(variant);
 		
 		String[] options = optionsText.getText().split(" +");
-		makeUtility.setOptions(options);
+		properties.setOptions(options);
 
 		String[] targets = targetsText.getText().split(",");
-		MakefileTargets makefileTargets = new MakefileTargets(this.project);
-		makefileTargets.setTargets(targets);
+		
+		properties.setTargets(targets);
 
 		targets = cleanTargetsText.getText().split(",");
-		makefileTargets.setCleanTargets(targets);
+		properties.setCleanTargets(targets);
 
 		targets = docTargetsText.getText().split(",");
-		makefileTargets.setDocTargets(targets);
+		properties.setDocTargets(targets);
+		
+		properties.save();
 
-		super.performOk();
 		return true;
 	}
 

@@ -3,13 +3,16 @@ package ocaml.build.ocamlbuild;
 import java.util.ArrayList;
 
 import ocaml.OcamlPlugin;
+import ocaml.properties.OcamlProjectPropertiesSerialization;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.jface.dialogs.IDialogSettings;
 
 public class OcamlbuildFlags {
-
+	
+	public static final String SECTION = "OcamlbuildSettings";
 	public static final String TARGETS = "ocamlbuildProjectTargets";
 	public static final String LIBS = "ocamlbuildProjectLibs";
 	public static final String CFLAGS = "ocamlbuildProjectCompilerFlags";
@@ -31,88 +34,149 @@ public class OcamlbuildFlags {
 	}
 
 	public void load() {
+		
+		OcamlProjectPropertiesSerialization propertiesSerialization = new OcamlProjectPropertiesSerialization(project);
+		IDialogSettings dialogSettings = propertiesSerialization.load(SECTION);
 
 		targets = new ArrayList<String>();
 		libs = new ArrayList<String>();
 		cflags = new ArrayList<String>();
 		lflags = new ArrayList<String>();
 		otherFlags = new ArrayList<String>();
-
+		
 		try {
-			// load targets
-			String strTargets = project.getPersistentProperty(new QualifiedName(
-					OcamlPlugin.QUALIFIER, TARGETS));
-			if(strTargets == null)
-				strTargets = "";
-			setTargets(strTargets);
+			if (project.getPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, TARGETS)) != null
+					&& dialogSettings.get(TARGETS) == null) {
+				compatibilityLoad();
+			} else {
+				// load targets
+				String strTargets = dialogSettings.get(TARGETS);
+				if (strTargets == null)
+					strTargets = "";
+				setTargets(strTargets);
 
-			// load libs
-			String strLibs = project.getPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER,
-					LIBS));
-			if(strLibs == null)
-				strLibs = "";
-			setLibs(strLibs);
+				// load libs
+				String strLibs = dialogSettings.get(LIBS);
+				if (strLibs == null)
+					strLibs = "";
+				setLibs(strLibs);
 
-			// load cflags
-			String strCFlags = project.getPersistentProperty(new QualifiedName(
-					OcamlPlugin.QUALIFIER, CFLAGS));
-			if(strCFlags == null)
-				strCFlags = "";
-			setCFlags(strCFlags);
+				// load cflags
+				String strCFlags = dialogSettings.get(CFLAGS);
+				if (strCFlags == null)
+					strCFlags = "";
+				setCFlags(strCFlags);
 
-			// load lflags
-			String strLFlags = project.getPersistentProperty(new QualifiedName(
-					OcamlPlugin.QUALIFIER, LFLAGS));
-			if(strLFlags == null)
-				strLFlags = "";
-			setLFlags(strLFlags);
-			
-			// load otherFlags
-			String strOtherFlags = project.getPersistentProperty(new QualifiedName(
-					OcamlPlugin.QUALIFIER, OTHER_FLAGS));
-			if(strOtherFlags == null)
-				strOtherFlags = "";
-			setOtherFlags(strOtherFlags);
-			
-			// generate type info?
-			String strGenerateTypeInfo = project.getPersistentProperty(new QualifiedName(
-					OcamlPlugin.QUALIFIER, GENERATE_TYPE_INFO));
-			if (strGenerateTypeInfo == null)
-				strGenerateTypeInfo = "true";
-			setGenerateTypeInfo("true".equalsIgnoreCase(strGenerateTypeInfo));
+				// load lflags
+				String strLFlags = dialogSettings.get(LFLAGS);
+				if (strLFlags == null)
+					strLFlags = "";
+				setLFlags(strLFlags);
+
+				// load otherFlags
+				String strOtherFlags = dialogSettings.get(OTHER_FLAGS);
+				if (strOtherFlags == null)
+					strOtherFlags = "";
+				setOtherFlags(strOtherFlags);
+
+				// generate type info?
+				String strGenerateTypeInfo = dialogSettings.get(GENERATE_TYPE_INFO);
+				if (strGenerateTypeInfo == null)
+					strGenerateTypeInfo = "true";
+				setGenerateTypeInfo("true".equalsIgnoreCase(strGenerateTypeInfo));
+			}
 		} catch (Throwable e) {
 			OcamlPlugin.logError("problem loading ocamlbuild project properties", e);
 		}
 
 	}
 
+	/** Loads the properties from the project persistent properties to preserve backwards compatibility */
+	private void compatibilityLoad() {
+		try {
+			// load targets
+			String strTargets = project.getPersistentProperty(new QualifiedName(
+					OcamlPlugin.QUALIFIER, TARGETS));
+			if (strTargets == null)
+				strTargets = "";
+			setTargets(strTargets);
+
+			// load libs
+			String strLibs = project.getPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER,
+					LIBS));
+			if (strLibs == null)
+				strLibs = "";
+			setLibs(strLibs);
+
+			// load cflags
+			String strCFlags = project.getPersistentProperty(new QualifiedName(
+					OcamlPlugin.QUALIFIER, CFLAGS));
+			if (strCFlags == null)
+				strCFlags = "";
+			setCFlags(strCFlags);
+
+			// load lflags
+			String strLFlags = project.getPersistentProperty(new QualifiedName(
+					OcamlPlugin.QUALIFIER, LFLAGS));
+			if (strLFlags == null)
+				strLFlags = "";
+			setLFlags(strLFlags);
+
+			// load otherFlags
+			String strOtherFlags = project.getPersistentProperty(new QualifiedName(
+					OcamlPlugin.QUALIFIER, OTHER_FLAGS));
+			if (strOtherFlags == null)
+				strOtherFlags = "";
+			setOtherFlags(strOtherFlags);
+
+			// generate type info?
+			String strGenerateTypeInfo = project.getPersistentProperty(new QualifiedName(
+					OcamlPlugin.QUALIFIER, GENERATE_TYPE_INFO));
+			if (strGenerateTypeInfo == null)
+				strGenerateTypeInfo = "true";
+			setGenerateTypeInfo("true".equalsIgnoreCase(strGenerateTypeInfo));
+			
+			
+			// clear the old persistent properties, so that only the new format is used in the future
+			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, TARGETS), null);
+			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, LIBS), null);
+			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, CFLAGS), null);
+			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, LFLAGS), null);
+			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, OTHER_FLAGS), null);
+			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, GENERATE_TYPE_INFO), null);
+			
+		} catch (Throwable e) {
+			OcamlPlugin.logError("problem loading ocamlbuild project properties", e);
+		}
+	}
+
 	public void save() {
+		OcamlProjectPropertiesSerialization serialization = new OcamlProjectPropertiesSerialization(project);
+		IDialogSettings dialogSettings = serialization.load(SECTION);
+		
 		try {
 			// save targets
-			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, TARGETS),
-					getTargets());
+			dialogSettings.put(TARGETS, getTargets());
 
 			// save libs
-			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, LIBS), getLibs());
+			dialogSettings.put(LIBS, getLibs());
 
 			// save cflags
-			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, CFLAGS),
-					getCFlags());
+			dialogSettings.put(CFLAGS, getCFlags());
 
 			// save lflags
-			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, LFLAGS),
-					getLFlags());
+			dialogSettings.put(LFLAGS, getLFlags());
 
 			// save otherFlags
-			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, OTHER_FLAGS),
-					getOtherFlagsAsString());
+			dialogSettings.put(OTHER_FLAGS, getOtherFlagsAsString());
 
 			// save generateTypeInfo
-			project.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER,
-					GENERATE_TYPE_INFO), Boolean.toString(isGenerateTypeInfo()));
+			dialogSettings.put(GENERATE_TYPE_INFO, Boolean.toString(isGenerateTypeInfo()));
 		} catch (Throwable e) {
 			OcamlPlugin.logError("problem saving ocamlbuild project properties", e);
 		}
+		
+		serialization.save();
 	}
 	
 

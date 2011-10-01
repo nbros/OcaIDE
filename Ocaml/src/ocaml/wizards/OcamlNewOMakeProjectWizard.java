@@ -4,7 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import ocaml.OcamlPlugin;
-import ocaml.build.makefile.MakeUtility;
+import ocaml.build.makefile.MakefileProperties;
 import ocaml.exec.CommandRunner;
 import ocaml.natures.OcamlNatureMakefile;
 import ocaml.util.OcamlPaths;
@@ -48,8 +48,9 @@ public class OcamlNewOMakeProjectWizard extends BasicNewProjectResourceWizard {
 			 * We have to do this early as project.setDescription() implicitly calls build() which needs to
 			 * know the variant of make
 			 */
-			MakeUtility makeUtility = new MakeUtility(project);
-			makeUtility.setVariant(MakeUtility.Variants.OMAKE);
+			MakefileProperties makefileProperties = new MakefileProperties(project);
+			makefileProperties.setVariant(MakefileProperties.Variants.OMAKE);
+			makefileProperties.save();
 
 			IProjectDescription description = project.getDescription();
 			String[] natures = description.getNatureIds();

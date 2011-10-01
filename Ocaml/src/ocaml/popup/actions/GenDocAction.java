@@ -1,7 +1,7 @@
 package ocaml.popup.actions;
 
 import ocaml.OcamlPlugin;
-import ocaml.build.makefile.MakefileTargets;
+import ocaml.build.makefile.MakefileProperties;
 import ocaml.exec.CommandRunner;
 import ocaml.util.Misc;
 import ocaml.views.OcamlCompilerOutput;
@@ -35,7 +35,7 @@ public class GenDocAction implements IObjectActionDelegate {
 			Job job = new Job("Generating Documentation") {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
-					MakefileTargets makefileTargets = new MakefileTargets(project);
+					MakefileProperties makefileTargets = new MakefileProperties(project);
 					String[] targets = makefileTargets.getDocTargets();
 
 					String[] command = new String[targets.length + 1];

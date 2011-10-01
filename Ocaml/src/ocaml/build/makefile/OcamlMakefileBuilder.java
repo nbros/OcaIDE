@@ -65,7 +65,7 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 
 	
 	@Override
-	protected IProject[] build(final int kind, @SuppressWarnings("unchecked")final Map args, final IProgressMonitor monitor)
+	protected IProject[] build(final int kind, @SuppressWarnings("rawtypes") final Map args, final IProgressMonitor monitor)
 			throws CoreException {
 
 		// don't start two builds simultaneously
@@ -98,9 +98,10 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 			if (kind == IncrementalProjectBuilder.AUTO_BUILD)
 				return null;
 
+			MakefileProperties makefileProperties = new MakefileProperties(project);
+			
 			String makeCmd = "";
-			MakeUtility makeUtility = new MakeUtility(project);
-			switch (makeUtility.getVariant()) {
+			switch (makefileProperties.getVariant()) {
 			case GNU_MAKE:
 				makeCmd = OcamlPlugin.getMakeFullPath();
 				break;
@@ -110,7 +111,7 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 			}
 			makeCmd = makeCmd.trim();
 			if (makeCmd.trim().equals("")) {
-				OcamlPlugin.logError("The " + MakeUtility.getName(makeUtility.getVariant())
+				OcamlPlugin.logError("The " + makefileProperties.getVariant().getName()
 						+ " command couldn't be found. Please configure its path in the preferences.");
 				return null;
 			}
@@ -119,7 +120,7 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 
 			ArrayList<String> commandLine = new ArrayList<String>();
 			commandLine.add(makeCmd);
-			switch (makeUtility.getVariant()) {
+			switch (makefileProperties.getVariant()) {
 			case OMAKE:
 				commandLine.add("--no--progress");
 				commandLine.add("-w");
@@ -129,15 +130,14 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 				break;
 			}
 			
-			for (String option : makeUtility.getOptions())
+			for (String option : makefileProperties.getOptions())
 				commandLine.add(option);
 
-			MakefileTargets makefileTargets = new MakefileTargets(project);
 			String[] targets = null;
 			if (kind == CLEAN_BUILD)
-				targets = makefileTargets.getCleanTargets();
+				targets = makefileProperties.getCleanTargets();
 			else
-				targets = makefileTargets.getTargets();
+				targets = makefileProperties.getTargets();
 
 			for (String target : targets)
 				commandLine.add(target);
