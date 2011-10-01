@@ -271,6 +271,7 @@ public class OcamlDebugger implements IExecEvents {
 			return;
 
 		if (state.equals(State.Idle)) {
+			indicateRunningState("Running...");
 			state = State.Running;
 			send("run");
 		}
@@ -286,6 +287,7 @@ public class OcamlDebugger implements IExecEvents {
 		}
 
 		if (state.equals(State.Idle)) {
+			indicateRunningState("Running backwards...");
 			state = State.RunningBackwards;
 			send("reverse");
 		}
@@ -313,6 +315,7 @@ public class OcamlDebugger implements IExecEvents {
 			return;
 
 		if (state.equals(State.Idle)) {
+			indicateRunningState("Stepping...");
 			state = State.Stepping;
 			send("step");
 		}
@@ -328,6 +331,7 @@ public class OcamlDebugger implements IExecEvents {
 		}
 
 		if (state.equals(State.Idle)) {
+			indicateRunningState("Backstepping...");
 			state = State.BackStepping;
 			send("backstep");
 		}
@@ -338,6 +342,7 @@ public class OcamlDebugger implements IExecEvents {
 			return;
 
 		if (state.equals(State.Idle)) {
+			indicateRunningState("Stepping over...");
 			state = State.SteppingOver;
 			send("next");
 		}
@@ -353,6 +358,7 @@ public class OcamlDebugger implements IExecEvents {
 		}
 
 		if (state.equals(State.Idle)) {
+			indicateRunningState("Backstepping over...");
 			state = State.BackSteppingOver;
 			send("previous");
 		}
@@ -363,6 +369,7 @@ public class OcamlDebugger implements IExecEvents {
 			return;
 
 		if (state.equals(State.Idle)) {
+			indicateRunningState("Step-returning...");
 			state = State.StepReturn;
 			send("finish");
 		}
@@ -378,6 +385,7 @@ public class OcamlDebugger implements IExecEvents {
 		}
 
 		if (state.equals(State.Idle)) {
+			indicateRunningState("Backstep-returning...");
 			state = State.BackstepReturn;
 			send("start");
 		}
@@ -1057,7 +1065,27 @@ public class OcamlDebugger implements IExecEvents {
 				}
 			}
 		});
+	}
+	
+	private void indicateRunningState(final String message) {
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
+				try {
+					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
+							.getActiveWorkbenchWindow().getActivePage();
+					OcamlCallStackView stackview = (OcamlCallStackView) activePage
+							.findView(OcamlCallStackView.ID);
+					if (stackview != null) {
+						stackview.setCallStack(new String[] { message });
+					}
 
+				} catch (Throwable e) {
+					OcamlPlugin.logError("ocaml plugin error", e);
+				}
+			}
+		});
+		DebugMarkers.getInstance().clearCurrentPosition();
+		refreshEditor();
 	}
 
 	private void highlight(final String filename, final int offset) {
@@ -1236,7 +1264,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	private synchronized void send(String command) {
 		try {
-			// System.out.println("[" + command + "]");
+			System.out.println("[" + command + "]");
 			debuggerProcess.sendLine(command);
 		} catch (IOException e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
