@@ -177,14 +177,14 @@ public class OcamlMakefileProjectProperties extends PropertyPage {
 		String[] options = optionsText.getText().split(" +");
 		properties.setOptions(options);
 
-		String[] targets = targetsText.getText().split(",");
+		String[] targets = targetsText.getText().split("\\s*,\\s*");
 		
 		properties.setTargets(targets);
 
-		targets = cleanTargetsText.getText().split(",");
+		targets = cleanTargetsText.getText().split("\\s*,\\s*");
 		properties.setCleanTargets(targets);
 
-		targets = docTargetsText.getText().split(",");
+		targets = docTargetsText.getText().split("\\s*,\\s*");
 		properties.setDocTargets(targets);
 		
 		properties.save();

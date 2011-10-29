@@ -185,3 +185,6 @@
 * 1.2.12 (October 01 2011)
 	* FIXED issue # 3: No indication of when ocamldebug is busy
 	* FIXED issue # 4: Store project settings beside .project file for CVS/SVN
+	
+* 1.2.13 (October 29 2011)
+    * FIXED issue # 6: Issue 4 (Store project settings beside .project file for CVS/SVN) implementation is not entirely correct
