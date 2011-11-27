@@ -46,7 +46,7 @@ public class OcamlLaunchShortcut implements ILaunchShortcut {
 				if (configuration == null) {
 					configuration = createLaunchConfiguration(path, file.getProject().getName(), file
 							.getProject().getName()
-							+ ": " + location.lastSegment());
+							+ " - " + location.lastSegment());
 					if (configuration == null) {
 						OcamlPlugin.logError("OcamlLaunchShortcut:launch : configuration is null");
 						return;
