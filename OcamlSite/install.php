@@ -5,7 +5,7 @@
     <?php require("header.php"); ?>
 </head>
 <body>
-<?php require("menu.php"); ?>
+<?php $current="install"; require("menu.php"); ?>
 
 <div id="page">
 

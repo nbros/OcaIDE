@@ -5,7 +5,7 @@
     <?php require("header.php"); ?>
 </head>
 <body>
-<?php require("menu.php"); ?>
+<?php $current="index"; require("menu.php"); ?>
 
 <div id="page">
     <h1>About OcaIDE</h1>

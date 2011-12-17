@@ -5,7 +5,7 @@
     <?php require("header.php"); ?>
 </head>
 <body>
-<?php require("menu.php"); ?>
+<?php $current="news"; require("menu.php"); ?>
 
 <div id="page">
 <h1>News</h1>

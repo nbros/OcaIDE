@@ -9,6 +9,8 @@
     a:visited {color:blue; text-decoration:none}
     a:hover {color:red; text-decoration:underline}
     a:active {color:green}
+    a.current:link {color:black; font-weight: bold}
+    a.current:visited {color:black; font-weight: bold}
     #menu {
         position: fixed;
         left: 10px;
