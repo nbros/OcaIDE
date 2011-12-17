@@ -6,7 +6,7 @@ mkdir -p $TMP
 rm -rf $TMP/*
 
 cd $SOURCE
-cp -r *.html *.jar site.xml plugins/ features/ $TMP
+cp -r *.html *.php *.jar site.xml plugins/ features/ $TMP
 
 cd $TMP
 
