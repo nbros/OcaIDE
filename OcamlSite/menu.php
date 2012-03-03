@@ -11,7 +11,6 @@
     <hr align="left" width="40"/>
     <a href="forum/index.php">Forum</a><br>
     <a href="bugs/my_view_page.php">Bugs</a><br>
-    <a href="wiki/index.php?title=Main_Page">Wiki</a><br>
 </div>
 <div id="friendsLogo">
     <img src="http://www.eclipse.org/donate/images/friendslogo160.jpg">
