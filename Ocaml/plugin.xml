@@ -739,6 +739,16 @@
 			<menu id="Ocaml_sourceMenu" label="Ocaml">
 				<separator name="slot1"/>
 			</menu>
+			<action	class="ocaml.editor.actions.ShiftLeftAction"
+				definitionId="Ocaml.shiftLeftCommand"
+				icon="icons/shiftLeft.png"
+				id="Ocaml_sourceActions_shiftLeft" label="Shift Left"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+			<action	class="ocaml.editor.actions.ShiftRightAction"
+				definitionId="Ocaml.shiftRightCommand"
+				icon="icons/shiftRight.png"
+				id="Ocaml_sourceActions_shiftRight"	label="Shift Right"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
 			<action class="ocaml.editor.actions.CommentSelectionAction"
 				definitionId="Ocaml.commentSelectionProtectedCommand"
 				id="Ocaml_sourceActions_CommentSelectionProtected" label="Comment/Uncomment Selection (Protected)"
@@ -869,6 +879,10 @@
 			id="Ocaml.commentSelectionProtectedCommand" name="Comment/Uncomment Selection (Protected)"/>
 		<command categoryId="Ocaml.commandscategory"
 			id="Ocaml.openQuickOutlineCommand" name="Quick Outline"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.shiftRightCommand" name="Shift Right"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.shiftLeftCommand" name="Shift Left"/>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
 		<key
@@ -946,6 +960,14 @@
 			contextId="Ocaml.editor.context"
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
 			sequence="M1+O"/>
+		<key commandId="Ocaml.shiftRightCommand"
+			contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="TAB"/>
+		<key commandId="Ocaml.shiftLeftCommand"
+			contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M2+TAB"/>
 	</extension>
 	<extension point="org.eclipse.ui.contexts">
 		<context description="Context for editing Ocaml source"
