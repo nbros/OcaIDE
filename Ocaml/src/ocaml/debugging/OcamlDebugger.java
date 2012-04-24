@@ -225,6 +225,10 @@ public class OcamlDebugger implements IExecEvents {
 				}
 			}
 
+			// add the _build folder (for the cases making project by using Ocamlbuild)
+			commandLineArgs.add("-I");
+			commandLineArgs.add("_build");
+
 			// add the root of the project
 			commandLineArgs.add("-I");
 			commandLineArgs.add(project.getLocation().toOSString());
