@@ -105,10 +105,18 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 					longest = length;
 			}
 
+			// find the shortest indentation
+			int shortest = longest;
+			for (String line : lines) {
+				int indent = calculateIndent(line, tabSize);
+				if (indent < shortest)
+					shortest = indent;
+			}
+
 			// comment all the lines
 			for (int i = 0; i < lines.length; i++) {
 				String line = lines[i];
-				lines[i] = comment(line, longest, tabSize);
+				lines[i] = comment(line, shortest, longest, tabSize);
 			}
 		}
 
@@ -135,39 +143,81 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 		return length;
 	}
 
+	// calculate the indentation size of a line
+	private int calculateIndent(String line, int tabSize) {
+		int indent = 0;
+		for (int i = 0; i < line.length(); i++)
+			if (line.charAt(i) == '\t')
+				indent += tabSize;
+			else if (line.charAt(i) == ' ')
+				indent++;
+			else
+				break;
+
+		return indent;
+	}
+
 	/** Return <code>line</code> commented so that it measures <code>length</code> characters */
-	private String comment(String line, int length, int tabSize) {
+	// comment character should be inserted at the shortest indentation position
+	// and at the end of longest line.
+	private String comment(String line, int indent, int length, int tabSize) {
 
 		StringBuilder builder = new StringBuilder();
 
-		if (bProtectedComment)
-			builder.append("(*|");
-		else
-			builder.append("(*");
-		builder.append(line);
+		int position = 0;
+		for (int i = 0; i < line.length(); i++) {
+			if (position == indent) {
+				if (bProtectedComment)
+					builder.append("(*| ");
+				else
+					builder.append("(* ");
+			}
+			builder.append(line.charAt(i));
+			if (line.charAt(i) == '\t')
+				position += tabSize;
+			else
+				position++;
+		}
 
 		int trailingSpaces = length - calculateLength(line, tabSize);
 
 		for (int i = 0; i < trailingSpaces; i++)
 			builder.append(" ");
 
-		builder.append("*)");
+		builder.append(" *)");
 
 		return builder.toString();
 
 	}
 
 	/** Uncomment this line if it is commented */
+	// uncomments and preserves the alignment of source code
 	private String unComment(String line) {
-		line = line.trim();
+		String lineContent = line.trim();
+		boolean is_uncomment = false;
+		StringBuilder builder = new StringBuilder();
 
 		if (bProtectedComment) {
-			if (isCommentedProtected(line))
-				return trimEnd(line.substring(3, line.length() - 2));
+			if (isCommentedProtected(lineContent)) {
+				lineContent = trimEnd(lineContent.substring(4, lineContent.length() - 3));
+				is_uncomment = true;
+ 			}
 		}
 
-		if (isCommented(line))
-			return trimEnd(line.substring(2, line.length() - 2));
+		if (isCommented(lineContent)) {
+			lineContent = trimEnd(lineContent.substring(3, lineContent.length() - 3));
+			is_uncomment = true;
+		}
+
+		if (is_uncomment) {
+			for (int i = 0; i < line.length(); i++)
+				if ((line.charAt(i) == ' ') || (line.charAt(i) == '\t'))
+					builder.append(line.charAt(i));
+				else
+					break;
+			builder.append(lineContent);
+			line = builder.toString();
+		}
 
 		return line;
 
@@ -198,11 +248,11 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 	}
 
 	private boolean isCommented(String line) {
-		return line.startsWith("(*") && line.endsWith("*)");
+		return line.startsWith("(* ") && line.endsWith(" *)");
 	}
 
 	private boolean isCommentedProtected(String line) {
-		return line.startsWith("(*|") && line.endsWith("*)");
+		return line.startsWith("(*| ") && line.endsWith(" *)");
 	}
 
 	public void dispose() {

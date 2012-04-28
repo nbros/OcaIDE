@@ -12,6 +12,10 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
@@ -28,8 +32,11 @@ public class OcamlBreakpointsView extends ViewPart {
 	
 	Pattern patternBreakpoint = Pattern.compile("(\\d+) .*? \\(\\d+: \\d+-\\d+\\)");
 	
-	public void addBreakpoint(int num, int address, String filename, int line, int charBegin, int charEnd){
-		list.add(num + " " + filename + " (" + line + ": " + charBegin + "-" + charEnd + ")");
+	public void addBreakpoint(int num, int address, String filename, String functionName, int line, int charBegin, int charEnd){
+		String moduleName = filename;
+		if (filename.endsWith(".ml"))
+			moduleName = Character.toUpperCase(filename.charAt(0)) + filename.substring(1, filename.length() - 3);
+		list.add(num + "  -  " + moduleName + "." + functionName + "  -  (" + line + ": " + charBegin + "-" + charEnd + ")");
 	}
 	
 	public void removeAllBreakpoints() {
@@ -47,6 +54,60 @@ public class OcamlBreakpointsView extends ViewPart {
 		});
 
 		list = new List(composite, SWT.SINGLE | SWT.V_SCROLL);
+		list.addKeyListener(new KeyAdapter() {
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+				if (e.keyCode == 127) { // DEL key
+					int selectedItem = list.getSelectionIndex();
+					Matcher matcher = patternBreakpoint.matcher(list.getItem(selectedItem));
+					if(matcher.find()){
+						OcamlDebugger debugger = OcamlDebugger.getInstance();
+						if(debugger.isReady()){
+							debugger.removeBreakpoint(Integer.parseInt(matcher.group(1)));
+							list.remove(selectedItem);
+						}
+					}
+				}
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// TODO Auto-generated method stub
+			}
+		});
+		list.addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseUp(MouseEvent e) {
+				// TODO Auto-generated method stub
+			}
+
+			@Override
+			public void mouseDown(MouseEvent e) {
+				// TODO Auto-generated method stub
+			}
+
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				// TODO Auto-generated method stub
+				int currentIndex = list.getFocusIndex();
+				String currentItem = list.getItem(currentIndex);
+				Pattern p = Pattern.compile("\\A(\\d+)  -  (\\w+)\\.[a-zA-Z0-9_\\.]*  -  \\((\\d+): (\\d+)-(\\d+)\\)");
+				Matcher matcher = p.matcher(currentItem);
+				if (matcher.find()) {
+					String filename = matcher.group(2);
+					if (!filename.endsWith(".ml"))
+						filename = filename + ".ml";
+					filename = filename.substring(0,1).toLowerCase() + filename.substring(1);
+					int line = Integer.parseInt(matcher.group(3));
+					OcamlDebugger debugger = OcamlDebugger.getInstance();
+					debugger.jumpToFileLine(filename, line);
+					//debugger.highlight(file, offset);
+				}
+			}
+		});
 		
 		IActionBars actionBars = this.getViewSite().getActionBars();
 		//IMenuManager dropDownMenu = actionBars.getMenuManager();
@@ -94,6 +155,6 @@ public class OcamlBreakpointsView extends ViewPart {
 
 	@Override
 	public void setFocus() {
-		list.setFocus();
+		//list.setFocus();
 	}
 }

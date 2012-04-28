@@ -85,7 +85,8 @@ public class OcamlNewInterfaceParser {
 	 * @return The module definition or <code>null</code> if the file can't be
 	 *         read
 	 */
-	public synchronized Def parseFile(final File file) {
+	// do not overuse this function with (highPriority = true) because it will slow down other threads.
+	public synchronized Def parseFile(final File file, boolean highPriority) {
 
 		String filename = "";
 		try {
@@ -176,19 +177,23 @@ public class OcamlNewInterfaceParser {
 		final Camlp4Preprocessor preprocessor = new Camlp4Preprocessor(lines);
 		if (preprocessor.mustPreprocess()) {
 			// preprocess the file with camlp4
-			Job job = new Job("preprocessing " + file.getName()) {
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					preprocessor.preprocess(file, monitor);
-					return Status.OK_STATUS;
+			if (!highPriority) {
+				preprocessor.preprocess(file, null);
+			}
+				else {
+				Job job = new Job("preprocessing " + file.getName()) {
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						preprocessor.preprocess(file, monitor);
+						return Status.OK_STATUS;
+					}
+				};
+				job.schedule();
+				try {
+					job.join();
+				} catch (InterruptedException e) {
+					OcamlPlugin.logError("interrupted", e);
 				}
-			};
-
-			job.schedule();
-			try {
-				job.join();
-			} catch (InterruptedException e) {
-				OcamlPlugin.logError("interrupted", e);
 			}
 
 			String errors = preprocessor.getErrorOutput().trim();

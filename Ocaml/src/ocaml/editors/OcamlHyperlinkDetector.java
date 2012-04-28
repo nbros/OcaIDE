@@ -3,6 +3,7 @@ package ocaml.editors;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URI;
+import java.util.List;
 
 import ocaml.OcamlPlugin;
 import ocaml.editor.completion.CompletionJob;
@@ -73,7 +74,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			OcamlNewInterfaceParser parser = OcamlNewInterfaceParser.getInstance();
 			
 			File file = editor.getPathOfFileBeingEdited().toFile();
-			Def def = parser.parseFile(file);
+			Def def = parser.parseFile(file, false);
 			if (def != null)
 				interfacesDefinitionsRoot.children.add(def);
 			else
@@ -155,19 +156,42 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		if (searchedDef.name.indexOf('.') != -1) {
 			String[] parts = searchedDef.name.split("\\.");
 			if (parts.length > 1) {
-				Def firstPart = lookForDefinitionUp(null, parts[0], searchedDef,
-						interfacesDefinitionsRoot, parts, true);
-				if (firstPart != null) {
-					Def defFromPath = findDefFromPath(1, parts, firstPart, null);
-					if (defFromPath != null)
-						return defFromPath;
-					else
-						return firstPart;
+				Def firstPart = lookForDefinitionUp(null, parts[0], searchedDef, interfacesDefinitionsRoot, parts, true);
+				// don't find it in the current module, look in the other ones 
+				if (firstPart == null) {
+					if (openDefInInterfaces(0, parts, interfacesDefinitionsRoot))
+						return null;
 				}
-
-				// if we didn't find it in the current module, look in the other ones
-				if (openDefInInterfaces(0, parts, interfacesDefinitionsRoot))
-					return null;
+				else {
+					// find the original definition of firstPart in current module
+					while ((firstPart != null) && (firstPart.type == Def.Type.Module)) {
+						// if firstPart is another module
+						List<Def> childs = firstPart.children;
+						if ((childs.size() == 1) && (childs.get(0).type == Def.Type.Identifier)) {
+							Def child = childs.get(0);
+							parts[0] = child.name;
+							searchedDef.name = parts[0];
+							for (int i = 1; i < parts.length; i++)
+								searchedDef.name = "." + searchedDef.name; 
+							firstPart = lookForDefinitionUp(null, parts[0], searchedDef, interfacesDefinitionsRoot, parts, true);
+						} else 
+							break;
+					}
+					// if the original definition of firstPart is not in current module, look in the other ones
+					if (firstPart == null) {
+						if (openDefInInterfaces(0, parts, interfacesDefinitionsRoot))
+							return null;
+						
+					} 
+					// look for the whole parts in current module.
+					else {
+						Def defFromPath = findDefFromPath(1, parts, firstPart, null);
+						if (defFromPath != null)
+							return defFromPath;
+						else
+							return firstPart;
+					}
+				}
 			}
 
 		} else {

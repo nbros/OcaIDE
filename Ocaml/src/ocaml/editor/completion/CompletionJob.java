@@ -157,7 +157,7 @@ public class CompletionJob extends Job {
 				// for each file
 				for (String mlmlifile : files) {
 					File file = new File(dir.getAbsolutePath() + File.separatorChar + mlmlifile);
-					Def def = parser.parseFile(file);
+					Def def = parser.parseFile(file, false);
 					if (def != null)
 						definitionsRoot.children.add(def);
 				}
@@ -297,7 +297,7 @@ public class CompletionJob extends Job {
 				monitor.subTask(mlmliFile);
 
 				File file = new File(mlmliFile);
-				parser.parseFile(file);
+				parser.parseFile(file, false);
 
 				// for(int i = 0; i < 1000000000; i++);
 

@@ -739,6 +739,21 @@
 			<menu id="Ocaml_sourceMenu" label="Ocaml">
 				<separator name="slot1"/>
 			</menu>
+			<action	class="ocaml.editor.actions.MarkOccurrenceAction"
+				definitionId="Ocaml.markOccurrencesCommand"
+				icon="icons/markOccurrence.gif"
+				id="Ocaml_sourceActions_markOccurrences" label="Mark Occurrences"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+			<action	class="ocaml.editor.actions.ShiftLeftAction"
+				definitionId="Ocaml.shiftLeftCommand"
+				icon="icons/shiftLeft.png"
+				id="Ocaml_sourceActions_shiftLeft" label="Shift Left"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+			<action	class="ocaml.editor.actions.ShiftRightAction"
+				definitionId="Ocaml.shiftRightCommand"
+				icon="icons/shiftRight.png"
+				id="Ocaml_sourceActions_shiftRight"	label="Shift Right"
+				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
 			<action class="ocaml.editor.actions.CommentSelectionAction"
 				definitionId="Ocaml.commentSelectionProtectedCommand"
 				id="Ocaml_sourceActions_CommentSelectionProtected" label="Comment/Uncomment Selection (Protected)"
@@ -869,6 +884,12 @@
 			id="Ocaml.commentSelectionProtectedCommand" name="Comment/Uncomment Selection (Protected)"/>
 		<command categoryId="Ocaml.commandscategory"
 			id="Ocaml.openQuickOutlineCommand" name="Quick Outline"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.shiftRightCommand" name="Shift Right"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.shiftLeftCommand" name="Shift Left"/>
+		<command categoryId="Ocaml.commandscategory"
+			id="Ocaml.markOccurrencesCommand" name="Mark Occurrences"/>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
 		<key
@@ -946,6 +967,18 @@
 			contextId="Ocaml.editor.context"
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
 			sequence="M1+O"/>
+		<key commandId="Ocaml.shiftRightCommand"
+			contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="TAB"/>
+		<key commandId="Ocaml.shiftLeftCommand"
+			contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M2+TAB"/>
+		<key commandId="Ocaml.markOccurrencesCommand"
+			contextId="Ocaml.editor.context"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+M3+K"/>
 	</extension>
 	<extension point="org.eclipse.ui.contexts">
 		<context description="Context for editing Ocaml source"
@@ -1118,4 +1151,41 @@
           file="templates.xml">
     </include>
  </extension>
+	<extension
+		id="ocaml.marker.occurrences"
+		name="Ocaml Marker Occurrences"
+		point="org.eclipse.core.resources.markers">
+		<super
+			type="org.eclipse.core.resources.textmarker">
+		</super>
+	</extension>
+	<extension
+		point="org.eclipse.ui.editors.annotationTypes">
+		<type
+			markerType="ocaml.marker.occurrences"
+			name="ocaml.marker.occurrences">
+		</type>
+	</extension>
+	<extension
+		point="org.eclipse.ui.editors.markerAnnotationSpecification">
+		<specification
+			annotationType="ocaml.marker.occurrences"
+			colorPreferenceKey="ocaml.marker.occurrences.color"
+			colorPreferenceValue="192,255,192"
+			contributesToHeader="false"
+			highlightPreferenceKey="ocaml.marker.occurrences.highlight"
+			highlightPreferenceValue="true"
+			includeOnPreferencePage="true"
+			label="Ocaml Marker Occurrences"
+			overviewRulerPreferenceKey="ocaml.marker.occurrences.overview"
+			overviewRulerPreferenceValue="true"
+			presentationLayer="0"
+			textPreferenceKey="ocaml.marker.occurrences.text"
+			textPreferenceValue="true"
+			textStylePreferenceValue="BOX"
+			verticalRulerPreferenceKey="ocaml.marker.occurrences.ruler"
+			verticalRulerPreferenceValue="true">
+		</specification>
+	</extension>
+
 </plugin>
