@@ -48,20 +48,8 @@ public class OcamlCallStackView extends ViewPart{
 
 		// TRUNG: add hyper-link feature for the Call Stack View
 		list.addMouseListener(new MouseAdapter() {
-
-			@Override
-			public void mouseUp(MouseEvent e) {
-				// TODO Auto-generated method stub
-			}
-
-			@Override
-			public void mouseDown(MouseEvent e) {
-				// TODO Auto-generated method stub
-			}
-
 			@Override
 			public void mouseDoubleClick(MouseEvent e) {
-				// TODO Auto-generated method stub
 				int currentIndex = list.getFocusIndex();
 				String currentItem = list.getItem(currentIndex);
 				Pattern p = Pattern.compile("\\A#(\\d+)  -  (\\w+)\\.[a-zA-Z0-9_\\.]*  -  \\((\\d+): (\\d+)\\)");

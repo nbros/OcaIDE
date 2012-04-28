@@ -18,12 +18,12 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
 
-/** This action increases or decreases the indentation of the selection in the current editor. */
-public class MarkOccurrenceAction implements IWorkbenchWindowActionDelegate {
+/** This action marks occurrences of the text currently selected in the editor. */
+public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
 
 	private IWorkbenchWindow window;
 	
-	private final String OcamlOccurenceMarkerID = "ocaml.marker.occurrences";
+	private static final String OCAML_OCCURRENCES_MARKER_ID = "ocaml.marker.occurrences";
 	
 	public void run(IAction action) {
 
@@ -37,10 +37,10 @@ public class MarkOccurrenceAction implements IWorkbenchWindowActionDelegate {
 						IEditorInput input = editor.getEditorInput();
 						// delete old marker
 						IFile ifile = ((FileEditorInput) input).getFile();
-						IMarker markes[] = ifile.findMarkers(OcamlOccurenceMarkerID , false, 0);
+						IMarker markes[] = ifile.findMarkers(OCAML_OCCURRENCES_MARKER_ID, false, 0);
 						for (int i = 0; i < markes.length; i++)
 							markes[i].delete();
-						// find all the occurrence of selected text and mark it
+						// find all the occurrences of selected text and mark it
 						TextSelection selection = (TextSelection) editor.getSelectionProvider().getSelection();
 						String text = selection.getText();
 						if (text.length() > 0) {
@@ -50,7 +50,7 @@ public class MarkOccurrenceAction implements IWorkbenchWindowActionDelegate {
 							while (region != null) {
 								// mark the found text
 								IResource resource = (IResource) input.getAdapter(IResource.class);
-								IMarker marker = resource.createMarker(OcamlOccurenceMarkerID);
+								IMarker marker = resource.createMarker(OCAML_OCCURRENCES_MARKER_ID);
 								int startOffset = region.getOffset();
 								int endOffset = region.getOffset() + region.getLength();
 								marker.setAttribute(IMarker.CHAR_START, startOffset);
@@ -59,18 +59,15 @@ public class MarkOccurrenceAction implements IWorkbenchWindowActionDelegate {
 							}
 						}
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						OcamlPlugin.logError(e);
 					}
-					 //IResource.createMarker();
-					
 				} else
-					OcamlPlugin.logError("CommentSelectionAction: only works on ml and mli files");
+					OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": only works on ml and mli files");
 
 			} else
-				OcamlPlugin.logError("CommentSelectionAction: editorPart is null");
+				OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": editorPart is null");
 		} else
-			OcamlPlugin.logError("CommentSelectionAction: page is null");
+			OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": page is null");
 	}
     
 	public void dispose() {

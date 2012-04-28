@@ -144,8 +144,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	 * Find the definition of <code>searchedDef</code> in <code>modulesDefinitionsRoot</code>,
 	 * and in <code>interfacesDefinitionsRoot</code>
 	 */
-	private Def findDefinitionOf(Def searchedDef, Def modulesDefinitionsRoot,
-			Def interfacesDefinitionsRoot) {
+	private Def findDefinitionOf(final Def searchedDef, final Def modulesDefinitionsRoot,
+			final Def interfacesDefinitionsRoot) {
 
 		Def def = null;
 
@@ -166,14 +166,15 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 					// find the original definition of firstPart in current module
 					while ((firstPart != null) && (firstPart.type == Def.Type.Module)) {
 						// if firstPart is another module
-						List<Def> childs = firstPart.children;
-						if ((childs.size() == 1) && (childs.get(0).type == Def.Type.Identifier)) {
-							Def child = childs.get(0);
+						List<Def> children = firstPart.children;
+						if ((children.size() == 1) && (children.get(0).type == Def.Type.Identifier)) {
+							Def child = children.get(0);
 							parts[0] = child.name;
-							searchedDef.name = parts[0];
+							Def searchedDef2 = new Def(searchedDef);
+							searchedDef2.name = parts[0];
 							for (int i = 1; i < parts.length; i++)
-								searchedDef.name = "." + searchedDef.name; 
-							firstPart = lookForDefinitionUp(null, parts[0], searchedDef, interfacesDefinitionsRoot, parts, true);
+								searchedDef2.name = "." + searchedDef2.name; 
+							firstPart = lookForDefinitionUp(null, parts[0], searchedDef2, interfacesDefinitionsRoot, parts, true);
 						} else 
 							break;
 					}

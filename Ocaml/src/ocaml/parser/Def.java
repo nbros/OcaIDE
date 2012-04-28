@@ -125,6 +125,34 @@ public class Def extends beaver.Symbol {
 		this.defPosStart = 0;
 		// this.defPosEnd = 0;
 	}
+	
+	/** copy constructor */
+	public Def(Def def) {
+		this.bAlt = def.bAlt;
+		this.bAnd = def.bAnd;
+		this.bInIn = def.bInIn;
+		this.body = def.body;
+		this.bRec = def.bRec;
+		this.bTop = def.bTop;
+		this.children = def.children;
+		this.comment = def.comment;
+		this.defOffsetEnd = def.defOffsetEnd;
+		this.defOffsetStart = def.defOffsetStart;
+		this.defPosStart = def.defPosStart;
+		this.end = def.end;
+		this.filename = def.filename;
+		this.id = def.id;
+		this.name = def.name;
+		this.ocamlType = def.ocamlType;
+		this.parent = def.parent;
+		this.parentName = def.parentName;
+		this.posEnd = def.posEnd;
+		this.posStart = def.posStart;
+		this.sectionComment = def.sectionComment;
+		this.siblingsOffset = def.siblingsOffset;
+		this.start = def.start;
+		this.type = def.type;
+	}
 
 	void add(Symbol s) {
 		assert s instanceof Def;

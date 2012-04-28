@@ -55,11 +55,10 @@ public class OcamlBreakpointsView extends ViewPart {
 
 		list = new List(composite, SWT.SINGLE | SWT.V_SCROLL);
 		list.addKeyListener(new KeyAdapter() {
-
 			@Override
 			public void keyReleased(KeyEvent e) {
 				// TODO Auto-generated method stub
-				if (e.keyCode == 127) { // DEL key
+				if (e.keyCode == SWT.DEL) { // DEL key
 					int selectedItem = list.getSelectionIndex();
 					Matcher matcher = patternBreakpoint.matcher(list.getItem(selectedItem));
 					if(matcher.find()){
@@ -71,24 +70,8 @@ public class OcamlBreakpointsView extends ViewPart {
 					}
 				}
 			}
-			
-			@Override
-			public void keyPressed(KeyEvent e) {
-				// TODO Auto-generated method stub
-			}
 		});
 		list.addMouseListener(new MouseAdapter() {
-
-			@Override
-			public void mouseUp(MouseEvent e) {
-				// TODO Auto-generated method stub
-			}
-
-			@Override
-			public void mouseDown(MouseEvent e) {
-				// TODO Auto-generated method stub
-			}
-
 			@Override
 			public void mouseDoubleClick(MouseEvent e) {
 				// TODO Auto-generated method stub

@@ -739,7 +739,7 @@
 			<menu id="Ocaml_sourceMenu" label="Ocaml">
 				<separator name="slot1"/>
 			</menu>
-			<action	class="ocaml.editor.actions.MarkOccurrenceAction"
+			<action	class="ocaml.editor.actions.MarkOccurrencesAction"
 				definitionId="Ocaml.markOccurrencesCommand"
 				icon="icons/markOccurrence.gif"
 				id="Ocaml_sourceActions_markOccurrences" label="Mark Occurrences"
@@ -1151,10 +1151,11 @@
           file="templates.xml">
     </include>
  </extension>
+
 	<extension
+		point="org.eclipse.core.resources.markers"
 		id="ocaml.marker.occurrences"
-		name="Ocaml Marker Occurrences"
-		point="org.eclipse.core.resources.markers">
+		name="Ocaml Occurrences Marker">
 		<super
 			type="org.eclipse.core.resources.textmarker">
 		</super>
@@ -1176,7 +1177,7 @@
 			highlightPreferenceKey="ocaml.marker.occurrences.highlight"
 			highlightPreferenceValue="true"
 			includeOnPreferencePage="true"
-			label="Ocaml Marker Occurrences"
+			label="Ocaml Occurrences Marker"
 			overviewRulerPreferenceKey="ocaml.marker.occurrences.overview"
 			overviewRulerPreferenceValue="true"
 			presentationLayer="0"
