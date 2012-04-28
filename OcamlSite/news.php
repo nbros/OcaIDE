@@ -12,6 +12,17 @@
 
 <ul>
 
+
+<li><b>April 28 2012:</b> Version 1.2.15
+    <ul type="circle">
+	    <li> Shift a block of source code to right or left using Tab / Shift + Tab [Ta Quang Trung]
+	    <li> Mark occurrences of a string : select a string and press Ctrl+Alt+K to mark; clear the selection and press Ctrl+Alt+K again to unmark [Ta Quang Trung]
+	    <li> Improve the "comment selection" feature: keep the indentation of all commented lines [Ta Quang Trung]
+	    <li> Add "_build" to the command line path when debugging an ocamlbuild project [Ta Quang Trung]
+	    <li> Handle module renames in the code hyperlink feature [Ta Quang Trung]
+	    <li> Display detailed information (function name, line, column) in the Breakpoint and Call Stack views, and allow double-clicking to quickly jump to the location of the selected breakpoint or stack element [Ta Quang Trung]
+    </ul>
+
 <li><b>November 27 2011:</b> Version 1.2.14
     <ul type="circle">
         <li> FIXED issue # 7: Run as OCaml Executable does not work (invalid character ':' in a configuration name)
