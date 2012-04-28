@@ -504,6 +504,21 @@ public class OcamlEditor extends TextEditor {
 
 	}
 
+	public void highlightLine(int line) {
+		IDocument document = this.getDocumentProvider().getDocument(this.getEditorInput());
+		IRegion region = null;
+		try {
+			region = document.getLineInformation(line - 1);
+		} catch (BadLocationException e) {
+			OcamlPlugin.logError("ocaml plugin error (bad location)", e);
+			return;
+		}
+
+		if (region != null) {
+			this.selectAndReveal(region.getOffset(), 0);
+		}
+	}
+
 	public OcamlOutlineControl getOutline() {
 		return outline;
 	}

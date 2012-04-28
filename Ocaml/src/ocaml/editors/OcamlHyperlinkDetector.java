@@ -74,7 +74,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			OcamlNewInterfaceParser parser = OcamlNewInterfaceParser.getInstance();
 			
 			File file = editor.getPathOfFileBeingEdited().toFile();
-			Def def = parser.parseFile(file);
+			Def def = parser.parseFile(file, false);
 			if (def != null)
 				interfacesDefinitionsRoot.children.add(def);
 			else

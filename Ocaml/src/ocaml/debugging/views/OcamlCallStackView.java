@@ -1,13 +1,19 @@
 package ocaml.debugging.views;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.ui.part.ViewPart;
 
+import ocaml.debugging.OcamlDebugger;
 /** Implements a view to show the call stack while debugging an OCaml program */
 public class OcamlCallStackView extends ViewPart{
 
@@ -39,6 +45,36 @@ public class OcamlCallStackView extends ViewPart{
 		});
 
 		list = new List(composite, SWT.SINGLE | SWT.V_SCROLL);
+
+		// TRUNG: add hyper-link feature for the Call Stack View
+		list.addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseUp(MouseEvent e) {
+				// TODO Auto-generated method stub
+			}
+
+			@Override
+			public void mouseDown(MouseEvent e) {
+				// TODO Auto-generated method stub
+			}
+
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				// TODO Auto-generated method stub
+				int currentIndex = list.getFocusIndex();
+				String currentItem = list.getItem(currentIndex);
+				Pattern p = Pattern.compile("\\A#(\\d+)  -  (\\w+)\\.[a-zA-Z0-9_\\.]*  -  \\((\\d+): (\\d+)\\)");
+				Matcher matcher = p.matcher(currentItem);
+				if (matcher.find()) {
+					String module = matcher.group(2);
+					int line = Integer.parseInt( matcher.group(3));
+					String file = Character.toLowerCase(module.charAt(0)) + module.substring(1) + ".ml";
+					OcamlDebugger debugger = OcamlDebugger.getInstance();
+					debugger.jumpToFileLine(file, line);
+				}
+			}
+		});
 	}
 
 	protected void resized() {
@@ -51,7 +87,7 @@ public class OcamlCallStackView extends ViewPart{
 
 	@Override
 	public void setFocus() {
-		list.setFocus();
+		//list.setFocus();
 	}
 
 }

@@ -216,7 +216,7 @@ public class OcamlBrowserView extends ViewPart {
 
 						String mliFile = dirItemData.paths[index];
 						File file = new File(mliFile);
-						Def definition = parser.parseFile(file);
+						Def definition = parser.parseFile(file, false);
 						
 						if(definition == null){
 							item.setText("<Parsing error>");
