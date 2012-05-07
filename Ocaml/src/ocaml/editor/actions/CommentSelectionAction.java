@@ -108,9 +108,11 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 			// find the shortest indentation
 			int shortest = longest;
 			for (String line : lines) {
-				int indent = calculateIndent(line, tabSize);
-				if (indent < shortest)
-					shortest = indent;
+				if (!line.trim().equals("")) {
+					int indent = calculateIndent(line, tabSize);
+					if (indent < shortest)
+						shortest = indent;
+				}
 			}
 
 			// comment all the lines

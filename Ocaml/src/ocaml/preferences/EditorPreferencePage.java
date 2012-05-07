@@ -67,7 +67,10 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
 
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_EDITOR_INDENT_IN,
 				"Indent after 'in'", this.getFieldEditorParent()));
-		
+
+		this.addField(new BooleanFieldEditor(PreferenceConstants.P_EDITOR_INDENT_WITH,
+				"Indent after 'with'", this.getFieldEditorParent()));
+
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_EDITOR_DEDENT_SEMI_SEMI,
 				"Dedent after ';;'", this.getFieldEditorParent()));
 

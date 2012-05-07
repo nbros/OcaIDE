@@ -54,6 +54,7 @@ public class PreferenceConstants
 	public static final String P_EDITOR_REMOVE_PIPE = "RemovePipe";
 	public static final String P_EDITOR_CONTINUE_PIPES = "ContinuePipes";
 	public static final String P_EDITOR_INDENT_IN = "IndentIn";
+	public static final String P_EDITOR_INDENT_WITH = "IndentWith";
 	public static final String P_EDITOR_DEDENT_SEMI_SEMI = "DedentSemiSemi";
 	public static final String P_EDITOR_INTELLIGENT_INDENT_START = "IntelligentIndentStart";
 	public static final String P_EDITOR_COLON_COLON_TAB = "ColonColonTab";
