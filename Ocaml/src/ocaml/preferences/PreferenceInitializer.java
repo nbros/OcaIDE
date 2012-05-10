@@ -60,6 +60,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_EDITOR_REMOVE_PIPE, true);
 			store.setDefault(PreferenceConstants.P_EDITOR_CONTINUE_PIPES, true);
 			store.setDefault(PreferenceConstants.P_EDITOR_INDENT_IN, false);
+			store.setDefault(PreferenceConstants.P_EDITOR_INDENT_WITH, false);
 			store.setDefault(PreferenceConstants.P_EDITOR_DEDENT_SEMI_SEMI, true);
 			store.setDefault(PreferenceConstants.P_EDITOR_INTELLIGENT_INDENT_START, true);
 			store.setDefault(PreferenceConstants.P_EDITOR_COLON_COLON_TAB, true);

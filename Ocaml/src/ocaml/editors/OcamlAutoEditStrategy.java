@@ -198,6 +198,9 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 			boolean indentIn = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 					PreferenceConstants.P_EDITOR_INDENT_IN);
 
+			boolean indentWith = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+					PreferenceConstants.P_EDITOR_INDENT_WITH);
+
 			boolean removePipe = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 					PreferenceConstants.P_EDITOR_REMOVE_PIPE);
 
@@ -214,8 +217,12 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 			if (matcher.find())
 				command.text = eol + makeIndent(indent + cont);
 			else {
-				if (endsWith("$" + beforeCursor, "\\Wwith"))
-					command.text = eol + makeIndent(indent + 1) + (pipeWith ? "| " : "");
+				if (endsWith("$" + beforeCursor, "\\Wwith")) {
+					if (indentWith)
+						command.text = eol + makeIndent(indent + 1) + (pipeWith ? "| " : "");
+					else
+						command.text = eol + makeIndent(indent) + (pipeWith ? "| " : "");
+				}
 				else if (endsWith("$" + beforeCursor, "\\Wfun"))
 					command.text = eol + makeIndent(indent + 1) + (pipeFun ? "| " : "");
 				else if (endsWith("$" + beforeCursor, "\\Wfunction"))

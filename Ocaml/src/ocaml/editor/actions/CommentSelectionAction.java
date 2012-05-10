@@ -108,9 +108,11 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 			// find the shortest indentation
 			int shortest = longest;
 			for (String line : lines) {
-				int indent = calculateIndent(line, tabSize);
-				if (indent < shortest)
-					shortest = indent;
+				if (!line.trim().equals("")) {
+					int indent = calculateIndent(line, tabSize);
+					if (indent < shortest)
+						shortest = indent;
+				}
 			}
 
 			// comment all the lines
@@ -161,6 +163,9 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 	// comment character should be inserted at the shortest indentation position
 	// and at the end of longest line.
 	private String comment(String line, int indent, int length, int tabSize) {
+		
+		if (line.trim().equals("")) 
+			return line;
 
 		StringBuilder builder = new StringBuilder();
 
@@ -240,7 +245,8 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 	private boolean isCommented(String[] lines) {
 
 		for (String line : lines) {
-			if (!isCommented(line.trim()))
+			String s = line.trim();
+			if (!s.equals("") && !isCommented(s))
 				return false;
 		}
 
