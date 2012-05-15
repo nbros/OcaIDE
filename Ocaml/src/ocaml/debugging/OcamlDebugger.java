@@ -252,6 +252,10 @@ public class OcamlDebugger implements IExecEvents {
 			commandLineArgs.add("-I");
 			commandLineArgs.add("+camlp4");
 
+			// add module Camlp4
+			commandLineArgs.add("-I");
+			commandLineArgs.add("+camlp4");
+
 			// add the root of the project
 			commandLineArgs.add("-I");
 			commandLineArgs.add(project.getLocation().toOSString());
