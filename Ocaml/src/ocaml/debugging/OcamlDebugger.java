@@ -1125,7 +1125,7 @@ public class OcamlDebugger implements IExecEvents {
 		String functionName = "";
 		OcamlNewInterfaceParser parser = OcamlNewInterfaceParser.getInstance();
 		File file = new File(filepath);
-		Def root = parser.parseFile(file, false);
+		Def root = parser.parseFile(file, true);
 		List<Def> childs = root.children;
 		int i = 0;
 		for (i = 0; i < childs.size(); i++) {
