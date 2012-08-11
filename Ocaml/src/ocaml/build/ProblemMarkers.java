@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.TreeSet;
@@ -275,9 +276,11 @@ public class ProblemMarkers {
 			return 0;
 		}
 		try {
-			in = new BufferedReader(new InputStreamReader(file.getContents()));
+			in = new BufferedReader(new InputStreamReader(file.getContents(), file.getCharset()));
 		} catch (CoreException e) {
 			OcamlPlugin.logError("Error 1 in OcamlBuilder:getLineOffset()", e);
+		} catch (UnsupportedEncodingException e) {
+			OcamlPlugin.logError("Unsupported encoding in OcamlBuilder:getLineOffset()", e);			
 		}
 		int ch = 0;
 		int charCount = 0;
