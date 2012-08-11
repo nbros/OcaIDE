@@ -12,6 +12,10 @@
 
 <ul>
 
+<li><b>August 08 2012:</b> Version 1.2.16
+    <ul type="circle">
+	    <li> fix wrong position of error markers when multibyte-characters are above that line [Keigo IMAI]
+    </ul>
 
 <li><b>April 28 2012:</b> Version 1.2.15
     <ul type="circle">
