@@ -205,10 +205,10 @@ public class LinkerVisitor implements IExecutablesVisitor {
 		// Ici on en profite pour mettre la propriété byte-code au projet par
 		// défaut.
 		// TODO ceci devrait pouvoir etre choisi par l'utilisateur.
-		String buildMode = Misc.getProjectProperty(project, OcamlBuilder.COMPIL_MODE);
+		String buildMode = Misc.getShareableProperty(project, OcamlBuilder.COMPIL_MODE);
 		if ((buildMode == null) || (buildMode.equals(""))) {
 			// Mettre la propriété byte_code par défaut.
-			Misc.setProjectProperty(project, OcamlBuilder.COMPIL_MODE, OcamlBuilder.BYTE_CODE);
+			Misc.setShareableProperty(project, OcamlBuilder.COMPIL_MODE, OcamlBuilder.BYTE_CODE);
 			buildMode = OcamlBuilder.BYTE_CODE;
 		}
 
@@ -295,7 +295,7 @@ public class LinkerVisitor implements IExecutablesVisitor {
 				OcamlPlugin.logError("error refreshing file " + exeFile.getName(), e);
 			}
 			if (exeFile.exists()) {
-				Misc.setFileProperty(exeFile, OcamlBuilder.COMPIL_MODE, buildMode);
+				Misc.setShareableProperty(exeFile, OcamlBuilder.COMPIL_MODE, buildMode);
 			}
 
 		}

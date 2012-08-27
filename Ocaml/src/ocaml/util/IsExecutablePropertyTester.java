@@ -20,7 +20,7 @@ public class IsExecutablePropertyTester extends org.eclipse.core.expressions.Pro
 			if (receiver instanceof IFile) {
 				IFile file = (IFile) receiver;
 				
-				String mode = Misc.getFileProperty(file, OcamlBuilder.COMPIL_MODE);
+				String mode = Misc.getShareableProperty(file, OcamlBuilder.COMPIL_MODE);
 				if(mode.equals(OcamlBuilder.BYTE_CODE) || mode.equals(OcamlBuilder.NATIVE))
 					return true;
 

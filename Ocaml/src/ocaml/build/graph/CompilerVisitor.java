@@ -68,7 +68,7 @@ public class CompilerVisitor implements ILayersVisitor {
 		final IProject project = file.getProject();
 
 		// Récupérer Le mode de compilation (byte-code par défaut)
-		String buildMode = Misc.getProjectProperty(project, OcamlBuilder.COMPIL_MODE);
+		String buildMode = Misc.getShareableProperty(project, OcamlBuilder.COMPIL_MODE);
 
 		// Récupérer l'extension du fichier objet généré
 		final String objectFileExt = (buildMode != null && buildMode.equals(OcamlBuilder.NATIVE) ? "cmx"
@@ -311,10 +311,10 @@ public class CompilerVisitor implements ILayersVisitor {
 		// Ici on en profite pour mettre la propriété byte-code au projet par
 		// défaut.
 		// TODO ceci devrait pouvoir etre choisi par l'utilisateur.
-		final String buildMode = Misc.getProjectProperty(project, OcamlBuilder.COMPIL_MODE);
+		final String buildMode = Misc.getShareableProperty(project, OcamlBuilder.COMPIL_MODE);
 		if ((buildMode == null) || (buildMode.equals(""))) {
 			// Mettre la propriété byte_code par défaut.
-			Misc.setProjectProperty(project, OcamlBuilder.COMPIL_MODE, OcamlBuilder.BYTE_CODE);
+			Misc.setShareableProperty(project, OcamlBuilder.COMPIL_MODE, OcamlBuilder.BYTE_CODE);
 		}
 
 		// supprimer les marqueurs d'erreur

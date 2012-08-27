@@ -79,7 +79,7 @@ public class OcamlProjectProperties extends PropertyPage {
 				Button b = new Button(composite, SWT.CHECK);
 				b.setText(filename);
 				b.setData(file);
-				String makeexe = Misc.getFileProperty(file, Misc.MAKE_EXE);
+				String makeexe = Misc.getShareableProperty(file, Misc.MAKE_EXE);
 				// the first time, remember all the executables names
 				if (firstTime)
 					exeNamesStored.add(makeexe);
@@ -102,7 +102,7 @@ public class OcamlProjectProperties extends PropertyPage {
 		Label lbl = new Label(composite, SWT.NONE);
 		lbl.setText("Compilation mode:");
 		// Add compilation mode
-		String index = Misc.getProjectProperty(project, OcamlBuilder.COMPIL_MODE);
+		String index = Misc.getShareableProperty(project, OcamlBuilder.COMPIL_MODE);
 		if (compilModeStored == null) {
 			if (index.equals(OcamlBuilder.NATIVE))
 				compilModeStored = index;
@@ -173,11 +173,11 @@ public class OcamlProjectProperties extends PropertyPage {
 				if (exeName.equals(""))
 					exeName = file.getLocation().removeFileExtension().addFileExtension("exe").lastSegment();
 
-				Misc.setFileProperty(file, Misc.MAKE_EXE, exeName);
+				Misc.setShareableProperty(file, Misc.MAKE_EXE, exeName);
 				hasChanged = exeNamesStored == null || !exeNamesStored.get(i).equals(exeName);
 			} else {
 				hasChanged = exeNamesStored == null || !exeNamesStored.get(i).equals("");
-				Misc.setFileProperty(file, Misc.MAKE_EXE, null);
+				Misc.setShareableProperty(file, Misc.MAKE_EXE, null);
 			}
 
 			if (hasChanged) {
@@ -205,7 +205,7 @@ public class OcamlProjectProperties extends PropertyPage {
 				OcamlBuilder.setResourceFlags(project, projectFlags);
 
 		}
-		Misc.setProjectProperty(project, OcamlBuilder.COMPIL_MODE, newCompilMode);
+		Misc.setShareableProperty(project, OcamlBuilder.COMPIL_MODE, newCompilMode);
 
 		// update the decoration in the navigator view
 		IDecoratorManager decoratorManager = PlatformUI.getWorkbench().getDecoratorManager();

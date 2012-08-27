@@ -339,10 +339,10 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 								CommandRunner commandRunner = new CommandRunner(command, "/");
 								String result = commandRunner.getStdout();
 								if (result.contains("ocamlrun script"))
-									Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE,
+									Misc.setShareableProperty(file, OcamlBuilder.COMPIL_MODE,
 											OcamlBuilder.BYTE_CODE);
 								else if (result.contains("executable"))
-									Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.NATIVE);
+									Misc.setShareableProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.NATIVE);
 							}
 						}
 					}
@@ -353,7 +353,7 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 
 							String extension = file.getFileExtension();
 							if (extension != null && extension.equals("exe")) {
-								Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.NATIVE);
+								Misc.setShareableProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.NATIVE);
 							}
 						}
 					}
