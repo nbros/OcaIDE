@@ -409,9 +409,9 @@ public class OcamlbuildBuilder extends IncrementalProjectBuilder {
 
 						String extension = file.getFileExtension();
 						if ("byte".equals(extension)) {
-							Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.BYTE_CODE);
+							Misc.setShareableProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.BYTE_CODE);
 						} else if ("native".equals(extension)) {
-							Misc.setFileProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.NATIVE);
+							Misc.setShareableProperty(file, OcamlBuilder.COMPIL_MODE, OcamlBuilder.NATIVE);
 						}
 					}
 

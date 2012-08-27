@@ -18,10 +18,12 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -35,6 +37,8 @@ import org.eclipse.ui.IDecoratorManager;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.osgi.service.prefs.BackingStoreException;
+import org.osgi.service.prefs.Preferences;
 
 /** This class regroups static functions of general use */
 public class Misc {
@@ -605,6 +609,105 @@ public class Misc {
 			return false;
 		
 		return true;
+	}
+
+	/** Save a persistent property in both <workspace>/.metadata/ and <project>/.settings/
+	 * @param resource
+	 * @param name
+	 * @param value
+	 */
+	public static void setShareableProperty(IResource resource, String name, String value) {
+		setShareableProperty(resource, new QualifiedName(OcamlPlugin.QUALIFIER, name), value);
+	}
+	
+	public static void setShareableProperty(IResource resource, QualifiedName name, String value) {
+		String preferenceName = name.getLocalName();
+		IPath resourcePath = resource.getFullPath(); 
+		try {
+			// 1. save in <project>/.settings/ocaml.pref
+			Preferences settings = getPreferences(resource.getProject(), preferenceName, true);
+			if (value == null || value.trim().length() == 0)
+				settings.remove(getKeyFor(resourcePath));
+			else
+				settings.put(getKeyFor(resourcePath), value);
+			// TODO disable the listener (if any) so we don't react to changes made by ourselves
+			settings.flush();
+			
+			// 2. also save in <workspace>/.medatada to decorate icons (see plugin.xml) 
+			resource.setPersistentProperty(name, value);
+			
+		} catch (BackingStoreException e) {
+			OcamlPlugin.logError("error in OcamlPlugin.setPersistentProperty", e);
+		} catch (CoreException e) {
+			
+		}
+	}
+
+	/** Load a property from <project>/.settings/. 
+	 *  If it does not exist, fallback to see <workspace>/.metadata/ */
+	public static String getShareableProperty(IResource resource, String name) {
+		return getShareableProperty(resource, new QualifiedName(OcamlPlugin.QUALIFIER, name));
+	}
+
+	public static String getShareableProperty(IResource resource, QualifiedName name) {
+		String value = getShareablePropertyNull(resource, name);
+		return value==null ? "" : value;
+	}
+
+	public static String getShareablePropertyNull(IResource resource, String name) {
+		return getShareablePropertyNull(resource, new QualifiedName(OcamlPlugin.QUALIFIER, name));
+	}
+
+	public static String getShareablePropertyNull(IResource resource, QualifiedName name) {
+
+		Preferences prefs = getPreferences(resource.getProject(), name.getLocalName(), false);
+		if (prefs == null) {
+			return migrateOldSettingIfAny(resource, name);
+		}
+		
+		String value = prefs.get(getKeyFor(resource.getFullPath()), null);
+		if(value!=null) {
+			return value;
+		} else {
+			return migrateOldSettingIfAny(resource, name);
+		}
+	}
+	
+	// for backward compatibility
+	static String migrateOldSettingIfAny(IResource resource, QualifiedName name) {
+		String oldVerSetting = null;
+		try {
+			oldVerSetting = resource.getPersistentProperty(name);
+		} catch(CoreException e) {
+			OcamlPlugin.logError("error in OcamlPlugin.getPersistentProperty, reading old format", e);
+		}
+		return oldVerSetting;
+	}
+
+	private static Preferences getPreferences(IProject project, String preferenceName, boolean create) {
+		if (create) {
+			return new ProjectScope(project).getNode(OcamlPlugin.QUALIFIER).node(preferenceName);
+		}
+		// prevent creating non-existent path
+		Preferences node = Platform.getPreferencesService().getRootNode().node(ProjectScope.SCOPE);
+		try {
+			if (!node.nodeExists(project.getName()))
+				return null;
+			node = node.node(project.getName());
+			if (!node.nodeExists(OcamlPlugin.QUALIFIER))
+				return null;
+			node = node.node(OcamlPlugin.QUALIFIER);
+			if (!node.nodeExists(preferenceName))
+				return null;
+			return node.node(preferenceName);
+		} catch (BackingStoreException e) {
+			OcamlPlugin.logError("error in OcamlPlugin.getPreferences", e);
+		}
+		return null;
+	}
+	
+	private static String getKeyFor(IPath resourcePath) {
+		return resourcePath.segmentCount() > 1 ? resourcePath.removeFirstSegments(1).toString() : "<project>";
 	}
 
 }
