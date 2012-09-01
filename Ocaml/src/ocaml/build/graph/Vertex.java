@@ -263,7 +263,7 @@ public class Vertex {
 	 * 
 	 */
 	public boolean refreshExeName() {
-		String temp = Misc.getResourceProperty(file, Misc.MAKE_EXE);
+		String temp = Misc.getShareableProperty(file, Misc.MAKE_EXE);
 		final boolean tempIsEmpty = temp.equals("");
 		// Si les noms sont les même, ou n'existent pas, renvoyer faux.
 		if (((tempIsEmpty) && (exeName == null)) || ((exeName != null) && (temp.equals(exeName)))) {
