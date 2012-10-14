@@ -3,6 +3,7 @@ package ocaml.build;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ocaml.OcamlPlugin;
+import ocaml.util.FileUtil;
 import ocaml.util.Misc;
 
 import org.eclipse.core.resources.IFile;
@@ -275,28 +277,35 @@ public class ProblemMarkers {
 					.logError("ProblemMarkesr:getLineOffset:" + file.getProjectRelativePath() + " does not exist"); //$NON-NLS-1$ //$NON-NLS-2$
 			return 0;
 		}
-		try {
-			in = new BufferedReader(new InputStreamReader(file.getContents(), file.getCharset()));
-		} catch (CoreException e) {
-			OcamlPlugin.logError("Error 1 in OcamlBuilder:getLineOffset()", e);
-		} catch (UnsupportedEncodingException e) {
-			OcamlPlugin.logError("Unsupported encoding in OcamlBuilder:getLineOffset()", e);			
-		}
-		int ch = 0;
+		InputStream contentsStream = null;
 		int charCount = 0;
-		int lineCount = 0;
-		while ((lineCount < lineNumber - 1) && (ch != -1)) {
+		try {
 			try {
-				ch = in.read();
-			} catch (IOException e1) {
-				OcamlPlugin.logError("Error in 2 OcamlBuilder:getLineOffset()", e1);
+				contentsStream = file.getContents();
+				in = new BufferedReader(new InputStreamReader(contentsStream, file.getCharset()));
+			} catch (CoreException e) {
+				OcamlPlugin.logError("Error 1 in OcamlBuilder:getLineOffset()", e);
+			} catch (UnsupportedEncodingException e) {
+				OcamlPlugin.logError("Unsupported encoding in OcamlBuilder:getLineOffset()", e);
 			}
-			if (ch != -1) {
-				charCount++;
-				if (ch == '\n') {
-					lineCount++;
+			int ch = 0;
+			int lineCount = 0;
+			while ((lineCount < lineNumber - 1) && (ch != -1)) {
+				try {
+					ch = in.read();
+				} catch (IOException e1) {
+					OcamlPlugin.logError("Error in 2 OcamlBuilder:getLineOffset()", e1);
+				}
+				if (ch != -1) {
+					charCount++;
+					if (ch == '\n') {
+						lineCount++;
+					}
 				}
 			}
+		} finally {
+			FileUtil.closeResource(in);
+			FileUtil.closeResource(contentsStream);
 		}
 		return charCount;
 	}

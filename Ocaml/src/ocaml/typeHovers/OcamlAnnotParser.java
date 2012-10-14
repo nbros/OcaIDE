@@ -11,13 +11,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ocaml.OcamlPlugin;
+import ocaml.util.FileUtil;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 
 /**
- * A parser for ".annot" files (that contain type informations related to the same-name .ml file, generated
- * when we pass the -dtypes option to the compiler).
+ * A parser for ".annot" files (that contain type informations related to the
+ * same-name .ml file, generated when we pass the -dtypes option to the
+ * compiler).
  */
 public class OcamlAnnotParser {
 
@@ -28,17 +30,21 @@ public class OcamlAnnotParser {
 	private static LinkedList<CachedTypeAnnotations> cache = new LinkedList<CachedTypeAnnotations>();
 
 	/**
-	 * Parse the type annotations file (.annot) <code>file</code> and create a list of annotations.
+	 * Parse the type annotations file (.annot) <code>file</code> and create a
+	 * list of annotations.
 	 * 
 	 * @param file
 	 *            the annotations file to parse
 	 * @param document
-	 *            the document associated to the file whose annotations must be parsed
+	 *            the document associated to the file whose annotations must be
+	 *            parsed
 	 * 
-	 * @return the type annotations found, or <code>null</code> if the file couldn't be read
+	 * @return the type annotations found, or <code>null</code> if the file
+	 *         couldn't be read
 	 * @throws BadLocationException
 	 */
-	public static TypeAnnotation[] parseFile(File file, IDocument document) throws BadLocationException {
+	public static TypeAnnotation[] parseFile(File file, IDocument document)
+			throws BadLocationException {
 
 		/* Table of entries to remove from the cache. */
 		ArrayList<CachedTypeAnnotations> toRemove = new ArrayList<CachedTypeAnnotations>();
@@ -50,7 +56,8 @@ public class OcamlAnnotParser {
 				// the entry is in the cache and is still valid
 				if (info.isMoreRecentThan(file))
 					found = info.getAnnotations();
-				// the entry in the cache is not valid anymore: we delete it from the cache
+				// the entry in the cache is not valid anymore: we delete it
+				// from the cache
 				else {
 					toRemove.add(info);
 				}
@@ -69,61 +76,66 @@ public class OcamlAnnotParser {
 		if (!file.canRead())
 			return null;
 
-		final BufferedReader inputStream;
-
+		BufferedReader inputStream = null;
 		try {
-			inputStream = new BufferedReader(new FileReader(file));
-		} catch (FileNotFoundException e) {
-			OcamlPlugin.logError("ocaml plugin error", e);
-			return null;
+
+			try {
+				inputStream = new BufferedReader(new FileReader(file));
+			} catch (FileNotFoundException e) {
+				OcamlPlugin.logError("ocaml plugin error", e);
+				return null;
+			}
+
+			StringBuilder text = new StringBuilder();
+			// read the file, line by line
+			String line;
+			try {
+				while ((line = inputStream.readLine()) != null)
+					text.append(line + "\n");
+			} catch (IOException e) {
+				OcamlPlugin.logError("ocaml plugin error", e);
+				return null;
+			}
+
+			ArrayList<TypeAnnotation> annotations = new ArrayList<TypeAnnotation>();
+
+			// read all the type annotations from the file with a regex
+			Matcher matcher = patternAnnot.matcher(text);
+
+			while (matcher.find()) {
+				/*
+				 * Sometimes, the offset gets erroneously shifted. To correct
+				 * it, we shift the offset back by the difference between the
+				 * expected line offset and the offset retrieved.
+				 */
+				int beginLine = Integer.parseInt(matcher.group(1));
+				int beginLineOffset = Integer.parseInt(matcher.group(2));
+				int beginOffset = Integer.parseInt(matcher.group(3));
+
+				int endLine = Integer.parseInt(matcher.group(4));
+				int endLineOffset = Integer.parseInt(matcher.group(5));
+				int endOffset = Integer.parseInt(matcher.group(6));
+
+				beginOffset += document.getLineOffset(beginLine - 1) - beginLineOffset;
+				endOffset += document.getLineOffset(endLine - 1) - endLineOffset;
+
+				String type = matcher.group(7);
+
+				TypeAnnotation annot = new TypeAnnotation(beginOffset, endOffset, type);
+				annotations.add(annot);
+			}
+
+			TypeAnnotation[] typeAnnotations = annotations.toArray(new TypeAnnotation[0]);
+			CachedTypeAnnotations cacheEntry = new CachedTypeAnnotations(file);
+			for (TypeAnnotation t : typeAnnotations)
+				cacheEntry.addAnnotation(t);
+
+			cache.addFirst(cacheEntry);
+
+			// return the table of annotations from the file
+			return typeAnnotations;
+		} finally {
+			FileUtil.closeResource(inputStream);
 		}
-
-		StringBuilder text = new StringBuilder();
-		// read the file, line by line
-		String line;
-		try {
-			while ((line = inputStream.readLine()) != null)
-				text.append(line + "\n");
-		} catch (IOException e) {
-			OcamlPlugin.logError("ocaml plugin error", e);
-			return null;
-		}
-
-		ArrayList<TypeAnnotation> annotations = new ArrayList<TypeAnnotation>();
-
-		// read all the type annotations from the file with a regex
-		Matcher matcher = patternAnnot.matcher(text);
-
-		while (matcher.find()) {
-			/*
-			 * Sometimes, the offset gets erroneously shifted. To correct it, we shift the offset back by the
-			 * difference between the expected line offset and the offset retrieved.
-			 */
-			int beginLine = Integer.parseInt(matcher.group(1));
-			int beginLineOffset = Integer.parseInt(matcher.group(2));
-			int beginOffset = Integer.parseInt(matcher.group(3));
-
-			int endLine = Integer.parseInt(matcher.group(4));
-			int endLineOffset = Integer.parseInt(matcher.group(5));
-			int endOffset = Integer.parseInt(matcher.group(6));
-
-			beginOffset += document.getLineOffset(beginLine - 1) - beginLineOffset;
-			endOffset += document.getLineOffset(endLine - 1) - endLineOffset;
-
-			String type = matcher.group(7);
-
-			TypeAnnotation annot = new TypeAnnotation(beginOffset, endOffset, type);
-			annotations.add(annot);
-		}
-
-		TypeAnnotation[] typeAnnotations = annotations.toArray(new TypeAnnotation[0]);
-		CachedTypeAnnotations cacheEntry = new CachedTypeAnnotations(file);
-		for (TypeAnnotation t : typeAnnotations)
-			cacheEntry.addAnnotation(t);
-
-		cache.addFirst(cacheEntry);
-
-		// return the table of annotations from the file
-		return typeAnnotations;
 	}
 }

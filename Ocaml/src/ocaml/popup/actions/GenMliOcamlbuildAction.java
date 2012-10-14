@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import ocaml.OcamlPlugin;
 import ocaml.build.ocamlbuild.OcamlbuildBuilder;
 import ocaml.exec.CommandRunner;
+import ocaml.util.FileUtil;
 import ocaml.views.OcamlCompilerOutput;
 
 import org.eclipse.core.resources.IFile;
@@ -24,8 +25,8 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**
- * This action is called when the user clicks on the "Generate Interface" menu item in the pop-up
- * for a module in an ocamlbuild project.
+ * This action is called when the user clicks on the "Generate Interface" menu
+ * item in the pop-up for a module in an ocamlbuild project.
  */
 public class GenMliOcamlbuildAction implements IObjectActionDelegate {
 
@@ -53,7 +54,7 @@ public class GenMliOcamlbuildAction implements IObjectActionDelegate {
 				return;
 
 			ArrayList<String> commandLine = OcamlbuildBuilder.buildCommandLine(project, true);
-			if(commandLine == null)
+			if (commandLine == null)
 				return;
 
 			IPath filepath = file.getFullPath();
@@ -99,7 +100,7 @@ public class GenMliOcamlbuildAction implements IObjectActionDelegate {
 
 			String output = commandRunner.getStdout();
 			String errorOutput = commandRunner.getStderr();
-			
+
 			OcamlCompilerOutput outputView = OcamlCompilerOutput.get();
 			outputView.clear();
 			if (outputView != null) {
@@ -108,20 +109,29 @@ public class GenMliOcamlbuildAction implements IObjectActionDelegate {
 				if (!"".equals(errorOutput))
 					outputView.append(errorOutput);
 			}
-			
-			if(!inferredMliFile.exists())
+
+			if (!inferredMliFile.exists())
 				return;
-			
-			FileChannel in;
+
+			FileInputStream in = null;
+			FileOutputStream out = null;
+			FileChannel inChan = null;
+			FileChannel outChan = null;
 			try {
-				in = new FileInputStream(inferredMliFile).getChannel();
-				FileChannel out = new FileOutputStream(mliFile).getChannel();
-				in.transferTo( 0, in.size(), out);
+				in = new FileInputStream(inferredMliFile);
+				inChan = in.getChannel();
+				out = new FileOutputStream(mliFile);
+				outChan = out.getChannel();
+				inChan.transferTo(0, inChan.size(), outChan);
 			} catch (Exception e) {
 				OcamlPlugin.logError("Error trying to copy inferred mli file", e);
+			} finally {
+				FileUtil.closeResource(inChan);
+				FileUtil.closeResource(outChan);
+				FileUtil.closeResource(in);
+				FileUtil.closeResource(out);
 			}
-			
-			
+
 			// refresh the workspace
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
