@@ -12,6 +12,7 @@ import ocaml.OcamlPlugin;
 import ocaml.build.OcamlBuilder;
 import ocaml.build.ProblemMarkers;
 import ocaml.exec.CommandRunner;
+import ocaml.util.FileUtil;
 import ocaml.util.Misc;
 
 import org.eclipse.core.resources.IFile;
@@ -21,6 +22,13 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 
 /**
  * Visit a graph layer by layer, to compile all vertices in the right order.<br>
@@ -68,7 +76,7 @@ public class CompilerVisitor implements ILayersVisitor {
 		final IProject project = file.getProject();
 
 		// Récupérer Le mode de compilation (byte-code par défaut)
-		String buildMode = Misc.getProjectProperty(project, OcamlBuilder.COMPIL_MODE);
+		String buildMode = Misc.getShareableProperty(project, OcamlBuilder.COMPIL_MODE);
 
 		// Récupérer l'extension du fichier objet généré
 		final String objectFileExt = (buildMode != null && buildMode.equals(OcamlBuilder.NATIVE) ? "cmx"
@@ -123,7 +131,7 @@ public class CompilerVisitor implements ILayersVisitor {
 			final IFile mliFile = project.getFile(file.getProjectRelativePath().removeFileExtension()
 					.addFileExtension("mli"));
 			if (mliFile.exists() && Misc.isGeneratedFile(mliFile)) {
-				deleteFile(mliFile);
+				FileUtil.deleteFile(mliFile);
 			}
 			// sauvegarder (en copiant) l'ancien fichier objet s'il existe et
 			// l'ancien fichier interface (uniquement s'il n'y a pas de mli
@@ -236,8 +244,8 @@ public class CompilerVisitor implements ILayersVisitor {
 			}// end if(noErrors)
 			// Effacer si possible les fichiers objets correspondant.
 			if (runOnLinux) {
-				deleteFile(oldObjectFile);
-				deleteFile(oldInterfaceObjectFile);
+				FileUtil.deleteFile(oldObjectFile);
+				FileUtil.deleteFile(oldInterfaceObjectFile);
 			}
 
 		}
@@ -271,7 +279,7 @@ public class CompilerVisitor implements ILayersVisitor {
 			}
 			// Effacer
 			if (runOnLinux)
-				deleteFile(oldInterfaceObjectFile);
+				FileUtil.deleteFile(oldInterfaceObjectFile);
 		} else if (fileType == Vertex.MLLTYPE) {
 			// TODO traiter les MLL lors de la compilation !
 		} else if (fileType == Vertex.MLYTYPE) {
@@ -311,10 +319,10 @@ public class CompilerVisitor implements ILayersVisitor {
 		// Ici on en profite pour mettre la propriété byte-code au projet par
 		// défaut.
 		// TODO ceci devrait pouvoir etre choisi par l'utilisateur.
-		final String buildMode = Misc.getProjectProperty(project, OcamlBuilder.COMPIL_MODE);
+		final String buildMode = Misc.getShareableProperty(project, OcamlBuilder.COMPIL_MODE);
 		if ((buildMode == null) || (buildMode.equals(""))) {
 			// Mettre la propriété byte_code par défaut.
-			Misc.setProjectProperty(project, OcamlBuilder.COMPIL_MODE, OcamlBuilder.BYTE_CODE);
+			Misc.setShareableProperty(project, OcamlBuilder.COMPIL_MODE, OcamlBuilder.BYTE_CODE);
 		}
 
 		// supprimer les marqueurs d'erreur
@@ -438,9 +446,15 @@ public class CompilerVisitor implements ILayersVisitor {
 		// Remplir le fichier avec le contenu passé en paramètre
 		try {
 			mlif.createNewFile();
-			BufferedWriter writer = new BufferedWriter(new FileWriter(mlif));
-			writer.write(content);
-			writer.close();
+			BufferedWriter writer = null;
+			try {
+				writer = new BufferedWriter(new FileWriter(mlif));
+				writer.write(content);
+			} finally {
+				if (writer != null) {
+					writer.close();
+				}
+			}
 
 		} catch (IOException e) {
 			OcamlPlugin.logError("error in CompilerVisitor:generateMliFile: "
@@ -452,37 +466,6 @@ public class CompilerVisitor implements ILayersVisitor {
 
 		return true;
 
-	}
-
-	/**
-	 * Delete a file
-	 * 
-	 * @return true if the file was really deleted
-	 */
-	private boolean deleteFile(final IFile file) {
-		if (file != null && file.exists()) {
-			boolean bDeleted = false;
-
-			int retries = 5;
-
-			while (!bDeleted && retries > 0) {
-				try {
-					retries--;
-					file.delete(true, null);
-					return true;
-				} catch (CoreException e) {
-					OcamlPlugin.logError("error deleting file : " + file.getName()
-							+ ((retries > 0) ? " : retrying" : " : stop retrying"), e);
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e1) {
-					}
-				}
-
-			}
-
-		}
-		return false;
 	}
 
 	/** Remove a file (asynchronously) */
@@ -526,7 +509,8 @@ public class CompilerVisitor implements ILayersVisitor {
 			final IFile newFile = project.getFile(newPath);
 			// Si le fichier existe et n'est soit pas généré automatiquement,
 			// soit pas supprimable renvoyer null
-			if (newFile.exists() && (!Misc.isGeneratedFile(newFile) || !deleteFile(newFile))) {
+			if (newFile.exists()
+					&& (!Misc.isGeneratedFile(newFile) || !FileUtil.deleteFile(newFile))) {
 				return null;
 			}
 			// Il faut donc récupérer uniquement le dernier segment de
@@ -576,22 +560,29 @@ public class CompilerVisitor implements ILayersVisitor {
 			return false;
 		}
 
-		final BufferedInputStream input1 = new BufferedInputStream(file1.getContents());
-		final BufferedInputStream input2 = new BufferedInputStream(file2.getContents());
+		BufferedInputStream input1 = null;
+		BufferedInputStream input2 = null;
+		try {
+			input1 = new BufferedInputStream(file1.getContents());
+			input2 = new BufferedInputStream(file2.getContents());
 
-		int readValue1 = input1.read();
-		int readValue2 = input2.read();
+			int readValue1 = input1.read();
+			int readValue2 = input2.read();
 
-		// Tant que les valeurs sont égales ou bien qu'on est arrivé à la fin
-		while ((readValue1 == readValue2) && ((readValue1 != -1) || (readValue2 != -1))) {
-			readValue1 = input1.read();
-			readValue2 = input2.read();
-		}
-
-		// Si les fichiers sont les mêmes, ces deux valeurs finales sont égales
-		// et valent -1 (fin de fichier). Sinon, alors les valeurs sont
-		// différente et l'une est éventuellement à -1.
+			// Tant que les valeurs sont égales ou bien qu'on est arrivé à la
+			// fin
+			while ((readValue1 == readValue2) && ((readValue1 != -1) || (readValue2 != -1))) {
+				readValue1 = input1.read();
+				readValue2 = input2.read();
+			}
+			// Si les fichiers sont les mêmes, ces deux valeurs finales sont égales
+			// et valent -1 (fin de fichier). Sinon, alors les valeurs sont
+			// différente et l'une est éventuellement à -1.
 		return (readValue1 == readValue2);
+		} finally {
+			FileUtil.closeResource(input1);
+			FileUtil.closeResource(input2);
+		}
 	}
 
 }

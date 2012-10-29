@@ -15,6 +15,7 @@ import ocaml.OcamlPlugin;
 import ocaml.parser.Def;
 import ocaml.parser.OcamlParser;
 import ocaml.parser.OcamlScanner;
+import ocaml.util.FileUtil;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -130,18 +131,11 @@ public class OcamlNewInterfaceParser {
 
 		if (!file.canRead())
 			return null;
-		final BufferedReader inputStream;
-
+		BufferedReader inputStream = null;
+		StringBuilder sbLines = new StringBuilder();
 		try {
 			inputStream = new BufferedReader(new FileReader(file));
-		} catch (FileNotFoundException e) {
-			OcamlPlugin.logError("ocaml plugin error", e);
-			return null;
-		}
-
-		StringBuilder sbLines = new StringBuilder();
-		// read the file, line by line
-		{
+			// read the file, line by line
 			String line;
 			try {
 				while ((line = inputStream.readLine()) != null)
@@ -150,6 +144,11 @@ public class OcamlNewInterfaceParser {
 				OcamlPlugin.logError("ocaml plugin error", e);
 				return null;
 			}
+		} catch (FileNotFoundException e) {
+			OcamlPlugin.logError("ocaml plugin error", e);
+			return null;
+		} finally {
+			FileUtil.closeResource(inputStream);
 		}
 
 		String lines = sbLines.toString();

@@ -547,13 +547,8 @@ public class OcamlBuilder extends IncrementalProjectBuilder {
 		for (String file : files) {
 			allFilesInString.append(file + FLAGS_SEPARATOR);
 		}
-		try {
-			resource.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, OBJECTFILE),
-					allFilesInString.toString());
-		} catch (CoreException e) {
-			OcamlPlugin.logError("error in OCamlProject:setExternalsObjectsFiles:"
-					+ " error setting persitent property", e);
-		}
+		Misc.setShareableProperty(resource, new QualifiedName(OcamlPlugin.QUALIFIER, OBJECTFILE),
+				allFilesInString.toString());
 	}
 
 	/** Associate a list of flags to a resource as a persistent property. */
@@ -562,13 +557,8 @@ public class OcamlBuilder extends IncrementalProjectBuilder {
 		for (String flag : flags) {
 			allFlagsInString.append(flag + FLAGS_SEPARATOR);
 		}
-		try {
-			resource.setPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, FLAGS), allFlagsInString
-					.toString());
-		} catch (CoreException e) {
-			OcamlPlugin.logError("error in OCamlProject:setResourceFlags:"
-					+ " error setting flags persitent property", e);
-		}
+		Misc.setShareableProperty(resource, new QualifiedName(OcamlPlugin.QUALIFIER, FLAGS), allFlagsInString
+				.toString());
 	}
 
 	/** Get the list of external files associated with an external resource. */
@@ -578,15 +568,8 @@ public class OcamlBuilder extends IncrementalProjectBuilder {
 			return files;
 		}
 
-		String allFilesInString;
-		try {
-			allFilesInString = resource.getPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER,
+		String allFilesInString = Misc.getShareablePropertyNull(resource, new QualifiedName(OcamlPlugin.QUALIFIER,
 					OBJECTFILE));
-		} catch (CoreException e) {
-			OcamlPlugin.logError("error in OCamlProject:getExternalObjectFiles:"
-					+ " error getting persitent property", e);
-			return files;
-		}
 
 		if (allFilesInString == null) {
 			return files;
@@ -608,15 +591,8 @@ public class OcamlBuilder extends IncrementalProjectBuilder {
 			return flags;
 		}
 
-		String allFlagsInString;
-		try {
-			allFlagsInString = resource
-					.getPersistentProperty(new QualifiedName(OcamlPlugin.QUALIFIER, FLAGS));
-		} catch (CoreException e) {
-			OcamlPlugin.logError("error in OCamlProject:getResourceFlags:"
-					+ " error getting flags persitent property", e);
-			return flags;
-		}
+		String allFlagsInString = Misc
+					.getShareablePropertyNull(resource, new QualifiedName(OcamlPlugin.QUALIFIER, FLAGS));
 
 		if (allFlagsInString == null) {
 			return flags;

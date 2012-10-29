@@ -332,7 +332,7 @@ public class OcamlFileProperties extends PropertyPage {
 	 */
 	@Override
 	protected void performDefaults() {
-		Misc.setFileProperty(file, Misc.MAKE_EXE, null);
+		Misc.setShareableProperty(file, Misc.MAKE_EXE, null);
 		OcamlBuilder.setResourceFlags(file, new ArrayList<String>(0));
 		load();
 	}
@@ -340,7 +340,7 @@ public class OcamlFileProperties extends PropertyPage {
 	/** Initialize the fields of the properties page from persistent properties */
 	protected void load() {
 		// Retrieve the MAKE_EXE property, that contains the name of the future executable
-		final String exeName = Misc.getFileProperty(file, Misc.MAKE_EXE);
+		final String exeName = Misc.getShareableProperty(file, Misc.MAKE_EXE);
 		exeNameText.setText(exeName);
 
 		// save the name of the executable
@@ -401,17 +401,17 @@ public class OcamlFileProperties extends PropertyPage {
 			changes = changes || !exeNameStored.equals(exeName);
 
 			if (exeName.equals("")) {
-				Misc.setFileProperty(file, Misc.MAKE_EXE, null);
+				Misc.setShareableProperty(file, Misc.MAKE_EXE, null);
 				// uncheck the check box and gray the text field
 				makeExeCheckbox.setSelection(false);
 				exeNameText.setEnabled(false);
 			} else {
-				Misc.setFileProperty(file, Misc.MAKE_EXE, exeName);
+				Misc.setShareableProperty(file, Misc.MAKE_EXE, exeName);
 			}
 		} else {
 			changes = changes || !exeNameStored.equals("");
 
-			Misc.setFileProperty(file, Misc.MAKE_EXE, null);
+			Misc.setShareableProperty(file, Misc.MAKE_EXE, null);
 		}
 
 		final java.util.List<String> flags = new ArrayList<String>(flagsList.getItemCount());

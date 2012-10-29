@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ocaml.util.FileUtil;
+
 public class MakePrinter {
 
 	static enum Kind {
@@ -142,9 +144,14 @@ public class MakePrinter {
 
 	private static String readFileAsString(String filePath) throws java.io.IOException {
 		byte[] buffer = new byte[(int) new File(filePath).length()];
-		FileInputStream f = new FileInputStream(filePath);
-		f.read(buffer);
-		return new String(buffer);
+		FileInputStream in = null;
+		try {
+			in = new FileInputStream(filePath);
+			in.read(buffer);
+			return new String(buffer);
+		} finally {
+			FileUtil.closeResource(in);
+		}
 	}
 
 }

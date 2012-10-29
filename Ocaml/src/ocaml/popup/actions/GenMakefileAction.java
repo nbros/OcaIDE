@@ -170,7 +170,7 @@ public class GenMakefileAction extends Object implements IObjectActionDelegate {
 			// compilation mode
 			writer.write("#Builder to use:" + CR);
 			// native code
-			if (Misc.getProjectProperty(project, OcamlBuilder.COMPIL_MODE).equals(OcamlBuilder.NATIVE)) {
+			if (Misc.getShareableProperty(project, OcamlBuilder.COMPIL_MODE).equals(OcamlBuilder.NATIVE)) {
 				writer.write(OCAMLC + "= " + OcamlPlugin.getOcamloptFullPath());
 				writer.write(CR);
 				writer.write("#Is it native?" + CR);
