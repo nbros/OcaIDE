@@ -24,7 +24,7 @@ import org.eclipse.jface.text.IDocument;
 public class OcamlAnnotParser {
 
 	private static final Pattern patternAnnot = Pattern
-			.compile("\".*.\" (\\d+) (\\d+) (\\d+) \".*?\" (\\d+) (\\d+) (\\d+)\\ntype\\(\\n((?:.|\\n)*?)\\n\\)\\n");
+			.compile("\".*.\" (\\d+) (\\d+) (\\d+) \".*?\" (\\d+) (\\d+) (\\d+)\\ntype\\(\\n((?:.)*?)\\n\\)\\n");
 
 	/** The type definitions cache */
 	private static LinkedList<CachedTypeAnnotations> cache = new LinkedList<CachedTypeAnnotations>();
