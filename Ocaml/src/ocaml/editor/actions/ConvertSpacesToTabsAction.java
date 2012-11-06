@@ -38,6 +38,10 @@ public class ConvertSpacesToTabsAction implements IWorkbenchWindowActionDelegate
 						ISelectionProvider selectionProvider = editor.getSelectionProvider();
 						TextSelection textSelection = (TextSelection) selectionProvider.getSelection();
 						String selectedText = textSelection.getText();
+						if (selectedText.equals("")) {
+							MessageDialog.openInformation(window.getShell(), "Ocaml Plugin", "Please make a selection first!");
+							return;
+						}
 						String newSelectedText = replaceSpacesByTabs(OcamlEditor.getTabSize(), selectedText); 
 						int selectedOffset = textSelection.getOffset();
 						
