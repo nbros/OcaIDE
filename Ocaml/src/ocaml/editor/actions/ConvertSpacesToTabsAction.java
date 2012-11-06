@@ -7,7 +7,9 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -27,15 +29,33 @@ public class ConvertSpacesToTabsAction implements IWorkbenchWindowActionDelegate
 			IEditorPart editorPart = page.getActiveEditor();
 			if (editorPart != null) {
 				if (editorPart instanceof OcamlEditor) {
-					TextEditor editor = (TextEditor) editorPart;
-
-					IEditorInput input = editor.getEditorInput();
-					IDocument doc = editor.getDocumentProvider().getDocument(input);
-
-					String result = replaceSpacesByTabs(OcamlEditor.getTabSize(), doc.get());
-
 					try {
-						doc.replace(0, doc.getLength(), result);
+						TextEditor editor = (TextEditor) editorPart;
+						IEditorInput input = editor.getEditorInput();
+						IDocument doc = editor.getDocumentProvider().getDocument(input);
+						
+						// collect text in the selection and convert
+						ISelectionProvider selectionProvider = editor.getSelectionProvider();
+						TextSelection textSelection = (TextSelection) selectionProvider.getSelection();
+						String selectedText = textSelection.getText();
+						String newSelectedText = replaceSpacesByTabs(OcamlEditor.getTabSize(), selectedText); 
+						int selectedOffset = textSelection.getOffset();
+						
+						// collect text before the selection 
+						int beforeLength = selectedOffset;
+						String beforeSelectedText = doc.get(0, beforeLength); 
+
+						// collect the text after the selection
+						int afterOffset = selectedOffset + textSelection.getLength();
+						String afterSelectedText = doc.get(afterOffset, doc.getLength() - afterOffset); 
+
+						// replace data of document
+						String newText = beforeSelectedText + newSelectedText + afterSelectedText;
+						doc.replace(0, doc.getLength(), newText);
+						
+						// set the converted text to be selected
+						TextSelection newTextSelection = new TextSelection(selectedOffset, newSelectedText.length());
+						selectionProvider.setSelection(newTextSelection);
 					} catch (BadLocationException e1) {
 						OcamlPlugin.logError("bad location while converting spaces to tabs", e1);
 						return;
