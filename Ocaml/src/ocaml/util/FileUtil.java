@@ -3,9 +3,14 @@ package ocaml.util;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -201,5 +206,17 @@ public class FileUtil {
 			}
 		}
 	}
-
+	
+	public static void setFileContents(File file, URL entry) throws IOException, FileNotFoundException {
+		InputStream inputStream = entry.openStream();
+		OutputStream outputStream = new FileOutputStream(file);
+		int read = 0;
+		byte[] bytes = new byte[1 << 16];
+		while ((read = inputStream.read(bytes)) != -1) {
+			outputStream.write(bytes, 0, read);
+		}
+		inputStream.close();
+		outputStream.flush();
+		outputStream.close();
+	}
 }

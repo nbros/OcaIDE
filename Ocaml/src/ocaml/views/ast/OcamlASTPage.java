@@ -214,7 +214,7 @@ public class OcamlASTPage extends Page implements ICursorPositionListener,
 		if (this.ignoreSelectionEvent)
 			return;
 
-		System.out.println(selectedRange.x);
+		//System.out.println(selectedRange.x);
 
 		if (synchronizeASTViewJob != null) {
 			if (synchronizeASTViewJob.getState() == SynchronizeOutlineJob.RUNNING) {

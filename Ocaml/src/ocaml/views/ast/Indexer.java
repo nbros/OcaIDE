@@ -2,11 +2,18 @@ package ocaml.views.ast;
 
 import static org.eclipse.core.runtime.Status.OK_STATUS;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 
 import ocaml.OcamlPlugin;
 import ocaml.exec.ExecHelper;
 import ocaml.exec.IExecEvents;
+import ocaml.util.FileUtil;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -97,12 +104,30 @@ public class Indexer implements IExecEvents {
 		}
 	}
 
+	private static File indexerFile = null;
+
 	private synchronized void start() throws IOException {
 		state = State.Starting;
-		// TODO: use ocamlrun path from preferences
-		// "-b" : print stack traces
-		execHelper = ExecHelper.exec(this, new String[] { "ocamlrun", "-b",
-				"C:\\Users\\Nicolas\\workspaceOcaIDE\\OcamlPDB\\_build\\main.d.byte" }, null, null);
+
+		if (indexerFile == null || !indexerFile.isFile()) {
+			// copy the indexer program into a temporary directory
+			// so that it can be executed
+			indexerFile = File.createTempFile("ocaideIndexer", ".byte");
+			URL entry = OcamlPlugin.getInstance().getBundle()
+					.getEntry("resources/ocamlIndexer.byte");
+			if (entry != null) {
+				FileUtil.setFileContents(indexerFile, entry);
+				indexerFile.setExecutable(true, false);
+			} else {
+				OcamlPlugin.logError("Indexer executable not found");
+			}
+		}
+
+		execHelper = ExecHelper.exec(this, new String[] { indexerFile.getAbsolutePath() }, null,
+				null);
+		// execHelper = ExecHelper.exec(this, new String[] {
+		// "C:\\Users\\Nicolas\\git\\OcamlPDB\\_build\\main.byte" }, null,
+		// null);
 	}
 
 	private synchronized void send(String command) {
@@ -125,7 +150,6 @@ public class Indexer implements IExecEvents {
 	}
 
 	public synchronized void processNewInput(final String input) {
-		System.out.println(input);
 		indexerOutput.append(input);
 		final String output = indexerOutput.toString();
 
