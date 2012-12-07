@@ -22,6 +22,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
+
 public class FileUtil {
 
 	/**
@@ -48,7 +50,6 @@ public class FileUtil {
 				if ((ch == ' ') || (ch == '\t') || (ch == '\n') || (ch == '\r')) {
 					// meets separation character
 					pos--;
-					continue;
 				} else if (ch == ')') {
 					raf.seek(pos - 2);
 					int ch2 = raf.read();
@@ -56,7 +57,6 @@ public class FileUtil {
 						// meets end comment block symbols
 						commentBlocks++;
 						pos = pos - 2;
-						continue;
 					} else if (commentBlocks > 0)
 						pos--;
 					else
@@ -68,7 +68,6 @@ public class FileUtil {
 						// meets begin comments block symbols
 						commentBlocks--;
 						pos = pos - 2;
-						continue;
 					} else if (commentBlocks > 0)
 						pos--;
 					else
@@ -127,6 +126,27 @@ public class FileUtil {
 			return null;
 		}
 		return position;
+	}
+	
+	/**
+	 * Find all the subdirectories of a directory
+	 */
+	public static ArrayList<String> findSubdirectories (String path)
+	{
+		ArrayList<String> dirs = new ArrayList<String>();
+		File root = new File(path);
+		if (root.isDirectory()) {
+			File[] list = root.listFiles();
+			for (File f: list){
+				if (f.isDirectory()){
+					String fpath = f.getAbsolutePath();
+					dirs.add(fpath);
+					ArrayList<String> subdirs = findSubdirectories(fpath);
+					dirs.addAll(subdirs);
+				}
+			}
+		}
+		return dirs;
 	}
 
 	/**

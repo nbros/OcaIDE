@@ -237,8 +237,12 @@ public class OcamlDebugger implements IExecEvents {
 			}
 
 			// add the _build folder (for the cases making project by using Ocamlbuild)
-			commandLineArgs.add("-I");
-			commandLineArgs.add("_build");
+			String buildpath = project.getLocation().toOSString() + "/_build";
+			ArrayList<String> buildFolders = FileUtil.findSubdirectories(buildpath);
+			for (String s: buildFolders) {
+				commandLineArgs.add("-I");
+				commandLineArgs.add(s);
+			}
 
 			// add module Camlp4
 			commandLineArgs.add("-I");
@@ -801,7 +805,6 @@ public class OcamlDebugger implements IExecEvents {
 				refreshEditor();
 				state = State.Idle;
 			}
-
 			else if (state.equals(State.Frame)) {
 				processFrame(output);
 				debuggerOutput.setLength(0);
@@ -1039,7 +1042,7 @@ public class OcamlDebugger implements IExecEvents {
 	}
 
 	Pattern patternFrame = Pattern.compile("\\A#\\d+  Pc : \\d+  (\\w+) char (\\d+)");
-
+	
 	private void processFrame(String output) {
 		Matcher matcher = patternFrame.matcher(output);
 		if (matcher.find()) {
@@ -1047,20 +1050,19 @@ public class OcamlDebugger implements IExecEvents {
 			int offset = Integer.parseInt(matcher.group(2));
 
 			String filename = Character.toLowerCase(module.charAt(0)) + module.substring(1) + ".ml";
-			String filepath = getFilePath(filename);
-			int newOffset = FileUtil.refineOffset(filepath, offset);
-			highlight(filename, newOffset);
+			highlight(filename, offset);
 
 		} else if (output.equals("(ocd) ")) {
 		} else
 			OcamlPlugin.logError("ocamldebugger: couldn't parse frame");
 	}
 
+    Pattern patternCallstack = Pattern.compile("\\A#(\\d+)  Pc : (\\d+)  (\\w+) char (\\d+)");
+    
 	private void processCallStack(final String output) {
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				try {
-
 					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
 							.getActiveWorkbenchWindow().getActivePage();
 					OcamlCallStackView stackview = (OcamlCallStackView) activePage
@@ -1077,29 +1079,27 @@ public class OcamlDebugger implements IExecEvents {
 							System.arraycopy(elements, 1, backtrace, 0, elements.length - 2);
 							for (int i = 0; i < backtrace.length; i++) {
 								String output = backtrace[i];
-								Pattern p = Pattern.compile("\\A#(\\d+)  Pc : (\\d+)  (\\w+) char (\\d+)");
-								Matcher matcher = p.matcher(output);
+								Matcher matcher = patternCallstack.matcher(output);
 								if (matcher.find()) {
 									String s1 = matcher.group(1);
-									String moudule = matcher.group(3);
+									String moudule = matcher.group(3);			// module name
 									int offset = Integer.parseInt(matcher.group(4));
 									String filename = Character.toLowerCase(moudule.charAt(0)) + moudule.substring(1) + ".ml";
-									String filepath = getFilePath(filename);
-									// get line and column corresponding with the offset in stack 
-									int newOffset = FileUtil.refineOffset(filepath, offset);
-									List<Integer> position = FileUtil.findLineColumnOfOffset(filepath, newOffset);
-									int line = -1;
-									int column = -1;
-									if (position.size() > 0) {
+									String functionName = "_";					// function name 
+									int line = -1;								// line number
+									int column = -1;							// column number
+									try {
+										String filepath = getFilePath(filename);
+										List<Integer> position = FileUtil.findLineColumnOfOffset(filepath, offset);
 										line = position.get(0);
 										column = position.get(1);
-									}
-									// get function name corresponding with the offset in stack
-									String functionName = "";
-									if (i == backtrace.length - 1)
-										functionName = "_";
-									else {
-										functionName = findFunctionContainLine(filepath, line);
+										if (i == backtrace.length - 1)
+											functionName = "_";
+										else
+											functionName = findFunctionContainLine(filepath, line);
+									} catch (Exception e) {
+										// TODO: handle exception
+										e.printStackTrace();
 									}
 									// prettier stackview
 									String newOutput = "#" + s1 + "  -  " + moudule + "." + functionName
@@ -1242,6 +1242,7 @@ public class OcamlDebugger implements IExecEvents {
 			return null;
 	}
 
+ 
 	public void highlight(final String filename, final int offset) {
 		final IFileStore fileStore = getFileStore(filename);
 		if (fileStore != null && fileStore.fetchInfo().exists()) {
@@ -1257,7 +1258,7 @@ public class OcamlDebugger implements IExecEvents {
 									OcamlEditor editor = (OcamlEditor) part;
 									DebugMarkers.getInstance().setCurrentPosition(filename,	offset);
 									editor.redraw();
-									editor.highlightLineAtOffset(offset);
+									editor.highlight(offset);
 								}
 							} catch (PartInitException e) {
 								OcamlPlugin.logError("ocaml plugin error", e);
@@ -1279,8 +1280,8 @@ public class OcamlDebugger implements IExecEvents {
 		}
 	}
 
-	// opens file in editor and jumps to specific offset
-	public void jumpToFileOffset(final String filename, final int offset) {
+	// 
+	public void highlight(final String filename, final int line, final int column1, final int column2) {
 		final IFileStore fileStore = getFileStore(filename);
 		if (fileStore != null && fileStore.fetchInfo().exists()) {
 			Display.getDefault().asyncExec(new Runnable() {
@@ -1293,9 +1294,8 @@ public class OcamlDebugger implements IExecEvents {
 								IEditorPart part = IDE.openEditorOnFileStore(page, fileStore);
 								if (part instanceof OcamlEditor) {
 									OcamlEditor editor = (OcamlEditor) part;
-									DebugMarkers.getInstance().setCurrentPosition(filename,	offset);
 									editor.redraw();
-									editor.highlightLineAtOffset(offset);
+									editor.highlight(line, column1, column2);
 								}
 							} catch (PartInitException e) {
 								OcamlPlugin.logError("ocaml plugin error", e);
@@ -1308,7 +1308,7 @@ public class OcamlDebugger implements IExecEvents {
 		else {
 			if (!missingSourceFiles.contains(filename)) {
 				missingSourceFiles.add(filename);
-				message("jumpToFileOffset: Source file " + filename + " not found. \n"
+				message("highlightBreakpoint: Source file " + filename + " not found. \n"
 						+ "You will not be able to see the current instruction pointer\n"
 						+ "but you can still use step, backstep, etc.");
 			}
@@ -1317,8 +1317,8 @@ public class OcamlDebugger implements IExecEvents {
 		}
 	}
 
-	// opens file in editor and jumps to specific line
-	public void jumpToFileLine(final String filename, final int line) {
+	// opens file in editor and jumps to specific breakpoint location
+	public void highlight(final String filename, final int line, final int column) {
 		final IFileStore fileStore = getFileStore(filename);
 		if (fileStore != null && fileStore.fetchInfo().exists()) {
 			Display.getDefault().asyncExec(new Runnable() {
@@ -1332,7 +1332,7 @@ public class OcamlDebugger implements IExecEvents {
 								if (part instanceof OcamlEditor) {
 									OcamlEditor editor = (OcamlEditor) part;
 									editor.redraw();
-									editor.highlightLine(line);
+									editor.highlight(line, column);
 								}
 							} catch (PartInitException e) {
 								OcamlPlugin.logError("ocaml plugin error", e);
@@ -1345,7 +1345,7 @@ public class OcamlDebugger implements IExecEvents {
 		else {
 			if (!missingSourceFiles.contains(filename)) {
 				missingSourceFiles.add(filename);
-				message("jumpToFileLine: Source file " + filename + " not found. \n"
+				message("highlightCallpoint: Source file " + filename + " not found. \n"
 						+ "You will not be able to see the current instruction pointer\n"
 						+ "but you can still use step, backstep, etc.");
 			}
