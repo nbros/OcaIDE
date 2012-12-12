@@ -488,34 +488,40 @@ public class OcamlEditor extends TextEditor {
 		return this.codeOutlineDefinitionsTree;
 	}
 
-	public void highlightLineAtOffset(int offset) {
+	public void highlight(int offset) {
 		IDocument document = this.getDocumentProvider().getDocument(this.getEditorInput());
 
 		IRegion region = null;
 		try {
 			region = document.getLineInformationOfOffset(offset);
+			this.selectAndReveal(region.getOffset(), 0);
 		} catch (BadLocationException e) {
 			OcamlPlugin.logError("ocaml plugin error (bad location)", e);
 			return;
 		}
-
-		if (region != null)
-			this.selectAndReveal(region.getOffset(), 0);
-
 	}
 
-	public void highlightLine(int line) {
+	public void highlight(int line, int column1, int column2) {
 		IDocument document = this.getDocumentProvider().getDocument(this.getEditorInput());
-		IRegion region = null;
+
 		try {
-			region = document.getLineInformation(line - 1);
+			int offset = document.getLineOffset(line - 1) + column1 - 1;
+			int length = column2 - column1;
+			this.selectAndReveal(offset, length);
 		} catch (BadLocationException e) {
 			OcamlPlugin.logError("ocaml plugin error (bad location)", e);
-			return;
 		}
+	}
 
-		if (region != null) {
-			this.selectAndReveal(region.getOffset(), 0);
+	public void highlight(int line, int column) {
+		IDocument document = this.getDocumentProvider().getDocument(this.getEditorInput());
+
+		try {
+			int offset = document.getLineOffset(line - 1) + column - 1;
+			int length = 0;
+			this.selectAndReveal(offset, length);
+		} catch (BadLocationException e) {
+			OcamlPlugin.logError("ocaml plugin error (bad location)", e);
 		}
 	}
 

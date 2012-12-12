@@ -129,7 +129,7 @@ public class FileUtil {
 	}
 	
 	/**
-	 * Find all the subdirectories of a directory
+	 * Find all the recursive subdirectories of a directory
 	 */
 	public static ArrayList<String> findSubdirectories (String path)
 	{

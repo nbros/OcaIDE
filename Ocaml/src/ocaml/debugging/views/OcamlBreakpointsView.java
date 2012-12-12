@@ -85,8 +85,10 @@ public class OcamlBreakpointsView extends ViewPart {
 						filename = filename + ".ml";
 					filename = filename.substring(0,1).toLowerCase() + filename.substring(1);
 					int line = Integer.parseInt(matcher.group(3));
+					int column1 = Integer.parseInt(matcher.group(4));
+					int column2 = Integer.parseInt(matcher.group(5));
 					OcamlDebugger debugger = OcamlDebugger.getInstance();
-					debugger.jumpToFileLine(filename, line);
+					debugger.highlight(filename, line, column1, column2);
 					//debugger.highlight(file, offset);
 				}
 			}

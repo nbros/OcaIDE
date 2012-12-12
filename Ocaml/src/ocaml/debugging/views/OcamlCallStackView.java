@@ -57,9 +57,10 @@ public class OcamlCallStackView extends ViewPart{
 				if (matcher.find()) {
 					String module = matcher.group(2);
 					int line = Integer.parseInt( matcher.group(3));
-					String file = Character.toLowerCase(module.charAt(0)) + module.substring(1) + ".ml";
+					int column = Integer.parseInt(matcher.group(4));
+					String filename = Character.toLowerCase(module.charAt(0)) + module.substring(1) + ".ml";
 					OcamlDebugger debugger = OcamlDebugger.getInstance();
-					debugger.jumpToFileLine(file, line);
+					debugger.highlight(filename, line, column);
 				}
 			}
 		});
