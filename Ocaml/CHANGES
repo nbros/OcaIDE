@@ -202,3 +202,12 @@
 
 * 1.2.16 (August 08 2012)
 	* fix wrong position of error markers when multibyte-characters are above that line [Keigo IMAI]
+
+* 1.2.17 (December 22 2012)
+	* Shareable compilation settings (saved under <project>/.settings/ocaml.pref) [Keigo IMAI]
+	* Autogeneration of interface failed if it was opened in editor
+	* StackOverflowError when parsing annot file that has class definition [Ta Quang Trung]
+	* Allow converting spaces <--> tabs in selected text [Ta Quang Trung]
+	* Jump to the exact source code location from call stack frames, highlight the source code range of breakpoints [Ta Quang Trung]
+	* Provide the subdirectory paths of the '_build' folder to OcamlDebugger when debugging [Ta Quang Trung]
+	* Don't append a newline character to the last line of each template [Ta Quang Trung]

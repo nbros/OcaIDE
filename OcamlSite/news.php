@@ -12,6 +12,17 @@
 
 <ul>
 
+<li><b>December 22 2012:</b> Version 1.2.17
+    <ul type="circle">
+		<li> Shareable compilation settings (saved under <project>/.settings/ocaml.pref) [Keigo IMAI]
+		<li> Autogeneration of interface failed if it was opened in editor
+		<li> StackOverflowError when parsing annot file that has class definition [Ta Quang Trung]
+		<li> Allow converting spaces <--> tabs in selected text [Ta Quang Trung]
+		<li> Jump to the exact source code location from call stack frames, highlight the source code range of breakpoints [Ta Quang Trung]
+		<li> Provide the subdirectory paths of the '_build' folder to OcamlDebugger when debugging [Ta Quang Trung]
+		<li> Don't append a newline character to the last line of each template [Ta Quang Trung]
+    </ul>
+
 <li><b>August 08 2012:</b> Version 1.2.16
     <ul type="circle">
 	    <li> fix wrong position of error markers when multibyte-characters are above that line [Keigo IMAI]
