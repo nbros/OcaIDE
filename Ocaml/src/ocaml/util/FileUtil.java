@@ -133,6 +133,27 @@ public class FileUtil {
 		}
 		return position;
 	}
+	
+	/**
+	 * Find all the recursive subdirectories of a directory
+	 */
+	public static ArrayList<String> findSubdirectories (String path)
+	{
+		ArrayList<String> dirs = new ArrayList<String>();
+		File root = new File(path);
+		if (root.isDirectory()) {
+			File[] list = root.listFiles();
+			for (File f: list){
+				if (f.isDirectory()){
+					String fpath = f.getAbsolutePath();
+					dirs.add(fpath);
+					ArrayList<String> subdirs = findSubdirectories(fpath);
+					dirs.addAll(subdirs);
+				}
+			}
+		}
+		return dirs;
+	}
 
 	/**
 	 * Delete a file
