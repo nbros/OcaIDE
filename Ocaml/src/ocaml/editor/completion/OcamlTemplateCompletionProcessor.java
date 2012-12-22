@@ -83,7 +83,10 @@ public class OcamlTemplateCompletionProcessor extends TemplateCompletionProcesso
 
 		for (int i = 0; i < lines.length; i++) {
 			String initialIndent = (i == 0 ? "" : indent(currentIndent));
-			result.append(initialIndent + lines[i] + OcamlPlugin.newline);
+			result.append(initialIndent).append(lines[i]);
+			if(i < lines.length - 1) {
+				result.append(OcamlPlugin.newline);
+			}
 		}
 
 		return result.toString();
