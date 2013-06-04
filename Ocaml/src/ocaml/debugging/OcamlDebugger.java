@@ -236,8 +236,11 @@ public class OcamlDebugger implements IExecEvents {
 				}
 			}
 
-			// add the _build folder (for the cases making project by using Ocamlbuild)
+			// add the _build folder and its children folders (for the cases making project by using Ocamlbuild)
 			String buildpath = project.getLocation().toOSString() + "/_build";
+			commandLineArgs.add("-I");
+			commandLineArgs.add(buildpath);
+			
 			ArrayList<String> buildFolders = FileUtil.findSubdirectories(buildpath);
 			for (String path: buildFolders) {
 				commandLineArgs.add("-I");
