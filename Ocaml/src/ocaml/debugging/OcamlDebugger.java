@@ -991,7 +991,7 @@ public class OcamlDebugger implements IExecEvents {
 	}
 
 	Pattern patternBreakpoint = Pattern
-			.compile("Breakpoint (\\d+) at (\\d+) : file (.*?), line (\\d+), characters (\\d+)-(\\d+)");
+			.compile("Breakpoint (\\d+) at (\\d+): file (.*?), line (\\d+), characters (\\d+)-(\\d+)");
 
 	private void processBreakpoint(final String output) {
 		Matcher matcher = patternBreakpoint.matcher(output);
@@ -1042,7 +1042,7 @@ public class OcamlDebugger implements IExecEvents {
 					.logError("ocamldebugger: couldn't parse breakpoint information:\n" + output);
 	}
 
-	Pattern patternFrame = Pattern.compile("\\A#\\d+  Pc : \\d+  (\\w+) char (\\d+)");
+	Pattern patternFrame = Pattern.compile("\\A#\\d+  Pc: \\d+  (\\w+) char (\\d+)");
 
 	private void processFrame(String output) {
 		Matcher matcher = patternFrame.matcher(output);

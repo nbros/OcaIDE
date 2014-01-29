@@ -19,8 +19,10 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
@@ -118,36 +120,60 @@ public class Toplevel {
 
 		this.view = view;
 		this.userText = userText;
+		this.userText.addVerifyKeyListener(new VerifyKeyListener() {
+			
+			@Override
+			public void verifyKey(VerifyEvent event) {
+				// We block all newlines if it is meant to be processed. This means
+				// for all newlines unless <Shift> is pressed as well.
+				if (event.keyCode == SWT.CR || event.keyCode == SWT.LF) {
+					if ((event.stateMask & SWT.SHIFT) == 0) {
+						event.doit = false;
+					}
+				} else if (event.keyCode == SWT.ARROW_UP) {
+					StyledText userText = Toplevel.this.userText;
+					int line = userText.getLineAtOffset(userText.getCaretOffset());
+					
+					if (line == 0) {
+						historyPrev(false);
+						event.doit = false;
+					}
+				} else if (event.keyCode == SWT.ARROW_DOWN) {
+					StyledText userText = Toplevel.this.userText;
+					int line = userText.getLineAtOffset(userText.getCaretOffset());
+					
+					if (line == userText.getLineCount() - 1) {
+						historyNext(true);
+						event.doit = false;
+					}
+				}
+			}
+		});
 		this.userText.addKeyListener(new KeyAdapter() {
 
 			@Override
 			public void keyPressed(KeyEvent e) {
 
-				if (e.character == '\r' && ((e.stateMask & SWT.CTRL) > 0)) { // <Ctrl> + <return>
-					eval(userText.getText());
-					e.doit = false;
-				}
-
-				else if (e.character == '\r') { // <return>
-					sendText();
-					e.doit = false;
-				} else if (e.keyCode == SWT.ARROW_UP) {
-					historyPrev(true);
-					e.doit = false;
-				}
-
-				else if (e.keyCode == SWT.ARROW_DOWN) {
-					historyNext(true);
-					e.doit = false;
+				if (e.keyCode == SWT.CR) {
+					if ((e.stateMask & SWT.CTRL) != 0) {
+						// User pressed <Ctrl> + <return>
+						eval(userText.getText());
+						e.doit = false;
+					} else if ((e.stateMask & SWT.SHIFT) == 0) {
+						// User pressed <return>, did not press shift.
+						sendText();
+						e.doit = false;
+					}
 				} else if (e.keyCode == SWT.F3) {
 					historyPrev(false);
 					e.doit = false;
 				} else if (e.keyCode == SWT.F4) {
 					historyNext(false);
 					e.doit = false;
-				} else if (e.character == 3) // Ctrl+C
+				} else if (e.character == 3) { // Ctrl+C
 					interrupt();
-				else {
+				} else if (e.keyCode != SWT.ARROW_UP &&
+						e.keyCode != SWT.ARROW_DOWN) { // Ignore caret movements
 					saveCurrentLine();
 					iHistory = -1;
 				}
@@ -181,7 +207,10 @@ public class Toplevel {
 					// if we are on the first line
 					if (iHistory < history.size() - 1) {
 						iHistory++;
-						userText.setText(history.get(history.size() - iHistory - 1));
+						String text = history.get(history.size() - iHistory - 1);
+						userText.setText(text);
+						userText.setCaretOffset(text.length());
+						userText.setTopIndex(userText.getLineCount() - 1);
 					}
 				}
 			}
@@ -207,10 +236,14 @@ public class Toplevel {
 					if (iHistory >= 0) {
 						iHistory--;
 
-						if (iHistory == -1)
+						if (iHistory == -1) {
 							userText.setText(currentLine);
-						else
-							userText.setText(history.get(history.size() - iHistory - 1));
+						} else {
+							String text = history.get(history.size() - iHistory - 1);
+							userText.setText(text);
+							userText.setCaretOffset(text.length());
+							userText.setTopIndex(userText.getLineCount() - 1);
+						}
 					}
 				}
 			}
@@ -256,10 +289,13 @@ public class Toplevel {
 				userText.setText("");
 				return;
 			}
-
-			if (text.endsWith(";;" + newline) && userText.getCaretOffset() == text.length()) {
-				eval(text);
+			
+			String endDelimiter = ";;";
+			if (!text.endsWith(endDelimiter)) {
+				text = text.concat(endDelimiter);
 			}
+
+			eval(text);
 		}
 	}
 

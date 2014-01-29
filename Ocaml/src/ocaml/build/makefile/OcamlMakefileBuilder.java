@@ -126,7 +126,8 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 				commandLine.add("-w");
 				break;
 			case GNU_MAKE:
-				commandLine.add("-C" + path);
+				commandLine.add("-C");
+				commandLine.add(path);
 				break;
 			}
 			
@@ -139,8 +140,9 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 			else
 				targets = makefileProperties.getTargets();
 
-			for (String target : targets)
-				commandLine.add(target);
+			for (String target: targets)
+				if (target.length() > 0)
+					commandLine.add(target);
 
 			String[] strCommandLine = commandLine.toArray(new String[commandLine.size()]);
 

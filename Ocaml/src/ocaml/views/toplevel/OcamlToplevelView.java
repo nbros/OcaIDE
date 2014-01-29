@@ -16,6 +16,7 @@ import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -94,6 +95,10 @@ public class OcamlToplevelView extends ViewPart {
 				layout();
 			}
 		});
+
+		Color c = Display.findDisplay(Thread.currentThread()).
+				getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
+		sash.setBackground(c);
 
 		toplevel = new Toplevel(this, userText, resultText);
 
