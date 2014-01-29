@@ -1042,7 +1042,7 @@ public class OcamlDebugger implements IExecEvents {
 					.logError("ocamldebugger: couldn't parse breakpoint information:\n" + output);
 	}
 
-	Pattern patternFrame = Pattern.compile("\\A#\\d+  Pc : \\d+  (\\w+) char (\\d+)");
+	Pattern patternFrame = Pattern.compile("\\A#\\d+  Pc: \\d+  (\\w+) char (\\d+)");
 
 	private void processFrame(String output) {
 		Matcher matcher = patternFrame.matcher(output);
