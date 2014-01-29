@@ -19,8 +19,10 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
@@ -118,25 +120,36 @@ public class Toplevel {
 
 		this.view = view;
 		this.userText = userText;
+		this.userText.addVerifyKeyListener(new VerifyKeyListener() {
+			public void verifyKey(VerifyEvent event) {
+				// We block all newlines if it is meant to be processed. This means
+				// for all newlines unless <Shift> is pressed as well.
+				if (event.keyCode == SWT.CR || event.keyCode == SWT.LF) {
+					if ((event.stateMask & SWT.SHIFT) == 0) {
+						event.doit = false;
+					}
+				}
+			}
+		});
 		this.userText.addKeyListener(new KeyAdapter() {
 
 			@Override
 			public void keyPressed(KeyEvent e) {
 
-				if (e.character == '\r' && ((e.stateMask & SWT.CTRL) > 0)) { // <Ctrl> + <return>
-					eval(userText.getText());
-					e.doit = false;
-				}
-
-				else if (e.character == '\r') { // <return>
-					sendText();
-					e.doit = false;
+				if (e.keyCode == SWT.CR) {
+					if ((e.stateMask & SWT.CTRL) != 0) {
+						// User pressed <Ctrl> + <return>
+						eval(userText.getText());
+						e.doit = false;
+					} else if ((e.stateMask & SWT.SHIFT) == 0) {
+						// User pressed <return>, did not press shift.
+						sendText();
+						e.doit = false;
+					}
 				} else if (e.keyCode == SWT.ARROW_UP) {
 					historyPrev(true);
 					e.doit = false;
-				}
-
-				else if (e.keyCode == SWT.ARROW_DOWN) {
+				} else if (e.keyCode == SWT.ARROW_DOWN) {
 					historyNext(true);
 					e.doit = false;
 				} else if (e.keyCode == SWT.F3) {
@@ -145,9 +158,9 @@ public class Toplevel {
 				} else if (e.keyCode == SWT.F4) {
 					historyNext(false);
 					e.doit = false;
-				} else if (e.character == 3) // Ctrl+C
+				} else if (e.character == 3) { // Ctrl+C
 					interrupt();
-				else {
+				} else {
 					saveCurrentLine();
 					iHistory = -1;
 				}
