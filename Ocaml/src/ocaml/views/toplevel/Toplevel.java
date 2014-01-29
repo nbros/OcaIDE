@@ -271,10 +271,13 @@ public class Toplevel {
 				userText.setText("");
 				return;
 			}
-
-			if (text.endsWith(";;" + newline) && userText.getCaretOffset() == text.length()) {
-				eval(text);
+			
+			String endDelimiter = ";;";
+			if (!text.endsWith(endDelimiter)) {
+				text = text.concat(endDelimiter);
 			}
+
+			eval(text);
 		}
 	}
 
