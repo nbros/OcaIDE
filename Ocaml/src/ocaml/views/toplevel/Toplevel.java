@@ -128,6 +128,22 @@ public class Toplevel {
 					if ((event.stateMask & SWT.SHIFT) == 0) {
 						event.doit = false;
 					}
+				} else if (event.keyCode == SWT.ARROW_UP) {
+					StyledText userText = Toplevel.this.userText;
+					int line = userText.getLineAtOffset(userText.getCaretOffset());
+					
+					if (line == 0) {
+						historyPrev(false);
+						event.doit = false;
+					}
+				} else if (event.keyCode == SWT.ARROW_DOWN) {
+					StyledText userText = Toplevel.this.userText;
+					int line = userText.getLineAtOffset(userText.getCaretOffset());
+					
+					if (line == userText.getLineCount() - 1) {
+						historyNext(true);
+						event.doit = false;
+					}
 				}
 			}
 		});
@@ -146,12 +162,6 @@ public class Toplevel {
 						sendText();
 						e.doit = false;
 					}
-				} else if (e.keyCode == SWT.ARROW_UP) {
-					historyPrev(true);
-					e.doit = false;
-				} else if (e.keyCode == SWT.ARROW_DOWN) {
-					historyNext(true);
-					e.doit = false;
 				} else if (e.keyCode == SWT.F3) {
 					historyPrev(false);
 					e.doit = false;
@@ -160,7 +170,8 @@ public class Toplevel {
 					e.doit = false;
 				} else if (e.character == 3) { // Ctrl+C
 					interrupt();
-				} else {
+				} else if (e.keyCode != SWT.ARROW_UP &&
+						e.keyCode != SWT.ARROW_DOWN) { // Ignore caret movements
 					saveCurrentLine();
 					iHistory = -1;
 				}
