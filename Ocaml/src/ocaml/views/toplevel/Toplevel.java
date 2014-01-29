@@ -205,7 +205,10 @@ public class Toplevel {
 					// if we are on the first line
 					if (iHistory < history.size() - 1) {
 						iHistory++;
-						userText.setText(history.get(history.size() - iHistory - 1));
+						String text = history.get(history.size() - iHistory - 1);
+						userText.setText(text);
+						userText.setCaretOffset(text.length());
+						userText.setTopIndex(userText.getLineCount() - 1);
 					}
 				}
 			}
@@ -231,10 +234,14 @@ public class Toplevel {
 					if (iHistory >= 0) {
 						iHistory--;
 
-						if (iHistory == -1)
+						if (iHistory == -1) {
 							userText.setText(currentLine);
-						else
-							userText.setText(history.get(history.size() - iHistory - 1));
+						} else {
+							String text = history.get(history.size() - iHistory - 1);
+							userText.setText(text);
+							userText.setCaretOffset(text.length());
+							userText.setTopIndex(userText.getLineCount() - 1);
+						}
 					}
 				}
 			}
