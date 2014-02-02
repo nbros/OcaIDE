@@ -21,21 +21,16 @@
 
     <p>
 
-        If you want to use OcaIDE with an old version of Eclipse, either grab the jar from <a href="eclipse32/">here</a>
-        (old version)
-        and install it manually, or recompile it from source:
-        <a href="eclipse32.html">Compiling OcaIDE for Eclipse 3.2</a>.
+        If you are looking for an old version of OcaIDE, you can grab the jar from <a href="plugins/">here</a> and install it manually, or recompile it from <a href="sources.php">source</a>.
 
     <p>
 
-        Also, the plug-in has been reported not to work with GCJ (since GCJ doesn't completely support Java 1.5 yet)
-
+        Also, the plug-in has been reported not to work with GCJ (since GCJ doesn't completely support Java 1.5)
 
     <p>
 
-        It works best on Linux and Mac OS X; some features are unavailable under Windows
+        It works on Windows, Linux and Mac OS X. Some features are unavailable under Windows
         (debugger checkpoints and interrupting the toplevel, mainly).
-
 
     <h2>Installation</h2>
     To install OcaIDE inside of Eclipse, open Eclipse, click on <b>Help &gt; Install New Software...</b>
