@@ -62,7 +62,7 @@
 
     <h2>Contact:</h2>
 
-    For any questions or remarks concerning OcaIDE, you can use the <a href="forum/index.php">forum</a> or write to ocaide-AT-ml.free.fr.
+    For any questions or remarks concerning OcaIDE, you can use the <a href="forum/index.php">forum</a>.
 
     <h2>Copyright:</h2>
 

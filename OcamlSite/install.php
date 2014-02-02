@@ -12,9 +12,9 @@
     <h1>Installing</h1>
 
     <h2>Prerequisites</h2>
-    OcaIDE needs a 1.5 or 1.6 Java Virtual Machine (from Sun: <a href="http://java.com/en/download/index.jsp">download
+    OcaIDE needs a 1.5, 6.0 or 7.0 Java Virtual Machine (from Oracle: <a href="http://java.com/en/download/index.jsp">download
     the JRE here</a>)
-    and <a href="http://www.eclipse.org/downloads/">Eclipse 3.5</a> to work correctly.
+    and any recent version of <a href="http://www.eclipse.org/downloads/">Eclipse</a> to work correctly.
     <p>
 
         It will <b>not</b> work with a JVM version inferior to 1.5.
@@ -33,7 +33,7 @@
 
     <p>
 
-        It works best on Linux and Mac OS X, and some features are unavailable under Windows
+        It works best on Linux and Mac OS X; some features are unavailable under Windows
         (debugger checkpoints and interrupting the toplevel, mainly).
 
 

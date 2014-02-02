@@ -12,6 +12,18 @@
 
 <ul>
 
+<li><b>February 02 2014:</b> Version 1.2.18
+    <ul type="circle">
+		<li> Fix the format for parsing Ocaml 4.01's breakpoint status message [Joel Low]
+		<li> Fix parsing of stack frame information with OCaml 4.01 [Joel Low]
+		<li> In the toplevel view, make the sash coloured something other than white so users know it's a split window [Joel Low]
+		<li> Make the toplevel's behaviour more like consoles in Web browsers: enter will always evaluate the current expression; press Shift+Enter to add a newline [Joel Low]
+		<li> Automatically add the toplevel delimiter if the user did not put one [Joel Low]
+		<li> Rework up and down arrow toplevel history navigation: works even for multiple lines, like in web browser consoles [Joel Low]
+		<li> After changing the input from toplevel history, set the cursor to the end of the input field [Joel Low]
+		<li> Fix the Makefile target with new versions of make [Joel Low]
+    </ul>
+
 <li><b>December 22 2012:</b> Version 1.2.17
     <ul type="circle">
 		<li> Shareable compilation settings (saved under <project>/.settings/ocaml.pref) [Keigo IMAI]

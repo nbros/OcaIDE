@@ -211,3 +211,13 @@
 	* Jump to the exact source code location from call stack frames, highlight the source code range of breakpoints [Ta Quang Trung]
 	* Provide the subdirectory paths of the '_build' folder to OcamlDebugger when debugging [Ta Quang Trung]
 	* Don't append a newline character to the last line of each template [Ta Quang Trung]
+
+* 1.2.18 (February 02 2014)
+	* Fix the format for parsing Ocaml 4.01's breakpoint status message [Joel Low]
+	* Fix parsing of stack frame information with OCaml 4.01 [Joel Low]
+	* In the toplevel view, make the sash coloured something other than white so users know it's a split window [Joel Low]
+	* Make the toplevel's behaviour more like consoles in Web browsers: enter will always evaluate the current expression; press Shift+Enter to add a newline [Joel Low]
+	* Automatically add the toplevel delimiter if the user did not put one [Joel Low]
+	* Rework up and down arrow toplevel history navigation: works even for multiple lines, like in web browser consoles [Joel Low]
+	* After changing the input from toplevel history, set the cursor to the end of the input field [Joel Low]
+	* Fix the Makefile target with new versions of make [Joel Low]
