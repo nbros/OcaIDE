@@ -51,9 +51,9 @@ public class Toplevel {
 	}
 
 	/** The help message that is displayed when the user types "help" in the top-level view */
-	private final String helpMessage = "\nType an ocaml expression followed by ';;' and type <ENTER> to evaluate it.\n"
-			+ "Type <Ctrl+Enter> to evaluate the expression without checking that it is terminated by ';;'\n"
-			+ "Use the <UP> and <DOWN> arrow keys to recall history, or <F3> and <F4> in multiline expressions\n"
+	private final String helpMessage = "\nType an OCaml expression (optionally ended by ';;') and type <ENTER> to evaluate it\n"
+			+ "Type <Shift+Enter> to insert a newline\n"
+			+ "Use the <UP> and <DOWN> arrow keys to recall history (or <F3> and <F4>)\n"
 			+ "Press <Ctrl+C> to abort the current evaluation (only on linux compatible systems)\n"
 			+ "You can also type the following commands:\n"
 			+ "kill    kill the ocaml interpreter\n"
@@ -133,7 +133,7 @@ public class Toplevel {
 					int line = userText.getLineAtOffset(userText.getCaretOffset());
 					
 					if (line == 0) {
-						historyPrev(false);
+						historyPrev();
 						event.doit = false;
 					}
 				} else if (event.keyCode == SWT.ARROW_DOWN) {
@@ -141,7 +141,7 @@ public class Toplevel {
 					int line = userText.getLineAtOffset(userText.getCaretOffset());
 					
 					if (line == userText.getLineCount() - 1) {
-						historyNext(true);
+						historyNext();
 						event.doit = false;
 					}
 				}
@@ -163,10 +163,10 @@ public class Toplevel {
 						e.doit = false;
 					}
 				} else if (e.keyCode == SWT.F3) {
-					historyPrev(false);
+					historyPrev();
 					e.doit = false;
 				} else if (e.keyCode == SWT.F4) {
-					historyNext(false);
+					historyNext();
 					e.doit = false;
 				} else if (e.character == 3) { // Ctrl+C
 					interrupt();
@@ -187,21 +187,11 @@ public class Toplevel {
 
 	}
 
-	/**
-	 * Go back in the history of entered commands.
-	 * 
-	 * @param bOnlySingleLine
-	 *            whether we must go back in history only if the currently edited expression is on a single
-	 *            line (this allows us to continue using arrow keys in multi-line commands)
-	 */
-	protected void historyPrev(final boolean bOnlySingleLine) {
+	/** Go back in the history of entered commands. */
+	protected void historyPrev() {
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
-
 				synchronized (userText) {
-					if (userText.getLineCount() > 1 && bOnlySingleLine)
-						return;
-
 					// if we are on the first line
 					if (iHistory < history.size() - 1) {
 						iHistory++;
@@ -215,21 +205,11 @@ public class Toplevel {
 		});
 	}
 
-	/**
-	 * Go forward in history.
-	 * 
-	 * @param bOnlySingleLine
-	 *            whether we must go back in history only if the currently edited expression is on a single
-	 *            line (this allows us to continue using arrow keys in multi-line commands)
-	 */
-	protected void historyNext(final boolean bOnlySingleLine) {
+	/** Go forward in history. */
+	protected void historyNext() {
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
-
 				synchronized (userText) {
-					if (userText.getLineCount() > 1 && bOnlySingleLine)
-						return;
-
 					// if we are on the first line
 					if (iHistory >= 0) {
 						iHistory--;
