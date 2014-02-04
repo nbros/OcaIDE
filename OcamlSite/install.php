@@ -12,30 +12,25 @@
     <h1>Installing</h1>
 
     <h2>Prerequisites</h2>
-    OcaIDE needs a 1.5 or 1.6 Java Virtual Machine (from Sun: <a href="http://java.com/en/download/index.jsp">download
+    OcaIDE needs a 1.5, 6.0 or 7.0 Java Virtual Machine (from Oracle: <a href="http://java.com/en/download/index.jsp">download
     the JRE here</a>)
-    and <a href="http://www.eclipse.org/downloads/">Eclipse 3.5</a> to work correctly.
+    and any recent version of <a href="http://www.eclipse.org/downloads/">Eclipse</a> to work correctly.
     <p>
 
         It will <b>not</b> work with a JVM version inferior to 1.5.
 
     <p>
 
-        If you want to use OcaIDE with an old version of Eclipse, either grab the jar from <a href="eclipse32/">here</a>
-        (old version)
-        and install it manually, or recompile it from source:
-        <a href="eclipse32.html">Compiling OcaIDE for Eclipse 3.2</a>.
+        If you are looking for an old version of OcaIDE, you can grab the jar from <a href="plugins/">here</a> and install it manually, or recompile it from <a href="sources.php">source</a>.
 
     <p>
 
-        Also, the plug-in has been reported not to work with GCJ (since GCJ doesn't completely support Java 1.5 yet)
-
+        Also, the plug-in has been reported not to work with GCJ (since GCJ doesn't completely support Java 1.5)
 
     <p>
 
-        It works best on Linux and Mac OS X, and some features are unavailable under Windows
+        It works on Windows, Linux and Mac OS X. Some features are unavailable under Windows
         (debugger checkpoints and interrupting the toplevel, mainly).
-
 
     <h2>Installation</h2>
     To install OcaIDE inside of Eclipse, open Eclipse, click on <b>Help &gt; Install New Software...</b>
