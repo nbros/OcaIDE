@@ -60,6 +60,7 @@ public class OcamlCallStackView extends ViewPart{
 					String filename = Character.toLowerCase(module.charAt(0)) + module.substring(1) + ".ml";
 					OcamlDebugger debugger = OcamlDebugger.getInstance();
 					debugger.highlight(filename, offset);
+					debugger.setFrame(Integer.parseInt(matcher.group(1)));
 				}
 			}
 		});

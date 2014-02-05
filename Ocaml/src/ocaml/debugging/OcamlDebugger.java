@@ -61,7 +61,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	/** The possible states of the debugger */
 	public enum State {
-		NotStarted, Starting1, Starting1a, Starting1b, Starting1c, Starting1d, Starting2, Starting3, Starting3a, Starting4, Idle, Running, RunningBackwards, Stepping, BackStepping, SteppingOver, BackSteppingOver, Frame, Quitting, PuttingBreakpoint, StepReturn, BackstepReturn, Displaying, BackTrace, RemovingBreakpoint, RemovingBreakpoints, RemovedBreakpoints, Restarting, DisplayingWatchVars, DisplayWatchVars
+		NotStarted, Starting1, Starting1a, Starting1b, Starting1c, Starting1d, Starting2, Starting3, Starting3a, Starting4, Idle, Running, RunningBackwards, Stepping, BackStepping, SteppingOver, BackSteppingOver, Frame, SettingFrame, Quitting, PuttingBreakpoint, StepReturn, BackstepReturn, Displaying, BackTrace, RemovingBreakpoint, RemovingBreakpoints, RemovedBreakpoints, Restarting, DisplayingWatchVars, DisplayWatchVars
 	};
 
 	/** The current state of the debugger: idle, not started, stepping... */
@@ -413,6 +413,14 @@ public class OcamlDebugger implements IExecEvents {
 			send("start");
 		}
 	}
+	
+	public synchronized void setFrame(int frame) {
+		if (!checkStarted())
+			return;
+
+		send("frame " + frame);
+		state = State.SettingFrame;
+	}
 
 	public synchronized void putBreakpointAt(String moduleName, int offset) {
 		if (!checkStarted())
@@ -743,10 +751,12 @@ public class OcamlDebugger implements IExecEvents {
 					|| state.equals(State.Running) || state.equals(State.RunningBackwards)
 					|| state.equals(State.StepReturn) || state.equals(State.BackstepReturn)) {
 				if (!processMessage(output)) {
-    				state = State.Frame;
-    				send("frame");
+					getFrame();
 				}
 				debuggerOutput.setLength(0);
+			} else if (state.equals(State.SettingFrame)) {
+				debuggerOutput.setLength(0);
+				getFrame();
 			} else if (state.equals(State.Starting1)) {
 				debuggerOutput.setLength(0);
 				state = State.Starting1a;
@@ -876,6 +886,11 @@ public class OcamlDebugger implements IExecEvents {
 
 		}
 
+	}
+	
+	private void getFrame() {
+		state = State.Frame;
+		send("frame");
 	}
 
 	private void processWatchVar(String output, int currentWatchVariable) {
