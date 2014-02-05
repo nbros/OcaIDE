@@ -52,11 +52,11 @@ public class OcamlCallStackView extends ViewPart{
 			public void mouseDoubleClick(MouseEvent e) {
 				int currentIndex = list.getFocusIndex();
 				String currentItem = list.getItem(currentIndex);
-				Pattern p = Pattern.compile("#[\\d]+[\\s]+Pc:[\\s]+[\\d]+[\\s]+([a-zA-Z0-9_\\.]*)[\\s]+char[\\s]+([\\d]+)");
+				Pattern p = Pattern.compile("#([\\d])+[\\s]+Pc:[\\s]+[\\d]+[\\s]+([a-zA-Z0-9_\\.]*)[\\s]+char[\\s]+([\\d]+)");
 				Matcher matcher = p.matcher(currentItem);
 				if (matcher.find()) {
-					String module = matcher.group(1);
-					int offset = Integer.parseInt(matcher.group(2));;
+					String module = matcher.group(2);
+					int offset = Integer.parseInt(matcher.group(3));
 					String filename = Character.toLowerCase(module.charAt(0)) + module.substring(1) + ".ml";
 					OcamlDebugger debugger = OcamlDebugger.getInstance();
 					debugger.highlight(filename, offset);
