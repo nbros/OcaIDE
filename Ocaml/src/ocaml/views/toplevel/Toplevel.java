@@ -121,6 +121,7 @@ public class Toplevel {
 		this.view = view;
 		this.userText = userText;
 		this.userText.addVerifyKeyListener(new VerifyKeyListener() {
+			
 			public void verifyKey(VerifyEvent event) {
 				// We block all newlines if it is meant to be processed. This means
 				// for all newlines unless <Shift> is pressed as well.
