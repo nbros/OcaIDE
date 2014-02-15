@@ -221,3 +221,10 @@
 	* Rework up and down arrow toplevel history navigation: works even for multiple lines, like in web browser consoles [Joel Low]
 	* After changing the input from toplevel history, set the cursor to the end of the input field [Joel Low]
 	* Fix the Makefile target with new versions of make [Joel Low]
+
+* 1.2.19 (February 15 2014)
+	* Fix compatibility with OCaml 4.01's backtrace [Joel Low]
+	* Fix jumping to the source file by double clicking on the call stack [Joel Low]
+	* Implement switching stack frames by double clicking on the call stack. Good for debugging recursive functions [Joel Low]
+	* Fix the stack position when it is over 9 [Nicolas Bros]
+	* Allow switching stack frames by single click or using the arrow keys on the keyboard [Nicolas Bros]

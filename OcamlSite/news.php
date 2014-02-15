@@ -10,8 +10,14 @@
 <div id="page">
 <h1>News</h1>
 
-<ul>
-
+<li><b>February 15 2014:</b> Version 1.2.19
+    <ul type="circle">
+		<li> Implement switching stack frames by double clicking on the call stack. Good for debugging recursive functions [Joel Low]
+		<li> Fix compatibility with OCaml 4.01's backtrace [Joel Low]
+		<li> Fix the stack position when it is over 9 [Nicolas Bros]
+		<li> Allow switching stack frames by single click or using the arrow keys on the keyboard [Nicolas Bros]
+    </ul>
+    
 <li><b>February 02 2014:</b> Version 1.2.18
     <ul type="circle">
 		<li> Fix the format for parsing Ocaml 4.01's breakpoint status message [Joel Low]
