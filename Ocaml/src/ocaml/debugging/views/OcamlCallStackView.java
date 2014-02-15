@@ -8,6 +8,8 @@ import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
@@ -24,9 +26,13 @@ public class OcamlCallStackView extends ViewPart{
 	
 	public void setCallStack(String elements[]){
 		list.setRedraw(false);
+		int selectionIndex = list.getSelectionIndex();
 		list.removeAll();
 		for(String e : elements)
 			list.add(e);
+		if (selectionIndex >= 0 && selectionIndex < elements.length) {
+			list.setSelection(selectionIndex);
+		}
 		list.setRedraw(true);
 	}
 	
@@ -47,20 +53,21 @@ public class OcamlCallStackView extends ViewPart{
 		list = new List(composite, SWT.SINGLE | SWT.V_SCROLL);
 
 		// TRUNG: add hyper-link feature for the Call Stack View
-		list.addMouseListener(new MouseAdapter() {
+		list.addSelectionListener(new SelectionAdapter() {
 			@Override
-			public void mouseDoubleClick(MouseEvent e) {
+			public void widgetSelected(SelectionEvent e) {
 				int currentIndex = list.getFocusIndex();
 				String currentItem = list.getItem(currentIndex);
-				Pattern p = Pattern.compile("#([\\d])+[\\s]+Pc:[\\s]+[\\d]+[\\s]+([a-zA-Z0-9_\\.]*)[\\s]+char[\\s]+([\\d]+)");
+				Pattern p = Pattern.compile("#(\\d+)\\s+Pc:\\s+\\d+\\s+([a-zA-Z0-9_\\.]*)\\s+char\\s+(\\d+)");
 				Matcher matcher = p.matcher(currentItem);
 				if (matcher.find()) {
+					int frame = Integer.parseInt(matcher.group(1));
 					String module = matcher.group(2);
 					int offset = Integer.parseInt(matcher.group(3));
 					String filename = Character.toLowerCase(module.charAt(0)) + module.substring(1) + ".ml";
 					OcamlDebugger debugger = OcamlDebugger.getInstance();
 					debugger.highlight(filename, offset);
-					debugger.setFrame(Integer.parseInt(matcher.group(1)));
+					debugger.setFrame(frame);
 				}
 			}
 		});

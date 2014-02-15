@@ -35,12 +35,14 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.ui.DebugUITools;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorDescriptor;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -49,7 +51,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.part.FileEditorInput;
 
 import beaver.Symbol;
 
@@ -1193,7 +1197,7 @@ public class OcamlDebugger implements IExecEvents {
 		refreshEditor();
 	}
 	
-	private synchronized IFileStore getFileStore(final String filename)
+	private synchronized IEditorInput getEditorInput(final String filename)
 	{
 		String ufilename = filename.substring(0, 1).toUpperCase() + filename.substring(1);
 
@@ -1227,22 +1231,19 @@ public class OcamlDebugger implements IExecEvents {
 				}
 			}
 
-			final IFileStore fileStore;
-			try {
-				URI uri = null;
-				if (file != null)
-					uri = file.getLocationURI();
-				else
-					uri = new File(path, filename).toURI();
+			if (file != null)
+				return new FileEditorInput(file);
 
-				fileStore = EFS.getStore(uri);
+			try {
+				File file2 = new File(path, filename);
+				if (file2.isFile()) {
+					URI uri = new File(path, filename).toURI();
+					final IFileStore fileStore = EFS.getStore(uri);
+					return new FileStoreEditorInput(fileStore);
+				}
 			} catch (CoreException e) {
 				OcamlPlugin.logError("OcamlDebugger.highlight()", e);
 				return null;
-			}
-
-			if (fileStore != null && fileStore.fetchInfo().exists()) {
-				return fileStore;
 			}
 		}
 		return null;
@@ -1251,16 +1252,17 @@ public class OcamlDebugger implements IExecEvents {
 	// get absolute path of a file from file name
 	private synchronized String getFilePath(final String filename)
 	{
-		IFileStore fileStore = getFileStore(filename);
-		if (fileStore != null && fileStore.fetchInfo().exists())
-			return fileStore.toURI().getPath();
-		else
-			return null;
+		IEditorInput editorInput = getEditorInput(filename);
+		if (editorInput instanceof IURIEditorInput) {
+			IURIEditorInput uriEditorInput = (IURIEditorInput) editorInput;
+			return uriEditorInput.getURI().getPath();
+		}
+		return null;
 	}
 
 	public void highlight(final String filename, final int offset) {
-		final IFileStore fileStore = getFileStore(filename);
-		if (fileStore != null && fileStore.fetchInfo().exists()) {
+		final IEditorInput editorInput = getEditorInput(filename);
+		if (editorInput != null) {
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
 					IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
@@ -1268,7 +1270,8 @@ public class OcamlDebugger implements IExecEvents {
 						IWorkbenchPage page = window.getActivePage();
 						if (page != null) {
 							try {
-								IEditorPart part = IDE.openEditorOnFileStore(page, fileStore);
+								IEditorDescriptor editorDescriptor = IDE.getEditorDescriptor(editorInput.getName());
+								IEditorPart part = IDE.openEditor(page, editorInput, editorDescriptor.getId(), false);
 								if (part instanceof OcamlEditor) {
 									OcamlEditor editor = (OcamlEditor) part;
 									DebugMarkers.getInstance().setCurrentPosition(filename,	offset);
@@ -1297,8 +1300,8 @@ public class OcamlDebugger implements IExecEvents {
 
 	// opens file in editor and jumps to specific offset
 	public void highlight(final String filename, final int line, final int column1, final int column2) {
-		final IFileStore fileStore = getFileStore(filename);
-		if (fileStore != null && fileStore.fetchInfo().exists()) {
+		final IEditorInput editorInput = getEditorInput(filename);
+		if (editorInput != null) {
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
 					IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
@@ -1306,7 +1309,8 @@ public class OcamlDebugger implements IExecEvents {
 						IWorkbenchPage page = window.getActivePage();
 						if (page != null) {
 							try {
-								IEditorPart part = IDE.openEditorOnFileStore(page, fileStore);
+								IEditorDescriptor editorDescriptor = IDE.getEditorDescriptor(editorInput.getName());
+								IEditorPart part = IDE.openEditor(page, editorInput, editorDescriptor.getId(), false);
 								if (part instanceof OcamlEditor) {
 									OcamlEditor editor = (OcamlEditor) part;
 									editor.redraw();
@@ -1334,8 +1338,8 @@ public class OcamlDebugger implements IExecEvents {
 
 	// opens file in editor and jumps to specific breakpoint location
 	public void highlight(final String filename, final int line, final int column) {
-		final IFileStore fileStore = getFileStore(filename);
-		if (fileStore != null && fileStore.fetchInfo().exists()) {
+		final IEditorInput editorInput = getEditorInput(filename);
+		if (editorInput != null) {
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
 					IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
@@ -1343,7 +1347,8 @@ public class OcamlDebugger implements IExecEvents {
 						IWorkbenchPage page = window.getActivePage();
 						if (page != null) {
 							try {
-								IEditorPart part = IDE.openEditorOnFileStore(page, fileStore);
+								IEditorDescriptor editorDescriptor = IDE.getEditorDescriptor(editorInput.getName());
+								IEditorPart part = IDE.openEditor(page, editorInput, editorDescriptor.getId(), false);
 								if (part instanceof OcamlEditor) {
 									OcamlEditor editor = (OcamlEditor) part;
 									editor.redraw();
