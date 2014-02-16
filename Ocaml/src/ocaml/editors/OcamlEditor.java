@@ -264,6 +264,45 @@ public class OcamlEditor extends TextEditor {
 		OcamlPlugin.logError("selection is not instanceof TextSelection");
 		return -1;
 	}
+	
+	public static class LineColumn {
+		private final int line;
+		private final int column;
+
+		public LineColumn(int line, int column) {
+			this.line = line;
+			this.column = column;
+		}
+
+		public int getLine() {
+			return line;
+		}
+
+		public int getColumn() {
+			return column;
+		}
+	}
+	
+	/** @return the current selection offset in the editor, as a (line,column) position. */
+	public LineColumn getSelectionLineColumn() {
+		ISelection sel = getSelectionProvider().getSelection();
+		if (sel instanceof TextSelection) {
+			TextSelection textSelection = (TextSelection) sel;
+			IDocument document = getDocumentProvider().getDocument(getEditorInput());
+			int offset = textSelection.getOffset();
+			try {
+				int lineNumber = document.getLineOfOffset(offset);
+				int column = offset - document.getLineOffset(lineNumber);
+				return new LineColumn(lineNumber, column);
+			} catch (BadLocationException e) {
+				OcamlPlugin.logError(e);
+				return null;
+			}
+			
+		}
+		OcamlPlugin.logError("selection is not instanceof TextSelection");
+		return null;
+	}
 
 	/** Synchronize the outline with the cursor line in the editor */
 	public void synchronizeOutline() {

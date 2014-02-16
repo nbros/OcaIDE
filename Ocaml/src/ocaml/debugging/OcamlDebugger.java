@@ -426,13 +426,13 @@ public class OcamlDebugger implements IExecEvents {
 		state = State.SettingFrame;
 	}
 
-	public synchronized void putBreakpointAt(String moduleName, int offset) {
+	public synchronized void putBreakpointAt(String moduleName, int line, int column) {
 		if (!checkStarted())
 			return;
 
 		if (state.equals(State.Idle)) {
 			state = State.PuttingBreakpoint;
-			send("break @ " + moduleName + " # " + offset);
+			send("break @ " + moduleName + " " + (line + 1) + " " + (column + 1));
 		}
 	}
 

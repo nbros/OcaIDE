@@ -2,6 +2,7 @@ package ocaml.debugging.actions;
 
 import ocaml.debugging.OcamlDebugger;
 import ocaml.editors.OcamlEditor;
+import ocaml.editors.OcamlEditor.LineColumn;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.IAction;
@@ -28,7 +29,7 @@ public class PutBreakpointAction implements IWorkbenchWindowActionDelegate {
 			if (editorPart != null) {
 				if (editorPart instanceof OcamlEditor) {
 					OcamlEditor editor = (OcamlEditor) editorPart;
-					int offset = editor.getCaretOffset();
+					LineColumn selectionLineColumn = editor.getSelectionLineColumn();
 					
 					IPath file = editor.getPathOfFileBeingEdited();
 					if(file == null)
@@ -41,7 +42,7 @@ public class PutBreakpointAction implements IWorkbenchWindowActionDelegate {
 								+ filename.substring(1, filename.length() - 3);
 
 						OcamlDebugger debugger = OcamlDebugger.getInstance();
-						debugger.putBreakpointAt(moduleName, offset);
+						debugger.putBreakpointAt(moduleName, selectionLineColumn.getLine(), selectionLineColumn.getColumn());
 					}
 
 				}
