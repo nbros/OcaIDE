@@ -3,6 +3,8 @@ package ocaml.debugging;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -31,6 +33,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IProcess;
@@ -232,16 +235,25 @@ public class OcamlDebugger implements IExecEvents {
 
 			OcamlPaths ocamlPaths = new OcamlPaths(project);
 			String[] paths = ocamlPaths.getPaths();
-			for (String path : paths) {
-				path = path.trim();
-				if (!".".equals(path)) {
+			IPath projectLocation = project.getLocation();
+			for (String pathStr : paths) {
+				pathStr = pathStr.trim();
+				if (!".".equals(pathStr)) {
 					commandLineArgs.add("-I");
-					commandLineArgs.add(path);
+					
+					//These paths are either absolute or relative to the project
+					//directory. We must convert them to absolute paths in case
+					//we are running a bytecode within a nested directory.
+					Path path = Paths.get(pathStr);
+					if (!path.isAbsolute()) {
+						path = Paths.get(projectLocation.append(pathStr).toOSString());
+					}
+					commandLineArgs.add(path.toString());	
 				}
 			}
 
 			// add the _build folder (for the cases making project by using Ocamlbuild)
-			String buildpath = project.getLocation().toOSString() + "/_build";
+			String buildpath = projectLocation.append("_build").toOSString();
 			ArrayList<String> buildFolders = FileUtil.findSubdirectories(buildpath);
 			for (String path: buildFolders) {
 				commandLineArgs.add("-I");
@@ -254,7 +266,7 @@ public class OcamlDebugger implements IExecEvents {
 
 			// add the root of the project
 			commandLineArgs.add("-I");
-			commandLineArgs.add(project.getLocation().toOSString());
+			commandLineArgs.add(projectLocation.toOSString());
 
 			commandLineArgs.add(byteFile.getPath());
 			String[] commandLine = commandLineArgs.toArray(new String[commandLineArgs.size()]);
