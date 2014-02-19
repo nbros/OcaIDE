@@ -820,11 +820,11 @@ public class OcamlDebugger implements IExecEvents {
 						strippedOutput = output.substring(0, lastEolIndex);
 					message(strippedOutput);
 				}
+				processMessage(output);
 				debuggerOutput.setLength(0);
 				if (remoteDebugEnable)
 					remoteConnectionRequestDialog.signalRemoteProcessConnected();
 				showPerspective(OcamlDebugPerspective.ID);
-				state = State.Idle;
 			} else if (state.equals(State.Restarting)) {
 				debuggerOutput.setLength(0);
 				DebugMarkers.getInstance().clearCurrentPosition();
