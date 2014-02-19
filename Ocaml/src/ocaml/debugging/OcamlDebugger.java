@@ -1022,7 +1022,7 @@ public class OcamlDebugger implements IExecEvents {
 	}
 
 	Pattern patternBreakpoint = Pattern
-			.compile("Breakpoint (\\d+) at (\\d+): file (.*?), line (\\d+), characters (\\d+)-(\\d+)");
+			.compile("Breakpoint\\s+(\\d+)\\s+at\\s+(\\d+):\\s+file\\s+(.*?),\\s+line\\s+(\\d+),\\s+characters\\s+(\\d+)-(\\d+)");
 
 	private void processBreakpoint(final String output) {
 		Matcher matcher = patternBreakpoint.matcher(output);
@@ -1073,7 +1073,7 @@ public class OcamlDebugger implements IExecEvents {
 					.logError("ocamldebugger: couldn't parse breakpoint information:\n" + output);
 	}
 
-	Pattern patternFrame = Pattern.compile("\\A#\\d+  Pc: \\d+  (\\w+) char (\\d+)");
+	Pattern patternFrame = Pattern.compile("\\A#\\d+\\s+Pc\\s*:\\s+\\d+\\s+(\\w+)\\s+char\\s+(\\d+)");
 
 	private void processFrame(String output) {
 		Matcher matcher = patternFrame.matcher(output);
@@ -1089,7 +1089,7 @@ public class OcamlDebugger implements IExecEvents {
 			OcamlPlugin.logError("ocamldebugger: couldn't parse frame");
 	}
 
-    Pattern patternCallstack = Pattern.compile("\\A#(\\d+)  Pc : (\\d+)  (\\w+) char (\\d+)");
+    Pattern patternCallstack = Pattern.compile("\\A#(\\d+)\\s+Pc\\s*:\\s+(\\d+)\\s+(\\w+)\\s+char\\s+(\\d+)");
     
 	private void processCallStack(final String output) {
 		Display.getDefault().asyncExec(new Runnable() {
@@ -1137,6 +1137,8 @@ public class OcamlDebugger implements IExecEvents {
 									String newOutput = "#" + s1 + "  -  " + module + "." + functionName
 														+ "  -  (" + line + ": " + column + ")"; 
 									backtrace[i] = newOutput;
+								} else {
+									OcamlPlugin.logError("ocamldebugger: couldn't parse call stack");
 								}
 							}
 							stackview.setCallStack(backtrace);
