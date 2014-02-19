@@ -94,7 +94,12 @@ public class MakefileProperties {
 
 	/** Read make options */
 	public String[] getOptions() {
-		return getArrayFromSettings(MAKE_OPTIONS);
+		String[] options = getArrayFromSettings(MAKE_OPTIONS);
+		if (options.length == 1 && options[0].isEmpty()) {
+			return new String[0];
+		} else {
+			return options;
+		}
 	}
 	
 	private String[] getArrayFromSettings(String key) {
