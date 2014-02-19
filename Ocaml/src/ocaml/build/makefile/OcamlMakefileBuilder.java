@@ -141,8 +141,7 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 				targets = makefileProperties.getTargets();
 
 			for (String target: targets)
-				if (target.length() > 0)
-					commandLine.add(target);
+				commandLine.add(target);
 
 			String[] strCommandLine = commandLine.toArray(new String[commandLine.size()]);
 
