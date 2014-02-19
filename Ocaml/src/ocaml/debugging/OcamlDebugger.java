@@ -992,11 +992,11 @@ public class OcamlDebugger implements IExecEvents {
 		});
 	}
 
-	Pattern patternBeginning = Pattern.compile("Time : 0\\nBeginning of program.\\n\\(ocd\\) ");
+	Pattern patternBeginning = Pattern.compile("Time\\s*:\\s+0\\nBeginning of program.\\n\\(ocd\\) ");
 
-	Pattern patternEnd = Pattern.compile("Time : \\d+\\nProgram exit.\\n\\(ocd\\) ");
+	Pattern patternEnd = Pattern.compile("Time\\s*:\\s+\\d+\\nProgram exit.\\n\\(ocd\\) ");
 
-	Pattern patternException = Pattern.compile("Time : \\d+\\nProgram end.\\nUncaught exception: (.*\\n)\\(ocd\\) ");
+	Pattern patternException = Pattern.compile("Time\\s*:\\s+\\d+\\nProgram end.\\nUncaught exception: (.*\\n)\\(ocd\\) ");
 
 	private boolean processMessage(String output) {
 
