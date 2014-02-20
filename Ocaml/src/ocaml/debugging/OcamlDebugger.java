@@ -1117,7 +1117,7 @@ public class OcamlDebugger implements IExecEvents {
 									String module = matcher.group(3); // module name
 									int offset = Integer.parseInt(matcher.group(4));
 									String filename = Character.toLowerCase(module.charAt(0)) + module.substring(1) + ".ml";
-									String functionName = "_"; 
+									String functionName = null;
 									int line = -1;
 									int column = -1;
 									try {
@@ -1125,14 +1125,16 @@ public class OcamlDebugger implements IExecEvents {
 										List<Integer> position = FileUtil.findLineColumnOfOffset(filepath, offset);
 										line = position.get(0);
 										column = position.get(1);
-										if (i == backtrace.length - 1)
-											functionName = "_";
-										else
-											functionName = findFunctionContainingLine(filepath, line);
+										functionName = findFunctionContainingLine(filepath, line);
 									} catch (Exception e) {
 										// TODO: handle exception
 										e.printStackTrace();
 									}
+
+									// Make sure we have a function name; a trailing period is weird.
+									if (functionName == null || functionName.isEmpty())
+										functionName = "_";
+
 									// prettier stackview
 									String newOutput = "#" + s1 + "  -  " + module + "." + functionName
 														+ "  -  (" + line + ": " + column + ")"; 
