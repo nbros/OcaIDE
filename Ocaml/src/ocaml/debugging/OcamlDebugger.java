@@ -562,8 +562,8 @@ public class OcamlDebugger implements IExecEvents {
 		showPerspective(OcamlPerspective.ID);
 	}
 
-	Pattern patternBindFailed = Pattern.compile("^Unix error : 'bind' failed :");
-	Pattern patternLostConnection = Pattern.compile("Lost connection with process \\d+");
+	static final Pattern patternBindFailed = Pattern.compile("^Unix error : 'bind' failed :");
+	static final Pattern patternLostConnection = Pattern.compile("Lost connection with process \\d+");
 
 	public synchronized void processNewError(String error) {
 
@@ -992,11 +992,11 @@ public class OcamlDebugger implements IExecEvents {
 		});
 	}
 
-	Pattern patternBeginning = Pattern.compile("Time\\s*:\\s+0\\nBeginning of program.\\n\\(ocd\\) ");
+	static final Pattern patternBeginning = Pattern.compile("Time\\s*:\\s+0\\nBeginning of program.\\n\\(ocd\\) ");
 
-	Pattern patternEnd = Pattern.compile("Time\\s*:\\s+\\d+\\nProgram (exit|end).\\n\\(ocd\\) ");
+	static final Pattern patternEnd = Pattern.compile("Time\\s*:\\s+\\d+\\nProgram (exit|end).\\n\\(ocd\\) ");
 
-	Pattern patternException = Pattern.compile("Time\\s*:\\s+\\d+\\nProgram end.\\nUncaught exception: (.*\\n)\\(ocd\\) ");
+	static final Pattern patternException = Pattern.compile("Time\\s*:\\s+\\d+\\nProgram end.\\nUncaught exception: (.*\\n)\\(ocd\\) ");
 
 	private boolean processMessage(String output) {
 
@@ -1073,7 +1073,7 @@ public class OcamlDebugger implements IExecEvents {
 					.logError("ocamldebugger: couldn't parse breakpoint information:\n" + output);
 	}
 
-	Pattern patternFrame = Pattern.compile("\\A#\\d+\\s+Pc\\s*:\\s+\\d+\\s+(\\w+)\\s+char\\s+(\\d+)");
+	static final Pattern patternFrame = Pattern.compile("\\A#\\d+\\s+Pc\\s*:\\s+\\d+\\s+(\\w+)\\s+char\\s+(\\d+)");
 
 	private void processFrame(String output) {
 		Matcher matcher = patternFrame.matcher(output);
@@ -1089,7 +1089,8 @@ public class OcamlDebugger implements IExecEvents {
 			OcamlPlugin.logError("ocamldebugger: couldn't parse frame");
 	}
 
-    Pattern patternCallstack = Pattern.compile("\\A#(\\d+)\\s+Pc\\s*:\\s+(\\d+)\\s+(\\w+)\\s+char\\s+(\\d+)");
+    static final Pattern patternCallstack = Pattern
+            .compile("\\A#(\\d+)\\s+Pc\\s*:\\s+(\\d+)\\s+(\\w+)\\s+char\\s+(\\d+)");
     
 	private void processCallStack(final String output) {
 		Display.getDefault().asyncExec(new Runnable() {
