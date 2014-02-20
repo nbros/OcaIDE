@@ -1089,7 +1089,7 @@ public class OcamlDebugger implements IExecEvents {
 			OcamlPlugin.logError("ocamldebugger: couldn't parse frame");
 	}
 
-    static final Pattern patternCallstack = Pattern
+    public static final Pattern patternCallstack = Pattern
             .compile("\\A#(\\d+)\\s+Pc\\s*:\\s+(\\d+)\\s+(\\w+)\\s+char\\s+(\\d+)");
     
 	private void processCallStack(final String output) {
@@ -1411,11 +1411,11 @@ public class OcamlDebugger implements IExecEvents {
 		});
 	}
 
-	private void message(final String message) {
+	public void message(final String message) {
 		message(message, false);
 	}
 
-	private void errorMessage(final String message) {
+	public void errorMessage(final String message) {
 		message(message, true);
 	}
 
