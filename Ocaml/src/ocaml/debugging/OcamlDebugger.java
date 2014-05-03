@@ -823,7 +823,6 @@ public class OcamlDebugger implements IExecEvents {
 				refreshEditor();
 				state = State.Idle;
 			}
-
 			else if (state.equals(State.Frame)) {
 				processFrame(output);
 				debuggerOutput.setLength(0);
@@ -1264,6 +1263,7 @@ public class OcamlDebugger implements IExecEvents {
 		return null;
 	}
 
+ 
 	public void highlight(final String filename, final int offset) {
 		final IEditorInput editorInput = getEditorInput(filename);
 		if (editorInput != null) {
