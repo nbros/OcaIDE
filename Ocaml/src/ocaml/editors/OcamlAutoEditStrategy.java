@@ -9,12 +9,17 @@ import ocaml.editor.syntaxcoloring.OcamlPartitionScanner;
 import ocaml.preferences.PreferenceConstants;
 
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.BadPartitioningException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.TextUtilities;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 
 //TODO: linked mode
 
@@ -34,6 +39,8 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 
 	/** A comment opened at the beginning of the line */
 	private Pattern patternCommentOpen = Pattern.compile("^\\(\\*");
+	
+	private Pattern patternCommentMultipleLines = Pattern.compile("^\\*");
 
 	/** A "no-format" comment opened at the beginning of the line */
 	private Pattern patternCommentOpenNoFormat = Pattern.compile("^\\(\\*\\|");
@@ -164,7 +171,7 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 					PreferenceConstants.P_EDITOR_CONTINUE_COMMENTS)) {
 				Matcher matcher = patternCommentOpenNoFormat.matcher(beforeCursor);
 				if (matcher.find() && !beforeCursor.contains("*)")) {
-					command.text = "*)" + eol + makeIndent(indent) + "(*| ";
+					command.text = " *)" + eol + makeIndent(indent) + "(*| ";
 					return;
 				}
 
@@ -173,9 +180,50 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 				if (matcher.find())
 					return;
 
+				// support multiple-lines comment like Ecipse for Java
 				matcher = patternCommentOpen.matcher(beforeCursor);
-				if (matcher.find() && !beforeCursor.contains("*)")) {
-					command.text = "*)" + eol + makeIndent(indent) + "(* ";
+				if (matcher.find()) {
+					try {
+						IDocumentExtension3 extension = (IDocumentExtension3) document;
+						ITypedRegion partition;
+						partition = extension.getPartition(OcamlPartitionScanner.OCAML_PARTITIONING,
+								command.offset, false);
+						if(OcamlPartitionScanner.OCAML_DOCUMENTATION_COMMENT.equals(partition.getType())||
+								OcamlPartitionScanner.OCAML_MULTILINE_COMMENT.equals(partition.getType())) {
+							command.text = " " + eol + makeIndent(indent) + " * ";
+						}
+						else {
+							String strIndent = makeIndent(indent);
+							command.text = eol + makeIndent(indent) + " * "  + eol + makeIndent(indent) +  " *)";
+							command.shiftsCaret = false;
+			                command.caretOffset = command.offset + eol.length() + strIndent.length() + 3;
+						}
+					} catch (BadLocationException e) {
+						OcamlPlugin.logError("bad location in OcamlAutoEditStrategy", e);
+					} catch (BadPartitioningException e) {
+						OcamlPlugin.logError("bad partitioning in OcamlAutoEditStrategy", e);
+					}
+					return;
+				}
+				
+				// support multiple-lines comment like Eclipse for Java
+				matcher = patternCommentMultipleLines.matcher(trimmed); 
+				if (matcher.find()) {
+					try {
+						IDocumentExtension3 extension = (IDocumentExtension3) document;
+						ITypedRegion partition = extension.getPartition(OcamlPartitionScanner.OCAML_PARTITIONING,
+								command.offset, false);
+						if(OcamlPartitionScanner.OCAML_DOCUMENTATION_COMMENT.equals(partition.getType())||
+								OcamlPartitionScanner.OCAML_MULTILINE_COMMENT.equals(partition.getType())) {
+							if (trimmed.startsWith("*") && !trimmed.startsWith("*)")) {
+								command.text = " " + eol + makeIndent(indent) + " * ";
+							}
+						}
+					} catch (BadLocationException e) {
+						OcamlPlugin.logError("bad location in OcamlAutoEditStrategy", e);
+					} catch (BadPartitioningException e) {
+						OcamlPlugin.logError("bad partitioning in OcamlAutoEditStrategy", e);
+					}
 					return;
 				}
 			}
