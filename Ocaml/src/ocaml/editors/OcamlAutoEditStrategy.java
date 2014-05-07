@@ -95,8 +95,8 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 
 		int offsetInLine = command.offset - lineRegion.getOffset();
 
-		String beforeCursor = line.substring(0, offsetInLine).trim();
-		String afterCursor = line.substring(offsetInLine, line.length()).trim();
+		String beforeCursor = line.substring(0, offsetInLine);
+		String afterCursor = line.substring(offsetInLine, line.length());
 		
 		try {
 			ITypedRegion region = document.getPartition(offsetInLine);
@@ -190,9 +190,9 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 								command.offset, false);
 						if(OcamlPartitionScanner.OCAML_DOCUMENTATION_COMMENT.equals(partition.getType())||
 								OcamlPartitionScanner.OCAML_MULTILINE_COMMENT.equals(partition.getType())) {
-							command.text = " " + eol + makeIndent(indent) + " * ";
+							command.text = eol + makeIndent(indent) + " * ";
 						}
-						else {
+						else if (partition.getOffset() <= matcher.end() + lineRegion.getOffset()) {
 							String strIndent = makeIndent(indent);
 							command.text = eol + makeIndent(indent) + " * "  + eol + makeIndent(indent) +  " *)";
 							command.shiftsCaret = false;
@@ -216,7 +216,7 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 						if(OcamlPartitionScanner.OCAML_DOCUMENTATION_COMMENT.equals(partition.getType())||
 								OcamlPartitionScanner.OCAML_MULTILINE_COMMENT.equals(partition.getType())) {
 							if (trimmed.startsWith("*") && !trimmed.startsWith("*)")) {
-								command.text = " " + eol + makeIndent(indent) + " * ";
+								command.text = eol + makeIndent(indent) + " * ";
 							}
 						}
 					} catch (BadLocationException e) {
