@@ -40,10 +40,13 @@ public class OcamlCommentRule implements IPredicateRule {
 					ch = scanner.read();
 					nRead++;
 
+					/* //Commented out by Trung
 					if (ch == -1)
 						return token;
 
-					else if (ch == ')') {
+					else 
+					*/
+					if (ch == ')') {
 						if (bStar) {
 							nestingLevel--;
 							if (nestingLevel <= 0)
