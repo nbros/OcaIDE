@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: OcaIDE
 Bundle-SymbolicName: Ocaml;singleton:=true
-Bundle-Version: 1.2.19.qualifier
+Bundle-Version: 1.2.20.qualifier
 Bundle-Activator: ocaml.OcamlPlugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -20,4 +20,4 @@ Bundle-ClassPath: lib/beaver-rt.jar,
  lib/JFlex.jar,
  .
 Bundle-Vendor: Université Pierre et Marie Curie - Paris 6
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
