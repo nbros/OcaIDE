@@ -459,7 +459,7 @@ public class DependenciesSetter implements IPostNeededFilesVisitor {
 			for (int j = allFiles.length - 1; j > 0; j--) {
 				// Ignorer les noms de fichiers vides, ceci peut arriver suite à
 				// la concaténation des noms de fichiers avec espaces.
-				if (!allFiles[j].equals("")) {
+				if (!allFiles[j].equals("") && !allFiles[j].equals(":")) {
 					String tempFileName = allFiles[j].replaceAll("\\.cmi\\z",
 							".mli");
 					tempFileName = tempFileName.replaceAll("\\.cmo\\z", ".ml");
