@@ -10,6 +10,11 @@
 <div id="page">
 <h1>News</h1>
 
+<li><b>June 14 2014:</b> Version 1.2.21
+    <ul type="circle">
+		<li> Fixed parsing of ocamldep output for post 3.12 versions [Steve Zdancewic]
+    </ul>
+
 <li><b>May 29 2014:</b> Version 1.2.20
     <ul type="circle">
 		<li> Fix include paths when debugging a bytecode not at project root [Joel Low]

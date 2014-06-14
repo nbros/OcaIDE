@@ -2,7 +2,7 @@
 <feature
       id="OcaIDEFeature"
       label="OcaIDE"
-      version="1.2.20.qualifier"
+      version="1.2.21.qualifier"
       provider-name="Université Pierre et Marie Curie - Paris 6">
 
    <description url="http://www.algo-prog.info/ocaide/">

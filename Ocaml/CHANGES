@@ -236,3 +236,6 @@
 	* Adapt to OCaml 4.01 debugger's "program end" [Joel Low]
 	* Restore the message that displays when the debuggee starts [Joel Low]
 	* Stack switching fixes [Joel Low]
+
+* 1.2.21 (June 14 2014)
+	* Fixed parsing of ocamldep output for post 3.12 versions [Steve Zdancewic]

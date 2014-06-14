@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: OcaIDE
 Bundle-SymbolicName: Ocaml;singleton:=true
-Bundle-Version: 1.2.20.qualifier
+Bundle-Version: 1.2.21.qualifier
 Bundle-Activator: ocaml.OcamlPlugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
