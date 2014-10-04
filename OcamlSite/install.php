@@ -12,23 +12,15 @@
     <h1>Installing</h1>
 
     <h2>Prerequisites</h2>
-    OcaIDE needs a 1.5, 6.0 or 7.0 Java Virtual Machine (from Oracle: <a href="http://java.com/en/download/index.jsp">download
-    the JRE here</a>)
+    OcaIDE needs a 7.0 Java Virtual Machine (from Oracle: <a href="http://java.com/en/download/index.jsp">download the JRE here</a>)
     and any recent version of <a href="http://www.eclipse.org/downloads/">Eclipse</a> to work correctly.
     <p>
-
-        It will <b>not</b> work with a JVM version inferior to 1.5.
-
+        It will <b>not</b> work with a JVM version inferior to 7.0.
     <p>
-
         If you are looking for an old version of OcaIDE, you can grab the jar from <a href="plugins/">here</a> and install it manually, or recompile it from <a href="sources.php">source</a>.
-
     <p>
-
-        Also, the plug-in has been reported not to work with GCJ (since GCJ doesn't completely support Java 1.5)
-
+        Also, beware that the plug-in has been reported not to work with GCJ (due to incomplete Java support in GCJ)
     <p>
-
         It works on Windows, Linux and Mac OS X. Some features are unavailable under Windows
         (debugger checkpoints and interrupting the toplevel, mainly).
 
@@ -36,7 +28,6 @@
     To install OcaIDE inside of Eclipse, open Eclipse, click on <b>Help &gt; Install New Software...</b>
 
     <p>
-
         Enter <b>http://www.algo-prog.info/ocaide/</b> as the update site.
 
     <p>
@@ -46,19 +37,15 @@
         Then, click <b>Next</b> twice, accept the agreement and click <b>Finish</b>.
 
     <p>
-
         The plug-in then downloads... It can take a while depending on your connection speed.
 
     <p>
-
         Accept the installation (the plug-in is not digitally signed), and restart Eclipse when it asks you to.
 
     <p>
-
         As soon as Eclipse is restarted, you can start using the plug-in.
 
     <p>
-
         You can access the online help by clicking on <b>Help &gt; Help Contents</b> in the Eclipse main menu,
         and choosing <b>OCaml Development User Guide</b> in the list of available topics.
 
@@ -73,9 +60,8 @@
     you can still install it manually:
     <ul>
         <li>Download the jar file from <a href="plugins">here</a>.
-        <li>Put it in one of your "plugins" directory (for example, "/usr/lib/eclipse/plugins/").
+        <li>Put it in the "dropins" directory in your Eclipse installation.
         <li>Restart Eclipse.
-        <li>If the plug-in is not detected, try to start Eclipse with the "-clean" option (on command line).
     </ul>
 
     <h2><a name="uninstall">Uninstalling</a></h2>

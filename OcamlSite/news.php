@@ -10,6 +10,22 @@
 <div id="page">
 <h1>News</h1>
 
+<li><b>June 14 2014:</b> Version 1.2.21
+    <ul type="circle">
+		<li> Fixed parsing of ocamldep output for post 3.12 versions [Steve Zdancewic]
+    </ul>
+
+<li><b>May 29 2014:</b> Version 1.2.20
+    <ul type="circle">
+		<li> Fix include paths when debugging a bytecode not at project root [Joel Low]
+		<li> Fix empty string handling in makefile project properties; do not allow an empty string to mean extra make options [Joel Low]
+		<li> Make the ocamldebug and debugger output parsing be whitespace insensitive (restores compatibility with older OCaml versions) [Joel Low]
+		<li> Adapt to OCaml 4.01 debugger's "program end" [Joel Low]
+		<li> Restore the message that displays when the debuggee starts [Joel Low]
+		<li> Stack switching fixes [Joel Low]
+		<li> <b>OcaIDE now depends on Java 7</b>
+    </ul>
+    
 <li><b>February 15 2014:</b> Version 1.2.19
     <ul type="circle">
 		<li> Implement switching stack frames by double clicking on the call stack. Good for debugging recursive functions [Joel Low]

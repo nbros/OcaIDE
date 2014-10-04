@@ -228,3 +228,14 @@
 	* Implement switching stack frames by double clicking on the call stack. Good for debugging recursive functions [Joel Low]
 	* Fix the stack position when it is over 9 [Nicolas Bros]
 	* Allow switching stack frames by single click or using the arrow keys on the keyboard [Nicolas Bros]
+
+* 1.2.20 (May 29 2014)
+	* Fix include paths when debugging a bytecode not at project root [Joel Low]
+	* Fix empty string handling in makefile project properties; do not allow an empty string to mean extra make options [Joel Low]
+	* Make the ocamldebug and debugger output parsing be whitespace insensitive (restores compatibility with older OCaml versions) [Joel Low]
+	* Adapt to OCaml 4.01 debugger's "program end" [Joel Low]
+	* Restore the message that displays when the debuggee starts [Joel Low]
+	* Stack switching fixes [Joel Low]
+
+* 1.2.21 (June 14 2014)
+	* Fixed parsing of ocamldep output for post 3.12 versions [Steve Zdancewic]

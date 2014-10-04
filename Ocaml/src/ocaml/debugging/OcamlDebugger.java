@@ -3,6 +3,8 @@ package ocaml.debugging;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -31,6 +33,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IProcess;
@@ -232,16 +235,25 @@ public class OcamlDebugger implements IExecEvents {
 
 			OcamlPaths ocamlPaths = new OcamlPaths(project);
 			String[] paths = ocamlPaths.getPaths();
-			for (String path : paths) {
-				path = path.trim();
-				if (!".".equals(path)) {
+			IPath projectLocation = project.getLocation();
+			for (String pathStr : paths) {
+				pathStr = pathStr.trim();
+				if (!".".equals(pathStr)) {
 					commandLineArgs.add("-I");
-					commandLineArgs.add(path);
+					
+					//These paths are either absolute or relative to the project
+					//directory. We must convert them to absolute paths in case
+					//we are running a bytecode within a nested directory.
+					Path path = Paths.get(pathStr);
+					if (!path.isAbsolute()) {
+						path = Paths.get(projectLocation.append(pathStr).toOSString());
+					}
+					commandLineArgs.add(path.toString());	
 				}
 			}
 
 			// add the _build folder (for the cases making project by using Ocamlbuild)
-			String buildpath = project.getLocation().toOSString() + "/_build";
+			String buildpath = projectLocation.append("_build").toOSString();
 			ArrayList<String> buildFolders = FileUtil.findSubdirectories(buildpath);
 			for (String path: buildFolders) {
 				commandLineArgs.add("-I");
@@ -258,7 +270,7 @@ public class OcamlDebugger implements IExecEvents {
 
 			// add the root of the project
 			commandLineArgs.add("-I");
-			commandLineArgs.add(project.getLocation().toOSString());
+			commandLineArgs.add(projectLocation.toOSString());
 
 			commandLineArgs.add(byteFile.getPath());
 			String[] commandLine = commandLineArgs.toArray(new String[commandLineArgs.size()]);
@@ -554,8 +566,8 @@ public class OcamlDebugger implements IExecEvents {
 		showPerspective(OcamlPerspective.ID);
 	}
 
-	Pattern patternBindFailed = Pattern.compile("^Unix error : 'bind' failed :");
-	Pattern patternLostConnection = Pattern.compile("Lost connection with process \\d+");
+	static final Pattern patternBindFailed = Pattern.compile("^Unix error : 'bind' failed :");
+	static final Pattern patternLostConnection = Pattern.compile("Lost connection with process \\d+");
 
 	public synchronized void processNewError(String error) {
 
@@ -812,11 +824,11 @@ public class OcamlDebugger implements IExecEvents {
 						strippedOutput = output.substring(0, lastEolIndex);
 					message(strippedOutput);
 				}
+				processMessage(output);
 				debuggerOutput.setLength(0);
 				if (remoteDebugEnable)
 					remoteConnectionRequestDialog.signalRemoteProcessConnected();
 				showPerspective(OcamlDebugPerspective.ID);
-				state = State.Idle;
 			} else if (state.equals(State.Restarting)) {
 				debuggerOutput.setLength(0);
 				DebugMarkers.getInstance().clearCurrentPosition();
@@ -983,11 +995,11 @@ public class OcamlDebugger implements IExecEvents {
 		});
 	}
 
-	Pattern patternBeginning = Pattern.compile("Time : 0\\nBeginning of program.\\n\\(ocd\\) ");
+	static final Pattern patternBeginning = Pattern.compile("Time\\s*:\\s+0\\nBeginning of program.\\n\\(ocd\\) ");
 
-	Pattern patternEnd = Pattern.compile("Time : \\d+\\nProgram exit.\\n\\(ocd\\) ");
+	static final Pattern patternEnd = Pattern.compile("Time\\s*:\\s+\\d+\\nProgram (exit|end).\\n\\(ocd\\) ");
 
-	Pattern patternException = Pattern.compile("Time : \\d+\\nProgram end.\\nUncaught exception: (.*\\n)\\(ocd\\) ");
+	static final Pattern patternException = Pattern.compile("Time\\s*:\\s+\\d+\\nProgram end.\\nUncaught exception: (.*\\n)\\(ocd\\) ");
 
 	private boolean processMessage(String output) {
 
@@ -1013,7 +1025,7 @@ public class OcamlDebugger implements IExecEvents {
 	}
 
 	Pattern patternBreakpoint = Pattern
-			.compile("Breakpoint (\\d+) at (\\d+): file (.*?), line (\\d+), characters (\\d+)-(\\d+)");
+			.compile("Breakpoint\\s+(\\d+)\\s+at\\s+(\\d+):\\s+file\\s+(.*?),\\s+line\\s+(\\d+),\\s+characters\\s+(\\d+)-(\\d+)");
 
 	private void processBreakpoint(final String output) {
 		Matcher matcher = patternBreakpoint.matcher(output);
@@ -1064,7 +1076,7 @@ public class OcamlDebugger implements IExecEvents {
 					.logError("ocamldebugger: couldn't parse breakpoint information:\n" + output);
 	}
 
-	Pattern patternFrame = Pattern.compile("\\A#\\d+  Pc: \\d+  (\\w+) char (\\d+)");
+	static final Pattern patternFrame = Pattern.compile("\\A#\\d+\\s+Pc\\s*:\\s+\\d+\\s+(\\w+)\\s+char\\s+(\\d+)");
 
 	private void processFrame(String output) {
 		Matcher matcher = patternFrame.matcher(output);
@@ -1080,7 +1092,8 @@ public class OcamlDebugger implements IExecEvents {
 			OcamlPlugin.logError("ocamldebugger: couldn't parse frame");
 	}
 
-    Pattern patternCallstack = Pattern.compile("\\A#(\\d+)  Pc : (\\d+)  (\\w+) char (\\d+)");
+    public static final Pattern patternCallstack = Pattern
+            .compile("\\A#(\\d+)\\s+Pc\\s*:\\s+(\\d+)\\s+(\\w+)\\s+char\\s+(\\d+)");
     
 	private void processCallStack(final String output) {
 		Display.getDefault().asyncExec(new Runnable() {
@@ -1108,7 +1121,7 @@ public class OcamlDebugger implements IExecEvents {
 									String module = matcher.group(3); // module name
 									int offset = Integer.parseInt(matcher.group(4));
 									String filename = Character.toLowerCase(module.charAt(0)) + module.substring(1) + ".ml";
-									String functionName = "_"; 
+									String functionName = null;
 									int line = -1;
 									int column = -1;
 									try {
@@ -1116,18 +1129,22 @@ public class OcamlDebugger implements IExecEvents {
 										List<Integer> position = FileUtil.findLineColumnOfOffset(filepath, offset);
 										line = position.get(0);
 										column = position.get(1);
-										if (i == backtrace.length - 1)
-											functionName = "_";
-										else
-											functionName = findFunctionContainingLine(filepath, line);
+										functionName = findFunctionContainingLine(filepath, line);
 									} catch (Exception e) {
 										// TODO: handle exception
 										e.printStackTrace();
 									}
+
+									// Make sure we have a function name; a trailing period is weird.
+									if (functionName == null || functionName.isEmpty())
+										functionName = "_";
+
 									// prettier stackview
 									String newOutput = "#" + s1 + "  -  " + module + "." + functionName
 														+ "  -  (" + line + ": " + column + ")"; 
 									backtrace[i] = newOutput;
+								} else {
+									OcamlPlugin.logError("ocamldebugger: couldn't parse call stack");
 								}
 							}
 							stackview.setCallStack(backtrace);
@@ -1398,11 +1415,11 @@ public class OcamlDebugger implements IExecEvents {
 		});
 	}
 
-	private void message(final String message) {
+	public void message(final String message) {
 		message(message, false);
 	}
 
-	private void errorMessage(final String message) {
+	public void errorMessage(final String message) {
 		message(message, true);
 	}
 

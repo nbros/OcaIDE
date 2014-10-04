@@ -58,17 +58,32 @@ public class OcamlCallStackView extends ViewPart{
 			public void widgetSelected(SelectionEvent e) {
 				int currentIndex = list.getFocusIndex();
 				String currentItem = list.getItem(currentIndex);
-				Pattern p = Pattern.compile("#(\\d+)\\s+Pc:\\s+\\d+\\s+([a-zA-Z0-9_\\.]*)\\s+char\\s+(\\d+)");
-				Matcher matcher = p.matcher(currentItem);
-				if (matcher.find()) {
-					int frame = Integer.parseInt(matcher.group(1));
-					String module = matcher.group(2);
-					int offset = Integer.parseInt(matcher.group(3));
+				OcamlDebugger debugger = OcamlDebugger.getInstance();
+
+				Matcher userFriendlyMatcher = OcamlCallStackView.patternCallstack.matcher(currentItem);
+				if (userFriendlyMatcher.find()) {
+					int frame = Integer.parseInt(userFriendlyMatcher.group(1));
+					String module = userFriendlyMatcher.group(2);
+					int line = Integer.parseInt(userFriendlyMatcher.group(3));
+					int column = Integer.parseInt(userFriendlyMatcher.group(4));
 					String filename = Character.toLowerCase(module.charAt(0)) + module.substring(1) + ".ml";
-					OcamlDebugger debugger = OcamlDebugger.getInstance();
+					debugger.highlight(filename, line, column);
+					debugger.setFrame(frame);
+					return;
+				}
+
+				Matcher rawMatcher = OcamlDebugger.patternCallstack.matcher(currentItem);
+				if (rawMatcher.find()) {
+					int frame = Integer.parseInt(rawMatcher.group(1));
+					String module = rawMatcher.group(2);
+					int offset = Integer.parseInt(rawMatcher.group(3));
+					String filename = Character.toLowerCase(module.charAt(0)) + module.substring(1) + ".ml";
 					debugger.highlight(filename, offset);
 					debugger.setFrame(frame);
+					return;
 				}
+
+				debugger.errorMessage("Cannot jump to stack frame.");
 			}
 		});
 	}
@@ -86,4 +101,6 @@ public class OcamlCallStackView extends ViewPart{
 		//list.setFocus();
 	}
 
+	private static final Pattern patternCallstack =
+			Pattern.compile("\\A#(\\d+)\\s+-\\s+(\\w+)\\.\\w+\\s+-\\s+\\((\\d+)\\s*:\\s*(\\d+)\\)");
 }

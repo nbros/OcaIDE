@@ -99,10 +99,13 @@ public class MakefileProperties {
 	
 	private String[] getArrayFromSettings(String key) {
 		String[] result = settings.getArray(key);
-		if(result == null) {
-			result = new String[0];
+		if (result == null) {
+			return new String[0];
+		} else if (result.length == 1 && result[0].isEmpty()) {
+			return new String[0];
+		} else {
+			return result;
 		}
-		return result;
 	}
 	
 	public void save() {

@@ -13,8 +13,7 @@
 
     Sources are now available on <a href="http://github.com/nbros/OcaIDE">GitHub</a>.
     <p>
-        An archive containing the latest version of the sources can also be <a
-        href="http://github.com/nbros/OcaIDE/archives/master">downloaded from GitHub</a>.
+        An archive containing the latest version of the sources can also be <a href="https://github.com/nbros/OcaIDE/archive/master.zip">downloaded from GitHub</a>.
 
 </div>
 </body>

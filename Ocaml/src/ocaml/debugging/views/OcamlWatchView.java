@@ -86,7 +86,7 @@ public class OcamlWatchView extends ViewPart {
 				list.setItem(i, message.trim());
 			else {
 				if (message.trim().startsWith("Unbound identifier "))
-					list.setItem(i, oldvar + " : ");
+					list.setItem(i, oldvar + " : (unknown)");
 				else
 					list.setItem(i, oldvar + " : " + message.trim());
 			}
