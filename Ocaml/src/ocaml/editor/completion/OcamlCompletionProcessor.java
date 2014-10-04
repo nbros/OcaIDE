@@ -204,26 +204,27 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			String prefix = completion.substring(prefixIndex, dotIndex);
 			String suffix = completion.substring(dotIndex + 1);
 
-			Def candidate = definitionsRoot;
 			String moduleName = prefix;
+			int aliasLevel = 0;
 			boolean stop = false;
-			while (!stop) {
+			// allow the deepest level of module aliasing is 5
+			while (!stop && (aliasLevel < 5)) {
+				stop = true;
 				for (Def def : definitions) {
 					if (def.name.equals(moduleName)) {
 						if (def.type == Def.Type.Module) { 
-							candidate = def;
-							stop = true;
-							break;
+							return findCompletionProposals(suffix, def, offset);
 						}
 						else if (def.type == Def.Type.ModuleAlias)  {
 							Def aliasedDef = def.children.get(0);
 							moduleName = aliasedDef.name;
+							stop = false;
+							aliasLevel++;
 							break;
 						}
 					}
 				}
 			}
-			return findCompletionProposals(suffix, candidate, offset);
 		}
 		// find elements starting by <completion> in the list of elements
 		else {
@@ -421,28 +422,31 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			String prefix = expression.substring(prefixIndex, dotIndex);
 			String suffix = expression.substring(dotIndex + 1);
 
-			Def candidate = definitionsRoot;	// default use definitionRoot
 			String moduleName = prefix;
+			int aliasLevel = 0;
 			boolean stop = false;
-			while (!stop) {
+			// allow the deepest level of module aliasing is 5
+			while (!stop && (aliasLevel < 5)) {
+				stop = true;
 				for (Def def : definitions) {
 					if (def.name.equals(moduleName)) {
-						if (def.type == Def.Type.Module) { 
-							candidate = def;
+						if (def.type == Def.Type.Module) {
+							IContextInformation[] informations = findContextInformation(suffix, def);
+							for (IContextInformation i : informations)
+								infos.add(i);
 							stop = true;
 							break;
 						}
 						else if (def.type == Def.Type.ModuleAlias)  {
 							Def aliasedDef = def.children.get(0);
 							moduleName = aliasedDef.name;
+							aliasLevel++;
+							stop = false;
 							break;
 						}
 					}
 				}
 			}
-			IContextInformation[] informations = findContextInformation(suffix, candidate);
-			for (IContextInformation i : informations)
-				infos.add(i);
 
 			return infos.toArray(new IContextInformation[0]);
 		}
