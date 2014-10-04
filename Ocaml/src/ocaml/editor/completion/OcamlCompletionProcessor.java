@@ -198,14 +198,32 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		// look in the module before the dot what's after the dot
 		if (completion.contains(".")) {
-			int index = completion.indexOf('.');
-			String prefix = completion.substring(0, index);
-			String suffix = completion.substring(index + 1);
+			int dotIndex = completion.lastIndexOf('.');
+			int prefixIndex = completion.lastIndexOf('.', dotIndex - 1);
+			prefixIndex = (prefixIndex < 0) ? 0 : prefixIndex + 1;
+			String prefix = completion.substring(prefixIndex, dotIndex);
+			String suffix = completion.substring(dotIndex + 1);
 
-			for (Def def : definitions) {
-				if (def.name.equals(prefix))
-					return findCompletionProposals(suffix, def, offset);
+			Def candidate = definitionsRoot;
+			String moduleName = prefix;
+			boolean stop = false;
+			while (!stop) {
+				for (Def def : definitions) {
+					if (def.name.equals(moduleName)) {
+						if (def.type == Def.Type.Module) { 
+							candidate = def;
+							stop = true;
+							break;
+						}
+						else if (def.type == Def.Type.ModuleAlias)  {
+							Def aliasedDef = def.children.get(0);
+							moduleName = aliasedDef.name;
+							break;
+						}
+					}
+				}
 			}
+			return findCompletionProposals(suffix, candidate, offset);
 		}
 		// find elements starting by <completion> in the list of elements
 		else {
@@ -397,17 +415,35 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		// search in the module before the dot the element after the dot
 		if (expression.contains(".")) {
-			int index = expression.indexOf('.');
-			String prefix = expression.substring(0, index);
-			String suffix = expression.substring(index + 1);
+			int dotIndex = expression.lastIndexOf('.');
+			int prefixIndex = expression.lastIndexOf('.', dotIndex - 1);
+			prefixIndex = (prefixIndex < 0) ? 0 : prefixIndex + 1;
+			String prefix = expression.substring(prefixIndex, dotIndex);
+			String suffix = expression.substring(dotIndex + 1);
 
-			for (Def def : definitions) {
-				if (def.name.equals(prefix)) {
-					IContextInformation[] informations = findContextInformation(suffix, def);
-					for (IContextInformation i : informations)
-						infos.add(i);
+			Def candidate = definitionsRoot;	// default use definitionRoot
+			String moduleName = prefix;
+			boolean stop = false;
+			while (!stop) {
+				for (Def def : definitions) {
+					if (def.name.equals(moduleName)) {
+						if (def.type == Def.Type.Module) { 
+							candidate = def;
+							stop = true;
+							break;
+						}
+						else if (def.type == Def.Type.ModuleAlias)  {
+							Def aliasedDef = def.children.get(0);
+							moduleName = aliasedDef.name;
+							break;
+						}
+					}
 				}
 			}
+			IContextInformation[] informations = findContextInformation(suffix, candidate);
+			for (IContextInformation i : informations)
+				infos.add(i);
+
 			return infos.toArray(new IContextInformation[0]);
 		}
 

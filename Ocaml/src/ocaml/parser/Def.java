@@ -24,7 +24,7 @@ public class Def extends beaver.Symbol {
 		/** the root of the definitions tree (module implementation) */
 		Root,
 		/** a variable name, with its position */
-		Identifier, Let, LetIn, Type, Module, ModuleType, Exception, External, Class, Sig,
+		Identifier, Let, LetIn, Type, Module, ModuleAlias, ModuleType, Exception, External, Class, Sig,
 
 		Open, Object, Method, Struct, Functor, Include, Val, Constraint, Initializer,
 
@@ -371,7 +371,8 @@ public class Def extends beaver.Symbol {
 	}
 
 	private void findRealChildren(Def node, ArrayList<Def> nodes, boolean root) {
-		if (node.type == Type.Dummy || node.type == Type.Identifier || node.type == Type.Parameter
+		if (node.type == Type.Dummy || node.type == Type.Parameter
+				/* || node.type == Type.Identifier */ // Trung: this is to handle ModuleAlias 
 				|| node.type == Type.Functor || node.type == Type.Sig || node.type == Type.Object
 				|| node.type == Type.Struct || node.type == Type.In || root
 				|| "_".equals(node.name) || "()".equals(node.name)) {

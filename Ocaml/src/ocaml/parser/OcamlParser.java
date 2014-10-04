@@ -1099,7 +1099,11 @@ public class OcamlParser extends Parser {
 					final Symbol id = _symbols[offset + 2];
 					final Symbol a = _symbols[offset + 3];
 					
-    	Def def = new Def((String)id.value, Def.Type.Module, id.getStart(), id.getEnd());
+    	Def.Type type = Def.Type.Module;
+    	assert a instanceof Def;
+    	Def.Type aType = ((Def)a).type;
+    	type = (aType == Def.Type.Identifier) ? Def.Type.ModuleAlias : type;
+    	Def def = new Def((String)id.value, type, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
     	backup(def);
