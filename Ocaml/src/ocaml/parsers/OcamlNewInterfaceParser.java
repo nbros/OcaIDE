@@ -419,9 +419,7 @@ public class OcamlNewInterfaceParser {
 
 		boolean skip = false;
 		if (def.defOffsetStart > def.defOffsetEnd || def.defOffsetStart < 0) {
-			OcamlPlugin
-					.logError("OcamlNewParser: findDefinitionsEnd: wrong offset ("
-							+ def.name + ")");
+			OcamlPlugin.logWarning("OcamlNewParser: findDefinitionsEnd: wrong offset (" + def.name + ")");
 			skip = true;
 		}
 
