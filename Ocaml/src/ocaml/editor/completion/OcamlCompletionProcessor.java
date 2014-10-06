@@ -195,20 +195,30 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		ArrayList<Def> definitions = definitionsRoot.children;
 
 		ArrayList<OcamlCompletionProposal> proposals = new ArrayList<OcamlCompletionProposal>();
-
+		
 		// look in the module before the dot what's after the dot
+		// The module can be like "A.B." or "c.D.E."
 		if (completion.contains(".")) {
-			int dotIndex = completion.lastIndexOf('.');
-			int prefixIndex = completion.lastIndexOf('.', dotIndex - 1);
-			prefixIndex = (prefixIndex < 0) ? 0 : prefixIndex + 1;
-			String prefix = completion.substring(prefixIndex, dotIndex);
-			String suffix = completion.substring(dotIndex + 1);
+			//find the name of root module
+			int index = completion.lastIndexOf('.');
+			String[] parts = completion.substring(0,index).split("\\.");
+			String prefix = parts[parts.length - 1];
+			String suffix = completion.substring(index+1);
+			int i = parts.length - 2;
+			while (i >= 0) {
+				if (parts[i].isEmpty())
+					break;
+				char firstLetter = parts[i].charAt(0);
+				if (( firstLetter < 'A') || (firstLetter > 'Z'))
+					break;
+				suffix = prefix + "." + suffix; 
+				prefix = parts[i];
+				i--;
+			}
 
 			String moduleName = prefix;
-			int aliasLevel = 0;
 			boolean stop = false;
-			// allow the deepest level of module aliasing is 5
-			while (!stop && (aliasLevel < 5)) {
+			while (!stop) {
 				stop = true;
 				for (Def def : definitions) {
 					if (def.name.equals(moduleName)) {
@@ -216,10 +226,13 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 							return findCompletionProposals(suffix, def, offset);
 						}
 						else if (def.type == Def.Type.ModuleAlias)  {
-							Def aliasedDef = def.children.get(0);
-							moduleName = aliasedDef.name;
-							stop = false;
-							aliasLevel++;
+							String aliasedName = def.children.get(0).name;
+							if (moduleName.equals(aliasedName)) 
+								stop = true;
+							else {
+								moduleName = aliasedName;
+								stop = false;
+							}
 							break;
 						}
 					}
@@ -416,32 +429,43 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		// search in the module before the dot the element after the dot
 		if (expression.contains(".")) {
-			int dotIndex = expression.lastIndexOf('.');
-			int prefixIndex = expression.lastIndexOf('.', dotIndex - 1);
-			prefixIndex = (prefixIndex < 0) ? 0 : prefixIndex + 1;
-			String prefix = expression.substring(prefixIndex, dotIndex);
-			String suffix = expression.substring(dotIndex + 1);
+			int index = expression.lastIndexOf('.');
+			String[] parts = expression.substring(0,index).split("\\.");
+			String prefix = parts[parts.length - 1];
+			String suffix = expression.substring(index+1);
+			int i = parts.length - 2;
+			while (i >= 0) {
+				if (parts[i].isEmpty())
+					break;
+				char firstLetter = parts[i].charAt(0);
+				if (( firstLetter < 'A') || (firstLetter > 'Z'))
+					break;
+				suffix = prefix + "." + suffix; 
+				prefix = parts[i];
+				i--;
+			}
 
 			String moduleName = prefix;
-			int aliasLevel = 0;
 			boolean stop = false;
-			// allow the deepest level of module aliasing is 5
-			while (!stop && (aliasLevel < 5)) {
+			while (!stop) {
 				stop = true;
 				for (Def def : definitions) {
 					if (def.name.equals(moduleName)) {
 						if (def.type == Def.Type.Module) {
 							IContextInformation[] informations = findContextInformation(suffix, def);
-							for (IContextInformation i : informations)
-								infos.add(i);
+							for (IContextInformation d : informations)
+								infos.add(d);
 							stop = true;
 							break;
 						}
 						else if (def.type == Def.Type.ModuleAlias)  {
-							Def aliasedDef = def.children.get(0);
-							moduleName = aliasedDef.name;
-							aliasLevel++;
-							stop = false;
+							String aliasedName = def.children.get(0).name;
+							if (moduleName.equals(aliasedName)) 
+								stop = true;
+							else {
+								moduleName = aliasedName;
+								stop = false;
+							}
 							break;
 						}
 					}

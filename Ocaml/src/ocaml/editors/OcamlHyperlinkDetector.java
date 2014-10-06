@@ -16,9 +16,12 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.ui.IEditorPart;
@@ -99,45 +102,146 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			if (searchedDef.name.equals("_"))
 				return null;
 
+			// open selective defs
+			if (searchedDef.type != Def.Type.Identifier 
+					&& searchedDef.type != Def.Type.Open
+					&& searchedDef.type != Def.Type.Include)
+				return null;
+
 			if (searchedDef.type == Def.Type.Open || searchedDef.type == Def.Type.Include) {
 				return makeOpenHyperlink(textViewer, searchedDef, interfacesDefinitionsRoot);
 			}
 
 			return new IHyperlink[] {
 
-			new IHyperlink() {
-
-				public void open() {
-
-					Def target = findDefinitionOf(searchedDef, modulesDefinitionsRoot,
-							interfacesDefinitionsRoot);
-
-					if (target == null)
-						return;
-
-					IRegion region = target.getRegion(textViewer.getDocument());
-					editor.selectAndReveal(region.getOffset(), region.getLength());
+				new IHyperlink() {
+	
+					public void open() {
+	
+						Def target = findDefinitionOf(searchedDef, modulesDefinitionsRoot,
+								interfacesDefinitionsRoot);
+	
+						if (target == null)
+							return;
+	
+						IRegion region = target.getRegion(textViewer.getDocument());
+						editor.selectAndReveal(region.getOffset(), region.getLength());
+					}
+	
+					public String getTypeLabel() {
+						return null;
+					}
+	
+					public String getHyperlinkText() {
+						return searchedDef.name;
+					}
+	
+					public IRegion getHyperlinkRegion() {
+						return searchedDef.getRegion(textViewer.getDocument());
+					}
+	
 				}
-
-				public String getTypeLabel() {
-					return null;
-				}
-
-				public String getHyperlinkText() {
-					return searchedDef.name;
-				}
-
-				public IRegion getHyperlinkRegion() {
-					return searchedDef.getRegion(textViewer.getDocument());
-				}
-
-			}
 
 			};
 
 		}
+		// find definition by text its self
+		else {
+			time = System.currentTimeMillis();
 
-		return null;
+			/* Find which definition in the tree is at the hovered offset */
+			final Def def = (time - lastTime < 1000 && lastOffset == region.getOffset() && lastDef != null) ? lastDef
+					: findDefAt(modulesDefinitionsRoot, region.getOffset(), textViewer.getDocument());
+
+			lastTime = time;
+
+			lastOffset = region.getOffset();
+			lastDef = def;
+			
+			if (def == null) 
+				return null;
+
+			// get hovered text
+			IDocument doc = textViewer.getDocument();
+			int docLen = doc.getLength();
+			String text = "";
+			int offset = region.getOffset();
+			while (offset < docLen) {
+				char ch;
+				try {
+					ch = doc.getChar(offset);
+					if (ch == '.' || ch == '_' 
+							|| (ch >= '0' && ch <= '9')
+							|| (ch >= 'a' && ch <= 'z') 
+							|| (ch >= 'A' && ch <= 'Z')) {
+						text = text + ch;
+						offset++;
+					}
+					else break;
+				} catch (BadLocationException e) {
+					break;
+				}
+			}
+			final int endOffset = (offset < docLen) ? offset - 1 : docLen;
+			
+			offset = region.getOffset() - 1;
+			if (!text.isEmpty()) {
+				while (offset >= 0) {
+					char ch;
+					try {
+						ch = doc.getChar(offset);
+						if (ch == '.' || ch == '_' || Character.isLetterOrDigit(ch)) {
+							text = ch + text;
+							offset--;
+						}
+						else break;
+					} catch (BadLocationException e) {
+						break;
+					}
+				}
+			}
+			final int beginOffset = (offset >= 0) ? offset + 1 : 0;
+			final String hoveredText = text;
+
+			if (hoveredText.isEmpty() || Character.isDigit(hoveredText.charAt(0)))
+				return null;
+
+			
+			OcamlPlugin.logInfo("hoveredTex = " + hoveredText);
+			
+			
+			return new IHyperlink[] {
+
+				new IHyperlink() {
+	
+					public void open() {
+	
+						Def target = findDefinitionOf(hoveredText, modulesDefinitionsRoot, interfacesDefinitionsRoot);
+	
+						if (target == null)
+							return;
+	
+						IRegion region = target.getRegion(textViewer.getDocument());
+						editor.selectAndReveal(region.getOffset(), region.getLength());
+					}
+	
+					public String getTypeLabel() {
+						return null;
+					}
+	
+					public String getHyperlinkText() {
+						return hoveredText;
+					}
+	
+					public IRegion getHyperlinkRegion() {
+						return new Region(beginOffset, endOffset - beginOffset + 1);
+					}
+	
+				}
+
+			};
+
+		}
 	}
 
 	/**
@@ -219,6 +323,66 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		return def;
 	}
 
+	/**
+	 * Find the definition of <code>searchedDef</code> in <code>modulesDefinitionsRoot</code>,
+	 * and in <code>interfacesDefinitionsRoot</code>
+	 */
+	private Def findDefinitionOf(final String searchedDef, final Def modulesDefinitionsRoot,
+			final Def interfacesDefinitionsRoot) {
+		Def def = null;
+
+		/*
+		 * if this is a compound name "A.B.c", then we extract the first component to know what
+		 * module to look for, and then we get the definition by entering the module
+		 */
+		if (searchedDef.indexOf('.') != -1) {
+			String[] parts = searchedDef.split("\\.");
+			if (parts.length > 1) {
+				// find possible alias module
+				boolean stop = false;
+				String moduleName = parts[0];
+				while (!stop) {
+					stop = true;
+					for (Def d : modulesDefinitionsRoot.children) {
+						if (d.name.equals(moduleName) && (d.type == Def.Type.ModuleAlias)) {
+							String aliasedName = d.children.get(0).name;
+							if (moduleName.equals(aliasedName))
+								stop = true;
+							else {
+								moduleName = aliasedName;
+								stop = false;
+							}
+							break;
+						}
+					}
+				}
+				// rectify full path in case of there exist aliased module
+				if (!moduleName.equals(parts[0]))
+					parts[0] = moduleName;
+
+				openDefInInterfaces(0, parts, interfacesDefinitionsRoot);
+				return null;
+			}
+		} 
+		else {
+			// find in current module
+			for (Def d : modulesDefinitionsRoot.children) {
+				if (d.name.equals(searchedDef)) {
+					def = d;
+					break;
+				}
+			}
+
+			// if we didn't find it, look in Pervasives (which is always opened by default)
+			if (def == null) {
+				String[] pervasivesPath = new String[] { "Pervasives", searchedDef };
+				if (openDefInInterfaces(0, pervasivesPath, interfacesDefinitionsRoot))
+					return null;
+			}
+		}
+		return def;
+	}
+	
 	/** Find the definition whose complete path is given, starting at <code>index</code> */
 	private Def findDefFromPath(int index, String[] path, Def def, Def lastPartFound) {
 		if (index == path.length)
@@ -287,7 +451,28 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 		/* if we are at root, we cannot go further up in this module. */
 		if (node.type == Def.Type.Root) {
-			// openDefInInterfaces(0, new String[] { name }, interfacesDefinitionsRoot);
+			// find possible alias module
+			boolean stop = false;
+			String moduleName = name;
+			while (!stop) {
+				stop = true;
+				for (Def def : node.children) {
+					if (def.name.equals(name) && (def.type == Def.Type.ModuleAlias)) {
+						String aliasedName = def.children.get(0).name;
+						if (moduleName.equals(aliasedName))
+							stop = true;
+						else {
+							moduleName = aliasedName;
+							stop = false;
+						}
+						break;
+					}
+				}
+			}
+			// rectify full path in case of there exist aliased module
+			if (!moduleName.equals(name))
+				fullpath[0] = moduleName;
+
 			return null;
 		}
 
@@ -509,9 +694,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		int startOffset = region.getOffset();
 		int endOffset = startOffset + region.getLength() - 1;
 
-		if (startOffset <= offset
-				&& endOffset >= offset
-				&& (def.type == Def.Type.Identifier || def.type == Def.Type.Open || def.type == Def.Type.Include))
+		if (startOffset <= offset && endOffset >= offset)
 			return def;
 
 		for (Def d : def.children) {
@@ -522,6 +705,28 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 		return null;
 	}
+	
+	/** Find a smallest def at a position in the document */
+	private Def findDefAt(Def def, int offset, IDocument doc) {
+
+		if (def == null || doc == null)
+			return null;
+		
+		int startOffset = def.defOffsetStart;
+		int endOffset = def.defOffsetEnd;
+
+		if (startOffset <= offset && endOffset >= offset) {
+			for (Def d : def.children) {
+				Def cd = findDefAt(d, offset, doc);
+				if (cd != null)
+					return cd;
+			}
+			return def;
+		}
+
+		return null;
+	}
+
 
 	/**
 	 * make an hyperlink for an open directive (to open the interface in an editor)

@@ -125,7 +125,21 @@ public class Def extends beaver.Symbol {
 		this.defPosStart = 0;
 		// this.defPosEnd = 0;
 	}
-	
+
+	/** Create a definition node: let, type,... */
+	public Def(String name, Type type, int start, int end, int offsetStart, int offsetEnd) {
+		super();
+		children = new ArrayList<Def>();
+		this.name = name;
+		this.type = type;
+		this.posStart = start;
+		this.posEnd = end;
+		this.defPosStart = 0;
+		this.defOffsetStart = offsetStart;
+		this.defOffsetEnd = offsetEnd;
+		// this.defPosEnd = 0;
+	}
+
 	/** copy constructor */
 	public Def(Def def) {
 		this.bAlt = def.bAlt;
