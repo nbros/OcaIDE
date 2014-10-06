@@ -210,10 +210,6 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			if (hoveredText.isEmpty() || Character.isDigit(hoveredText.charAt(0)))
 				return null;
 
-			
-			OcamlPlugin.logInfo("hoveredTex = " + hoveredText);
-			
-			
 			return new IHyperlink[] {
 
 				new IHyperlink() {
