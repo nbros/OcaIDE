@@ -3,12 +3,14 @@ package ocaml.editors;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import ocaml.OcamlPlugin;
 import ocaml.editor.completion.CompletionJob;
 import ocaml.parser.Def;
 import ocaml.parsers.OcamlNewInterfaceParser;
+import ocaml.util.FileUtil;
 import ocaml.util.Misc;
 import ocaml.util.OcamlPaths;
 
@@ -271,60 +273,73 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	 * Find the definition of <code>searchedDef</code> in <code>modulesDefinitionsRoot</code>,
 	 * and in <code>interfacesDefinitionsRoot</code>
 	 */
-	private Def findDefinitionOf(final String strDef, final Def modulesDefinitionsRoot,
+	private Def findDefinitionOf(final String strDef, 
+			final Def modulesDefinitionsRoot,
 			final Def interfacesDefinitionsRoot) {
-		Def def = null;
+		// use direct name
+		String[] directPath = strDef.split("\\.");
+		if (openDefInInterfaces(0, directPath, interfacesDefinitionsRoot))
+			return null;
 
-		/*
-		 * if this is a compound name "A.B.c", then we extract the first component to know what
-		 * module to look for, and then we get the definition by entering the module
-		 */
-		if (strDef.indexOf('.') != -1) {
-			String[] parts = strDef.split("\\.");
-			if (parts.length > 1) {
-				// find possible alias module
-				boolean stop = false;
-				String moduleName = parts[0];
-				while (!stop) {
-					stop = true;
-					for (Def d : modulesDefinitionsRoot.children) {
-						if (d.name.equals(moduleName) && (d.type == Def.Type.ModuleAlias)) {
-							String aliasedName = d.children.get(0).name;
-							if (moduleName.equals(aliasedName))
-								stop = true;
-							else {
-								moduleName = aliasedName;
-								stop = false;
-							}
-							break;
-						}
+		// look in current module
+		Def def = modulesDefinitionsRoot;
+		for (int index = 0; index < directPath.length; index++) {
+			boolean stop = true;
+			for (Def d : def.children) {
+				if (d.name.equals(directPath[index])) {
+					def = d;
+					if (index == directPath.length - 1)
+						return def;
+					else {
+						stop = false;
+						break;
 					}
 				}
-				// rectify full path in case of there exist aliased module
-				if (!moduleName.equals(parts[0]))
-					parts[0] = moduleName;
-
-				openDefInInterfaces(0, parts, interfacesDefinitionsRoot);
-				return null;
 			}
-		} 
-		else {
-			// find in current module
-			for (Def d : modulesDefinitionsRoot.children) {
-				if (d.name.equals(strDef)) {
-					def = d;
-					break;
-				}
-			}
-
-			// if we didn't find it, look in Pervasives (which is always opened by default)
-			if (def == null) {
-				String[] pervasivesPath = new String[] { "Pervasives", strDef };
-				if (openDefInInterfaces(0, pervasivesPath, interfacesDefinitionsRoot))
+			if (stop)
+				break;
+		}
+		
+		// lookup in opened module 
+		for (Def d : modulesDefinitionsRoot.children) {
+			if (d.type == Def.Type.Open) {
+				String fullStrDef = d.name + "." + strDef;
+				String[] openedPath = fullStrDef.split("\\.");
+				if (openDefInInterfaces(0, openedPath, interfacesDefinitionsRoot))
 					return null;
 			}
 		}
-		return def;
+
+		// lookup in aliased module
+		String[] path = strDef.split("\\.");
+		String moduleName = path[0];
+		boolean stop = false;
+		while (!stop) {
+			stop = true;
+			for (Def d : modulesDefinitionsRoot.children) {
+				if (d.name.equals(moduleName) && (d.type == Def.Type.ModuleAlias)) {
+					String aliasedName = d.children.get(0).name;
+					if (moduleName.equals(aliasedName))
+						stop = true;
+					else {
+						moduleName = aliasedName;
+						stop = false;
+					}
+					break;
+				}
+			}
+		}
+		if (!moduleName.equals(path[0])) {
+			String[] aliasedPath = path.clone();
+			aliasedPath[0] = moduleName;
+			if (openDefInInterfaces(0, aliasedPath, interfacesDefinitionsRoot))
+				return null;
+		}
+			
+		// finally, look in Pervasives (which is always opened by default)
+		String[] pervasivesPath = ("Pervasives" + strDef).split("\\.");
+		openDefInInterfaces(0, pervasivesPath, interfacesDefinitionsRoot);
+		return null;
 	}
 	
 	/** Find the definition whose complete path is given, starting at <code>index</code> */
@@ -522,14 +537,6 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				if (openDefInInterfaces(index + 1, path, child))
 					return true;
 		}
-
-		/*
-		 * if we couldn't go all the way down to the definition, but we could find the beginning of
-		 * the path, open it
-		 */
-		if (index > 1)
-			if (openDefInInterfaces(path.length, path, interfaceDef))
-				return true;
 
 		return false;
 	}
