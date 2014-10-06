@@ -150,6 +150,10 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			time = System.currentTimeMillis();
 
 			/* Find which definition in the tree is at the hovered offset */
+			// TODO Trung: need to update correct location of defOffsetStart,
+			// defOffsetEnd field before using it to find def
+			/*
+			// Activate later
 			final Def def = (time - lastTime < 1000 && lastOffset == region.getOffset() && lastDef != null) ? lastDef
 					: findDefAt(modulesDefinitionsRoot, region.getOffset(), textViewer.getDocument());
 
@@ -160,7 +164,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			
 			if (def == null) 
 				return null;
-
+			*/
 			// get hovered text
 			IDocument doc = textViewer.getDocument();
 			int docLen = doc.getLength();
@@ -712,6 +716,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		if (def == null || doc == null)
 			return null;
 		
+		//TODO Trung: currently, defOffsetStart and defOffsetEnd are incorrect
 		int startOffset = def.defOffsetStart;
 		int endOffset = def.defOffsetEnd;
 
