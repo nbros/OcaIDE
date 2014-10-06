@@ -49,7 +49,7 @@ public class OcamllexEditor extends TextEditor {
 
 		// effectue le parsing des bibliothèques ocaml en arrière plan
 		CompletionJob job = new CompletionJob("Parsing ocaml library mli files", null);
-		job.setPriority(CompletionJob.DECORATE);
+		job.setPriority(CompletionJob.INTERACTIVE); // Trung changes priority
 		job.schedule();
 	}
 
