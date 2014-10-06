@@ -739,6 +739,14 @@
 			<menu id="Ocaml_sourceMenu" label="Ocaml">
 				<separator name="slot1"/>
 			</menu>
+   <action
+         class="ocaml.editor.actions.GotoDefinition"
+         definitionId="Ocaml.gotoDefinitionCommand"
+         id="Ocaml_sourceActions_gotoDefinition"
+         label="Go To Definition"
+         menubarPath="Ocaml_sourceMenu/slot1"
+         style="push">
+   </action>
 			<action	class="ocaml.editor.actions.MarkOccurrencesAction"
 				definitionId="Ocaml.markOccurrencesCommand"
 				icon="icons/markOccurrence.gif"
@@ -890,6 +898,11 @@
 			id="Ocaml.shiftLeftCommand" name="Shift Left"/>
 		<command categoryId="Ocaml.commandscategory"
 			id="Ocaml.markOccurrencesCommand" name="Mark Occurrences"/>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.gotoDefinitionCommand"
+        name="Go To Definition">
+  </command>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
 		<key
@@ -978,7 +991,13 @@
 		<key commandId="Ocaml.markOccurrencesCommand"
 			contextId="Ocaml.editor.context"
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-			sequence="M1+M3+K"/>
+			sequence="M1+M3+N"/>
+  <key
+        commandId="Ocaml.gotoDefinitionCommand"
+        contextId="Ocaml.editor.context"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+M3+D">
+  </key>
 	</extension>
 	<extension point="org.eclipse.ui.contexts">
 		<context description="Context for editing Ocaml source"

@@ -45,7 +45,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	public OcamlHyperlinkDetector(OcamlEditor editor) {
 		this.editor = editor;
 	}
-
+	
 	/** Caching to speed up consecutive lookups */
 	private long lastTime = 0;
 	private int lastOffset = -1;
@@ -53,9 +53,11 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 	public IHyperlink[] detectHyperlinks(final ITextViewer textViewer, final IRegion region,
 			boolean canShowMultipleHyperlinks) {
-
 		IHyperlink hyperlink = makeHyperlink(textViewer, region.getOffset());
-		return new IHyperlink[] {hyperlink};
+		if (hyperlink != null)
+			return new IHyperlink[] {hyperlink};
+		else 
+			return null;
 	}
 	
 	public IHyperlink makeHyperlink (final ITextViewer textViewer, int offset) {
