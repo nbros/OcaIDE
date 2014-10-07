@@ -1,6 +1,9 @@
 package ocaml.editor.completion;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 import ocaml.OcamlPlugin;
 import ocaml.editor.syntaxcoloring.OcamlPartitionScanner;
@@ -8,17 +11,22 @@ import ocaml.editors.OcamlEditor;
 import ocaml.editors.lex.OcamllexEditor;
 import ocaml.editors.yacc.OcamlyaccEditor;
 import ocaml.parser.Def;
+import ocaml.parser.Def.Type;
+import ocaml.parsers.OcamlNewInterfaceParser;
 import ocaml.util.Misc;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ContextInformation;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
+import org.eclipse.jface.text.hyperlink.IHyperlink;
+import org.eclipse.ui.editors.text.TextEditor;
 
 /**
  * This class is responsible for managing completion in the OCaml editor.
@@ -28,29 +36,24 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
  */
 public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
-	// private final OcamlEditor ocamlEditor;
-
-	private final IProject project;
+	 private final TextEditor editor;
 
 	/** The partition type in which completion was triggered. */
 	private final String partitionType;
 
 	public OcamlCompletionProcessor(OcamlEditor edit, String regionType) {
-		// this.ocamlEditor = edit;
+		this.editor = (TextEditor)edit;
 		this.partitionType = regionType;
-		this.project = edit.getProject();
 	}
 
 	public OcamlCompletionProcessor(OcamllexEditor edit, String regionType) {
-		// this.ocamlEditor = null;
+		this.editor = (TextEditor)edit;
 		this.partitionType = regionType;
-		this.project = edit.getProject();
 	}
 
 	public OcamlCompletionProcessor(OcamlyaccEditor edit, String regionType) {
-		// this.ocamlEditor = null;
+		this.editor = (TextEditor)edit;
 		this.partitionType = regionType;
-		this.project = edit.getProject();
 	}
 
 	/**
@@ -99,19 +102,45 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		String completion = completionExpression(viewer, documentOffset);
 
-		OcamlCompletionProposal[] proposals;
-		/*
-		 * If the interfaces parsing Job isn't done, we return an empty list to avoid blocking the graphical
-		 * interface by doing a potentially long search (should be quick normally, but not on a network file
-		 * system for example).
-		 */
+		OcamlCompletionProposal[] proposals = new OcamlCompletionProposal[0];
+
+		IProject project = null;
+		
+		IDocument document = viewer.getDocument();
+
+		// must wait parsing job finish first.
 		if (CompletionJob.isParsingFinished()) {
-			Def definitionsRoot = CompletionJob.buildDefinitionsTree(this.project, true);
-			proposals = findCompletionProposals(completion, definitionsRoot, documentOffset);
+			// lookup in module definition provided in editor first
+			Def outlineDefinitionsRoot = null;
+			if (editor instanceof OcamlEditor) {
+				OcamlEditor ocamlEditor = (OcamlEditor) editor;
+				project = ocamlEditor.getProject();
+				outlineDefinitionsRoot = ocamlEditor.getOutlineDefinitionsTree();
+			}
+			else if (editor instanceof OcamllexEditor) {
+				OcamllexEditor ocamllexEditor = (OcamllexEditor) editor;
+				project = ocamllexEditor.getProject();
+				outlineDefinitionsRoot = null;
+			}
+			else if (editor instanceof OcamlyaccEditor) {
+				OcamlyaccEditor ocamlyaccEditor = (OcamlyaccEditor) editor;
+				project = ocamlyaccEditor.getProject();
+				outlineDefinitionsRoot = null;
+			}
+			else {
+				project = null;
+				outlineDefinitionsRoot = null;
+			}
+			
+			Def interfacesDefinitionsRoot =	null;
+			if (project != null)
+				interfacesDefinitionsRoot = CompletionJob.buildDefinitionsTree(project, false);
+			
+			proposals = findCompletionProposals(completion, outlineDefinitionsRoot, interfacesDefinitionsRoot, document, documentOffset);
 		} else {
 			proposals = new OcamlCompletionProposal[0];
 			OcamlPlugin.logInfo("Completion proposals skipped (background job not done yet)");
-		}
+		}				
 
 		ICompletionProposal[] templateCompletionProposals;
 
@@ -189,13 +218,30 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	 * 
 	 * @return the completions found
 	 */
-	private OcamlCompletionProposal[] findCompletionProposals(String completion, Def definitionsRoot,
+	private OcamlCompletionProposal[] findCompletionProposals(String completion,
+			Def outlineDefinitionsRoot,
+			Def definitionsRoot,
+			IDocument document,
 			int offset) {
 
-		ArrayList<Def> definitions = definitionsRoot.children;
+		// look in the module before the dot what's after the dot
+		// The module can be like "A.B." or "c.D.E."
+		if (completion.contains(".")) 
+			return findDottedCompletionProposals(completion, outlineDefinitionsRoot, definitionsRoot, document, offset);
+		// find elements starting by <completion> in the list of elements
+		else
+			return findNondottedCompletionProposals(completion, outlineDefinitionsRoot, definitionsRoot, document, offset);
+	}
+	
+	// completion string must contained dots
+	private OcamlCompletionProposal[] findDottedCompletionProposals(String completion,
+			Def moduleDefinitionsRoot,
+			Def interfacesDefinitionsRoot,
+			IDocument document,
+			int offset) {
 
 		ArrayList<OcamlCompletionProposal> proposals = new ArrayList<OcamlCompletionProposal>();
-		
+
 		// look in the module before the dot what's after the dot
 		// The module can be like "A.B." or "c.D.E."
 		if (completion.contains(".")) {
@@ -214,15 +260,23 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 				prefix = parts[i];
 				i--;
 			}
-
+			
 			String moduleName = prefix;
+			
+			// look into current module first
 			boolean stop = false;
 			while (!stop) {
 				stop = true;
-				for (Def def : definitions) {
+				if (moduleDefinitionsRoot == null)
+					break;
+				
+				for (Def def : moduleDefinitionsRoot.children) {
+					if (def == null || def.name == null)
+						break;
+					
 					if (def.name.equals(moduleName)) {
 						if (def.type == Def.Type.Module) { 
-							return findCompletionProposals(suffix, def, offset);
+							return findDottedCompletionProposals(suffix, moduleDefinitionsRoot, def, document, offset);
 						}
 						else if (def.type == Def.Type.ModuleAlias)  {
 							String aliasedName = def.children.get(0).name;
@@ -237,11 +291,22 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 					}
 				}
 			}
+			
+			// then look into interface definitions
+			if (interfacesDefinitionsRoot == null)
+				return proposals.toArray(new OcamlCompletionProposal[0]);
+			for (Def def: interfacesDefinitionsRoot.children) {
+				if (def == null || def.name == null)
+					continue;
+				
+				if (def.name.equals(moduleName) && (def.type == Def.Type.Module))
+					return findDottedCompletionProposals(suffix, def, interfacesDefinitionsRoot, document, offset);
+			}
+
 		}
 		// find elements starting by <completion> in the list of elements
 		else {
-
-			for (Def def : definitions) {
+			for (Def def : moduleDefinitionsRoot.children) {
 				if (def.name.startsWith(completion) && isCompletionDef(def))
 					proposals.add(new OcamlCompletionProposal(def, offset, completion.length()));
 
@@ -250,20 +315,155 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		return proposals.toArray(new OcamlCompletionProposal[0]);
 	}
+	
+	private OcamlCompletionProposal[] findNondottedCompletionProposals(String completion,
+			Def outlineDefinitionsRoot,
+			Def interfacesDefinitionsRoot,
+			IDocument document,
+			int offset) {
+
+		ArrayList<OcamlCompletionProposal> proposals = new ArrayList<OcamlCompletionProposal>();
+
+		// look up for definition
+		final Def nearestDef = findNearestDefAt(outlineDefinitionsRoot, offset, document);
+		proposals.addAll(lookCompletionProposalsUp(completion, nearestDef, offset));
+		
+		proposals = removeDuplicatedCompletionProposal(proposals);
+		// look in current module
+		if (outlineDefinitionsRoot == null)
+			return proposals.toArray(new OcamlCompletionProposal[0]);
+		
+		for (Def def : outlineDefinitionsRoot.children) {
+			if (def.name.startsWith(completion) && isCompletionDef(def))
+				proposals.add(new OcamlCompletionProposal(def, offset, completion.length()));
+		}
+		
+		proposals = removeDuplicatedCompletionProposal(proposals);
+				// look in all opened or included modules
+		if (interfacesDefinitionsRoot == null)
+			return proposals.toArray(new OcamlCompletionProposal[0]);
+		
+		for (Def def : outlineDefinitionsRoot.children) {
+			if (def == null || def.name == null)
+				break;
+			
+			if (def.type == Def.Type.Open) {
+				for (Def idef: interfacesDefinitionsRoot.children) {
+					if (idef == null || idef.name == null)
+						break;
+					
+					if (idef.name.equals(def.name)) {
+						for (Def d: idef.children) {
+							if (d == null || d.name == null)
+								break;
+							
+							if (d.name.startsWith(completion) && isCompletionDef(d))
+								proposals.add(new OcamlCompletionProposal(d, offset, completion.length()));
+						}
+					}
+				}
+			}
+		}
+		
+		proposals = removeDuplicatedCompletionProposal(proposals);
+		return proposals.toArray(new OcamlCompletionProposal[0]);
+	}
+	
+	
+
+	private ArrayList<OcamlCompletionProposal> lookCompletionProposalsUp(String completion, Def node, int offset) {
+		ArrayList<OcamlCompletionProposal> proposals = new ArrayList<OcamlCompletionProposal>();
+		
+		if (node == null)
+			return proposals;
+
+		Def travelNode = node.parent;
+		while (true) {
+			if (travelNode == null || travelNode.name == null)
+				break;
+
+			if (travelNode.name.startsWith(completion)
+					&& (travelNode.name.length() > completion.length())
+					&& isCompletionDef(travelNode))
+				proposals.add(new OcamlCompletionProposal(travelNode, offset, completion.length()));
+
+			for (Def def : travelNode.children) {
+				if (def == null || def.name == null)
+					continue;
+				if (def.name.startsWith(completion)
+						&& (def.name.length() > completion.length())
+						&& isCompletionDef(def))
+					proposals.add(new OcamlCompletionProposal(def, offset, completion.length()));
+			}
+
+			if (travelNode.type == Def.Type.Root)
+				break;
+			
+			travelNode = travelNode.parent;
+		}
+		
+		return proposals;
+	}
+	
+	private ArrayList<OcamlCompletionProposal> removeDuplicatedCompletionProposal(ArrayList<OcamlCompletionProposal> proposals) {
+
+		ArrayList<OcamlCompletionProposal> newProposals = new ArrayList<OcamlCompletionProposal>();
+		HashSet<String> names = new HashSet<>();
+		for (OcamlCompletionProposal p: proposals) {
+			String s = p.getDisplayString();
+			if (!names.contains(s)) {
+				newProposals.add(p);
+				names.add(s);
+			}
+		}
+		
+		return newProposals;
+	}
+	
+	
+	/** Find an identifier (or an open directive) at a position in the document */
+	private Def findNearestDefAt(Def def, int offset, IDocument doc) {
+
+		if (def == null || doc == null)
+			return null;
+		
+		if (def.children.size() == 0)
+			return def;
+		
+		Def firstChild = def.children.get(0);
+		IRegion region = firstChild.getRegion(doc);
+		if (region != null) {
+			if (region.getOffset() > offset)
+				return def;
+		}
+		else return null;
+		
+
+		Def nearestChild = null;
+		for (Def d : def.children) {
+			region = d.getRegion(doc);
+			if (region != null) {
+				if (region.getOffset() < offset)
+					nearestChild = d;
+			}
+		}
+		
+		return findNearestDefAt(nearestChild, offset, doc);
+	}
 
 	private boolean isCompletionDef(Def def) {
 		switch (def.type) {
-		case Parameter:
-		case Object:
-		case LetIn:
+//		case Parameter:
+//		case Object:
+//		case LetIn:
 		case Open:
 		case Include:
 		case In:
-		case Identifier:
+//		case Identifier:
 		case Dummy:
 		case Root:
-		case Sig:
-		case Struct:
+//		case Sig:
+//		case Struct:
 			return false;
 		default:
 			return true;
@@ -401,10 +601,14 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 	/** Return context informations available at a given position in the editor (at documentOffset) */
 	public IContextInformation[] computeContextInformation(ITextViewer viewer, int documentOffset) {
+		IProject project = null;
+		if (editor instanceof OcamlEditor) {
+			project = ((OcamlEditor) editor).getProject();
+		}
 
 		IContextInformation[] infos;
 		if (CompletionJob.isParsingFinished()) {
-			Def definitionsRoot = CompletionJob.buildDefinitionsTree(this.project, true);
+			Def definitionsRoot = CompletionJob.buildDefinitionsTree(project, true);
 
 			String expression = expressionAtOffset(viewer, documentOffset);
 

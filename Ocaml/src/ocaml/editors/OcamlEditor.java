@@ -150,7 +150,7 @@ public class OcamlEditor extends TextEditor {
 
 			public void textChanged(TextEvent event) {
 				if (event.getDocumentEvent() != null)
-					rebuildOutline(500);
+					rebuildOutline(50);
 			}
 		});
 	}
@@ -167,7 +167,7 @@ public class OcamlEditor extends TextEditor {
 		super.doSetInput(input);
 
 		if (this.outline != null) {
-			rebuildOutline(100);
+			rebuildOutline(50);
 		}
 
 		IProject project = this.getProject();
@@ -205,7 +205,7 @@ public class OcamlEditor extends TextEditor {
 
 			if (this.outline == null)
 				this.outline = new OcamlOutlineControl(this);
-			rebuildOutline(100);
+			rebuildOutline(50);
 			return this.outline;
 		}
 		return super.getAdapter(required);
@@ -464,7 +464,7 @@ public class OcamlEditor extends TextEditor {
 		else
 			outlineJob.cancel();
 
-		outlineJob.setPriority(CompletionJob.DECORATE);
+		outlineJob.setPriority(CompletionJob.INTERACTIVE);
 		outlineJob.setOutline(this.outline);
 		outlineJob.setDoc(document);
 		outlineJob.setEditor(this);
