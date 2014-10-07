@@ -149,7 +149,7 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
 		ContentAssistant assistant = new ContentAssistant();
 		assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
-
+		assistant.enablePrefixCompletion(true);
 		assistant.setContentAssistProcessor(new OcamlCompletionProcessor(this.ocamlEditor,
 				OcamlPartitionScanner.OCAML_DOCUMENTATION_COMMENT),
 				OcamlPartitionScanner.OCAML_DOCUMENTATION_COMMENT);
@@ -162,7 +162,7 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 				PreferenceConstants.P_EDITOR_AUTOCOMPLETION);
 
 		assistant.enableAutoActivation(autoActivation);
-
+		
 		assistant.setAutoActivationDelay(100);
 		assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_STACKED);
 		assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);

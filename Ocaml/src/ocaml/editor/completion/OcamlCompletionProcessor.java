@@ -405,14 +405,24 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		return proposals;
 	}
 	
+	// remove and sort
 	private ArrayList<OcamlCompletionProposal> removeDuplicatedCompletionProposal(ArrayList<OcamlCompletionProposal> proposals) {
-
+		
 		ArrayList<OcamlCompletionProposal> newProposals = new ArrayList<OcamlCompletionProposal>();
 		HashSet<String> names = new HashSet<>();
 		for (OcamlCompletionProposal p: proposals) {
 			String s = p.getDisplayString();
 			if (!names.contains(s)) {
-				newProposals.add(p);
+				int index = 0;
+				for (OcamlCompletionProposal q: newProposals) {
+					if (q.getDisplayString().compareTo(p.getDisplayString()) > 0)
+						break;
+					index++;
+				}
+				if (index < newProposals.size())
+					newProposals.add(index,p);
+				else
+					newProposals.add(p);
 				names.add(s);
 			}
 		}
