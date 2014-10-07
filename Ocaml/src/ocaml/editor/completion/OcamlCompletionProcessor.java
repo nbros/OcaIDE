@@ -208,8 +208,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			while (i >= 0) {
 				if (parts[i].isEmpty())
 					break;
-				char firstLetter = parts[i].charAt(0);
-				if (( firstLetter < 'A') || (firstLetter > 'Z'))
+				if (!Character.isUpperCase(parts[i].charAt(0)))
 					break;
 				suffix = prefix + "." + suffix; 
 				prefix = parts[i];
@@ -437,8 +436,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			while (i >= 0) {
 				if (parts[i].isEmpty())
 					break;
-				char firstLetter = parts[i].charAt(0);
-				if (( firstLetter < 'A') || (firstLetter > 'Z'))
+				if (!Character.isUpperCase(parts[i].charAt(0)))
 					break;
 				suffix = prefix + "." + suffix; 
 				prefix = parts[i];

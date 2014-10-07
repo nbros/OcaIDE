@@ -699,7 +699,21 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		}
 		int beginOffset = (i >= 0) ? i + 1 : 0;
 		
-		return new TextSelection(doc, beginOffset, text.length());
+		
+		String[] parts = text.split("\\.");
+		String hoveredText = parts[parts.length - 1];
+		i = parts.length - 2;
+		while (i >= 0) {
+			if (parts[i].isEmpty())
+				break;
+			if (!Character.isUpperCase(parts[i].charAt(0)))
+				break;
+			hoveredText = parts[i] + "." + hoveredText;
+			i--;
+		}
+		beginOffset = beginOffset + (text.length() - hoveredText.length());
+		
+		return new TextSelection(doc, beginOffset, hoveredText.length());
 	}
 	
 
