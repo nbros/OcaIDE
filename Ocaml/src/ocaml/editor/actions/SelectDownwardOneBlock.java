@@ -1,6 +1,7 @@
 package ocaml.editor.actions;
 
 import ocaml.OcamlPlugin;
+import ocaml.editors.OcamlEditor;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.BadLocationException;
@@ -8,6 +9,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -57,14 +59,9 @@ public class SelectDownwardOneBlock implements IWorkbenchWindowActionDelegate {
 		
 		final StyledText styledText = (StyledText) control;
 		int cursorOffset = styledText.getCaretOffset();
-		
-		TextSelection selection = 
-				(TextSelection) editor.getSelectionProvider().getSelection();
-		int startSelectionOffset;
-		if (selection.getOffset() < cursorOffset)
-			startSelectionOffset = selection.getOffset();
-		else
-			startSelectionOffset = selection.getOffset() + selection.getLength();
+
+		Point selection = styledText.getSelection();
+		int startOffset = (selection.x < cursorOffset) ? selection.x : selection.y;
 		
 		try {
 			int lineNum= doc.getLineOfOffset(cursorOffset);
@@ -72,12 +69,12 @@ public class SelectDownwardOneBlock implements IWorkbenchWindowActionDelegate {
 			
 			if (lineNum == (numOfLine - 2)) {
 				int lastLineOffset = doc.getLineOffset(lineNum+1);
-				editor.selectAndReveal(startSelectionOffset, lastLineOffset - startSelectionOffset);
+				styledText.setSelection(startOffset, lastLineOffset);
 				return;
 			}
 			
 			if (lineNum >= (numOfLine - 1)) {
-				editor.selectAndReveal(startSelectionOffset, doc.getLength() - startSelectionOffset );
+				styledText.setSelection(startOffset, doc.getLength());
 				return;
 			}
 			
@@ -102,7 +99,7 @@ public class SelectDownwardOneBlock implements IWorkbenchWindowActionDelegate {
 					break;
 			}
 			int newOffset = doc.getLineOffset(lineNum);
-			editor.selectAndReveal(startSelectionOffset, newOffset - startSelectionOffset);
+			styledText.setSelection(startOffset, newOffset);
 		} catch (BadLocationException e) {
 			return;
 		}

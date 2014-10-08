@@ -8,6 +8,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -58,20 +59,15 @@ public class SelectUpwardOneBlock implements IWorkbenchWindowActionDelegate {
 		final StyledText styledText = (StyledText) control;
 		int cursorOffset = styledText.getCaretOffset();
 		
-		TextSelection selection = 
-				(TextSelection) editor.getSelectionProvider().getSelection();
-		int startSelectionOffset;
-		if (selection.getOffset() < cursorOffset)
-			startSelectionOffset = selection.getOffset();
-		else
-			startSelectionOffset = selection.getOffset() + selection.getLength();
+		Point selection = styledText.getSelection();
+		int startOffset = (selection.x < cursorOffset) ? selection.x : selection.y;
 
 		try {
 			int lineNum= doc.getLineOfOffset(cursorOffset);
 			int numOfLine = doc.getNumberOfLines();
 			
 			if (lineNum <= 0) {
-				editor.selectAndReveal(startSelectionOffset, -startSelectionOffset);
+				styledText.setSelection(startOffset, 0);
 				return;
 			}
 			
@@ -84,7 +80,7 @@ public class SelectUpwardOneBlock implements IWorkbenchWindowActionDelegate {
 			String prevLine= doc.get(beginOffset, endOffset - beginOffset + 1);
 			boolean isPrevLineEmpty = prevLine.trim().isEmpty();
 			if (isPrevLineEmpty && (cursorOffset != currentLineOffset)) {
-				editor.selectAndReveal(startSelectionOffset, currentLineOffset - startSelectionOffset);
+				styledText.setSelection(startOffset, currentLineOffset);
 				return;
 			}
 
@@ -105,7 +101,7 @@ public class SelectUpwardOneBlock implements IWorkbenchWindowActionDelegate {
 				}
 			}
 			int newOffset = doc.getLineOffset(lineNum);
-			editor.selectAndReveal(startSelectionOffset, newOffset - startSelectionOffset);
+			styledText.setSelection(startOffset, newOffset);
 		} catch (BadLocationException e) {
 			return;
 		}
