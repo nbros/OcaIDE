@@ -155,7 +155,7 @@ public class OcamlEditor extends TextEditor {
 			
 			public void textChanged(TextEvent event) {
 				// Trung: rebuild only when content assistant is inactive
-				if (viewerConfig.isContentAssistantActive() || event != null) 
+				if (viewerConfig.isContentAssistantActive() || event == null) 
 					return;
 				
 				DocumentEvent docEvent = event.getDocumentEvent();

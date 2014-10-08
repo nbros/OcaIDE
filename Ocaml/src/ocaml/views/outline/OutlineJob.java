@@ -51,7 +51,7 @@ public class OutlineJob extends Job {
 
 	public OutlineJob(String name, boolean syncWithEditor) {
 		super(name);
-		this.syncEditor = syncWithEditor;
+		this.syncWithEditor = syncWithEditor;
 	}
 
 	/** The outline. Can be <code>null</code> if the outline view is closed */
@@ -61,7 +61,7 @@ public class OutlineJob extends Job {
 
 	private OcamlEditor editor;
 	
-	private boolean syncEditor;
+	private boolean syncWithEditor;
 
 	public void setDoc(IDocument doc) {
 		this.doc = doc;
@@ -439,7 +439,7 @@ public class OutlineJob extends Job {
 						outline.setInput(fOutlineDefinitions);
 
 					// synchronize outline with editor
-					if (syncEditor)
+					if (syncWithEditor)
 						editor.synchronizeOutline();
 				}
 
