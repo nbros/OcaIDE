@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextListener;
@@ -35,6 +36,7 @@ import org.eclipse.jface.text.PaintManager;
 import org.eclipse.jface.text.TextEvent;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.TextViewer;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.MatchingCharacterPainter;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.custom.StyledText;
@@ -145,12 +147,24 @@ public class OcamlEditor extends TextEditor {
 		} catch (Exception e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
 		}
-
-		this.getSourceViewer().addTextListener(new ITextListener() {
-
+		
+		
+		final ISourceViewer viewer = this.getSourceViewer();
+		final OcamlSourceViewerConfig viewerConfig = (OcamlSourceViewerConfig) this.getSourceViewerConfiguration();
+		viewer.addTextListener(new ITextListener() {
+			
 			public void textChanged(TextEvent event) {
-				if (event.getDocumentEvent() != null)
-					rebuildOutline(50);
+				// Trung: rebuild only when content assistant is inactive
+				if (viewerConfig.isContentAssistantActive() || event != null) 
+					return;
+				
+				DocumentEvent docEvent = event.getDocumentEvent();
+				if (docEvent == null)
+					return;
+				
+				String text = docEvent.getText().trim();
+				if (!text.isEmpty())
+					rebuildOutline(50, false); // don't sync outline with editor
 			}
 		});
 	}
@@ -167,7 +181,7 @@ public class OcamlEditor extends TextEditor {
 		super.doSetInput(input);
 
 		if (this.outline != null) {
-			rebuildOutline(50);
+			rebuildOutline(50, false);
 		}
 
 		IProject project = this.getProject();
@@ -205,7 +219,7 @@ public class OcamlEditor extends TextEditor {
 
 			if (this.outline == null)
 				this.outline = new OcamlOutlineControl(this);
-			rebuildOutline(50);
+			rebuildOutline(50, false);
 			return this.outline;
 		}
 		return super.getAdapter(required);
@@ -446,7 +460,7 @@ public class OcamlEditor extends TextEditor {
 	 * this.fOutlinePage; }
 	 */
 
-	public void rebuildOutline(int delay) {
+	public void rebuildOutline(int delay, boolean syncWithEditor) {
 
 		// invalidate previous definitions
 		this.codeDefinitionsTree = null;
@@ -457,7 +471,7 @@ public class OcamlEditor extends TextEditor {
 		// String doc = document.get();
 
 		if (outlineJob == null)
-			outlineJob = new OutlineJob("Rebuilding outline");
+			outlineJob = new OutlineJob("Rebuilding outline", syncWithEditor);
 		// else if (outlineJob.getState() == OutlineJob.RUNNING)
 		// return;
 		// only one Job at a time
@@ -479,7 +493,10 @@ public class OcamlEditor extends TextEditor {
 	@Override
 	public void handleCursorPositionChanged() {
 		super.handleCursorPositionChanged();
-		synchronizeOutline();
+		
+		// Trung: don't synchronize outline job when cursor position change
+		// synchronizeOutline();
+		
 		fireCursorPositionChanged(getTextViewer().getSelectedRange());
 
 		if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(

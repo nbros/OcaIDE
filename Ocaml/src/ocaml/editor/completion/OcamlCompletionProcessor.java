@@ -1,9 +1,7 @@
 package ocaml.editor.completion;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 
 import ocaml.OcamlPlugin;
 import ocaml.editor.syntaxcoloring.OcamlPartitionScanner;
@@ -11,8 +9,6 @@ import ocaml.editors.OcamlEditor;
 import ocaml.editors.lex.OcamllexEditor;
 import ocaml.editors.yacc.OcamlyaccEditor;
 import ocaml.parser.Def;
-import ocaml.parser.Def.Type;
-import ocaml.parsers.OcamlNewInterfaceParser;
 import ocaml.util.Misc;
 
 import org.eclipse.core.resources.IProject;
@@ -25,7 +21,6 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
-import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.editors.text.TextEditor;
 
 /**

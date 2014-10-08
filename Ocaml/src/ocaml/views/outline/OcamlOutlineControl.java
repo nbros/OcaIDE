@@ -101,7 +101,7 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 				public void run() {
 					OcamlOutlineControl.bDebug = this.isChecked();
 					super.run();
-					editor.rebuildOutline(0);
+					editor.rebuildOutline(0, false);
 					outline.update();
 				}
 			};

@@ -1,7 +1,6 @@
 package ocaml.editor.actions;
 
 import ocaml.OcamlPlugin;
-import ocaml.editors.OcamlEditor;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.BadLocationException;
@@ -16,7 +15,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.editors.text.TextEditor;
-import org.eclipse.ui.texteditor.ITextEditor;
 
 public class SelectUpwardOneBlock implements IWorkbenchWindowActionDelegate {
 

@@ -18,7 +18,10 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.ICompletionListener;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.formatter.MultiPassContentFormatter;
@@ -52,9 +55,11 @@ import org.eclipse.ui.texteditor.spelling.SpellingService;
  */
 public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 	private OcamlEditor ocamlEditor;
+	private boolean contentAssistantActived;
 
 	public OcamlSourceViewerConfig(OcamlEditor ocamlEditor) {
 		this.ocamlEditor = ocamlEditor;
+		this.contentAssistantActived = false;
 	}
 
 	/**
@@ -157,6 +162,22 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 				IDocument.DEFAULT_CONTENT_TYPE), IDocument.DEFAULT_CONTENT_TYPE);
 
 		assistant.enableAutoInsert(true);
+		assistant.addCompletionListener(new ICompletionListener() {
+			@Override
+			public void selectionChanged(ICompletionProposal proposal, boolean smartToggle) {
+				contentAssistantActived = true;
+			}
+			
+			@Override
+			public void assistSessionStarted(ContentAssistEvent event) {
+				contentAssistantActived = true;
+			}
+			
+			@Override
+			public void assistSessionEnded(ContentAssistEvent event) {
+				contentAssistantActived = false;
+			}
+		});
 
 		boolean autoActivation = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 				PreferenceConstants.P_EDITOR_AUTOCOMPLETION);
@@ -244,6 +265,10 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 			return reconciler;
 		else
 			return null;
+	}
+	
+	public boolean isContentAssistantActive() {
+		return contentAssistantActived;
 	}
 
 }

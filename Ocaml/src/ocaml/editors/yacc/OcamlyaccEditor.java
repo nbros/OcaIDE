@@ -135,6 +135,10 @@ public class OcamlyaccEditor extends TextEditor {
 	}
 	
 	public void rebuildOutline(int delay) {
+		/*
+		 *  Trung: rebuilding outline will dispose all completion proposal
+		 *  pop-up windows if existing.
+		 */
 
 		IEditorInput input = this.getEditorInput();
 		IDocument document = this.getDocumentProvider().getDocument(input);

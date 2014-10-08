@@ -3,14 +3,12 @@ package ocaml.editors;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
 import ocaml.OcamlPlugin;
 import ocaml.editor.completion.CompletionJob;
 import ocaml.parser.Def;
 import ocaml.parsers.OcamlNewInterfaceParser;
-import ocaml.util.FileUtil;
 import ocaml.util.Misc;
 import ocaml.util.OcamlPaths;
 
@@ -24,7 +22,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextSelection;
-import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.ui.IEditorPart;
