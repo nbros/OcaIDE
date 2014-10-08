@@ -214,24 +214,26 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	 * @return the completions found
 	 */
 	private OcamlCompletionProposal[] findCompletionProposals(String completion,
-			Def outlineDefinitionsRoot,
-			Def definitionsRoot,
-			IDocument document,
+			Def outlineDefsRoot,
+			Def defsRoot,
+			IDocument doc,
 			int offset) {
 
-		// look in the module before the dot what's after the dot
-		// The module can be like "A.B." or "c.D.E."
+		ArrayList<OcamlCompletionProposal> proposals;
 		if (completion.contains(".")) 
-			return findDottedCompletionProposals(completion, outlineDefinitionsRoot, definitionsRoot, document, offset);
-		// find elements starting by <completion> in the list of elements
+			proposals = processDottedCompletion(completion, outlineDefsRoot, defsRoot, doc, offset);
 		else
-			return findNondottedCompletionProposals(completion, outlineDefinitionsRoot, definitionsRoot, document, offset);
+			proposals = processNondottedCompletion(completion, outlineDefsRoot, defsRoot, doc, offset);
+		
+		proposals = removeDuplicatedCompletionProposal(proposals);
+		
+		return proposals.toArray(new OcamlCompletionProposal[0]);
 	}
 	
 	// completion string must contained dots
-	private OcamlCompletionProposal[] findDottedCompletionProposals(String completion,
-			Def moduleDefinitionsRoot,
-			Def interfacesDefinitionsRoot,
+	private ArrayList<OcamlCompletionProposal> processDottedCompletion(String completion,
+			Def outlineDefsRoot,
+			Def defsRoot,
 			IDocument document,
 			int offset) {
 
@@ -262,110 +264,109 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			boolean stop = false;
 			while (!stop) {
 				stop = true;
-				if (moduleDefinitionsRoot == null)
+				if (outlineDefsRoot == null)
 					break;
 				
-				for (Def def : moduleDefinitionsRoot.children) {
+				for (Def def : outlineDefsRoot.children) {
 					if (def == null || def.name == null)
 						break;
 					
-					if (def.name.equals(moduleName)) {
-						if (def.type == Def.Type.Module) { 
-							return findDottedCompletionProposals(suffix, moduleDefinitionsRoot, def, document, offset);
+					if (!def.name.equals(moduleName)) 
+						continue;
+					
+					if (def.type == Def.Type.Module) { 
+						return processDottedCompletion(suffix, outlineDefsRoot, def, document, offset);
+					}
+					else if (def.type == Def.Type.ModuleAlias)  {
+						String aliasedName = def.children.get(0).name;
+						if (moduleName.equals(aliasedName)) 
+							stop = true;
+						else {
+							moduleName = aliasedName;
+							stop = false;
 						}
-						else if (def.type == Def.Type.ModuleAlias)  {
-							String aliasedName = def.children.get(0).name;
-							if (moduleName.equals(aliasedName)) 
-								stop = true;
-							else {
-								moduleName = aliasedName;
-								stop = false;
-							}
-							break;
-						}
+						break;
 					}
 				}
 			}
 			
 			// then look into interface definitions
-			if (interfacesDefinitionsRoot == null)
-				return proposals.toArray(new OcamlCompletionProposal[0]);
-			for (Def def: interfacesDefinitionsRoot.children) {
+			if (defsRoot == null)
+				return proposals;
+			for (Def def: defsRoot.children) {
 				if (def == null || def.name == null)
 					continue;
 				
 				if (def.name.equals(moduleName) && (def.type == Def.Type.Module))
-					return findDottedCompletionProposals(suffix, def, interfacesDefinitionsRoot, document, offset);
+					return processDottedCompletion(suffix, def, defsRoot, document, offset);
 			}
 
 		}
 		// find elements starting by <completion> in the list of elements
 		else {
-			for (Def def : moduleDefinitionsRoot.children) {
+			for (Def def : outlineDefsRoot.children) {
 				if (def.name.startsWith(completion) && isCompletionDef(def))
 					proposals.add(new OcamlCompletionProposal(def, offset, completion.length()));
 
 			}
 		}
 
-		return proposals.toArray(new OcamlCompletionProposal[0]);
+		return proposals;
 	}
 	
-	private OcamlCompletionProposal[] findNondottedCompletionProposals(String completion,
-			Def outlineDefinitionsRoot,
-			Def interfacesDefinitionsRoot,
+	private ArrayList<OcamlCompletionProposal> processNondottedCompletion(String completion,
+			Def outlineDefsRoot,
+			Def defsRoot,
 			IDocument document,
 			int offset) {
 
 		ArrayList<OcamlCompletionProposal> proposals = new ArrayList<OcamlCompletionProposal>();
 
 		// look up for definition
-		final Def nearestDef = findNearestDefAt(outlineDefinitionsRoot, offset, document);
+		final Def nearestDef = findNearestDefAt(outlineDefsRoot, offset, document);
 		proposals.addAll(lookCompletionProposalsUp(completion, nearestDef, offset));
 		
-		proposals = removeDuplicatedCompletionProposal(proposals);
 		// look in current module
-		if (outlineDefinitionsRoot == null)
-			return proposals.toArray(new OcamlCompletionProposal[0]);
+		if (outlineDefsRoot == null)
+			return proposals;
 		
-		for (Def def : outlineDefinitionsRoot.children) {
+		for (Def def : outlineDefsRoot.children) {
 			if (def.name.startsWith(completion) && isCompletionDef(def))
 				proposals.add(new OcamlCompletionProposal(def, offset, completion.length()));
 		}
 		
-		proposals = removeDuplicatedCompletionProposal(proposals);
 				// look in all opened or included modules
-		if (interfacesDefinitionsRoot == null)
-			return proposals.toArray(new OcamlCompletionProposal[0]);
+		if (defsRoot == null)
+			return proposals;
 		
-		for (Def def : outlineDefinitionsRoot.children) {
+		for (Def def : outlineDefsRoot.children) {
 			if (def == null || def.name == null)
 				break;
 			
-			if (def.type == Def.Type.Open) {
-				for (Def idef: interfacesDefinitionsRoot.children) {
-					if (idef == null || idef.name == null)
+			if (def.type != Def.Type.Open) 
+				continue;
+
+			for (Def idef: defsRoot.children) {
+				if (idef == null || idef.name == null)
+					break;
+				
+				if (!idef.name.equals(def.name)) 
+					continue;
+
+				for (Def d: idef.children) {
+					if (d == null || d.name == null)
 						break;
 					
-					if (idef.name.equals(def.name)) {
-						for (Def d: idef.children) {
-							if (d == null || d.name == null)
-								break;
-							
-							if (d.name.startsWith(completion) && isCompletionDef(d))
-								proposals.add(new OcamlCompletionProposal(d, offset, completion.length()));
-						}
-					}
+					if (d.name.startsWith(completion) && isCompletionDef(d))
+						proposals.add(new OcamlCompletionProposal(d, offset, completion.length()));
 				}
 			}
 		}
 		
-		proposals = removeDuplicatedCompletionProposal(proposals);
-		return proposals.toArray(new OcamlCompletionProposal[0]);
+		return proposals;
 	}
-	
-	
 
+	
 	private ArrayList<OcamlCompletionProposal> lookCompletionProposalsUp(String completion, Def node, int offset) {
 		ArrayList<OcamlCompletionProposal> proposals = new ArrayList<OcamlCompletionProposal>();
 		
@@ -400,7 +401,6 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		return proposals;
 	}
 	
-	// remove and sort
 	private ArrayList<OcamlCompletionProposal> removeDuplicatedCompletionProposal(ArrayList<OcamlCompletionProposal> proposals) {
 		
 		ArrayList<OcamlCompletionProposal> newProposals = new ArrayList<OcamlCompletionProposal>();
@@ -408,16 +408,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		for (OcamlCompletionProposal p: proposals) {
 			String s = p.getDisplayString();
 			if (!names.contains(s)) {
-				int index = 0;
-				for (OcamlCompletionProposal q: newProposals) {
-					if (q.getDisplayString().compareTo(p.getDisplayString()) > 0)
-						break;
-					index++;
-				}
-				if (index < newProposals.size())
-					newProposals.add(index,p);
-				else
-					newProposals.add(p);
+				newProposals.add(p);
 				names.add(s);
 			}
 		}

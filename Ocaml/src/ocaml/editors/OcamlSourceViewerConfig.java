@@ -22,6 +22,7 @@ import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.ICompletionListener;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalSorter;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.formatter.MultiPassContentFormatter;
@@ -161,30 +162,33 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 		assistant.setContentAssistProcessor(new OcamlCompletionProcessor(this.ocamlEditor,
 				IDocument.DEFAULT_CONTENT_TYPE), IDocument.DEFAULT_CONTENT_TYPE);
 
-		assistant.enableAutoInsert(true);
 		assistant.addCompletionListener(new ICompletionListener() {
 			@Override
 			public void selectionChanged(ICompletionProposal proposal, boolean smartToggle) {
 				contentAssistantActived = true;
 			}
-			
 			@Override
 			public void assistSessionStarted(ContentAssistEvent event) {
 				contentAssistantActived = true;
 			}
-			
 			@Override
 			public void assistSessionEnded(ContentAssistEvent event) {
 				contentAssistantActived = false;
 			}
 		});
+		
+		assistant.setSorter(new ICompletionProposalSorter() {
+			@Override
+			public int compare(ICompletionProposal p1, ICompletionProposal p2) {
+				return p1.getDisplayString().compareTo(p2.getDisplayString());
+			}
+		});
 
 		boolean autoActivation = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 				PreferenceConstants.P_EDITOR_AUTOCOMPLETION);
-
 		assistant.enableAutoActivation(autoActivation);
-		
 		assistant.setAutoActivationDelay(100);
+		assistant.enableAutoInsert(true);
 		assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_STACKED);
 		assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
 		assistant.setInformationControlCreator(new OcamlInformationControlCreator());
