@@ -75,6 +75,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.P_SHOW_TYPES_IN_OUTLINE, true);
 			store.setDefault(PreferenceConstants.P_SHOW_TYPES_IN_POPUPS, true);
 			store.setDefault(PreferenceConstants.P_SHOW_TYPES_IN_STATUS_BAR, true);
+			store.setDefault(PreferenceConstants.P_SHOW_MARKERS_IN_STATUS_BAR, true);
 
 			// set the defaults for the formatter
 			store.setDefault(PreferenceConstants.P_FORMATTER_INDENT_IN, false);

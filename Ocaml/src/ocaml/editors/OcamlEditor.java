@@ -494,28 +494,39 @@ public class OcamlEditor extends TextEditor {
 	public void handleCursorPositionChanged() {
 		super.handleCursorPositionChanged();
 		
-		// Trung: don't synchronize outline job when cursor position change
-		// synchronizeOutline();
-		
 		fireCursorPositionChanged(getTextViewer().getSelectedRange());
 
-		if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
-				PreferenceConstants.P_SHOW_TYPES_IN_STATUS_BAR)) {
-			final String annot = OcamlTextHover.getAnnotAt(this,
-					(TextViewer) this.getSourceViewer(), this.getCaretOffset()).trim();
-			final OcamlEditor editor = this;
-			Display.getCurrent().asyncExec(new Runnable() {
+		final OcamlEditor editor = this;
+		OcamlTextHover hover = new OcamlTextHover(editor);
+		ITextViewer viewer = this.getTextViewer();
+		int offset = this.getCaretOffset();
+		IRegion region = hover.getHoverRegion(viewer, offset);
 
-				public void run() {
-					if (editor == null)
-						return;
-					if (!annot.equals(""))
-						editor.setStatusLineMessage(annot);
-					else
-						editor.setStatusLineMessage(null); // clear
-				}
-			});
+		String message = "";
+		
+		if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+				PreferenceConstants.P_SHOW_MARKERS_IN_STATUS_BAR)) {
+			message = hover.getMarkerInfoOneLine(viewer, region);
 		}
+		
+		// only display type info when there isn't any markers
+		if (message.isEmpty() 
+				&& OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+						PreferenceConstants.P_SHOW_TYPES_IN_STATUS_BAR)) {
+			message = hover.getTypeInfoOneLine(viewer, region);
+		}
+		
+		final String statusMessage = message;
+		Display.getCurrent().asyncExec(new Runnable() {
+			public void run() {
+				editor.setStatusLineMessage(statusMessage);
+			}
+		});
+	}
+	
+	@Override
+	public void setStatusLineMessage(String message) {
+		super.setStatusLineMessage(message);
 	}
 
 	private Def codeDefinitionsTree = null;

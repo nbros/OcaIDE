@@ -28,35 +28,85 @@ import org.eclipse.jface.text.TextViewer;
  */
 public class OcamlTextHover implements ITextHover {
 	private OcamlEditor ocamlEditor;
+	
 
 	public OcamlTextHover(OcamlEditor ocamlEditor) {
 		this.ocamlEditor = ocamlEditor;
 	}
 
 	/**
-	 * Returns the string to display in a pop-up which gives informations about the element currently under
-	 * the mouse cursor in the editor
+	 * Returns the string to display in a pop-up which gives informations 
+	 * about the element currently under the mouse cursor in the editor
 	 */
+	@Override
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-		// the file in the workspace. null if the file is external
-		IFile file = ocamlEditor.getFileBeingEdited();
+		String markersInfo = getMarkerInfo(textViewer, hoverRegion);
+		String valueInfo = getExpressionValue(textViewer, hoverRegion);
+		String typeInfo = getTypeInfo(textViewer, hoverRegion);
+		
+		String hoverInfo = "";
+		
+		if (!markersInfo.isEmpty()) {
+			hoverInfo = markersInfo;
+		}
+		
+		if (!valueInfo.isEmpty()) {
+			if (hoverInfo.isEmpty())
+				hoverInfo = valueInfo;
+			else 
+				hoverInfo = hoverInfo + "\n\n" + "Value info: " + "\n" + valueInfo;
+		}
+		
+		if (!typeInfo.isEmpty()) {
+			if (hoverInfo.isEmpty())
+				hoverInfo = typeInfo;
+			else
+				hoverInfo = hoverInfo + "\n\n" + "Type info: " + "\n" + typeInfo;
+		}
+		
+		return hoverInfo;
+	}
+	
+	// get HoverInfo in 1 line format
+	public String getHoverInfoOneLine(ITextViewer textViewer, IRegion hoverRegion) {
+		// display only marker info, value info, or type info
+		String hoverInfo = getMarkerInfo(textViewer, hoverRegion);
+		
+		if (hoverInfo.isEmpty())
+			hoverInfo = getExpressionValue(textViewer, hoverRegion);
+		
+		if (hoverInfo.isEmpty())
+			hoverInfo = getTypeInfo(textViewer, hoverRegion);
 
-		// the full system path of the file
+		String[] lines = hoverInfo.split(System.lineSeparator());
+		String hoverInfoOneLine = "";
+		for (String line: lines)
+			hoverInfoOneLine = hoverInfoOneLine + " " + line.trim();
+		return hoverInfoOneLine.trim();
+	}
+
+	
+	/**
+	 * Returns the string to display in a pop-up which gives marker informations
+	 * about the element currently under the mouse cursor in the editor
+	 */
+	public String getMarkerInfo(ITextViewer textViewer, IRegion region) {
+		IFile file = ocamlEditor.getFileBeingEdited();
 		IPath filePath = ocamlEditor.getPathOfFileBeingEdited();
 
 		if (filePath == null)
-			return "<null file>";
+			return "";
 
-		if (hoverRegion == null) {
+		if (region == null) {
 			ocaml.OcamlPlugin.logError("OcamlTextHover:getHoverInfo null region");
 			return "";
 		}
 
 		try {
 			// error message string, if we found one in the hovered region
-			String hoverMessage = "";
+			String markerInfo = "";
 
-			int hoverOffset = hoverRegion.getOffset();
+			int hoverOffset = region.getOffset();
 
 			if (file != null) {
 				IMarker[] markers = file.findMarkers(null, true, 1);
@@ -66,102 +116,180 @@ public class OcamlTextHover implements ITextHover {
 
 					if (hoverOffset >= markerStart && hoverOffset <= markerEnd) {
 						String message = marker.getAttribute(IMarker.MESSAGE, "<Error reading marker>");
-						hoverMessage = hoverMessage + message.trim() + "\n";
+						markerInfo = markerInfo + message.trim() + "\n\n";
 					}
 				}
+				return markerInfo.trim();
 			}
+		} catch (Throwable e) {
+			// ocaml.OcamlPlugin.logError("Erreur dans OcamlTextHover:getHoverInfo", e);
+		}
 
-			// if the debugger is started, we ask it for the value of the variable under the cursor
-			if (OcamlDebugger.getInstance().isStarted()) {
-				String text = textViewer.getDocument().get();
-				String expression = expressionAtOffset(text, hoverOffset).trim();
+		return "";
+	}
+	
+	// get markerInfo in 1 line format
+	public String getMarkerInfoOneLine(ITextViewer textViewer, IRegion region) {
+		String markerInfo = getMarkerInfo(textViewer, region);
+		String[] lines = markerInfo.split(System.lineSeparator());
+		String markerInfoOneLine = "";
+		for (String line: lines)
+			markerInfoOneLine = markerInfoOneLine + " " + line.trim();
+		return markerInfoOneLine.trim();
+	}
+	
+	/**
+	 * Returns the string to display in a pop-up which gives type informations
+	 * about the element currently under the mouse cursor in the editor
+	 */
+	public String getTypeInfo(ITextViewer textViewer, IRegion region) {
+		IFile file = ocamlEditor.getFileBeingEdited();
+		IPath filePath = ocamlEditor.getPathOfFileBeingEdited();
 
-				if (!expression.equals("")) {
-					String value = OcamlDebugger.getInstance().display(expression).trim();
+		if (filePath == null)
+			return "";
 
-					if (!value.equals(""))
-						return (hoverMessage + Misc.beautify(value)).trim();
-				}
-			}
+		if (region == null) {
+			ocaml.OcamlPlugin.logError("OcamlTextHover:getHoverInfo null region");
+			return "";
+		}
 
-			if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
-					PreferenceConstants.P_SHOW_TYPES_IN_POPUPS)) {
+		try {
+			String typeInfo = "";
+			int offset = region.getOffset();
 
-				File annotFile = null;
+			File annotFile = null;
 
-				// workspace file
+			// workspace file
+			if (file != null)
+				annotFile = Misc.getOtherFileFor(file.getProject(), file.getFullPath(), ".annot");
+			else
+				annotFile = Misc.getOtherFileFor(filePath, ".annot");
+
+			if (annotFile != null && annotFile.exists()) {
+				boolean bUpToDate = false;
+
 				if (file != null)
-					annotFile = Misc.getOtherFileFor(file.getProject(), file.getFullPath(), ".annot");
+					bUpToDate = file.getLocation().toFile().lastModified() <= annotFile.lastModified();
 				else
-					annotFile = Misc.getOtherFileFor(filePath, ".annot");
+					bUpToDate = filePath.toFile().lastModified() <= annotFile.lastModified();
 
-				if (annotFile != null && annotFile.exists()) {
-					boolean bUpToDate = false;
+				if (!ocamlEditor.isDirty() && bUpToDate) {
+					ArrayList<TypeAnnotation> found = new ArrayList<TypeAnnotation>();
 
-					if (file != null)
-						bUpToDate = file.getLocation().toFile().lastModified() <= annotFile.lastModified();
-					else
-						bUpToDate = filePath.toFile().lastModified() <= annotFile.lastModified();
+					TypeAnnotation[] annotations = OcamlAnnotParser.parseFile(annotFile, textViewer
+							.getDocument());
+					if (annotations != null) {
+						for (TypeAnnotation annot : annotations)
+							if (annot.getBegin() <= offset && offset < annot.getEnd())
+								found.add(annot);
 
-					if (!ocamlEditor.isDirty() && bUpToDate) {
-						ArrayList<TypeAnnotation> found = new ArrayList<TypeAnnotation>();
+						/*
+						 * Search for the smallest hovered type annotation
+						 */
+						TypeAnnotation annot = null;
+						int minSize = Integer.MAX_VALUE;
 
-						TypeAnnotation[] annotations = OcamlAnnotParser.parseFile(annotFile, textViewer
-								.getDocument());
-						if (annotations != null) {
-							for (TypeAnnotation annot : annotations)
-								if (annot.getBegin() <= hoverOffset && hoverOffset < annot.getEnd())
-									found.add(annot);
-
-							/*
-							 * Search for the smallest hovered type annotation
-							 */
-							TypeAnnotation annot = null;
-							int minSize = Integer.MAX_VALUE;
-
-							for (TypeAnnotation a : found) {
-								int size = a.getEnd() - a.getBegin();
-								if (size < minSize) {
-									annot = a;
-									minSize = size;
-								}
+						for (TypeAnnotation a : found) {
+							int size = a.getEnd() - a.getBegin();
+							if (size < minSize) {
+								annot = a;
+								minSize = size;
 							}
+						}
 
-							if (annot != null) {
+						if (annot != null) {
+							String doc = ocamlEditor.getDocumentProvider().getDocument(
+									ocamlEditor.getEditorInput()).get();
+							String expr = doc.substring(annot.getBegin(), annot.getEnd());
+							String[] lines = expr.split("\\n");
+							if (expr.length() < 50 && lines.length <= 6)
+								return (typeInfo + expr + ": " + annot.getType()).trim();
+							else if (lines.length > 6) {
+								int l = lines.length;
 
-								String doc = ocamlEditor.getDocumentProvider().getDocument(
-										ocamlEditor.getEditorInput()).get();
-								String expr = doc.substring(annot.getBegin(), annot.getEnd());
-								String[] lines = expr.split("\\n");
-								if (expr.length() < 50 && lines.length <= 6)
-									return (hoverMessage + expr + ": " + annot.getType()).trim();
-								else if (lines.length > 6) {
-									int l = lines.length;
-
-									return (hoverMessage + lines[0] + "\n" + lines[1] + "\n" + lines[2]
-											+ "\n" + "..." + (l - 6) + " more lines...\n" + lines[l - 3]
-											+ "\n" + lines[l - 2] + "\n" + lines[l - 1] + "\n:" + annot
-											.getType()).trim();
-								} else
-									return (hoverMessage + expr + "\n:" + annot.getType()).trim();
-							}
+								return (typeInfo + lines[0] + "\n" + lines[1] + "\n" + lines[2]
+										+ "\n" + "..." + (l - 6) + " more lines...\n" + lines[l - 3]
+										+ "\n" + lines[l - 2] + "\n" + lines[l - 1] + "\n:" + annot
+										.getType()).trim();
+							} else
+								return (typeInfo + expr + "\n:" + annot.getType()).trim();
 						}
 					}
 				}
 			}
 
-			return hoverMessage.trim();
+			return typeInfo.trim();
 			/*
 			 * if (!this.ocamlEditor.isDirty()) return this.ocamlEditor.getTypeInfoAt(hoverOffset).trim();
 			 */
 
 		} catch (Throwable e) {
-			ocaml.OcamlPlugin.logError("Erreur dans OcamlTextHover:getHoverInfo", e);
+			// ocaml.OcamlPlugin.logError("Erreur dans OcamlTextHover:getHoverInfo", e);
 		}
 
 		return "";
 	}
+	
+	// get HoverInfo in 1 line format
+	public String getTypeInfoOneLine(ITextViewer textViewer, IRegion region) {
+		String typeInfo = getTypeInfo(textViewer, region);
+		String[] lines = typeInfo.split(System.lineSeparator());
+		String typeInfoOneLine = "";
+		for (String line: lines)
+			typeInfoOneLine = typeInfoOneLine + " " + line.trim();
+		return typeInfoOneLine.trim();
+	}
+	
+	/**
+	 * Returns the string to display in a pop-up which gives value of expression
+	 * currently under the mouse cursor in the editor in debug mode
+	 */
+	public String getExpressionValue(ITextViewer textViewer, IRegion region) {
+		IPath filePath = ocamlEditor.getPathOfFileBeingEdited();
 
+		if (filePath == null)
+			return "";
+
+		if (region == null) {
+			ocaml.OcamlPlugin.logError("OcamlTextHover:getHoverInfo null region");
+			return "";
+		}
+
+		String value = "";
+
+		try {
+			int offset = region.getOffset();
+
+			// if the debugger is started, we ask it for the value of the variable under the cursor
+			if (OcamlDebugger.getInstance().isStarted()) {
+				String text = textViewer.getDocument().get();
+				String expression = expressionAtOffset(text, offset).trim();
+
+				if (!expression.equals("")) {
+					value = OcamlDebugger.getInstance().display(expression).trim();
+					if (!value.equals(""))
+						value = Misc.beautify(value).trim();
+				}
+			}
+		} catch (Throwable e) {
+			// ocaml.OcamlPlugin.logInfo("Erreur dans OcamlTextHover:getHoverInfo", e);
+		}
+
+		return value;
+	}
+	
+	// get expression value in 1 line format
+	public String getExpressionValueOneLine(ITextViewer textViewer, IRegion region) {
+		String value = getExpressionValue(textViewer, region);
+		String[] lines = value.split(System.lineSeparator());
+		String valueOneLine = "";
+		for (String line: lines)
+			valueOneLine = valueOneLine + " " + line.trim();
+		return valueOneLine.trim();
+	}
+
+	@Override
 	public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
 		return new Region(offset, 0);
 	}

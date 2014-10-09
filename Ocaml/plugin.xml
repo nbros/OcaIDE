@@ -858,6 +858,13 @@
 				definitionId="Ocaml.openQuickOutlineCommand"
 				id="Ocaml_sourceActions_QuickOutline" label="Quick Outline"
 				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+   <action
+         class="ocaml.editor.actions.ShowTextHover"
+         definitionId="Ocaml.showTextHover"
+         id="Ocaml_sourceActions_showTextHover"
+         label="Show Text Hover"
+         style="push">
+   </action>
 		</actionSet>
 	</extension>
 	<extension point="org.eclipse.ui.commands">
@@ -949,6 +956,11 @@
         categoryId="Ocaml.commandscategory"
         id="Ocaml.selectDownwardOneBlock"
         name="Select Downward One Block">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.showTextHover"
+        name="Show Text Hover">
   </command>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
@@ -1068,6 +1080,12 @@
         contextId="org.eclipse.ui.textEditorScope"
         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
         sequence="M1+M2+ARROW_DOWN">
+  </key>
+  <key
+        commandId="Ocaml.showTextHover"
+        contextId="org.eclipse.ui.textEditorScope"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+M3+H">
   </key>
 	</extension>
 	<extension point="org.eclipse.ui.contexts">
