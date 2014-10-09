@@ -554,8 +554,8 @@ public class Def extends beaver.Symbol {
 	private String filename = "";
 	
 	public void setBody(String body) {
-//		this.body = body; 
-		this.body = Misc.beautify(clean(body));
+//		this.body = Misc.beautify(clean(body));
+		this.body = Misc.beautify(body);
 	}
 	
 	public String getBody() {

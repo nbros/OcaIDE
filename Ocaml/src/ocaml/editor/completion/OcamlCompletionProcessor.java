@@ -42,6 +42,9 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	private final TextEditor editor;
 	
 	private final IProject project;
+	
+	private TypeAnnotation[] lastUsedAnnotations;
+	private String lastParsedAnnotFileName;
 
 	/** The partition type in which completion was triggered. */
 	private final String partitionType;
@@ -50,18 +53,24 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		this.editor = (TextEditor)edit;
 		this.project = edit.getProject();
 		this.partitionType = regionType;
+		this.lastUsedAnnotations = new TypeAnnotation[0];
+		this.lastParsedAnnotFileName = "";
 	}
 
 	public OcamlCompletionProcessor(OcamllexEditor edit, String regionType) {
 		this.editor = (TextEditor)edit;
 		this.project = edit.getProject();
 		this.partitionType = regionType;
+		this.lastUsedAnnotations = new TypeAnnotation[0];
+		this.lastParsedAnnotFileName = "";
 	}
 
 	public OcamlCompletionProcessor(OcamlyaccEditor edit, String regionType) {
 		this.editor = (TextEditor)edit;
 		this.project = edit.getProject();
 		this.partitionType = regionType;
+		this.lastUsedAnnotations = new TypeAnnotation[0];
+		this.lastParsedAnnotFileName = "";
 	}
 
 	/**
@@ -832,12 +841,23 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	private Def createProposalDef(IProject project, Def def) {
 		Def newDef = new Def(def);
 		if (newDef.getBody().equals(newDef.name)) {
-			String filename = newDef.getFileName();
-			TypeAnnotation[] annotations = parseModuleAnnotation(project, filename);
-			IDocument document = getDocument(project, filename);
-			String typeInfo = computeTypeInfo(newDef, annotations, document);
 			if (newDef.type == Def.Type.Let
 					|| newDef.type == Def.Type.LetIn) {
+				String filename = newDef.getFileName();
+				
+				// store last used annotation for caching
+				TypeAnnotation[] annotations;
+				if (filename.equals(lastParsedAnnotFileName)) {
+					annotations = lastUsedAnnotations;
+				}
+				else {
+					annotations = parseModuleAnnotation(project, filename);
+					lastUsedAnnotations = annotations;
+					lastParsedAnnotFileName = filename;
+				}
+				 
+				IDocument document = getDocument(project, filename);
+				String typeInfo = computeTypeInfo(newDef, annotations, document);
 				if (typeInfo.isEmpty())
 					typeInfo = newDef.name + " - <no type information>";
 				newDef.setBody(typeInfo);
@@ -846,9 +866,8 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 				String newBody = newDef.name + " 't";
 				newDef.setBody(newBody);
 			}
-			else
-				newDef.setBody(newDef.getBody() + " -- def type: " + newDef.getTypeName());
 		}
+		// Trung: uncomment to debug def type
 		// newDef.setBody(newDef.getBody() + " -- def type: " + newDef.getTypeName());
 
 		return newDef;

@@ -35,7 +35,6 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.PaintManager;
 import org.eclipse.jface.text.TextEvent;
 import org.eclipse.jface.text.TextSelection;
-import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.MatchingCharacterPainter;
 import org.eclipse.jface.viewers.ISelection;

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import ocaml.OcamlPlugin;
 import ocaml.debugging.OcamlDebugger;
-import ocaml.preferences.PreferenceConstants;
 import ocaml.typeHovers.OcamlAnnotParser;
 import ocaml.typeHovers.TypeAnnotation;
 import ocaml.util.Misc;
