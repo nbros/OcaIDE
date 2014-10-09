@@ -989,7 +989,6 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		lineOffsets = new ArrayList<Integer>();
 		lineOffsets.add(0);
 		for (int i = 0; i < doc.length(); i++) {
-
 			/*
 			 * if(doc.charAt(i) == '\r') System.err.print("<R>\n");
 			 * if(doc.charAt(i) == '\n') System.err.print("<N>\n"); else

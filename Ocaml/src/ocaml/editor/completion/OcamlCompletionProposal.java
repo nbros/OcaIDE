@@ -1,7 +1,10 @@
 package ocaml.editor.completion;
 
+import java.io.File;
+
 import ocaml.OcamlPlugin;
 import ocaml.parser.Def;
+import ocaml.util.Misc;
 import ocaml.views.outline.OcamlOutlineLabelProvider;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -107,7 +110,17 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 	}
 
 	public String getDisplayString() {
-		return definition.name;
+		String displayString = definition.name;
+
+		if (!definition.getBody().equals(definition.name)) {
+			String newBody = Misc.beautify(Def.clean(definition.getBody()));
+			if (newBody.startsWith(displayString))
+				displayString = newBody;
+			else 
+				displayString = displayString + " - " + newBody;
+		}
+		
+		return displayString;
 	}
 
 	/** @deprecated replaced by the same name function in ICompletionProposalExtension5 */
@@ -121,6 +134,7 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 		 * encodes as a string the informations that will be read back by OcamlInformationPresenter to format
 		 * them
 		 */
+		
 		return definition.parentName + " $@| " + definition.getBody() + " $@| "
 				+ definition.sectionComment + " $@| " + definition.comment + " $@| "
 				+ definition.getFileName();

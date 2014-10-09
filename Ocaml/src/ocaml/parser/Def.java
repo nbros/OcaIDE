@@ -532,7 +532,7 @@ public class Def extends beaver.Symbol {
 	}
 
 
-	private static String clean(String str) {
+	public static String clean(String str) {
 		if (str == null)
 			return "";
 		
