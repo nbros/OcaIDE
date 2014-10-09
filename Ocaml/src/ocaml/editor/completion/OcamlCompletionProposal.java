@@ -64,17 +64,17 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 		 * We display context information only for functions (to help the user with the types of the expected
 		 * arguments), an exception with arguments, or a constructor with arguments.
 		 */
-		boolean bArrow = definition.body.contains("->") || definition.body.contains("\u2192");
+		final String body = definition.getBody();
+		boolean bArrow = body.contains("->") || body.contains("\u2192");
 		boolean bFun = type.equals(Def.Type.Let) && bArrow;
 		boolean bExtFun = type.equals(Def.Type.External) && bArrow;
 		boolean bExceptionArgs = type.equals(Def.Type.Exception)
-				&& definition.body.contains(" of ");
+				&& body.contains(" of ");
 		boolean bConstructorArgs = type.equals(Def.Type.TypeConstructor)
-				&& definition.body.contains(" of ");
+				&& body.contains(" of ");
 		if (!(bFun || bExtFun || bExceptionArgs || bConstructorArgs))
 			return null;
 
-		final String body = definition.body;
 		if (body.trim().equals(""))
 			return null;
 
@@ -121,9 +121,9 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 		 * encodes as a string the informations that will be read back by OcamlInformationPresenter to format
 		 * them
 		 */
-		return definition.parentName + " $@| " + definition.body + " $@| "
+		return definition.parentName + " $@| " + definition.getBody() + " $@| "
 				+ definition.sectionComment + " $@| " + definition.comment + " $@| "
-				+ definition.filename;
+				+ definition.getFileName();
 	}
 
 }

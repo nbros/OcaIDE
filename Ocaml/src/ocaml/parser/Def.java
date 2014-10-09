@@ -531,9 +531,6 @@ public class Def extends beaver.Symbol {
 		this.comment = clean(text);
 	}
 
-	public void setBody(String text) {
-		this.body = Misc.beautify(clean(text));
-	}
 
 	private static String clean(String str) {
 		if (str == null)
@@ -552,9 +549,28 @@ public class Def extends beaver.Symbol {
 		return stringBuilder.toString().trim();
 	}
 
-	public String body = "";
+	private String body = "";
 
-	public String filename = "";
+	private String filename = "";
+	
+	public void setBody(String body) {
+		this.body = body; 
+//		this.body = Misc.beautify(clean(text));
+	}
+	
+	public String getBody() {
+		return this.body;
+	}
+	
+	
+	public void setFileName(String filename) {
+		this.filename = filename;
+	}
+	
+	public String getFileName() {
+		return filename;
+	}
+	
 
 	public String parentName = "";
 

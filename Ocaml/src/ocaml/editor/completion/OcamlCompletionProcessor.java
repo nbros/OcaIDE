@@ -683,7 +683,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 				 */
 
 				if (def.name.equals(expression)) {
-					String body = def.body;
+					String body = def.getBody();
 					// if (!def.getParentName().equals(""))
 					// body = body + " (constructor of type " + def.getParentName() + ")";
 
@@ -697,12 +697,12 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 					else
 						message = message + "\u00A0";
 
-					String filename = def.filename;
+					String filename = def.getFileName();
 					message = message + "\u00A0\n\n" + filename;
 
 					message = message.trim();
 					if (!message.equals("")) {
-						String context = def.filename + " : " + def.body;
+						String context = def.getFileName() + " : " + body;
 						infos.add(new ContextInformation(context, message));
 					}
 				}

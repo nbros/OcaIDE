@@ -198,7 +198,7 @@ public class OcamlNewInterfaceParser {
 			String errors = preprocessor.getErrorOutput().trim();
 			if (!"".equals(errors)) {
 				Def def = new Def(moduleName, Def.Type.ParserError, 0, 0);
-				def.filename = filename;
+				def.setFileName(filename);
 
 				def
 						.setComment("ERROR: The camlp4 preprocessor encountered an error "
@@ -222,10 +222,9 @@ public class OcamlNewInterfaceParser {
 			// next file
 			// OcamlPlugin.logError("Error parsing '" + moduleName + "'", e);
 			Def def = new Def(moduleName, Def.Type.ParserError, 0, 0);
-			def.filename = filename;
+			def.setFileName(filename);
 
-			def
-					.setComment("ERROR: The parser encountered an error while parsing this file.\n\n"
+			def.setComment("ERROR: The parser encountered an error while parsing this file.\n\n"
 							+ "Please make sure that it is syntactically correct.\n\n");
 
 			// System.err.println("ERROR:" + filename);
@@ -268,7 +267,7 @@ public class OcamlNewInterfaceParser {
 	}
 
 	private void setFilenames(Def definition, String filename) {
-		definition.filename = filename;
+		definition.setFileName(filename);
 		for (Def child : definition.children)
 			setFilenames(child, filename);
 	}

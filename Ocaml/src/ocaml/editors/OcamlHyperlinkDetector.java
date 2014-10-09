@@ -485,7 +485,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 		if (index == path.length) {
 			try {
-				String filename = interfaceDef.filename;
+				String filename = interfaceDef.getFileName();
 
 				// open the file containing the definition
 				IProject project = editor.getProject();
