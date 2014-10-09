@@ -174,7 +174,7 @@ public class OcamlTextHover implements ITextHover {
 				else
 					bUpToDate = filePath.toFile().lastModified() <= annotFile.lastModified();
 
-				if (!ocamlEditor.isDirty() && bUpToDate) {
+				if (!ocamlEditor.isDirty() /*&& bUpToDate*/) {
 					ArrayList<TypeAnnotation> found = new ArrayList<TypeAnnotation>();
 
 					TypeAnnotation[] annotations = OcamlAnnotParser.parseFile(annotFile, textViewer
