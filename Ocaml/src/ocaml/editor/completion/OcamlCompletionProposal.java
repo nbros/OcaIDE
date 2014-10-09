@@ -43,7 +43,7 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 		this.typedLength = typedWordLength;
 
 	}
-
+	
 	public void apply(IDocument document) {
 		String name = this.definition.name;
 

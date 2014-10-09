@@ -216,7 +216,7 @@ public class OcamlNewInterfaceParser {
 		// parse the .mli interface file or the .ml module file
 		try {
 			// System.err.println("parsing:" + filename);
-			definition = parseModule(lines, moduleName, bInterface);
+			definition = parseModule(lines, filename, moduleName, bInterface);
 		} catch (Throwable e) {
 			// if there was a parsing error, we log it and we continue on to the
 			// next file
@@ -272,7 +272,7 @@ public class OcamlNewInterfaceParser {
 			setFilenames(child, filename);
 	}
 
-	private Def parseModule(String doc, String moduleName,
+	private Def parseModule(String doc, String filename, String moduleName,
 			boolean parseInterface) throws Throwable {
 
 		/*
@@ -307,7 +307,7 @@ public class OcamlNewInterfaceParser {
 		// set the start offset from the packed (line, column) positions
 		computeLinesStartOffset(doc);
 		computeDefinitionsStartOffset(root);
-
+		
 		// parse the comments and remove them from the text
 		if (parseInterface) {
 			doc = parseComments(doc);
@@ -389,7 +389,7 @@ public class OcamlNewInterfaceParser {
 		for (Def child : def.children)
 			computeDefinitionsStartOffset(child);
 	}
-
+	
 	/**
 	 * Find the end of each definition, knowing the start of the next
 	 * definition.

@@ -1,5 +1,6 @@
 package ocaml.editor.completion;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -10,8 +11,13 @@ import ocaml.editors.lex.OcamllexEditor;
 import ocaml.editors.yacc.OcamlyaccEditor;
 import ocaml.parser.Def;
 import ocaml.util.Misc;
+import ocaml.typeHovers.OcamlAnnotParser;
+import ocaml.typeHovers.TypeAnnotation;
 
+import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -22,6 +28,8 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 
 /**
  * This class is responsible for managing completion in the OCaml editor.
@@ -31,23 +39,28 @@ import org.eclipse.ui.editors.text.TextEditor;
  */
 public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
-	 private final TextEditor editor;
+	private final TextEditor editor;
+	
+	private final IProject project;
 
 	/** The partition type in which completion was triggered. */
 	private final String partitionType;
 
 	public OcamlCompletionProcessor(OcamlEditor edit, String regionType) {
 		this.editor = (TextEditor)edit;
+		this.project = edit.getProject();
 		this.partitionType = regionType;
 	}
 
 	public OcamlCompletionProcessor(OcamllexEditor edit, String regionType) {
 		this.editor = (TextEditor)edit;
+		this.project = edit.getProject();
 		this.partitionType = regionType;
 	}
 
 	public OcamlCompletionProcessor(OcamlyaccEditor edit, String regionType) {
 		this.editor = (TextEditor)edit;
+		this.project = edit.getProject();
 		this.partitionType = regionType;
 	}
 
@@ -56,7 +69,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	 * completion box when he types a space
 	 */
 	private int lastOffset = -1;
-
+	
 	/**
 	 * Compute and return completion proposals available at the offset <code>documentOffset</code>.
 	 */
@@ -99,8 +112,6 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		OcamlCompletionProposal[] proposals = new OcamlCompletionProposal[0];
 
-		IProject project = null;
-		
 		IDocument document = viewer.getDocument();
 
 		// must wait parsing job finish first.
@@ -109,23 +120,12 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			Def outlineDefinitionsRoot = null;
 			if (editor instanceof OcamlEditor) {
 				OcamlEditor ocamlEditor = (OcamlEditor) editor;
-				project = ocamlEditor.getProject();
 				outlineDefinitionsRoot = ocamlEditor.getOutlineDefinitionsTree();
+				String filename = ocamlEditor.getFileBeingEdited().getLocation().toOSString();
+				updateDefFileName(outlineDefinitionsRoot, filename);
 			}
-			else if (editor instanceof OcamllexEditor) {
-				OcamllexEditor ocamllexEditor = (OcamllexEditor) editor;
-				project = ocamllexEditor.getProject();
+			else
 				outlineDefinitionsRoot = null;
-			}
-			else if (editor instanceof OcamlyaccEditor) {
-				OcamlyaccEditor ocamlyaccEditor = (OcamlyaccEditor) editor;
-				project = ocamlyaccEditor.getProject();
-				outlineDefinitionsRoot = null;
-			}
-			else {
-				project = null;
-				outlineDefinitionsRoot = null;
-			}
 			
 			Def interfacesDefinitionsRoot =	null;
 			if (project != null)
@@ -305,9 +305,10 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		// find elements starting by <completion> in the list of elements
 		else {
 			for (Def def : outlineDefsRoot.children) {
-				if (def.name.startsWith(completion) && isCompletionDef(def))
-					proposals.add(new OcamlCompletionProposal(def, offset, completion.length()));
-
+				if (def.name.startsWith(completion) && isCompletionDef(def)) {
+					Def proposedDef = createProposalDef(project, def);
+					proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
+				}
 			}
 		}
 
@@ -331,8 +332,10 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			return proposals;
 		
 		for (Def def : outlineDefsRoot.children) {
-			if (def.name.startsWith(completion) && isCompletionDef(def))
-				proposals.add(new OcamlCompletionProposal(def, offset, completion.length()));
+			if (def.name.startsWith(completion) && isCompletionDef(def)) {
+				Def proposedDef = createProposalDef(project, def);
+				proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
+			}
 		}
 		
 				// look in all opened or included modules
@@ -357,8 +360,10 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 					if (d == null || d.name == null)
 						break;
 					
-					if (d.name.startsWith(completion) && isCompletionDef(d))
-						proposals.add(new OcamlCompletionProposal(d, offset, completion.length()));
+					if (d.name.startsWith(completion) && isCompletionDef(d)) {
+						Def proposedDef = createProposalDef(project, d);
+						proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
+					}
 				}
 			}
 		}
@@ -380,16 +385,20 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 			if (travelNode.name.startsWith(completion)
 					&& (travelNode.name.length() > completion.length())
-					&& isCompletionDef(travelNode))
-				proposals.add(new OcamlCompletionProposal(travelNode, offset, completion.length()));
+					&& isCompletionDef(travelNode)) {
+				Def proposedDef = createProposalDef(project, travelNode);
+				proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
+			}
 
 			for (Def def : travelNode.children) {
 				if (def == null || def.name == null)
 					continue;
 				if (def.name.startsWith(completion)
 						&& (def.name.length() > completion.length())
-						&& isCompletionDef(def))
-					proposals.add(new OcamlCompletionProposal(def, offset, completion.length()));
+						&& isCompletionDef(def)) {
+					Def proposedDef = createProposalDef(project, def);
+					proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
+				}
 			}
 
 			if (travelNode.type == Def.Type.Root)
@@ -716,4 +725,171 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	public String getErrorMessage() {
 		return null;
 	}
+	
+	private Def createProposalDef(IProject project, Def def) {
+		Def newDef = new Def(def);
+		if (newDef.getBody().equals(newDef.name)) {
+			String filename = newDef.getFileName();
+			TypeAnnotation[] annotations = parseModuleAnnotation(project, filename);
+			IDocument document = getDocument(project, filename);
+			String typeInfo = computeTypeInfo(newDef, annotations, document);
+			if (newDef.type == Def.Type.Let
+					|| newDef.type == Def.Type.LetIn) {
+				if (typeInfo.isEmpty())
+					typeInfo = newDef.name + " - <no type information>";
+				newDef.setBody(typeInfo);
+			}
+			else if (def.type == Def.Type.Type) {
+				String newBody = newDef.name + " 't";
+				newDef.setBody(newBody);
+			}
+			else
+				newDef.setBody(newDef.getBody() + " -- def type: " + newDef.getTypeName());
+		}
+		// newDef.setBody(newDef.getBody() + " -- def type: " + newDef.getTypeName());
+
+		return newDef;
+	}
+	
+	private IDocument getDocument(IProject project, String filename) {
+		if (project == null)
+			return null;
+
+		if (filename.isEmpty())
+			return null;
+
+		try {
+			IFile[] files = project.getWorkspace().getRoot().findFilesForLocationURI(URIUtil.toURI(filename));
+			if (files.length == 0) 
+				return null;
+			
+			IFile file = files[0];
+			IDocumentProvider provider = new TextFileDocumentProvider();
+			provider.connect(file);
+			IDocument document = provider.getDocument(file);
+			
+			return document;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	
+	private TypeAnnotation[] parseModuleAnnotation(IProject project, String filename) {
+		if (project == null)
+			return new TypeAnnotation[0];
+
+		if (filename.isEmpty())
+			return new TypeAnnotation[0];
+
+		try {
+			IFile[] files = project.getWorkspace().getRoot().findFilesForLocationURI(URIUtil.toURI(filename));
+			if (files.length == 0) 
+				return new TypeAnnotation[0];
+			
+			IFile file = files[0];
+			IPath relativeProjectPath = file.getFullPath();
+			IDocumentProvider provider = new TextFileDocumentProvider();
+			provider.connect(file);
+			IDocument document = provider.getDocument(file);
+
+			File annotFile = null;
+
+			annotFile = Misc.getOtherFileFor(file.getProject(), relativeProjectPath, ".annot");
+
+			if (annotFile != null && annotFile.exists()) {
+				TypeAnnotation[] annotations = OcamlAnnotParser.parseFile(annotFile, document);
+				
+				return annotations;
+			}
+		} catch (Exception e) {
+//			e.printStackTrace();
+			return new TypeAnnotation[0];
+		}
+		
+		return new TypeAnnotation[0];
+		
+	}
+	
+	private String computeTypeInfo(Def def, TypeAnnotation[] annotations, IDocument document) {
+		try {
+			String typeInfo = "";
+			IRegion region = def.getRegion(document);
+			int offset = region.getOffset();
+	
+			ArrayList<TypeAnnotation> found = new ArrayList<TypeAnnotation>();
+	
+			if (annotations != null) {
+				for (TypeAnnotation annot : annotations)
+					if (annot.getBegin() <= offset && offset < annot.getEnd())
+						found.add(annot);
+	
+				/*
+				 * Search for the smallest hovered type annotation
+				 */
+				TypeAnnotation annot = null;
+				int minSize = Integer.MAX_VALUE;
+	
+				for (TypeAnnotation a : found) {
+					int size = a.getEnd() - a.getBegin();
+					if (size < minSize) {
+						annot = a;
+						minSize = size;
+					}
+				}
+	
+				String docContent = document.get();
+				if (annot != null) {
+					String expr = docContent.substring(annot.getBegin(), annot.getEnd());
+					String[] lines = expr.split("\\n");
+					if (expr.length() < 50 && lines.length <= 6)
+						typeInfo = expr + ": " + annot.getType();
+					else if (lines.length > 6) {
+						int l = lines.length;
+						typeInfo = lines[0] + "\n" + lines[1] + "\n" + lines[2]
+								+ "\n" + "..." + (l - 6) + " more lines...\n" + lines[l - 3]
+								+ "\n" + lines[l - 2] + "\n" + lines[l - 1] + "\n:" + annot
+								.getType();
+					} else
+						typeInfo = expr + "\n:" + annot.getType();
+				}
+			}
+			return typeInfo.trim();
+		} catch (Exception e) {
+			return "";
+		}
+
+	}
+	
+	private void updateDefFileName(Def def, String filename) {
+		if (def != null) {
+			def.setFileName(filename);
+			for (Def d: def.children) {
+				updateDefFileName(d, filename);
+			}
+		}
+	}
+
+	ArrayList<Integer> lineOffsets = null;
+
+	private void computeLinesStartOffset(String doc) {
+		lineOffsets = new ArrayList<Integer>();
+		lineOffsets.add(0);
+		for (int i = 0; i < doc.length(); i++) {
+
+			/*
+			 * if(doc.charAt(i) == '\r') System.err.print("<R>\n");
+			 * if(doc.charAt(i) == '\n') System.err.print("<N>\n"); else
+			 * System.err.print(doc.charAt(i));
+			 */
+
+			if (doc.charAt(i) == '\n') {
+				lineOffsets.add(i + 1);
+				// System.err.println(i);
+			}
+
+		}
+	}
+
+
 }

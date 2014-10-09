@@ -554,8 +554,8 @@ public class Def extends beaver.Symbol {
 	private String filename = "";
 	
 	public void setBody(String body) {
-		this.body = body; 
-//		this.body = Misc.beautify(clean(text));
+//		this.body = body; 
+		this.body = Misc.beautify(clean(body));
 	}
 	
 	public String getBody() {
@@ -569,6 +569,69 @@ public class Def extends beaver.Symbol {
 	
 	public String getFileName() {
 		return filename;
+	}
+	
+	public String getTypeName() {
+		
+		
+		if (type == Type.Dummy)
+			return "Dummy";
+		else if (type == Type.In)
+			return "In";
+		else if (type == Type.Root)
+			return "Root";
+		else if (type == Type.Identifier)
+			return "Identifier";
+		else if (type == Type.Let)
+			return "Let";
+		else if (type == Type.LetIn)
+			return "LetIn";
+		else if (type == Type.Type)
+			return "Type";
+		else if (type == Type.Module)
+			return "Module";
+		else if (type == Type.ModuleAlias)
+			return "ModuleAlias";
+		else if (type == Type.ModuleType)
+			return "ModuleType";
+		else if (type == Type.Exception)
+			return "Exception";
+		else if (type == Type.External)
+			return "External";
+		else if (type == Type.Class)
+			return "Class";
+		else if (type == Type.Sig)
+			return "Sig";
+		else if (type == Type.Open)
+			return "Open";
+		else if (type == Type.Object)
+			return "Object";
+		else if (type == Type.Method)
+			return "Method";
+		else if (type == Type.Struct)
+			return "Struct";
+		else if (type == Type.Functor)
+			return "Functor";
+		else if (type == Type.Include)
+			return "Include";
+		else if (type == Type.Val)
+			return "Val";
+		else if (type == Type.Constraint)
+			return "Constraint";
+		else if (type == Type.Initializer)
+			return "Initializer";
+		else if (type == Type.ClassType)
+			return "ClassType";
+		else if (type == Type.TypeConstructor)
+			return "TypeConstructor";
+		else if (type == Type.RecordTypeConstructor)
+			return "RecordTypeConstructor";
+		else if (type == Type.Parameter)
+			return "Parameter";
+		else if (type == Type.ParserError)
+			return "ParserError";
+		else
+			return "Unknown";
 	}
 	
 
