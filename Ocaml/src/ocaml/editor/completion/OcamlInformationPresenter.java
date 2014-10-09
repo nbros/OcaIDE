@@ -1,5 +1,6 @@
 package ocaml.editor.completion;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import ocaml.OcamlPlugin;
@@ -26,6 +27,7 @@ public class OcamlInformationPresenter implements DefaultInformationControl.IInf
 		final Color colorSection = new Color(display, 150, 50, 191);
 		final Color colorParent = new Color(display, 191, 100, 50);
 		final Color colorCode = new Color(display, 0, 0, 255);
+		final Color colorModuleName = new Color(display, 119, 131, 112);
 		final Color colorFilename = new Color(display, 64, 64, 64);
 
 		String[] infos = infoText.split("\\$\\@\\|");
@@ -251,16 +253,28 @@ public class OcamlInformationPresenter implements DefaultInformationControl.IInf
 		}
 
 		if (!filename.equals("")) {
+			// attach module name
+			String[] parts = filename.split(File.separator);
+			String moduleName = "";
+			if (parts.length > 1) {
+				moduleName = "Module: " + parts[parts.length - 1];
+			}
 			String strResult = result.toString();
 			if (strResult.endsWith("\n\n"))
-				text = filename;
+				text = moduleName;
 			else if (strResult.endsWith("\n"))
-				text = "\n" + filename;
+				text = "\n" + moduleName;
 			else
-				text = "\n\n" + filename;
+				text = "\n\n" + moduleName;
 
 			result.append(text);
+			presentation.addStyleRange(new StyleRange(offset, text.length(), colorModuleName, null,
+				SWT.ITALIC));
+			offset += text.length();
 
+			// attach file name
+			text = "\n" + filename;
+			result.append(text);
 			presentation.addStyleRange(new StyleRange(offset, text.length(), colorFilename, null,
 				SWT.ITALIC));
 			offset += text.length();

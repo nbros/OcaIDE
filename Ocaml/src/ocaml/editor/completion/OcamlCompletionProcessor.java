@@ -507,7 +507,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 					continue;
 				if (def.name.startsWith(completion)
 						&& (def.name.length() > completion.length())
-						&& isCompletionDef(def)) {
+						&& (def.type == Def.Type.Let || def.type == Def.Type.LetIn)) {
 					Def proposedDef = createProposalDef(project, def);
 					proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
 				}
