@@ -514,6 +514,8 @@ public class OcamlEditor extends TextEditor {
 				&& OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 						PreferenceConstants.P_SHOW_TYPES_IN_STATUS_BAR)) {
 			message = hover.getTypeInfoOneLine(viewer, region);
+			if (message.contains("more lines..."))
+				message = "";
 		}
 		
 		final String statusMessage = message;
