@@ -1094,7 +1094,7 @@
         commandId="Ocaml.gotoDefinitionCommand"
         contextId="Ocaml.editor.context"
         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-        sequence="M1+M3+D">
+        sequence="F3">
   </key>
   <key
         commandId="Ocaml.moveCursorDownwardOneBlock"
