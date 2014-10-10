@@ -1198,6 +1198,10 @@
           markerType="Ocaml.ocamlSyntaxErrorMarker"
           name="Ocaml.ocamlSyntaxErrorAnnotationType">
     </type>
+    <type
+          markerType="ocaml.marker.occurrences"
+          name="ocaml.marker.occurrences">
+    </type>
  </extension>
  <extension
        point="org.eclipse.ui.editors.markerAnnotationSpecification">
@@ -1207,22 +1211,50 @@
           colorPreferenceValue="255,140,0"
           contributesToHeader="true"
           highlightPreferenceKey="syntaxerror.highlight"
-          highlightPreferenceValue="false"
+          highlightPreferenceValue="true"
           includeOnPreferencePage="true"
-          isGoToNextNavigationTarget="false"
-          isGoToPreviousNavigationTarget="false"
+          isGoToNextNavigationTarget="true"
+          isGoToNextNavigationTargetKey="true"
+          isGoToPreviousNavigationTarget="true"
+          isGoToPreviousNavigationTargetKey="true"
           label="Ocaml Syntax Error"
           overviewRulerPreferenceKey="syntaxerror.rulers.overview"
           overviewRulerPreferenceValue="true"
           presentationLayer="1"
-          showInNextPrevDropdownToolbarAction="false"
+          showInNextPrevDropdownToolbarAction="true"
+          showInNextPrevDropdownToolbarActionKey="true"
           symbolicIcon="error"
           textPreferenceKey="syntaxerror.text"
           textPreferenceValue="true"
           textStylePreferenceKey="syntaxerror.textstyle"
           textStylePreferenceValue="SQUIGGLES"
           verticalRulerPreferenceKey="syntaxerror.rulers.vertical"
-          verticalRulerPreferenceValue="false">
+          verticalRulerPreferenceValue="true">
+    </specification>
+    <specification
+          annotationType="ocaml.marker.occurrences"
+          colorPreferenceKey="ocaml.marker.occurrences.color"
+          colorPreferenceValue="192,255,192"
+          contributesToHeader="true"
+          highlightPreferenceKey="ocaml.marker.occurrences.highlight"
+          highlightPreferenceValue="true"
+          includeOnPreferencePage="true"
+          isGoToNextNavigationTarget="true"
+          isGoToNextNavigationTargetKey="true"
+          isGoToPreviousNavigationTarget="true"
+          isGoToPreviousNavigationTargetKey="true"
+          label="Ocaml Occurrences Marker"
+          overviewRulerPreferenceKey="ocaml.marker.occurrences.overview"
+          overviewRulerPreferenceValue="true"
+          presentationLayer="0"
+          showInNextPrevDropdownToolbarAction="true"
+          showInNextPrevDropdownToolbarActionKey="true"
+          symbolicIcon="info"
+          textPreferenceKey="ocaml.marker.occurrences.text"
+          textPreferenceValue="true"
+          textStylePreferenceValue="BOX"
+          verticalRulerPreferenceKey="ocaml.marker.occurrences.ruler"
+          verticalRulerPreferenceValue="true">
     </specification>
  </extension>
  <extension
@@ -1267,39 +1299,6 @@
 		<super
 			type="org.eclipse.core.resources.textmarker">
 		</super>
-	</extension>
-	<extension
-		point="org.eclipse.ui.editors.annotationTypes">
-		<type
-			markerType="ocaml.marker.occurrences"
-			name="ocaml.marker.occurrences">
-		</type>
-	</extension>
-	<extension
-		point="org.eclipse.ui.editors.markerAnnotationSpecification">
-		<specification
-        annotationType="ocaml.marker.occurrences"
-        colorPreferenceKey="ocaml.marker.occurrences.color"
-        colorPreferenceValue="192,255,192"
-        contributesToHeader="false"
-        highlightPreferenceKey="ocaml.marker.occurrences.highlight"
-        highlightPreferenceValue="true"
-        includeOnPreferencePage="true"
-        isGoToNextNavigationTarget="true"
-        isGoToNextNavigationTargetKey="true"
-        isGoToPreviousNavigationTarget="true"
-        isGoToPreviousNavigationTargetKey="true"
-        label="Ocaml Occurrences Marker"
-        overviewRulerPreferenceKey="ocaml.marker.occurrences.overview"
-        overviewRulerPreferenceValue="true"
-        presentationLayer="0"
-        showInNextPrevDropdownToolbarAction="true"
-        textPreferenceKey="ocaml.marker.occurrences.text"
-        textPreferenceValue="true"
-        textStylePreferenceValue="BOX"
-        verticalRulerPreferenceKey="ocaml.marker.occurrences.ruler"
-        verticalRulerPreferenceValue="true">
-		</specification>
 	</extension>
 
 </plugin>
