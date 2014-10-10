@@ -777,18 +777,15 @@
 			<action	class="ocaml.editor.actions.MarkOccurrencesAction"
 				definitionId="Ocaml.markOccurrencesCommand"
 				icon="icons/markOccurrence.gif"
-				id="Ocaml_sourceActions_markOccurrences" label="Mark Occurrences"
-				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+				id="Ocaml_sourceActions_markOccurrences" label="Mark Occurrences" style="push"/>
 			<action	class="ocaml.editor.actions.ShiftLeftAction"
 				definitionId="Ocaml.shiftLeftCommand"
 				icon="icons/shiftLeft.png"
-				id="Ocaml_sourceActions_shiftLeft" label="Shift Left"
-				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+				id="Ocaml_sourceActions_shiftLeft" label="Shift Left" style="push"/>
 			<action	class="ocaml.editor.actions.ShiftRightAction"
 				definitionId="Ocaml.shiftRightCommand"
 				icon="icons/shiftRight.png"
-				id="Ocaml_sourceActions_shiftRight"	label="Shift Right"
-				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+				id="Ocaml_sourceActions_shiftRight"	label="Shift Right" style="push"/>
 			<action class="ocaml.editor.actions.CommentSelectionAction"
 				definitionId="Ocaml.commentSelectionProtectedCommand"
 				id="Ocaml_sourceActions_CommentSelectionProtected" label="Comment/Uncomment Selection (Protected)"
