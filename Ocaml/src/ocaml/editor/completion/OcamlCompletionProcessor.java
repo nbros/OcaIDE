@@ -43,8 +43,11 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	
 	private final IProject project;
 	
-	private TypeAnnotation[] lastUsedAnnotations;
-	private String lastParsedAnnotFileName;
+	// cache last parsed annotation file for speed up
+	private TypeAnnotation[] lastUsedAnnotations = new TypeAnnotation[0];
+	private String lastParsedFileName = "";
+	private long lastParsedTime = 0;
+	private static int cacheTime = 2000;
 
 	/** The partition type in which completion was triggered. */
 	private final String partitionType;
@@ -53,24 +56,18 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		this.editor = (TextEditor)edit;
 		this.project = edit.getProject();
 		this.partitionType = regionType;
-		this.lastUsedAnnotations = new TypeAnnotation[0];
-		this.lastParsedAnnotFileName = "";
 	}
 
 	public OcamlCompletionProcessor(OcamllexEditor edit, String regionType) {
 		this.editor = (TextEditor)edit;
 		this.project = edit.getProject();
 		this.partitionType = regionType;
-		this.lastUsedAnnotations = new TypeAnnotation[0];
-		this.lastParsedAnnotFileName = "";
 	}
 
 	public OcamlCompletionProcessor(OcamlyaccEditor edit, String regionType) {
 		this.editor = (TextEditor)edit;
 		this.project = edit.getProject();
 		this.partitionType = regionType;
-		this.lastUsedAnnotations = new TypeAnnotation[0];
-		this.lastParsedAnnotFileName = "";
 	}
 
 	/**
@@ -847,13 +844,16 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 				
 				// store last used annotation for caching
 				TypeAnnotation[] annotations;
-				if (filename.equals(lastParsedAnnotFileName)) {
+				long currentTime = System.currentTimeMillis();
+				if (filename.equals(lastParsedFileName) 
+						&& (currentTime - lastParsedTime < cacheTime)) {
 					annotations = lastUsedAnnotations;
 				}
 				else {
 					annotations = parseModuleAnnotation(project, filename);
 					lastUsedAnnotations = annotations;
-					lastParsedAnnotFileName = filename;
+					lastParsedFileName = filename;
+					lastParsedTime = System.currentTimeMillis();
 				}
 				 
 				IDocument document = getDocument(project, filename);
