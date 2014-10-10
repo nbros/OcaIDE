@@ -50,6 +50,7 @@ import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 /**
@@ -87,7 +88,7 @@ public class OcamlEditor extends TextEditor {
 		this.setSourceViewerConfiguration(new OcamlSourceViewerConfig(this));
 		// this.setRangeIndicator(new DefaultRangeIndicator());
 	}
-
+	
 	/** The debug cursor (as a red I-beam) */
 	private DebugVisuals caret;
 
@@ -203,6 +204,8 @@ public class OcamlEditor extends TextEditor {
 		 * if (this.fOutlinePage != null) this.fOutlinePage.setInput(input);
 		 */
 	}
+	
+	
 
 	/**
 	 * We give the outline to Eclipse when it asks for an adapter with the

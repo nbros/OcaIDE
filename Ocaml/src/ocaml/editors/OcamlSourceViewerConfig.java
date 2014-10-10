@@ -56,11 +56,11 @@ import org.eclipse.ui.texteditor.spelling.SpellingService;
  */
 public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 	private OcamlEditor ocamlEditor;
-	private boolean contentAssistantActived;
+	private boolean isContentAssistantActive;
 
 	public OcamlSourceViewerConfig(OcamlEditor ocamlEditor) {
 		this.ocamlEditor = ocamlEditor;
-		this.contentAssistantActived = false;
+		this.isContentAssistantActive = false;
 	}
 
 	/**
@@ -165,15 +165,15 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 		assistant.addCompletionListener(new ICompletionListener() {
 			@Override
 			public void selectionChanged(ICompletionProposal proposal, boolean smartToggle) {
-				contentAssistantActived = true;
+				isContentAssistantActive = true;
 			}
 			@Override
 			public void assistSessionStarted(ContentAssistEvent event) {
-				contentAssistantActived = true;
+				isContentAssistantActive = true;
 			}
 			@Override
 			public void assistSessionEnded(ContentAssistEvent event) {
-				contentAssistantActived = false;
+				isContentAssistantActive = false;
 			}
 		});
 		
@@ -204,6 +204,7 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 	public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
 		return new OcamlAnnotationHover();
 	}
+	
 
 	@Override
 	public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
@@ -272,8 +273,10 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 	}
 	
 	public boolean isContentAssistantActive() {
-		return contentAssistantActived;
+		return isContentAssistantActive;
 	}
+	
+	
 
 }
 

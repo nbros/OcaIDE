@@ -70,30 +70,30 @@
        point="org.eclipse.ui.editors">
 		<editor name="mlEditor" icon="icons/implFile.gif" extensions="ml"
 			class="ocaml.editors.OcamlEditor"
-			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			contributorClass="ocaml.editors.OcamlEditorActionContributor"
 			id="ocaml.editors.mlEditor">
 		</editor>
 		
 		<editor name="mliEditor" icon="icons/interfFile.gif" extensions="mli"
 			class="ocaml.editors.OcamlEditor"
-			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			contributorClass="ocaml.editors.OcamlEditorActionContributor"
 			id="ocaml.editors.mliEditor">
 		</editor>
 		<editor name="mlpEditor" icon="icons/mlp.gif" extensions="mlp,ml4"
 			class="ocaml.editors.OcamlEditor"
-			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			contributorClass="ocaml.editors.OcamlEditorActionContributor"
 			id="ocaml.editors.mlpEditor">
 		</editor>
 		
 		<editor name="yaccEditor" icon="icons/yaccFile.gif" extensions="mly"
 			class="ocaml.editors.yacc.OcamlyaccEditor"
-			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
 			id="ocaml.editors.yaccEditor">
 		</editor>
 		
 		<editor name="lexEditor" icon="icons/lexFile.gif" extensions="mll"
 			class="ocaml.editors.lex.OcamllexEditor"
-			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
 			id="ocaml.editors.lexEditor">
 		</editor>
 	</extension>
@@ -1278,22 +1278,27 @@
 	<extension
 		point="org.eclipse.ui.editors.markerAnnotationSpecification">
 		<specification
-			annotationType="ocaml.marker.occurrences"
-			colorPreferenceKey="ocaml.marker.occurrences.color"
-			colorPreferenceValue="192,255,192"
-			contributesToHeader="false"
-			highlightPreferenceKey="ocaml.marker.occurrences.highlight"
-			highlightPreferenceValue="true"
-			includeOnPreferencePage="true"
-			label="Ocaml Occurrences Marker"
-			overviewRulerPreferenceKey="ocaml.marker.occurrences.overview"
-			overviewRulerPreferenceValue="true"
-			presentationLayer="0"
-			textPreferenceKey="ocaml.marker.occurrences.text"
-			textPreferenceValue="true"
-			textStylePreferenceValue="BOX"
-			verticalRulerPreferenceKey="ocaml.marker.occurrences.ruler"
-			verticalRulerPreferenceValue="true">
+        annotationType="ocaml.marker.occurrences"
+        colorPreferenceKey="ocaml.marker.occurrences.color"
+        colorPreferenceValue="192,255,192"
+        contributesToHeader="false"
+        highlightPreferenceKey="ocaml.marker.occurrences.highlight"
+        highlightPreferenceValue="true"
+        includeOnPreferencePage="true"
+        isGoToNextNavigationTarget="true"
+        isGoToNextNavigationTargetKey="true"
+        isGoToPreviousNavigationTarget="true"
+        isGoToPreviousNavigationTargetKey="true"
+        label="Ocaml Occurrences Marker"
+        overviewRulerPreferenceKey="ocaml.marker.occurrences.overview"
+        overviewRulerPreferenceValue="true"
+        presentationLayer="0"
+        showInNextPrevDropdownToolbarAction="true"
+        textPreferenceKey="ocaml.marker.occurrences.text"
+        textPreferenceValue="true"
+        textStylePreferenceValue="BOX"
+        verticalRulerPreferenceKey="ocaml.marker.occurrences.ruler"
+        verticalRulerPreferenceValue="true">
 		</specification>
 	</extension>
 
