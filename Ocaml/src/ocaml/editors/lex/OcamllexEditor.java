@@ -4,7 +4,7 @@ import ocaml.OcamlPlugin;
 import ocaml.editor.completion.CompletionJob;
 import ocaml.editors.util.OcamlCharacterPairMatcher;
 import ocaml.natures.OcamlNatureMakefile;
-import ocaml.popup.actions.CompileProjectAction;
+import ocaml.popup.actions.CompileProjectPopupAction;
 import ocaml.preferences.PreferenceConstants;
 
 import org.eclipse.core.resources.IProject;
@@ -97,7 +97,7 @@ public class OcamllexEditor extends TextEditor {
 			IWorkspace ws = ResourcesPlugin.getWorkspace();
 			IWorkspaceDescription desc = ws.getDescription();
 			if (desc.isAutoBuilding())
-				CompileProjectAction.compileProject(this.getProject());
+				CompileProjectPopupAction.compileProject(this.getProject());
 		}
 	}
 

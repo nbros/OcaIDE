@@ -866,6 +866,33 @@
          style="push">
    </action>
 		</actionSet>
+  <actionSet
+        description="Action for compiling projects"
+        id="Ocaml_projectActionSet"
+        label="Project Actions"
+        visible="true">
+     <action
+           class="ocaml.editor.actions.CompileProjectAction"
+           definitionId="Ocaml.compileProject"
+           id="Ocaml_projectActions_compileProject"
+           label="Compile Project"
+           style="push">
+     </action>
+     <action
+           class="ocaml.editor.actions.CancelCompileAllProjectsAction"
+           definitionId="Ocaml.cancelCompileAllProjects"
+           id="Ocaml_projectActions_cancelCompileAllProjects"
+           label="Cancel Compiling All Projects"
+           style="push">
+     </action>
+     <action
+           class="ocaml.editor.actions.CleanProjectAction"
+           definitionId="Ocaml.cleanProject"
+           id="Ocaml_projectActions_cleanProject"
+           label="Clean Project"
+           style="push">
+     </action>
+  </actionSet>
 	</extension>
 	<extension point="org.eclipse.ui.commands">
 		<category id="Ocaml.commandscategory" name="Ocaml Commands"/>
@@ -961,6 +988,21 @@
         categoryId="Ocaml.commandscategory"
         id="Ocaml.showTextHover"
         name="Show Text Hover">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.cancelCompileAllProjects"
+        name="Cancel Compile All Projects">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.compileProject"
+        name="Compile Project">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.cleanProject"
+        name="Clean Project">
   </command>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
@@ -1087,6 +1129,24 @@
         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
         sequence="M1+M3+H">
   </key>
+  <key
+        commandId="Ocaml.cancelCompileAllProjects"
+        contextId="org.eclipse.ui.contexts.window"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+F12">
+  </key>
+  <key
+        commandId="Ocaml.compileProject"
+        contextId="org.eclipse.ui.contexts.window"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+B">
+  </key>
+  <key
+        commandId="Ocaml.cleanProject"
+        contextId="org.eclipse.ui.contexts.window"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+F9">
+  </key>
 	</extension>
 	<extension point="org.eclipse.ui.contexts">
 		<context description="Context for editing Ocaml source"
@@ -1119,16 +1179,23 @@
 			</action>
 			
 			<action label="Clean Project"
-				class="ocaml.popup.actions.CleanProjectAction"
+				class="ocaml.popup.actions.CleanProjectPopupAction"
 				icon="icons/clean.gif" menubarPath="additions" enablesFor="1"
 				id="ocaml.popup.actions.CleanProjectAction">
 			</action>
 			
 			<action label="Make Project"
-				class="ocaml.popup.actions.CompileProjectAction"
+				class="ocaml.popup.actions.CompileProjectPopupAction"
 				icon="icons/buildAll.gif" menubarPath="additions" enablesFor="1"
 				id="ocaml.popup.actions.CompileProjectAction">
 			</action>
+   <action
+         class="ocaml.popup.actions.CancelCompileProjectPopupAction"
+         enablesFor="1"
+         id="ocaml.popup.actions.cancelCompileActions"
+         label="Cancel Compiling Projects"
+         menubarPath="additions">
+   </action>
 			
 		</objectContribution>
 		<objectContribution adaptable="true" id="ocaml.fileContribution"

@@ -10,7 +10,7 @@ import ocaml.editor.completion.CompletionJob;
 import ocaml.editors.util.OcamlCharacterPairMatcher;
 import ocaml.natures.OcamlNatureMakefile;
 import ocaml.parser.Def;
-import ocaml.popup.actions.CompileProjectAction;
+import ocaml.popup.actions.CompileProjectPopupAction;
 import ocaml.preferences.PreferenceConstants;
 import ocaml.views.outline.OcamlOutlineControl;
 import ocaml.views.outline.OutlineJob;
@@ -441,7 +441,7 @@ public class OcamlEditor extends TextEditor {
 			IWorkspace ws = ResourcesPlugin.getWorkspace();
 			IWorkspaceDescription desc = ws.getDescription();
 			if (desc.isAutoBuilding())
-				CompileProjectAction.compileProject(this.getProject());
+				CompileProjectPopupAction.compileProject(this.getProject());
 		}
 	}
 
