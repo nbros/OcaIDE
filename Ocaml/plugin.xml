@@ -1048,9 +1048,6 @@
 			contextId="Ocaml.editor.context"
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
 			sequence="CTRL+SPACE"/>
-		<key commandId="Ocaml.formatterCommand" contextId="Ocaml.editor.context"
-			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-			sequence="F3"/>
 		<key commandId="Ocaml.camlp4formatterCommand" contextId="Ocaml.editor.context"
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
 			sequence="M2+F3"/>
