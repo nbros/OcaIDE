@@ -63,6 +63,7 @@ public class CompileProjectAction implements IWorkbenchWindowActionDelegate {
 					@Override
 					protected IStatus run(IProgressMonitor monitor) {
 						try {
+							Misc.appendToOcamlConsole("");
 							// save progress monitor for later use
 							OcamlPlugin.ActiveBuildJobs.put(jobName, monitor);	
 							buildProject.build(IncrementalProjectBuilder.FULL_BUILD, monitor);

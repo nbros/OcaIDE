@@ -43,6 +43,7 @@ public class CompileProjectPopupAction implements IObjectActionDelegate {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
 					try {
+						Misc.appendToOcamlConsole("");
 						// save progress monitor for later use
 						OcamlPlugin.ActiveBuildJobs.put(jobName, monitor);	
 						project.build(IncrementalProjectBuilder.FULL_BUILD, monitor);

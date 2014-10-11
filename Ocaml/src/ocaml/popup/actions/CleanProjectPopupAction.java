@@ -34,9 +34,9 @@ public class CleanProjectPopupAction implements IObjectActionDelegate {
 			Job job = new Job(jobName) {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
+					Misc.appendToOcamlConsole("");
 					// save progress monitor for later use
 					OcamlPlugin.ActiveBuildJobs.put(jobName, monitor);	
-
 					OcamlMakefileBuilder builder = new OcamlMakefileBuilder();
 					builder.clean(project, monitor);
 					return Status.OK_STATUS;
