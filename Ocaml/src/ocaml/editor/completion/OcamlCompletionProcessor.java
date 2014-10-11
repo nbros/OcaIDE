@@ -477,6 +477,27 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			}
 		}
 
+		/*
+		 * look in Pervasives module, which is always opended
+		 */
+		for (Def def: defsRoot.children) {
+			if (def == null || def.name == null)
+				break;
+			
+			if (!def.name.equals("Pervasives")) 
+				continue;
+	
+			for (Def d: def.children) {
+				if (d == null || d.name == null)
+					break;
+				
+				if (d.name.startsWith(completion) && isCompletionDef(d)) {
+					Def proposedDef = createProposalDef(project, d);
+					proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
+				}
+			}
+		}
+
 		return proposals;
 	}
 
