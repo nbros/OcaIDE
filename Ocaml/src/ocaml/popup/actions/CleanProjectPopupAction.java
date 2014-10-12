@@ -90,7 +90,15 @@ public class CleanProjectPopupAction implements IObjectActionDelegate {
 						long minutes = TimeUnit.MILLISECONDS.toMinutes(cleaningTime);
 						long seconds = TimeUnit.MILLISECONDS.toSeconds(cleaningTime) - 
 							    TimeUnit.MINUTES.toSeconds(minutes);
-						String time = String.format("%d min, %d sec", minutes, seconds); 
+						String time = "";
+						if (minutes > 1)
+							time = time + String.valueOf(minutes) + " mins";
+						else
+							time = time + String.valueOf(minutes) + " min";
+						if (seconds > 1)
+							time = time + ", " + String.valueOf(seconds) + " secs";
+						else
+							time = time + ", " + String.valueOf(seconds) + " sec";
 						Misc.appendToOcamlConsole("Time: " + time);
 					}
 					else
