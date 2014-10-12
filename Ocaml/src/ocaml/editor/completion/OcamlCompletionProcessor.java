@@ -307,12 +307,26 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			for (Def def1 : currentDef.children) {
 				if (def1.type == Def.Type.Open || def1.type == Def.Type.Include) {
 					Def involvedDef = def1;
+					String involvedModuleName = "";
+					String newCompletion = "";
+					// opened module is like A.B.C
+					if (involvedDef.name.contains(".")) {
+						index = involvedDef.name.indexOf(".");
+						involvedModuleName = involvedDef.name.substring(0, index);
+						String subModuleName = involvedDef.name.substring(index + 1);
+						newCompletion = subModuleName + "." + completion;
+					}
+					else {
+						involvedModuleName = involvedDef.name;
+						newCompletion = completion;
+					}
+
 					// search in current module first
 					for (Def def2: currentDef.children) {
-						if (def2.name.equals(involvedDef.name)) {
+						if (def2.name.equals(involvedModuleName)) {
 							Def involvedDefRoot = def2;
 							for (Def def3: involvedDefRoot.children) {
-								if (def3.name.startsWith(completion) && isCompletionDef(def3)) {
+								if (def3.name.startsWith(newCompletion) && isCompletionDef(def3)) {
 									Def proposedDef = createProposalDef(project, def3);
 									proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
 								}
@@ -320,10 +334,10 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 						}
 					}
 					for (Def def2: interfacesDefsRoot.children) {
-						if (def2.name.equals(involvedDef.name)) {
+						if (def2.name.equals(involvedModuleName)) {
 							Def involvedDefRoot = def2;
 							for (Def def3: involvedDefRoot.children) {
-								if (def3.name.startsWith(completion) && isCompletionDef(def3)) {
+								if (def3.name.startsWith(newCompletion) && isCompletionDef(def3)) {
 									Def proposedDef = createProposalDef(project, def3);
 									proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
 								}
@@ -407,12 +421,26 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			for (Def def : currentDef.children) {
 				if (def.type != Def.Type.Open && def.type != Def.Type.Include) 
 					continue;
-			
+				
+				String openedModuleName = "";
+				String newCompletion = "";
+				// opened module is like A.B.C
+				if (def.name.contains(".")) {
+					int index = def.name.indexOf(".");
+					openedModuleName = def.name.substring(0, index);
+					String subModuleName = def.name.substring(index + 1);
+					newCompletion = subModuleName + "." + completion;
+				}
+				else {
+					openedModuleName = def.name;
+					newCompletion = completion;
+				}
+					
 				for (Def idef: interfacesDefsRoot.children) {
-					if (!idef.name.equals(def.name)) 
+					if (!idef.name.equals(openedModuleName)) 
 						continue;
 					
-					proposals.addAll(lookupProposalsCompletionInDef(completion, idef, interfacesDefsRoot, document, offset));
+					proposals.addAll(lookupProposalsCompletionInDef(newCompletion, idef, interfacesDefsRoot, document, offset));
 			
 //					for (Def d: idef.children) {
 //						if (d == null || d.name == null)

@@ -203,10 +203,11 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		 * if this is a compound name "A.B.c", then we extract the first component to know what
 		 * module to look for, and then we get the definition by entering the module
 		 */
+		StringBuilder fullDefName = new StringBuilder(searchedDef.name);
 		if (searchedDef.name.indexOf('.') != -1) {
 			String[] parts = searchedDef.name.split("\\.");
 			if (parts.length > 1) {
-				Def firstPart = lookForDefinitionUp(null, parts[0], searchedDef, interfacesDefinitionsRoot, parts, true);
+				Def firstPart = lookForDefinitionUp(null, parts[0], searchedDef, interfacesDefinitionsRoot, fullDefName, true);
 				// don't find it in the current module, look in the other ones 
 				if (firstPart == null) {
 					if (openDefInInterfaces(0, parts, interfacesDefinitionsRoot))
@@ -224,7 +225,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 							searchedDef2.name = parts[0];
 							for (int i = 1; i < parts.length; i++)
 								searchedDef2.name = "." + searchedDef2.name; 
-							firstPart = lookForDefinitionUp(null, parts[0], searchedDef2, interfacesDefinitionsRoot, parts, true);
+							firstPart = lookForDefinitionUp(null, parts[0], searchedDef2, interfacesDefinitionsRoot, fullDefName, true);
 						} else 
 							break;
 					}
@@ -247,7 +248,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 		} else {
 			def = lookForDefinitionUp(searchedDef, searchedDef.name, searchedDef,
-					interfacesDefinitionsRoot, new String[] { searchedDef.name }, true);
+					interfacesDefinitionsRoot, fullDefName, true);
 
 			// if we didn't find it, look in Pervasives (which is always opened by default)
 			if (def == null) {
@@ -329,8 +330,14 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			}
 		}
 		if (!moduleName.equals(path[0])) {
-			String[] aliasedPath = path.clone();
-			aliasedPath[0] = moduleName;
+//			String[] aliasedPath = path.clone();
+//			aliasedPath[0] = moduleName;
+			
+			String newFullDefName = moduleName; 
+			for (String s: path)
+				newFullDefName = newFullDefName + "." + s;
+			String[] aliasedPath = newFullDefName.split("\\.");
+			
 			if (openDefInInterfaces(0, aliasedPath, interfacesDefinitionsRoot))
 				return null;
 		}
@@ -376,20 +383,20 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	 *            the node from which to start
 	 * @param interfacesDefinitionsRoot
 	 *            the root of the interfaces definitions tree
-	 * @param fullpath
+	 * @param fullDefName
 	 *            the full path of the searched definition (used to look for it in other modules)
 	 * @param otherBranch
 	 *            are we in another branch relative to the definition from which we started? (this
 	 *            is used to manage the non-rec definitions)
 	 */
 	private Def lookForDefinitionUp(Def searchedNode, String name, Def node,
-			Def interfacesDefinitionsRoot, String[] fullpath, boolean otherBranch) {
+			Def interfacesDefinitionsRoot, StringBuilder fullDefName, boolean otherBranch) {
 		Def test = null;
 
 		if (node.type == Def.Type.In) {
 			/* If this is an 'in' node (in a 'let in'), go directly to the parent */
 			return lookForDefinitionUp(searchedNode, name, node.parent, interfacesDefinitionsRoot,
-					fullpath, false);
+					fullDefName, false);
 		}
 
 		// is it this node?
@@ -399,9 +406,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 		// if it is an "open" node, look inside the interface of this module
 		if (node.type == Def.Type.Open || node.type == Def.Type.Include) {
-			String[] path = new String[fullpath.length + 1];
-			System.arraycopy(fullpath, 0, path, 1, fullpath.length);
-			path[0] = node.name;
+			String newFullDefName = node.name + "." + fullDefName.toString();
+			String[] path = newFullDefName.split("\\.");
 
 			if (openDefInInterfaces(0, path, interfacesDefinitionsRoot))
 				return null;
@@ -428,8 +434,10 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				}
 			}
 			// rectify full path in case of there exist aliased module
-			if (!moduleName.equals(name))
-				fullpath[0] = moduleName;
+			if (!moduleName.equals(name)) {
+				fullDefName.delete(0, name.length() - 1);
+				fullDefName.insert(0, moduleName);
+			}
 
 			return null;
 		}
@@ -459,9 +467,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 			// if it is an "open" node, look inside the interface of this module
 			if (before.type == Def.Type.Open || before.type == Def.Type.Include) {
-				String[] path = new String[fullpath.length + 1];
-				System.arraycopy(fullpath, 0, path, 1, fullpath.length);
-				path[0] = before.name;
+				String newFullDefName = before.name + "." + fullDefName.toString(); 
+				String[] path = newFullDefName.split("\\."); 
 
 				if (openDefInInterfaces(0, path, interfacesDefinitionsRoot))
 					return null;
@@ -474,7 +481,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 		/* Now, go one step up */
 		return lookForDefinitionUp(searchedNode, name, node.parent, interfacesDefinitionsRoot,
-				fullpath, false);
+				fullDefName, false);
 	}
 
 	/**
