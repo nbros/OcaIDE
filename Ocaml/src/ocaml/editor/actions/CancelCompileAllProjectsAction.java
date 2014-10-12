@@ -56,13 +56,13 @@ public class CancelCompileAllProjectsAction implements IWorkbenchWindowActionDel
 					@Override
 					protected IStatus run(IProgressMonitor monitor) {
 						if (!OcamlPlugin.ActiveBuildJobs.isEmpty()) {
-							Misc.appendToOcamlConsole("");
-							Misc.appendToOcamlConsole("Cancelling all compiling jobs...");
+							// cancel all jobs
 							Collection<IProgressMonitor> monitors = OcamlPlugin.ActiveBuildJobs.values();
 							for (IProgressMonitor m: monitors) {
 								m.setCanceled(true);
 							}
-							Misc.appendToOcamlConsole("Cancellation finished!");
+							// clear them from store
+							OcamlPlugin.ActiveBuildJobs.clear();
 						}
 						return Status.OK_STATUS;
 					}
@@ -74,33 +74,6 @@ public class CancelCompileAllProjectsAction implements IWorkbenchWindowActionDel
 				job.setPriority(Job.BUILD);
 				job.setUser(action != null);
 				job.schedule(50);
-				job.addJobChangeListener(new IJobChangeListener() {
-					
-					@Override
-					public void sleeping(IJobChangeEvent event) {
-					}
-					
-					@Override
-					public void scheduled(IJobChangeEvent event) {
-					}
-					
-					@Override
-					public void running(IJobChangeEvent event) {
-					}
-					
-					@Override
-					public void done(IJobChangeEvent event) {
-					}
-					
-					@Override
-					public void awake(IJobChangeEvent event) {
-					}
-					
-					@Override
-					public void aboutToRun(IJobChangeEvent event) {
-					}
-				});
-
 			}else
 				OcamlPlugin.logError("ContentAssistAction: editorPart is null");
 		} else

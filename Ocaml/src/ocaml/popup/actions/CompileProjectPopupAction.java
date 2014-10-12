@@ -1,5 +1,7 @@
 package ocaml.popup.actions;
 
+import java.util.concurrent.TimeUnit;
+
 import ocaml.OcamlPlugin;
 import ocaml.util.Misc;
 import ocaml.views.OcamlCompilerOutput;
@@ -38,14 +40,20 @@ public class CompileProjectPopupAction implements IObjectActionDelegate {
 
 	public void run(IAction action) {
 		if (project != null) {
+			final long[] executedTime = new long[1];
+			executedTime[0] = -1;
+
 			final String jobName = "Compiling project " + project.getName();
+			
 			Job job = new Job(jobName) {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
 					try {
-						Misc.appendToOcamlConsole("");
 						// save progress monitor for later use
-						OcamlPlugin.ActiveBuildJobs.put(jobName, monitor);	
+						OcamlPlugin.ActiveBuildJobs.put(jobName, monitor);
+						
+						// compile
+						executedTime[0] = System.currentTimeMillis();
 						project.build(IncrementalProjectBuilder.FULL_BUILD, monitor);
 					} catch (CoreException e) {
 						OcamlPlugin.logError("ocaml plugin error", e);
@@ -78,8 +86,30 @@ public class CompileProjectPopupAction implements IObjectActionDelegate {
 				
 				@Override
 				public void done(IJobChangeEvent event) {
-					// remove finished job from store
-					OcamlPlugin.ActiveBuildJobs.remove(jobName);
+					// compiling job was cancelled
+					if (!OcamlPlugin.ActiveBuildJobs.containsKey(jobName)) {
+						Misc.appendToOcamlConsole("Compilation was cancelled!");
+					}
+					// compiling job terminates normally
+					else {
+						OcamlPlugin.ActiveBuildJobs.remove(jobName);
+					}
+					
+					// time
+					long compilingTime = -1;
+					if (executedTime[0] > 0) 
+						compilingTime = System.currentTimeMillis() - executedTime[0];
+					if (compilingTime >= 0) {
+						long minutes = TimeUnit.MILLISECONDS.toMinutes(compilingTime);
+						long seconds = TimeUnit.MILLISECONDS.toSeconds(compilingTime) - 
+							    TimeUnit.MINUTES.toSeconds(minutes);
+						String time = String.format("%d min, %d sec", minutes, seconds); 
+						Misc.appendToOcamlConsole("Time: " + time);
+					}
+					else
+						Misc.appendToOcamlConsole("Time: unknown");
+					
+					Misc.appendToOcamlConsole("");
 				}
 				
 				@Override
