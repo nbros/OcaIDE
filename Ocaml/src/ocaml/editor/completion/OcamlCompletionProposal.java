@@ -114,7 +114,9 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 
 		if (definition.type == Def.Type.Let || definition.type == Def.Type.LetIn) {
 			String newBody = Misc.beautify(Def.clean(definition.getBody()));
-			if (!newBody.equals(definition.name))
+			if (newBody.startsWith(definition.name))
+				displayString = newBody;
+			else
 				displayString = displayString + " - " + newBody;
 		}
 		
