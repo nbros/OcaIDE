@@ -216,7 +216,7 @@ public class OcamlNewInterfaceParser {
 			definition = parseModule(lines, filename, moduleName, bInterface);
 		} catch (Throwable e) {
 			// if there was a parsing error, we log it and we continue on to the next file
-			// e.printStackTrace();
+			e.printStackTrace();
 			Def def = new Def(moduleName, Def.Type.ParserError, 0, 0);
 			def.setFileName(filename);
 			def.setComment("ERROR 2: The parser encountered an error while parsing this file.\n\n"
@@ -266,7 +266,6 @@ public class OcamlNewInterfaceParser {
 
 	private Def parseModule(String doc, String filename, String moduleName,
 			boolean parseInterface) throws Throwable {
-
 		/*
 		 * "Sanitize" the document by replacing extended characters, which
 		 * otherwise would crash the parser
@@ -287,10 +286,24 @@ public class OcamlNewInterfaceParser {
 
 		Def root = null;
 
-		if (parseInterface)
-			root = (Def) parser.parse(scanner, OcamlParser.AltGoals.interfaces);
-		else
-			root = (Def) parser.parse(scanner);
+		try {
+			if (parseInterface)
+				root = (Def) parser.parse(scanner, OcamlParser.AltGoals.interfaces);
+			else
+				root = (Def) parser.parse(scanner);
+		} catch (Exception e) {
+			// recover pieces from the AST (which couldn't be built completely 
+			// because of an unrecoverable error)
+			if (root == null || !parser.errorReporting.errors.isEmpty()) {
+				root = new Def(moduleName, Def.Type.Module, 0, 0);
+				for (Def def : parser.recoverDefs)
+					if (def.bTop && def.name != null && !"".equals(def.name.trim())) {
+						def.bTop = false;
+						root.children.add(def);
+					}
+			}
+		}
+		
 
 		root = root.cleanCopy();
 
