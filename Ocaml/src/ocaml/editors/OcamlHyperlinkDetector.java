@@ -340,9 +340,9 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			}
 		}
 		if (!moduleName.equals(path[0])) {
-			String newFullDefName = moduleName; 
-			for (String s: path)
-				newFullDefName = newFullDefName + "." + s;
+			String newFullDefName = moduleName;
+			for (int i = 1; i < path.length; i++)
+				newFullDefName = newFullDefName + "." + path[i];
 			String[] aliasedPath = newFullDefName.split("\\.");
 			
 			if (openDefInInterfaces(0, aliasedPath, interfacesDefinitionsRoot))
