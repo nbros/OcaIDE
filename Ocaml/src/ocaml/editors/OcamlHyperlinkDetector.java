@@ -208,6 +208,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			String[] parts = searchedDef.name.split("\\.");
 			if (parts.length > 1) {
 				Def firstPart = lookForDefinitionUp(null, parts[0], searchedDef, interfacesDefinitionsRoot, fullDefName, true);
+				// since fullDefName is updated, we need to updata parts variable
+				parts = fullDefName.toString().split("\\.");
 				// don't find it in the current module, look in the other ones 
 				if (firstPart == null) {
 					if (openDefInInterfaces(0, parts, interfacesDefinitionsRoot))
@@ -276,12 +278,16 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	private Def findDefinitionOf(final String strDef, 
 			final Def modulesDefinitionsRoot,
 			final Def interfacesDefinitionsRoot) {
-		// use direct name
+		/*
+		 * use direct name
+		 */
 		String[] directPath = strDef.split("\\.");
 		if (openDefInInterfaces(0, directPath, interfacesDefinitionsRoot))
 			return null;
 
-		// look in current module
+		/*
+		 * look in current module
+		 */
 		Def def = modulesDefinitionsRoot;
 		for (int index = 0; index < directPath.length; index++) {
 			boolean stop = true;
@@ -300,7 +306,9 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				break;
 		}
 		
-		// lookup in opened module 
+		/*
+		 * lookup in opened module 
+		 */
 		for (Def d : modulesDefinitionsRoot.children) {
 			if (d.type == Def.Type.Open) {
 				String fullStrDef = d.name + "." + strDef;
@@ -310,7 +318,9 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			}
 		}
 
-		// lookup in aliased module
+		/*
+		 * lookup in module nam or possible aliased module
+		 */
 		String[] path = strDef.split("\\.");
 		String moduleName = path[0];
 		boolean stop = false;
@@ -330,9 +340,6 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			}
 		}
 		if (!moduleName.equals(path[0])) {
-//			String[] aliasedPath = path.clone();
-//			aliasedPath[0] = moduleName;
-			
 			String newFullDefName = moduleName; 
 			for (String s: path)
 				newFullDefName = newFullDefName + "." + s;
@@ -342,7 +349,9 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				return null;
 		}
 			
-		// finally, look in Pervasives (which is always opened by default)
+		/*
+		 * finally, look in Pervasives (which is always opened by default)
+		 */
 		String[] pervasivesPath = ("Pervasives" + strDef).split("\\.");
 		openDefInInterfaces(0, pervasivesPath, interfacesDefinitionsRoot);
 		return null;
@@ -435,7 +444,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			}
 			// rectify full path in case of there exist aliased module
 			if (!moduleName.equals(name)) {
-				fullDefName.delete(0, name.length() - 1);
+				fullDefName.delete(0, name.length());
 				fullDefName.insert(0, moduleName);
 			}
 
