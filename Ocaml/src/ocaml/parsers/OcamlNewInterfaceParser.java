@@ -199,11 +199,8 @@ public class OcamlNewInterfaceParser {
 			if (!"".equals(errors)) {
 				Def def = new Def(moduleName, Def.Type.ParserError, 0, 0);
 				def.setFileName(filename);
-
-				def
-						.setComment("ERROR: The camlp4 preprocessor encountered an error "
+				def.setComment("ERROR: The camlp4 preprocessor encountered an error "
 								+ "while parsing this file:\n" + errors);
-
 				cache.addFirst(new CachedDef(file, def));
 				return def;
 			}
@@ -218,17 +215,12 @@ public class OcamlNewInterfaceParser {
 			// System.err.println("parsing:" + filename);
 			definition = parseModule(lines, filename, moduleName, bInterface);
 		} catch (Throwable e) {
-			// if there was a parsing error, we log it and we continue on to the
-			// next file
-			// OcamlPlugin.logError("Error parsing '" + moduleName + "'", e);
+			// if there was a parsing error, we log it and we continue on to the next file
+			// e.printStackTrace();
 			Def def = new Def(moduleName, Def.Type.ParserError, 0, 0);
 			def.setFileName(filename);
-
-			def.setComment("ERROR: The parser encountered an error while parsing this file.\n\n"
+			def.setComment("ERROR 2: The parser encountered an error while parsing this file.\n\n"
 							+ "Please make sure that it is syntactically correct.\n\n");
-
-			// System.err.println("ERROR:" + filename);
-
 			cache.addFirst(new CachedDef(file, def));
 			return def;
 		}
@@ -327,8 +319,7 @@ public class OcamlNewInterfaceParser {
 
 		if (parser.errorReporting.errors.size() != 0) {
 			root.type = Def.Type.ParserError;
-			root
-					.setComment("ERROR: The parser encountered an error while parsing this file.\n\n"
+			root.setComment("ERROR 1: The parser encountered an error while parsing this file.\n\n"
 							+ "Please make sure that it is syntactically correct.\n\n");
 		} else
 			root.type = Def.Type.Module;
