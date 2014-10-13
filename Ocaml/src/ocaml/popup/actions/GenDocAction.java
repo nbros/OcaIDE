@@ -73,9 +73,6 @@ public class GenDocAction implements IObjectActionDelegate {
 				}
 			};
 
-			// open the "OCaml compiler output" view to show the output of the make command
-			Misc.showView(OcamlCompilerOutput.ID);
-
 			job.setPriority(Job.BUILD);
 			job.setUser(true);
 			job.schedule(500);

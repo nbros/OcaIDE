@@ -76,9 +76,6 @@ public class CompileProjectAction implements IWorkbenchWindowActionDelegate {
 					}
 				};
 
-				// open the "OCaml compiler output" view to show the output of the make
-				Misc.showView(OcamlCompilerOutput.ID);
-
 				job.setPriority(Job.BUILD);
 				/*
 				 * If the action is directly called by the user, then we display a dialog box. Else, the launch is silent.

@@ -53,9 +53,6 @@ public class CancelCompileProjectPopupAction implements IObjectActionDelegate {
 			}
 		};
 
-		// open the "OCaml compiler output" view to show the output of the make
-		Misc.showView(OcamlCompilerOutput.ID);
-
 		job.setPriority(Job.BUILD);
 		job.setUser(action != null);
 		job.schedule(50);
