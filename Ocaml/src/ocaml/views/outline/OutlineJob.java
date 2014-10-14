@@ -499,7 +499,7 @@ public class OutlineJob extends Job {
 			if (index >= 0) {
 				TypeAnnotation annot = annotations[index];
 				String type = annot.getType().replaceAll("\r?\n", " ");
-				def.ocamlType = type;
+				def.setOcamlType(type);
 			}
 		}
 

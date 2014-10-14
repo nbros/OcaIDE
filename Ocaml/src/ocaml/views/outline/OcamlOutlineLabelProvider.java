@@ -89,8 +89,8 @@ public class OcamlOutlineLabelProvider extends LabelProvider /* implements IStru
 			if (OcamlOutlineControl.bOutlineDebugButton && OcamlOutlineControl.bDebug)
 				return def.name + " (" + def.type + ")";
 
-			if (def.ocamlType != null && !"".equals(def.ocamlType))
-				return def.name + " : " + def.ocamlType;
+			if (!def.getOcamlType().isEmpty())
+				return def.name + " : " + def.getOcamlType();
 			else
 				return def.name;
 		}
