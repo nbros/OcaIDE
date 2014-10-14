@@ -658,7 +658,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			return null;
 
 		int startOffset = region.getOffset();
-		int endOffset = startOffset + region.getLength() - 1;
+		int endOffset = startOffset + region.getLength();
 
 		if (startOffset <= offset && endOffset >= offset)
 			return def;
@@ -681,10 +681,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			char ch;
 			try {
 				ch = doc.getChar(i);
-				if (ch == '.' || ch == '_' 
-						|| (ch >= '0' && ch <= '9')
-						|| (ch >= 'a' && ch <= 'z') 
-						|| (ch >= 'A' && ch <= 'Z')) {
+				if (ch == '.' || ch == '_' || Character.isLetterOrDigit(ch)) {
 					text = text + ch;
 					i++;
 				}
@@ -695,19 +692,17 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		}
 		
 		i = offset - 1;
-		if (!text.isEmpty()) {
-			while (i >= 0) {
-				char ch;
-				try {
-					ch = doc.getChar(i);
-					if (ch == '.' || ch == '_' || Character.isLetterOrDigit(ch)) {
-						text = ch + text;
-						i--;
-					}
-					else break;
-				} catch (BadLocationException e) {
-					break;
+		while (i >= 0) {
+			char ch;
+			try {
+				ch = doc.getChar(i);
+				if (ch == '.' || ch == '_' || Character.isLetterOrDigit(ch)) {
+					text = ch + text;
+					i--;
 				}
+				else break;
+			} catch (BadLocationException e) {
+				break;
 			}
 		}
 		int beginOffset = (i >= 0) ? i + 1 : 0;
