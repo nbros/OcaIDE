@@ -926,35 +926,33 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	
 	private Def createProposalDef(IProject project, Def def) {
 		Def newDef = new Def(def);
-		if (newDef.getBody().equals(newDef.name)) {
-			if (newDef.type == Def.Type.Let
-					|| newDef.type == Def.Type.LetIn) {
-				String filename = newDef.getFileName();
-				
-				// store last used annotation for caching
-				TypeAnnotation[] annotations;
-				long currentTime = System.currentTimeMillis();
-				if (filename.equals(lastParsedFileName) 
-						&& (currentTime - lastParsedTime < cacheTime)) {
-					annotations = lastUsedAnnotations;
-				}
-				else {
-					annotations = parseModuleAnnotation(project, filename);
-					lastUsedAnnotations = annotations;
-					lastParsedFileName = filename;
-					lastParsedTime = System.currentTimeMillis();
-				}
-				 
-				IDocument document = getDocument(project, filename);
-				String typeInfo = computeTypeInfo(newDef, annotations, document);
-				if (typeInfo.isEmpty())
-					typeInfo = newDef.name + " - <no type information>";
-				newDef.setBody(typeInfo);
+		if (newDef.type == Def.Type.Let
+				|| newDef.type == Def.Type.LetIn) {
+			String filename = newDef.getFileName();
+			
+			// store last used annotation for caching
+			TypeAnnotation[] annotations;
+			long currentTime = System.currentTimeMillis();
+			if (filename.equals(lastParsedFileName) 
+					&& (currentTime - lastParsedTime < cacheTime)) {
+				annotations = lastUsedAnnotations;
 			}
-			else if (def.type == Def.Type.Type) {
-				String newBody = newDef.name + " 't";
-				newDef.setBody(newBody);
+			else {
+				annotations = parseModuleAnnotation(project, filename);
+				lastUsedAnnotations = annotations;
+				lastParsedFileName = filename;
+				lastParsedTime = System.currentTimeMillis();
 			}
+			 
+			IDocument document = getDocument(project, filename);
+			String typeInfo = computeTypeInfo(newDef, annotations, document);
+			if (typeInfo.isEmpty())
+				typeInfo = newDef.name + " - <no type information>";
+			newDef.setOcamlType(typeInfo);
+		}
+		else if (def.type == Def.Type.Type) {
+			String typeInfo = newDef.name + " 't";
+			newDef.setOcamlType(typeInfo);
 		}
 		// Trung: uncomment to debug def type
 		// newDef.setBody(newDef.getBody() + " -- def type: " + newDef.getTypeName());

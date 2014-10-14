@@ -72,7 +72,17 @@ public class Def extends beaver.Symbol {
 	 * The type inferred by the OCaml compiler for this definition (this is retrieved and displayed
 	 * in the outline when a ".annot" file is present and up-to-date)
 	 */
-	public String ocamlType;
+	private String ocamlType;
+	
+	public String getOcamlType() {
+		return ocamlType;
+	}
+	
+	public void setOcamlType(String type) {
+		if (type == null)
+			this.ocamlType = "";
+		else this.ocamlType = type;
+	}
 
 	/** The parent of this node. This is required by the outline's ContentProvider */
 	public Def parent;
@@ -111,6 +121,7 @@ public class Def extends beaver.Symbol {
 		this.posStart = 0;
 		this.posEnd = 0;
 		this.defPosStart = 0;
+		this.ocamlType = "";
 		// this.defPosEnd = 0;
 	}
 
@@ -126,6 +137,7 @@ public class Def extends beaver.Symbol {
 		this.posStart = start;
 		this.posEnd = end;
 		this.defPosStart = 0;
+		this.ocamlType = "";
 		// this.defPosEnd = 0;
 	}
 
