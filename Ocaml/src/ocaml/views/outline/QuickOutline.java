@@ -352,12 +352,18 @@ public class QuickOutline extends PopupDialog {
 				filterText = filterText.replaceAll("\\B'k\\b", "\u03bb");
 				filterText = filterText.replaceAll("\\B'l\\b", "\u03bc");
 				
-				if(matchName != null) {
-					if(filterText.startsWith("*")) {
+				try {
+					// use regex when filterText start with "^" (regex is slow)
+					if (filterText.startsWith("^"))
+						return matchName.matches(filterText);
+					// search for substring when filterText start with "*"
+					else if (filterText.startsWith("*"))
 						return matchName.contains(filterText.substring(1));
-					} else {
+					// otherwise, search for static string
+					else
 						return matchName.startsWith(filterText);
-					}
+				} catch (Exception e) {
+					return false;
 				}
 			}
 		}
