@@ -136,6 +136,7 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 		 */
 		
 		return definition.parentName + " $@| " + definition.getBody() + " $@| "
+				+ definition.getOcamlType() + " $@| "
 				+ definition.sectionComment + " $@| " + definition.comment + " $@| "
 				+ definition.getFileName();
 	}

@@ -33,8 +33,8 @@ public class OcamlInformationPresenter implements DefaultInformationControl.IInf
 		String[] infos = infoText.split("\\$\\@\\|");
 
 		// templates don't respect the same format
-		if (infos.length != 5)
-			infos = new String[] { "", "", "", infoText, "" };
+		if (infos.length != 6)
+			infos = new String[] { "", "", "", "", infoText, "" };
 
 		// the offset in the generated text, in number of characters
 		int offset = 0;
@@ -42,19 +42,25 @@ public class OcamlInformationPresenter implements DefaultInformationControl.IInf
 		// the result string
 		StringBuilder result = new StringBuilder();
 
-		String text;
+		String text = "";
 
 		String parentName = infos[0].trim();
 		String body = infos[1].trim();
-		String sectionComment = infos[2].trim();
-		String comment = infos[3].trim();
-		String filename = infos[4].trim();
+		String ocamlType = infos[2].trim();
+		String sectionComment = infos[3].trim();
+		String comment = infos[4].trim();
+		String filename = infos[5].trim();
 
-		if (!body.equals("")) {
+		// if there is type info, then no need to print body
+		if (!ocamlType.equals("")) {
 			text = body + "\n";
 			result.append(text);
-
-			// Color colorBody = new Color(display, 50, 150, 200);
+			presentation.addStyleRange(new StyleRange(offset, text.length(), null, null, SWT.BOLD));
+			offset += text.length();
+		}
+		else if (!body.equals("")) {
+			text = body + "\n";
+			result.append(text);
 			presentation.addStyleRange(new StyleRange(offset, text.length(), null, null, SWT.BOLD));
 			offset += text.length();
 		}
