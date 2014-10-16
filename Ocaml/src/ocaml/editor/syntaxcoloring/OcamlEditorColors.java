@@ -22,6 +22,7 @@ public class OcamlEditorColors {
 	private static Color PUNCTUATION_COLOR;
 	private static Color UPPERCASE_COLOR;
 	private static Color POINTED_UPPERCASE_COLOR;
+	private static Color FOREGROUND_COLOR;
 	
 	private static boolean initialized = false;
 
@@ -43,6 +44,7 @@ public class OcamlEditorColors {
 		PUNCTUATION_COLOR = new Color(display, OcamlPlugin.getPunctuationColor());
 		UPPERCASE_COLOR = new Color(display, OcamlPlugin.getUppercaseColor());
 		POINTED_UPPERCASE_COLOR = new Color(display, OcamlPlugin.getPointedUppercaseColor());
+		FOREGROUND_COLOR = new Color(display, OcamlPlugin.getForegroundColor());
 		
 		initialized = true;
 	}
@@ -143,4 +145,9 @@ public class OcamlEditorColors {
 		return POINTED_UPPERCASE_COLOR;
 	}
 
+	public static Color getForegroundColor() {
+		if(!initialized)
+			init();
+		return FOREGROUND_COLOR;
+	}
 }

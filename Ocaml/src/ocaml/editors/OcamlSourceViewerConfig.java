@@ -46,6 +46,8 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
 import org.eclipse.ui.texteditor.spelling.SpellingService;
@@ -233,7 +235,7 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 		reconciler.setIsIncrementalReconciler(false);
 		reconciler.setProgressMonitor(new NullProgressMonitor());
 		reconciler.setDelay(500);
-
+		
 		OcamlPlugin.getInstance().getPreferenceStore().addPropertyChangeListener(
 				new IPropertyChangeListener() {
 					public void propertyChange(PropertyChangeEvent event) {
@@ -271,6 +273,8 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 		else
 			return null;
 	}
+	
+	
 	
 	public boolean isContentAssistantActive() {
 		return isContentAssistantActive;

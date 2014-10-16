@@ -2,6 +2,7 @@ package ocaml.editors.lex;
 
 import ocaml.OcamlPlugin;
 import ocaml.editor.completion.CompletionJob;
+import ocaml.editor.syntaxcoloring.OcamlEditorColors;
 import ocaml.editors.util.OcamlCharacterPairMatcher;
 import ocaml.natures.OcamlNatureMakefile;
 import ocaml.popup.actions.CompileProjectPopupAction;
@@ -13,8 +14,12 @@ import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.PaintManager;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.MatchingCharacterPainter;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
@@ -39,13 +44,27 @@ public class OcamllexEditor extends TextEditor {
 	protected void createActions() {
 		super.createActions();
 
-		paintManager = new PaintManager(getSourceViewer());
+		final ISourceViewer viewer = getSourceViewer();
+		
+		paintManager = new PaintManager(viewer);
 		matchingCharacterPainter =
-				new MatchingCharacterPainter(getSourceViewer(), new OcamlCharacterPairMatcher());
+				new MatchingCharacterPainter(viewer, new OcamlCharacterPairMatcher());
 		matchingCharacterPainter.setColor(new Color(Display.getCurrent(), new RGB(160, 160, 160)));
 		paintManager.addPainter(matchingCharacterPainter);
 
 		OcamlPlugin.getInstance().checkPaths();
+		
+		IPreferenceStore prefStore = OcamlPlugin.getInstance().getPreferenceStore(); 
+		prefStore.addPropertyChangeListener(new IPropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent event) {
+				if (event.getProperty().equals(PreferenceConstants.P_FOREGROUND_COLOR)) {
+					Display display = Display.getCurrent();
+					RGB rgbColor = (RGB) event.getNewValue();
+					Color foregroundColor = new Color(display, rgbColor);
+					viewer.getTextWidget().setForeground(foregroundColor);
+				}
+			}
+		});
 
 		// effectue le parsing des bibliothèques ocaml en arrière plan
 		CompletionJob job = new CompletionJob("Parsing ocaml library mli files", null);
@@ -58,6 +77,9 @@ public class OcamllexEditor extends TextEditor {
 		super.createPartControl(parent);
 		StyledText styledText = this.getSourceViewer().getTextWidget();
 		styledText.setTabs(getTabSize());
+		
+		Color foregroundColor = OcamlEditorColors.getForegroundColor();
+		styledText.setForeground(foregroundColor);
 	}
 
 	@Override

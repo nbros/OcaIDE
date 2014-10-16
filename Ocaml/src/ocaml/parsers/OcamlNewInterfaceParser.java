@@ -64,7 +64,8 @@ public class OcamlNewInterfaceParser {
 	 * interpreting a keyword inside a comment, and to attach comments to
 	 * definitions.
 	 */
-	private LinkedList<Comment> comments;
+	private LinkedList<Comment> comments = new LinkedList<Comment>();
+
 
 	/** Section comments */
 	private LinkedList<Comment> sectionComments;
@@ -216,7 +217,7 @@ public class OcamlNewInterfaceParser {
 			definition = parseModule(lines, filename, moduleName, bInterface);
 		} catch (Throwable e) {
 			// if there was a parsing error, we log it and we continue on to the next file
-			e.printStackTrace();
+			// e.printStackTrace();
 			Def def = new Def(moduleName, Def.Type.ParserError, 0, 0);
 			def.setFileName(filename);
 			def.setComment("ERROR 2: The parser encountered an error while parsing this file.\n\n"
@@ -497,7 +498,6 @@ public class OcamlNewInterfaceParser {
 	private String parseComments(String lines) {
 
 		StringBuilder result = new StringBuilder(lines);
-		comments = new LinkedList<Comment>();
 		sectionComments = new LinkedList<Comment>();
 
 		boolean bParL = false;

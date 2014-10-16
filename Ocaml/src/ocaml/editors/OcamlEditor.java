@@ -2,11 +2,13 @@ package ocaml.editors;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import ocaml.OcamlPlugin;
 import ocaml.debugging.DebugVisuals;
 import ocaml.editor.completion.CompletionJob;
+import ocaml.editor.syntaxcoloring.OcamlEditorColors;
 import ocaml.editors.util.OcamlCharacterPairMatcher;
 import ocaml.natures.OcamlNatureMakefile;
 import ocaml.parser.Def;
@@ -26,6 +28,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -35,8 +38,12 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.PaintManager;
 import org.eclipse.jface.text.TextEvent;
 import org.eclipse.jface.text.TextSelection;
+import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.MatchingCharacterPainter;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
@@ -51,6 +58,7 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
+import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 /**
@@ -123,6 +131,7 @@ public class OcamlEditor extends TextEditor {
 
 		try {
 			StyledText text = this.getSourceViewer().getTextWidget();
+
 			caret = new DebugVisuals(text);
 			text.addPaintListener(caret);
 
@@ -165,6 +174,18 @@ public class OcamlEditor extends TextEditor {
 				String text = docEvent.getText().trim();
 				if (!text.isEmpty())
 					rebuildOutline(50, false); // don't sync outline with editor
+			}
+		});
+		
+		IPreferenceStore prefStore = OcamlPlugin.getInstance().getPreferenceStore(); 
+		prefStore.addPropertyChangeListener(new IPropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent event) {
+				if (event.getProperty().equals(PreferenceConstants.P_FOREGROUND_COLOR)) {
+					Display display = Display.getCurrent();
+					RGB rgbColor = (RGB) event.getNewValue();
+					Color foregroundColor = new Color(display, rgbColor);
+					viewer.getTextWidget().setForeground(foregroundColor);
+				}
 			}
 		});
 	}
@@ -237,7 +258,12 @@ public class OcamlEditor extends TextEditor {
 		super.createPartControl(parent);
 		StyledText styledText = this.getSourceViewer().getTextWidget();
 		styledText.setTabs(getTabSize());
+		
+		Color foregroundColor = OcamlEditorColors.getForegroundColor();
+		styledText.setForeground(foregroundColor);
 	}
+	
+	
 
 	public static int getTabSize() {
 		return OcamlPlugin.getInstance().getPreferenceStore().getInt(
@@ -266,7 +292,7 @@ public class OcamlEditor extends TextEditor {
 	}
 
 	public void redraw() {
-		getSourceViewer().getTextWidget().redraw();
+		Color foregroundColor = OcamlEditorColors.getForegroundColor();
 	}
 
 	/** Return the caret position in the editor */
