@@ -176,18 +176,7 @@ public class OcamlEditor extends TextEditor {
 					rebuildOutline(50, false); // don't sync outline with editor
 			}
 		});
-		
-		IPreferenceStore prefStore = OcamlPlugin.getInstance().getPreferenceStore(); 
-		prefStore.addPropertyChangeListener(new IPropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent event) {
-				if (event.getProperty().equals(PreferenceConstants.P_FOREGROUND_COLOR)) {
-					Display display = Display.getCurrent();
-					RGB rgbColor = (RGB) event.getNewValue();
-					Color foregroundColor = new Color(display, rgbColor);
-					viewer.getTextWidget().setForeground(foregroundColor);
-				}
-			}
-		});
+
 	}
 
 	@Override
@@ -258,9 +247,6 @@ public class OcamlEditor extends TextEditor {
 		super.createPartControl(parent);
 		StyledText styledText = this.getSourceViewer().getTextWidget();
 		styledText.setTabs(getTabSize());
-		
-		Color foregroundColor = OcamlEditorColors.getForegroundColor();
-		styledText.setForeground(foregroundColor);
 	}
 	
 	
@@ -292,7 +278,7 @@ public class OcamlEditor extends TextEditor {
 	}
 
 	public void redraw() {
-		Color foregroundColor = OcamlEditorColors.getForegroundColor();
+		getSourceViewer().getTextWidget().redraw();
 	}
 
 	/** Return the caret position in the editor */

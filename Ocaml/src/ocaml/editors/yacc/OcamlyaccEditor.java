@@ -74,17 +74,6 @@ public class OcamlyaccEditor extends TextEditor {
 			}
 		});
 
-		IPreferenceStore prefStore = OcamlPlugin.getInstance().getPreferenceStore(); 
-		prefStore.addPropertyChangeListener(new IPropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent event) {
-				if (event.getProperty().equals(PreferenceConstants.P_FOREGROUND_COLOR)) {
-					Display display = Display.getCurrent();
-					RGB rgbColor = (RGB) event.getNewValue();
-					Color foregroundColor = new Color(display, rgbColor);
-					viewer.getTextWidget().setForeground(foregroundColor);
-				}
-			}
-		});
 	}
 
 	@Override
@@ -92,9 +81,6 @@ public class OcamlyaccEditor extends TextEditor {
 		super.createPartControl(parent);
 		StyledText styledText = this.getSourceViewer().getTextWidget();
 		styledText.setTabs(getTabSize());
-		
-		Color foregroundColor = OcamlEditorColors.getForegroundColor();
-		styledText.setForeground(foregroundColor);
 	}
 
 	@Override

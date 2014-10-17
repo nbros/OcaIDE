@@ -54,18 +54,6 @@ public class OcamllexEditor extends TextEditor {
 
 		OcamlPlugin.getInstance().checkPaths();
 		
-		IPreferenceStore prefStore = OcamlPlugin.getInstance().getPreferenceStore(); 
-		prefStore.addPropertyChangeListener(new IPropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent event) {
-				if (event.getProperty().equals(PreferenceConstants.P_FOREGROUND_COLOR)) {
-					Display display = Display.getCurrent();
-					RGB rgbColor = (RGB) event.getNewValue();
-					Color foregroundColor = new Color(display, rgbColor);
-					viewer.getTextWidget().setForeground(foregroundColor);
-				}
-			}
-		});
-
 		// effectue le parsing des bibliothèques ocaml en arrière plan
 		CompletionJob job = new CompletionJob("Parsing ocaml library mli files", null);
 		job.setPriority(CompletionJob.INTERACTIVE); // Trung changes priority
@@ -77,9 +65,6 @@ public class OcamllexEditor extends TextEditor {
 		super.createPartControl(parent);
 		StyledText styledText = this.getSourceViewer().getTextWidget();
 		styledText.setTabs(getTabSize());
-		
-		Color foregroundColor = OcamlEditorColors.getForegroundColor();
-		styledText.setForeground(foregroundColor);
 	}
 
 	@Override

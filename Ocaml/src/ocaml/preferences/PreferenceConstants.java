@@ -33,7 +33,6 @@ public class PreferenceConstants
 	public static final String P_PUNCTUATION_COLOR = "PunctuationColor";
 	public static final String P_UPPERCASE_COLOR = "UppercaseColor";
 	public static final String P_POINTED_UPPERCASE_COLOR = "PointedUppercaseColor";
-	public static final String P_FOREGROUND_COLOR = "ForeGroundColor";
 	
 	public static final String P_BOLD_KEYWORDS = "boldKeywords";
 	public static final String P_BOLD_COMMENTS = "boldComments";

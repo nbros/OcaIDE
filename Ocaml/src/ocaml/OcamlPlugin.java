@@ -395,11 +395,6 @@ public class OcamlPlugin extends AbstractUIPlugin {
 				PreferenceConstants.P_POINTED_UPPERCASE_COLOR));
 	}
 
-	public static RGB getForegroundColor() {
-		return string2RGB(instance.getPreferenceStore().getString(
-				PreferenceConstants.P_FOREGROUND_COLOR));
-	}
-
 	/** Returns whether comments should appear in bold (from the user preferences) */
 	public static boolean getCommentIsBold() {
 		return instance.getPreferenceStore().getBoolean(PreferenceConstants.P_BOLD_COMMENTS);
