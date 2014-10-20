@@ -862,6 +862,34 @@
          label="Show Text Hover"
          style="push">
    </action>
+   <action
+         class="ocaml.editor.actions.SelectDownwardOneBlock"
+         definitionId="Ocaml.selectDownwardOneBlock"
+         id="Ocaml_sourceActions_selectDownwardOneBlock"
+         label="Select Downward One Block"
+         style="toggle">
+   </action>
+   <action
+         class="ocaml.editor.actions.SelectUpwardOneBlock"
+         definitionId="Ocaml.selectUpwardOneBlock"
+         id="Ocaml_sourceActions_selectUpwardOneBlock"
+         label="Select Upward One Block"
+         style="push">
+   </action>
+   <action
+         class="ocaml.editor.actions.MoveCursorUpwardOneBlock"
+         definitionId="Ocaml.moveCursorUpwardOneBlock"
+         id="Ocaml_sourceActions_moveCursorUpwardOneBlock"
+         label="Move Cursor Upward One Block"
+         style="push">
+   </action>
+   <action
+         class="ocaml.editor.actions.MoveCursorDownwardOneBlock"
+         definitionId="Ocaml.moveCursorDownwardOneBlock"
+         id="Ocaml_sourceActions_moveCursorDownwardOneBlock"
+         label="Move Cursor Downward One Block"
+         style="push">
+   </action>
 		</actionSet>
   <actionSet
         description="Action for compiling projects"
@@ -1000,6 +1028,26 @@
         categoryId="Ocaml.commandscategory"
         id="Ocaml.cleanProject"
         name="Clean Project">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.moveCursorDownwardOneBlock"
+        name="Move Cursor Downward One Block">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.moveCursorUpwardOneBlock"
+        name="Move Cursor Upward One Block">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.selectUpwardOneBlock"
+        name="Select Upward One Block">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.selectDownwardOneBlock"
+        name="Select Downward One Block">
   </command>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
@@ -1140,6 +1188,30 @@
         contextId="org.eclipse.ui.contexts.window"
         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
         sequence="M1+F9">
+  </key>
+  <key
+        commandId="Ocaml.selectDownwardOneBlock"
+        contextId="org.eclipse.ui.textEditorScope"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+M2+]">
+  </key>
+  <key
+        commandId="Ocaml.selectUpwardOneBlock"
+        contextId="org.eclipse.ui.textEditorScope"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+M2+[">
+  </key>
+  <key
+        commandId="Ocaml.moveCursorDownwardOneBlock"
+        contextId="org.eclipse.ui.textEditorScope"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+]">
+  </key>
+  <key
+        commandId="Ocaml.moveCursorUpwardOneBlock"
+        contextId="org.eclipse.ui.textEditorScope"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+[">
   </key>
 	</extension>
 	<extension point="org.eclipse.ui.contexts">
