@@ -36,13 +36,13 @@ public class OcamlPaths {
 	public OcamlPaths(IProject project) {
 		this.project = project;
 	}
-
+	
 	public void setPaths(String[] paths) {
 		IPath pathsPath = project.getLocation().append(PATHS_FILE);
 
 		File file = pathsPath.toFile();
 		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+			BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));
 
 			for (String path : paths)
 				if (path != null && path.trim().length() > 0)
@@ -95,12 +95,16 @@ public class OcamlPaths {
 		if (!file.exists())
 			restoreDefaults();
 
+		boolean hasCurrentDir = false;
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 
 			String path = "";
-			while ((path = reader.readLine()) != null)
+			while ((path = reader.readLine()) != null) {
+				if (path.compareTo(".") == 0)
+					hasCurrentDir = true;
 				paths.add(path);
+			}
 
 			reader.close();
 
@@ -108,6 +112,10 @@ public class OcamlPaths {
 			OcamlPlugin.logError("ocaml plugin error", e);
 			return new String[0];
 		}
+		
+		// always add "." to project paths
+		if (!hasCurrentDir)
+			paths.add(".");
 
 		addReferencedProjectsPaths(paths);
 

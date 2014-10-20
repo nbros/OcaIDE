@@ -304,7 +304,10 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			}
 			
 			// look for completion in opened or included module of current module
-			for (Def def1 : currentDef.children) {
+			ArrayList<Def> currentChildren = new ArrayList<>();
+			if (currentDef != null) 
+				currentChildren = currentDef.children;
+			for (Def def1 : currentChildren) {
 				if (def1.type == Def.Type.Open || def1.type == Def.Type.Include) {
 					Def involvedDef = def1;
 					String involvedModuleName = "";
@@ -322,7 +325,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 					}
 
 					// search in current module first
-					for (Def def2: currentDef.children) {
+					for (Def def2: currentChildren) {
 						if (def2.name.equals(involvedModuleName)) {
 							Def involvedDefRoot = def2;
 							for (Def def3: involvedDefRoot.children) {
