@@ -754,14 +754,14 @@
          style="push">
    </action>
    <action
-         class="ocaml.editor.actions.MoveCursorUpwardOneBlock"
+         class="ocaml.editor.actions.MoveCursorUpwardByIndent"
          definitionId="Ocaml.moveCursorUpwardOneBlock"
          id="Ocaml_sourceActions_moveCursorUpwardOneBlock"
          label="Move Cursor Upward One Block"
          style="push">
    </action>
    <action
-         class="ocaml.editor.actions.MoveCursorDownwardOneBlock"
+         class="ocaml.editor.actions.MoveCursorDownwardByIndent"
          definitionId="Ocaml.moveCursorDownwardOneBlock"
          id="Ocaml_sourceActions_moveCursorDownwardOneBlock"
          label="Move Cursor Downward One Block"
