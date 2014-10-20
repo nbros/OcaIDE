@@ -386,7 +386,8 @@ public class Def extends beaver.Symbol {
 	}
 
 	private void findRealChildren(Def node, ArrayList<Def> nodes, boolean root) {
-		if (node.type == Type.Dummy || node.type == Type.Parameter
+		if (node.type == Type.Dummy 
+				/* || node.type == Type.Parameter */    // Trung: this is to handle Parameter
 				/* || node.type == Type.Identifier */ 	// Trung: this is to handle ModuleAlias 
 				|| node.type == Type.Functor || node.type == Type.Sig || node.type == Type.Object
 				|| node.type == Type.Struct || node.type == Type.In || root
