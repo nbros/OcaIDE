@@ -8,6 +8,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -16,7 +17,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.editors.text.TextEditor;
 
-public class MoveCursorUpwardByIndent implements IWorkbenchWindowActionDelegate {
+public class SelectUpwardByIndent implements IWorkbenchWindowActionDelegate {
 
 	private IWorkbenchWindow window;
 	
@@ -58,13 +59,16 @@ public class MoveCursorUpwardByIndent implements IWorkbenchWindowActionDelegate 
 		final StyledText styledText = (StyledText) control;
 		int cursorOffset = styledText.getCaretOffset();
 		
+		Point selection = styledText.getSelection();
+		int startOffset = (selection.x < cursorOffset) ? selection.x : selection.y;
+		
 		try {
 			int lineNum = doc.getLineOfOffset(cursorOffset);
 			int numOfLine = doc.getNumberOfLines(); 
 			int docLen = doc.getLength();
 			
 			if (lineNum <= 0) {
-				editor.selectAndReveal(0, 0);
+				styledText.setSelection(startOffset, 0);
 				return;
 			}
 			
@@ -83,7 +87,7 @@ public class MoveCursorUpwardByIndent implements IWorkbenchWindowActionDelegate 
 					break;
 			}
 			if (lineNum == 0) {
-				editor.selectAndReveal(0, 0);
+				styledText.setSelection(startOffset, 0);
 				return;
 			}
 
@@ -108,13 +112,13 @@ public class MoveCursorUpwardByIndent implements IWorkbenchWindowActionDelegate 
 			String prevLine = doc.get(beginOffsetPrevLine, endOffsetPrevLine - beginOffsetPrevLine + 1);
 			int prevIndent = computeIndent(prevLine);
 			if (prevLine.trim().isEmpty() && cursorColumn > currentIndent) {
-				newOffset = beginOffsetCurrentLine + currentIndent;
-				editor.selectAndReveal(newOffset, 0);
+				newOffset = beginOffsetCurrentLine;// + currentIndent;
+				styledText.setSelection(startOffset, newOffset);
 				return;
 			}
 			else if ((prevIndent != currentIndent) && (cursorColumn > currentIndent)) {
-				newOffset = beginOffsetCurrentLine + currentIndent;
-				editor.selectAndReveal(newOffset, 0);
+				newOffset = beginOffsetCurrentLine;// + currentIndent;
+				styledText.setSelection(startOffset, newOffset);
 				return;
 			}
 			
@@ -133,7 +137,7 @@ public class MoveCursorUpwardByIndent implements IWorkbenchWindowActionDelegate 
 					break;
 			}
 			if (lineNum == 0) {
-				editor.selectAndReveal(0, 0);
+				styledText.setSelection(startOffset, 0);
 				return;
 			}
 
@@ -157,14 +161,14 @@ public class MoveCursorUpwardByIndent implements IWorkbenchWindowActionDelegate 
 					break;
 			}
 			newOffset = doc.getLineOffset(lineNum);
-			while (newOffset < docLen) {
-				Character ch = doc.getChar(newOffset);
-				if (ch != ' ' && ch != '\t' && ch != '\r' && ch != '\n')
-					break;
-				else
-					newOffset++;
-			}
-			editor.selectAndReveal(newOffset, 0);
+//			while (newOffset < docLen) {
+//				Character ch = doc.getChar(newOffset);
+//				if (ch != ' ' && ch != '\t' && ch != '\r' && ch != '\n')
+//					break;
+//				else
+//					newOffset++;
+//			}
+			styledText.setSelection(startOffset, newOffset);
 		} catch (BadLocationException e) {
 			return;
 		}

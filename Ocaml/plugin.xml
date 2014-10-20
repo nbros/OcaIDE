@@ -740,31 +740,31 @@
 				<separator name="slot1"/>
 			</menu>
    <action
-         class="ocaml.editor.actions.SelectDownwardOneBlock"
-         definitionId="Ocaml.selectDownwardOneBlock"
-         id="Ocaml_sourceActions_selectDownwardOneBlock"
-         label="Select Downward One Block"
+         class="ocaml.editor.actions.SelectDownwardByIndent"
+         definitionId="Ocaml.selectDownwardByIndent"
+         id="Ocaml_sourceActions_selectDownwardByIndent"
+         label="Select Downward By Indent"
          style="push">
    </action>
    <action
-         class="ocaml.editor.actions.SelectUpwardOneBlock"
-         definitionId="Ocaml.selectUpwardOneBlock"
-         id="Ocaml_sourceActions_selectUpwardOneBlock"
-         label="Select Upward One Block"
+         class="ocaml.editor.actions.SelectUpwardByIndent"
+         definitionId="Ocaml.selectUpwardByIndent"
+         id="Ocaml_sourceActions_selectUpwardByIndent"
+         label="Select Upward By Indent"
          style="push">
    </action>
    <action
          class="ocaml.editor.actions.MoveCursorUpwardByIndent"
-         definitionId="Ocaml.moveCursorUpwardOneBlock"
-         id="Ocaml_sourceActions_moveCursorUpwardOneBlock"
-         label="Move Cursor Upward One Block"
+         definitionId="Ocaml.moveCursorUpwardByIndent"
+         id="Ocaml_sourceActions_moveCursorUpwardByIndent"
+         label="Move Cursor Upward By Indent"
          style="push">
    </action>
    <action
          class="ocaml.editor.actions.MoveCursorDownwardByIndent"
-         definitionId="Ocaml.moveCursorDownwardOneBlock"
-         id="Ocaml_sourceActions_moveCursorDownwardOneBlock"
-         label="Move Cursor Downward One Block"
+         definitionId="Ocaml.moveCursorDownwardByIndent"
+         id="Ocaml_sourceActions_moveCursorDownwardByIndent"
+         label="Move Cursor Downward By Indent"
          style="push">
    </action>
    <action
@@ -963,23 +963,23 @@
   </command>
   <command
         categoryId="Ocaml.commandscategory"
-        id="Ocaml.moveCursorDownwardOneBlock"
-        name="Move Cursor Downward One Block">
+        id="Ocaml.moveCursorDownwardByIndent"
+        name="Move Cursor Downward By Indent">
   </command>
   <command
         categoryId="Ocaml.commandscategory"
-        id="Ocaml.moveCursorUpwardOneBlock"
-        name="Move Cursor Upward One Block">
+        id="Ocaml.moveCursorUpwardByIndent"
+        name="Move Cursor Upward By Indent">
   </command>
   <command
         categoryId="Ocaml.commandscategory"
-        id="Ocaml.selectUpwardOneBlock"
-        name="Select Upward One Block">
+        id="Ocaml.selectUpwardByIndent"
+        name="Select Upward By Indent">
   </command>
   <command
         categoryId="Ocaml.commandscategory"
-        id="Ocaml.selectDownwardOneBlock"
-        name="Select Downward One Block">
+        id="Ocaml.selectDownwardByIndent"
+        name="Select Downward By Indent">
   </command>
   <command
         categoryId="Ocaml.commandscategory"
@@ -1094,25 +1094,25 @@
         sequence="F3">
   </key>
   <key
-        commandId="Ocaml.moveCursorDownwardOneBlock"
+        commandId="Ocaml.moveCursorDownwardByIndent"
         contextId="org.eclipse.ui.textEditorScope"
         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
         sequence="M1+ARROW_DOWN">
   </key>
   <key
-        commandId="Ocaml.moveCursorUpwardOneBlock"
+        commandId="Ocaml.moveCursorUpwardByIndent"
         contextId="org.eclipse.ui.textEditorScope"
         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
         sequence="M1+ARROW_UP">
   </key>
   <key
-        commandId="Ocaml.selectUpwardOneBlock"
+        commandId="Ocaml.selectUpwardByIndent"
         contextId="org.eclipse.ui.textEditorScope"
         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
         sequence="M1+M2+ARROW_UP">
   </key>
   <key
-        commandId="Ocaml.selectDownwardOneBlock"
+        commandId="Ocaml.selectDownwardByIndent"
         contextId="org.eclipse.ui.textEditorScope"
         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
         sequence="M1+M2+ARROW_DOWN">
