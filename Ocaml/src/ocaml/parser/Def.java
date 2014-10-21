@@ -352,17 +352,17 @@ public class Def extends beaver.Symbol {
 		}
 	}
 
-	public Def cleanCopy() {
+	public Def cleanCopy(boolean parserError) {
 		this.buildParents();
 		Def def = new Def("<root>", Def.Type.Root, 0, 0);
-		cleanCopyAux(this, def);
+		cleanCopyAux(this, def, parserError);
 //		def.buildParents();
 		return def;
 	}
 
-	private void cleanCopyAux(Def node, Def newNode) {
+	private void cleanCopyAux(Def node, Def newNode, boolean parserError) {
 		ArrayList<Def> realNodes = new ArrayList<Def>();
-		findRealChildren(node, realNodes, true);
+		findRealChildren(node, realNodes, true, parserError);
 
 		for (Def d : realNodes) {
 			Def def = new Def(d.name, d.type, d.posStart, d.posEnd);
@@ -384,14 +384,14 @@ public class Def extends beaver.Symbol {
 		}
 
 		for (int i = 0; i < realNodes.size(); i++)
-			cleanCopyAux(realNodes.get(i), newNode.children.get(i));
+			cleanCopyAux(realNodes.get(i), newNode.children.get(i), parserError);
 	}
 
-	private void findRealChildren(Def node, ArrayList<Def> nodes, boolean root) {
+	private void findRealChildren(Def node, ArrayList<Def> nodes, boolean root, boolean parserError) {
 		// always go down when is in root
 		if (root) {
 			for (Def d : node.children)
-				findRealChildren(d, nodes, false);
+				findRealChildren(d, nodes, false, parserError);
 		}
 		// find parameter
 		else if (node.type == Type.Parameter) {
@@ -399,18 +399,26 @@ public class Def extends beaver.Symbol {
 			Def simpleNode = new Def(node);
 			simpleNode.children = new ArrayList<Def>();
 			nodes.add(simpleNode);
-//			nodes.add(node);
 			
 			// find children
 			for (Def d : node.children)
-				findRealChildren(d, nodes, false);
+				findRealChildren(d, nodes, false, parserError);
 		}
 		// find aliased module
 		else if (node.type == Type.Identifier) {
-			Def parent = node.parent;
-			if (parent != null)
-				if (parent.type == Type.ModuleAlias)
-					nodes.add(node);
+			// add all identifiers when parser error
+			if (parserError) {
+				nodes.add(node);
+			}
+			// if no parser error, add selected identifiers
+			else {
+				Def parent = node.parent;
+				if (parent != null) {
+					if (parent.type == Type.ModuleAlias)
+						nodes.add(node);
+				}
+			}
+			
 		}
 		// go down to find real children
 		else if (node.type == Type.Dummy 
@@ -421,7 +429,7 @@ public class Def extends beaver.Symbol {
 				|| node.type == Type.In
 				|| "()".equals(node.name)) {
 			for (Def d : node.children)
-				findRealChildren(d, nodes, false);
+				findRealChildren(d, nodes, false, parserError);
 		}
 		else {
 			nodes.add(node);

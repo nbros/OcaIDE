@@ -2237,13 +2237,25 @@ signed_constant=
 
 ident=
     UIDENT.id                                      /*{ $1 }*/
-    {: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
+    {:
+       Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
+       backup(def);
+       return def;
+    :}
   | LIDENT.id                                      /*{ $1 }*/
-    {: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
+    {:
+      Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); 
+      backup(def);
+      return def;
+    :}
 ;
 val_ident=
     LIDENT.id                                    /*{ $1 }*/
-    {: return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); :}
+    {: 
+      Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); 
+      backup(def);
+      return def;
+    :}
   | LPAREN operator.o RPAREN                      /*{ $2 }*/
     {:
     	Def op = (Def)o;

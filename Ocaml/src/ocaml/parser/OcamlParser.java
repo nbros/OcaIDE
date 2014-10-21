@@ -4386,19 +4386,28 @@ public class OcamlParser extends Parser {
 			new Action() {	// [465] ident = UIDENT.id
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol id = _symbols[offset + 1];
-					 return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
+					
+       Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
+       backup(def);
+       return def;
 				}
 			},
 			new Action() {	// [466] ident = LIDENT.id
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol id = _symbols[offset + 1];
-					 return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
+					
+      Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); 
+      backup(def);
+      return def;
 				}
 			},
 			new Action() {	// [467] val_ident = LIDENT.id
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol id = _symbols[offset + 1];
-					 return new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
+					 
+      Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); 
+      backup(def);
+      return def;
 				}
 			},
 			new Action() {	// [468] val_ident = LPAREN operator.o RPAREN

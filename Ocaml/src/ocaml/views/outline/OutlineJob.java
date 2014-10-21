@@ -285,6 +285,7 @@ public class OutlineJob extends Job {
 		 * recover pieces from the AST (which couldn't be built completely because of an
 		 * unrecoverable error)
 		 */
+		boolean parserError = false;
 		if (root == null || !parser.errorReporting.errors.isEmpty()) {
 			// System.err.println("recovering");
 			// System.err.println("recovering AST");
@@ -295,6 +296,8 @@ public class OutlineJob extends Job {
 					def.bTop = false;
 					root.children.add(def);
 				}
+			
+			parserError = true;
 		}
 
 		/*
@@ -324,7 +327,7 @@ public class OutlineJob extends Job {
 
 		definitions.setInInAttribute();
 
-		Def outlineDefinitions = definitions.cleanCopy();
+		Def outlineDefinitions = definitions.cleanCopy(parserError);
 		// remove the definitions the user has chosen not to display
 		initPreferences();
 		cleanOutline(outlineDefinitions);

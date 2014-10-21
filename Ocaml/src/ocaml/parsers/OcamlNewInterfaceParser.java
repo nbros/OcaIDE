@@ -292,6 +292,7 @@ public class OcamlNewInterfaceParser {
 				root = (Def) parser.parse(scanner, OcamlParser.AltGoals.interfaces);
 			else
 				root = (Def) parser.parse(scanner);
+			root = root.cleanCopy(false);
 		} catch (Exception e) {
 			// recover pieces from the AST (which couldn't be built completely 
 			// because of an unrecoverable error)
@@ -302,11 +303,10 @@ public class OcamlNewInterfaceParser {
 						def.bTop = false;
 						root.children.add(def);
 					}
+				root = root.cleanCopy(true);
 			}
 		}
 		
-
-		root = root.cleanCopy();
 
 		root.name = moduleName;
 
