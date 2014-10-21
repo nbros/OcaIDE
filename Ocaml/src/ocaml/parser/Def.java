@@ -353,9 +353,10 @@ public class Def extends beaver.Symbol {
 	}
 
 	public Def cleanCopy() {
+		this.buildParents();
 		Def def = new Def("<root>", Def.Type.Root, 0, 0);
 		cleanCopyAux(this, def);
-		def.buildParents();
+//		def.buildParents();
 		return def;
 	}
 
@@ -398,14 +399,18 @@ public class Def extends beaver.Symbol {
 			Def simpleNode = new Def(node);
 			simpleNode.children = new ArrayList<Def>();
 			nodes.add(simpleNode);
+//			nodes.add(node);
 			
 			// find children
 			for (Def d : node.children)
 				findRealChildren(d, nodes, false);
 		}
 		// find aliased module
-		else if (node.type == Type.Identifier && node.parent.type == Type.ModuleAlias) {
-			nodes.add(node);
+		else if (node.type == Type.Identifier) {
+			Def parent = node.parent;
+			if (parent != null)
+				if (parent.type == Type.ModuleAlias)
+					nodes.add(node);
 		}
 		// go down to find real children
 		else if (node.type == Type.Dummy 
@@ -414,8 +419,6 @@ public class Def extends beaver.Symbol {
 				|| node.type == Type.Object
 				|| node.type == Type.Struct
 				|| node.type == Type.In
-				|| node.type == Type.Identifier
-				/* || "_".equals(node.name) */
 				|| "()".equals(node.name)) {
 			for (Def d : node.children)
 				findRealChildren(d, nodes, false);

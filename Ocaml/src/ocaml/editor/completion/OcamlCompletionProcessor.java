@@ -291,14 +291,16 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 						proposals.addAll(lookupProposalsCompletionInDef(suffix, def, interfacesDefsRoot, document, offset));
 					}
 					else if (def.type == Def.Type.ModuleAlias)  {
-						String aliasedName = def.children.get(0).name;
-						if (prefix.equals(aliasedName)) 
-							stop = true;
-						else {
-							prefix = aliasedName;
-							stop = false;
+						if (def.children.size() > 0) {
+							String aliasedName = def.children.get(0).name;
+							if (prefix.equals(aliasedName)) 
+								stop = true;
+							else {
+								prefix = aliasedName;
+								stop = false;
+							}
+							break;
 						}
-						break;
 					}
 				}
 			}
@@ -595,8 +597,10 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 				if (def == null || def.name == null)
 					continue;
 				if (def.name.startsWith(completion)
-						&& (def.name.length() > completion.length())
-						&& (def.type == Def.Type.Let || def.type == Def.Type.LetIn)) {
+						&& (def.name.length() > completion.length())) {
+//						&& (def.type == Def.Type.Let 
+//								|| def.type == Def.Type.LetIn
+//								|| def.type == Def.Type.Parameter)) {
 					Def proposedDef = createProposalDef(project, def);
 					proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
 				}

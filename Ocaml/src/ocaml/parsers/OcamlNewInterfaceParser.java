@@ -217,7 +217,7 @@ public class OcamlNewInterfaceParser {
 			definition = parseModule(lines, filename, moduleName, bInterface);
 		} catch (Throwable e) {
 			// if there was a parsing error, we log it and we continue on to the next file
-			// e.printStackTrace();
+			e.printStackTrace();
 			Def def = new Def(moduleName, Def.Type.ParserError, 0, 0);
 			def.setFileName(filename);
 			def.setComment("ERROR 2: The parser encountered an error while parsing this file.\n\n"
@@ -329,7 +329,7 @@ public class OcamlNewInterfaceParser {
 
 		setBodies(root, doc, parseInterface);
 
-		root.unnestTypes(null, 0);
+//		root.unnestTypes(null, 0);
 
 		if (parser.errorReporting.errors.size() != 0) {
 			root.type = Def.Type.ParserError;
@@ -686,17 +686,21 @@ public class OcamlNewInterfaceParser {
 
 		boolean bNewline = false;
 		for (int i = offset1; i < offset2; i++) {
-			if (text.charAt(i) == '\n') {
-				if (bNewline)
-					return false;
-				else {
-					if (noNewLines)
+			try {
+				if (text.charAt(i) == '\n') {
+					if (bNewline)
 						return false;
-					bNewline = true;
-				}
-			} else if (!Character.isWhitespace(text.charAt(i))
-					&& text.charAt(i) != ';')
+					else {
+						if (noNewLines)
+							return false;
+						bNewline = true;
+					}
+				} else if (!Character.isWhitespace(text.charAt(i))
+						&& text.charAt(i) != ';')
+					return false;
+			} catch (Exception e) {
 				return false;
+			}
 		}
 
 		return true;
