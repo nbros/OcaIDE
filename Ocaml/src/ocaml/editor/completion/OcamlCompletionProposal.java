@@ -112,8 +112,9 @@ public class OcamlCompletionProposal implements ICompletionProposal, ICompletion
 	public String getDisplayString() {
 		String displayString = definition.name;
 
-		if (definition.type == Def.Type.Let || definition.type == Def.Type.LetIn) {
-			String typeInfo = Misc.beautify(Def.clean(definition.getOcamlType())); 
+		String typeInfo = Misc.beautify(Def.cleanString(definition.getOcamlType()));
+		
+		if (!typeInfo.isEmpty()) {
 			if (typeInfo.startsWith(definition.name))
 				displayString = typeInfo;
 			else

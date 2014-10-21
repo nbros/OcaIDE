@@ -27,6 +27,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
+import org.eclipse.ui.dialogs.NewFolderDialog;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -934,35 +935,49 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	private Def createProposalDef(IProject project, Def def) {
 		Def newDef = new Def(def);
 		if (newDef.type == Def.Type.Let
-				|| newDef.type == Def.Type.LetIn) {
-			String filename = newDef.getFileName();
+				|| newDef.type == Def.Type.LetIn
+				|| newDef.type == Def.Type.External) {
 			
-			// store last used annotation for caching
-			TypeAnnotation[] annotations;
-			long currentTime = System.currentTimeMillis();
-			if (filename.equals(lastParsedFileName) 
-					&& (currentTime - lastParsedTime < cacheTime)) {
-				annotations = lastUsedAnnotations;
+			String typeInfo = "";
+			
+			// look for type infor in body first
+			String body = newDef.getBody();
+			int index = body.indexOf(newDef.name);
+			if (index >= 0 && body.length() > newDef.name.length()) {
+				typeInfo = body.substring(index);
+				newDef.setOcamlType(typeInfo);
 			}
-			else {
-				annotations = parseModuleAnnotation(project, filename);
-				lastUsedAnnotations = annotations;
-				lastParsedFileName = filename;
-				lastParsedTime = System.currentTimeMillis();
+
+			// not found type in body
+			if (typeInfo.isEmpty()) {
+				String filename = newDef.getFileName();
+				
+				// store last used annotation for caching
+				TypeAnnotation[] annotations;
+				long currentTime = System.currentTimeMillis();
+				if (filename.equals(lastParsedFileName) 
+						&& (currentTime - lastParsedTime < cacheTime)) {
+					annotations = lastUsedAnnotations;
+				}
+				else {
+					annotations = parseModuleAnnotation(project, filename);
+					lastUsedAnnotations = annotations;
+					lastParsedFileName = filename;
+					lastParsedTime = System.currentTimeMillis();
+				}
+				 
+				IDocument document = getDocument(project, filename);
+				typeInfo = computeTypeInfo(newDef, annotations, document);
+				if (!typeInfo.isEmpty()) {
+					newDef.setOcamlType(typeInfo);
+					newDef.setBody("val " + typeInfo);
+				}
 			}
-			 
-			IDocument document = getDocument(project, filename);
-			String typeInfo = computeTypeInfo(newDef, annotations, document);
-			if (typeInfo.isEmpty())
-				typeInfo = newDef.name + " - <no type information>";
-			newDef.setOcamlType(typeInfo);
 		}
 		else if (def.type == Def.Type.Type) {
 			String typeInfo = newDef.name + " 't";
 			newDef.setOcamlType(typeInfo);
 		}
-		// Trung: uncomment to debug def type
-		// newDef.setBody(newDef.getBody() + " -- def type: " + newDef.getTypeName());
 
 		return newDef;
 	}

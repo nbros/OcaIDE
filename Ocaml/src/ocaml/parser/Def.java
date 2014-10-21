@@ -554,24 +554,24 @@ public class Def extends beaver.Symbol {
 			this.comment = this.comment + "\n________________________________________\n\n"
 					+ comment;
 
-		this.comment = clean(this.comment);
+		this.comment = cleanString(this.comment);
 	}
 
 	public String sectionComment = "";
 
 	public void setSectionComment(String text) {
-		this.sectionComment = clean(text);
+		this.sectionComment = cleanString(text);
 	}
 
 	public void setComment(String text) {
 		if (text.equals("/*"))
 			return;
 
-		this.comment = clean(text);
+		this.comment = cleanString(text);
 	}
 
 
-	public static String clean(String str) {
+	public static String cleanString(String str) {
 		if (str == null)
 			return "";
 		
