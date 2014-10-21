@@ -377,6 +377,7 @@ public class Def extends beaver.Symbol {
 			def.sectionComment = d.sectionComment;
 			def.filename = d.filename;
 			def.body = d.body;
+			def.parent = newNode;
 
 			newNode.add(def);
 		}
@@ -386,16 +387,40 @@ public class Def extends beaver.Symbol {
 	}
 
 	private void findRealChildren(Def node, ArrayList<Def> nodes, boolean root) {
-		if (node.type == Type.Dummy 
-				/* || node.type == Type.Parameter */    // Trung: this is to handle Parameter
-				/* || node.type == Type.Identifier */ 	// Trung: this is to handle ModuleAlias 
-				|| node.type == Type.Functor || node.type == Type.Sig || node.type == Type.Object
-				|| node.type == Type.Struct || node.type == Type.In || root
-				/* || "_".equals(node.name) */ 			// Trung: this is to handle _
+		// always go down when is in root
+		if (root) {
+			for (Def d : node.children)
+				findRealChildren(d, nodes, false);
+		}
+		// find parameter
+		else if (node.type == Type.Parameter) {
+			// created a cloned node without children to add into nodes
+			Def simpleNode = new Def(node);
+			simpleNode.children = new ArrayList<Def>();
+			nodes.add(simpleNode);
+			
+			// find children
+			for (Def d : node.children)
+				findRealChildren(d, nodes, false);
+		}
+		// find aliased module
+		else if (node.type == Type.Identifier && node.parent.type == Type.ModuleAlias) {
+			nodes.add(node);
+		}
+		// go down to find real children
+		else if (node.type == Type.Dummy 
+				|| node.type == Type.Functor
+				|| node.type == Type.Sig
+				|| node.type == Type.Object
+				|| node.type == Type.Struct
+				|| node.type == Type.In
+				|| node.type == Type.Identifier
+				/* || "_".equals(node.name) */
 				|| "()".equals(node.name)) {
 			for (Def d : node.children)
 				findRealChildren(d, nodes, false);
-		} else {
+		}
+		else {
 			nodes.add(node);
 		}
 	}
