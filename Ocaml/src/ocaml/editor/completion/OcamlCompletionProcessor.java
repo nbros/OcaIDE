@@ -332,7 +332,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 						if (def2.name.equals(involvedModuleName)) {
 							Def involvedDefRoot = def2;
 							for (Def def3: involvedDefRoot.children) {
-								if (def3.name.startsWith(newCompletion) && isCompletionDef(def3)) {
+								if (checkCompletion(def3, newCompletion) && isCompletionDef(def3)) {
 									Def proposedDef = createProposalDef(project, def3);
 									proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
 								}
@@ -343,7 +343,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 						if (def2.name.equals(involvedModuleName)) {
 							Def involvedDefRoot = def2;
 							for (Def def3: involvedDefRoot.children) {
-								if (def3.name.startsWith(newCompletion) && isCompletionDef(def3)) {
+								if (checkCompletion(def3, newCompletion) && isCompletionDef(def3)) {
 									Def proposedDef = createProposalDef(project, def3);
 									proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
 								}
@@ -366,7 +366,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		// find elements starting by <completion> in the list of elements
 		else {
 			for (Def def : interfacesDefsRoot.children) {
-				if (def.name.startsWith(completion) && isCompletionDef(def)) {
+				if (checkCompletion(def, completion) && isCompletionDef(def)) {
 					Def proposedDef = createProposalDef(project, def);
 					proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
 				}
@@ -392,7 +392,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		 *  look in def root
 		 */
 		for (Def def: interfacesDefsRoot.children) {
-			if (def.name.startsWith(completion)) {
+			if (checkCompletion(def, completion)) {
 				Def proposedDef = createProposalDef(project, def);
 				proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
 			}
@@ -415,7 +415,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			proposals.addAll(bottomUpFindProposals(completion, nearestDef, offset));
 			
 			for (Def def: currentDef.children) {
-				if (def.name.startsWith(completion)) {
+				if (checkCompletion(def, completion)) {
 					Def proposedDef = createProposalDef(project, def);
 					proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
 				}
@@ -472,7 +472,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 				if (d == null || d.name == null)
 					break;
 				
-				if (d.name.startsWith(completion) && isCompletionDef(d)) {
+				if (checkCompletion(d, completion) && isCompletionDef(d)) {
 					Def proposedDef = createProposalDef(project, d);
 					proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
 				}
@@ -543,7 +543,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		else {
 			// look inside def roots first
 			for (Def def : defsRoot.children) {
-				if (def.name.startsWith(completion) && isCompletionDef(def)) {
+				if (checkCompletion(def, completion) && isCompletionDef(def)) {
 					Def proposedDef = createProposalDef(project, def);
 					proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
 				}
@@ -587,9 +587,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			if (travelNode == null || travelNode.name == null)
 				break;
 
-			if (travelNode.name.startsWith(completion)
-					&& (travelNode.name.length() > completion.length())
-					&& isCompletionDef(travelNode)) {
+			if (checkCompletion(travelNode, completion) && isCompletionDef(travelNode)) {
 				Def proposedDef = createProposalDef(project, travelNode);
 				proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
 			}
@@ -597,8 +595,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			for (Def def : travelNode.children) {
 				if (def == null || def.name == null)
 					continue;
-				if (def.name.startsWith(completion)
-						&& (def.name.length() > completion.length())) {
+				if (checkCompletion(def, completion)) {
 //						&& (def.type == Def.Type.Let 
 //								|| def.type == Def.Type.LetIn
 //								|| def.type == Def.Type.Parameter)) {
@@ -660,6 +657,19 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		}
 		
 		return findSmallestDefAtOffset(nearestChild, offset, doc);
+	}
+	
+	private boolean checkCompletion(Def def, String completion) {
+		if (def == null)
+			return false;
+		
+		if (def.name == null)
+			return false;
+		
+		if (def.name.startsWith(completion) && def.name.length() > completion.length())
+			return true;
+		
+		return false;
 	}
 
 	private boolean isCompletionDef(Def def) {
