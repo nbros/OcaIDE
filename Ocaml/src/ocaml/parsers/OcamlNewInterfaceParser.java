@@ -329,7 +329,7 @@ public class OcamlNewInterfaceParser {
 
 		setBodies(root, doc, parseInterface);
 
-//		root.unnestTypes(null, 0);
+		root.unnestTypes(null, 0);
 
 		if (parser.errorReporting.errors.size() != 0) {
 			root.type = Def.Type.ParserError;

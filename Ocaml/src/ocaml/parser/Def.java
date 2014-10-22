@@ -529,7 +529,7 @@ public class Def extends beaver.Symbol {
 		try {
 			lineOffset = doc.getLineOffset(getLine(posStart));
 		} catch (BadLocationException e) {
-			OcamlPlugin.logError("offset error", e);
+//			OcamlPlugin.logError("offset error", e);
 			return null;
 		}
 
