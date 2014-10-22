@@ -13,6 +13,7 @@ import ocaml.editor.syntaxcoloring.ILanguageWords;
 import ocaml.preferences.PreferenceConstants;
 import ocaml.views.OcamlCompilerOutput;
 
+import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -637,8 +638,10 @@ public class Misc {
 			resource.setPersistentProperty(name, value);
 			
 		} catch (BackingStoreException e) {
-			OcamlPlugin.logError("error in OcamlPlugin.setPersistentProperty", e);
-		} catch (CoreException e) {
+			// OcamlPlugin.logError("error in OcamlPlugin.setPersistentProperty", e);
+		} catch (ResourceException e) {
+			
+		} catch (Exception e) {
 			
 		}
 	}

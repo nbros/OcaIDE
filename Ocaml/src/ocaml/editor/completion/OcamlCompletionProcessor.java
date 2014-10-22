@@ -666,8 +666,13 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		if (def.name == null)
 			return false;
 		
-		if (def.name.startsWith(completion) && def.name.length() > completion.length())
+		if (def.name.startsWith(completion)){
+//			if (def.type != Def.Type.Identifier)
+//				return true;
+//			else if (def.name.length() > completion.length())
+//				return true;
 			return true;
+		}
 		
 		return false;
 	}

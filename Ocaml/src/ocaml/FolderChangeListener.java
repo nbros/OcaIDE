@@ -47,7 +47,7 @@ public class FolderChangeListener implements IResourceChangeListener {
 								IResource r = res;
 								while (r != null) {
 									String rName = r.getName();
-									if ((rName.length() > 1) && rName.startsWith("."))
+									if (rName.startsWith("."))
 										return false;
 									r = r.getParent();
 								}
