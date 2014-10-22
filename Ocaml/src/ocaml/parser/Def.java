@@ -301,6 +301,13 @@ public class Def extends beaver.Symbol {
 		for (Def child : children)
 			child.findIdents(idents);
 	}
+	
+	void findDefNames(ArrayList<String> defNames) {
+		if (this.name != null && !this.name.isEmpty())
+			defNames.add(this.name);
+		for (Def child: children)
+			child.findDefNames(defNames);
+	}
 
 	/** Find all the "lets" in the tree rooted at this definition (and do not go further down) */
 	void findLets(ArrayList<Def> idents) {
@@ -524,7 +531,7 @@ public class Def extends beaver.Symbol {
 	}
 
 	/** Returns the region in the document covered by the name of the definition */
-	public IRegion getRegion(IDocument doc) {
+	public IRegion getNameRegion(IDocument doc) {
 		int lineOffset = 0;
 		try {
 			lineOffset = doc.getLineOffset(getLine(posStart));
@@ -539,6 +546,28 @@ public class Def extends beaver.Symbol {
 		return new Region(startOffset, endOffset - startOffset + 1);
 
 	}
+	
+	/** Returns the region in the document covered by this definition and its body */
+	public Region getFullRegion() {
+		// startOffset is computed by def name
+		int startOffset = posStart;
+		
+		// endOffset is computed by def's full definition
+		Def lastDescendant = this;
+		while (lastDescendant.children != null & lastDescendant.children.size() > 0) {
+			ArrayList<Def> children = lastDescendant.children;
+			for (int i = children.size() - 1; i >= 0; i--) {
+				if (children.get(i) != null) {
+					lastDescendant = children.get(i);
+					break;
+				}
+			}
+		}
+		int endOffset = lastDescendant.posEnd;
+
+		return new Region(startOffset, endOffset - startOffset + 1);
+	}
+	
 
 	/** The ocamldoc comment associated with this definition */
 	public String comment = "";

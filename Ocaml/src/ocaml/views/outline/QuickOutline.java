@@ -186,7 +186,7 @@ public class QuickOutline extends PopupDialog {
 			
 			IDocument document = editor.getDocumentProvider().getDocument(
 					editor.getEditorInput());
-			IRegion region = def.getRegion(document);
+			IRegion region = def.getNameRegion(document);
 
 			if (region != null) {
 				editor.selectAndReveal(region.getOffset(), region.getLength());

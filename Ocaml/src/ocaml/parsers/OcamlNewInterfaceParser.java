@@ -303,6 +303,11 @@ public class OcamlNewInterfaceParser {
 						def.bTop = false;
 						root.children.add(def);
 					}
+				for (Def def : parser.recoverIdents)
+					if (def.bTop && def.name != null && !"".equals(def.name.trim())) {
+						def.bTop = false;
+						root.children.add(def);
+					}
 				root = root.cleanCopy(true);
 			}
 		}

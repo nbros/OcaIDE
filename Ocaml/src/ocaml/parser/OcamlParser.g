@@ -4,6 +4,7 @@
 %package "ocaml.parser";
 
 %import "java.util.ArrayList";
+%import "org.eclipse.jface.text.Region";
 
 %embed {:
 	public ErrorReporting errorReporting;
@@ -16,12 +17,29 @@
 		we use the "bTop" boolean to know if this definition should be added to the outline */
 	public ArrayList<Def> recoverDefs = new ArrayList<Def>();
 
+	public ArrayList<Def> recoverIdents = new ArrayList<Def>();
+
 	/** backup a node, so as to be able to later recover from a parsing error */
-	private void backup(Def def){
+	private void backupDef(Def def){
 		recoverDefs.add(def);
 		for(Def child: def.children)
 			//child.bTop = false;
 			unsetTop(child);
+
+		// remove all identifiers that is used to build this def
+		Region region = def.getFullRegion();
+		ArrayList<Def> usedIdents = new ArrayList<Def>();
+		for (Def ident: recoverIdents)
+			if (ident.posStart >= region.getOffset()
+					&& (ident.posEnd <= region.getOffset() + region.getLength()))
+				usedIdents.add(ident);
+		recoverIdents.removeAll(usedIdents);
+	}
+
+	// backup identifiers for later recovering from a parsing error,
+	// some will be removed when they are used to build a Def sucessfully
+	private void backupIdent(Def def) {
+		recoverIdents.add(def);
 	}
 
 	private void unsetTop(Def def){
@@ -285,7 +303,7 @@ module_expr=
     	Def def = new Def("<structure>", Def.Type.Struct, s.getStart(), s.getEnd());
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | STRUCT.a structure.s error
@@ -293,7 +311,7 @@ module_expr=
     	Def def = new Def("<structure>", Def.Type.Struct, a.getStart(), a.getEnd());
     	def.add(s);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | FUNCTOR LPAREN UIDENT.i COLON module_type.a RPAREN MINUSGREATER module_expr.b
@@ -302,7 +320,7 @@ module_expr=
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | module_expr.a LPAREN module_expr.b RPAREN
@@ -366,7 +384,7 @@ structure_item=
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | TYPE type_declarations.t
@@ -376,7 +394,7 @@ structure_item=
     	Def def = new Def((String)id.value, Def.Type.Exception, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | EXCEPTION UIDENT.id EQUAL constr_longident.a
@@ -384,7 +402,7 @@ structure_item=
     	Def def = new Def((String)id.value, Def.Type.Exception, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | MODULE UIDENT.id module_binding.a
@@ -396,7 +414,7 @@ structure_item=
     	Def def = new Def((String)id.value, type, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | MODULE REC module_rec_bindings.a
@@ -407,14 +425,14 @@ structure_item=
     	Def def = new Def(ident.name, Def.Type.ModuleType, ident.posStart, ident.posEnd);
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | OPEN mod_longident.id
     {:
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.Open, ident.posStart, ident.posEnd);
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | CLASS class_declarations.a
@@ -426,7 +444,7 @@ structure_item=
     	Def ident = (Def)id;
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Include, ident.posStart, ident.posEnd);
-    		backup(def);
+    		backupDef(def);
 	    	return def;
 	    }
 	    return new Def();
@@ -460,7 +478,7 @@ module_rec_binding=
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
 ;
@@ -475,7 +493,7 @@ module_type=
     	Def def = new Def("<signature>", Def.Type.Sig, s.getStart(), s.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | SIG signature error
@@ -487,7 +505,7 @@ module_type=
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | module_type.a WITH with_constraints.b
@@ -518,7 +536,7 @@ signature_item=
   		// add the start position of the definition
   		def.defPosStart = v.getStart();
 
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | EXTERNAL.e val_ident.id COLON core_type.a EQUAL primitive_declaration.b
@@ -529,7 +547,7 @@ signature_item=
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | TYPE.t type_declarations.a
@@ -546,7 +564,7 @@ signature_item=
     	def.defPosStart = e.getStart();
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | MODULE.m UIDENT.id module_declaration.a
@@ -555,7 +573,7 @@ signature_item=
     	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | MODULE.m REC module_rec_declarations.a
@@ -571,7 +589,7 @@ signature_item=
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.ModuleType, ident.posStart, ident.posEnd);
     	def.defPosStart = m.getStart();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | MODULE.m TYPE ident.id EQUAL module_type.a
@@ -581,7 +599,7 @@ signature_item=
     	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | OPEN.o mod_longident.id
@@ -589,7 +607,7 @@ signature_item=
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.Open, ident.posStart, ident.posEnd);
     	def.defPosStart = o.getStart();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | INCLUDE.i module_type.id
@@ -598,7 +616,7 @@ signature_item=
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Include, ident.posStart, ident.posEnd);
     		def.defPosStart = i.getStart();
-    		backup(def);
+    		backupDef(def);
 	    	return def;
 	    }
 	    return new Def();
@@ -646,7 +664,7 @@ module_rec_declaration=
     	Def def = new Def((String)id.value, Def.Type.Module, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
 	    return def;
     :}
 ;
@@ -670,7 +688,7 @@ class_declaration=
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
 	    return def;
     :}
 ;
@@ -722,7 +740,7 @@ class_expr=
   			in.collapse();
   			last.children.add(in);
   			last.collapse();
-  			backup(last);
+  			backupDef(last);
   			return a;
   		}
 
@@ -739,7 +757,7 @@ class_simple_expr=
     	Def def = new Def("<object>", Def.Type.Object, o.getStart(), o.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
 
@@ -777,7 +795,7 @@ class_fields=
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
     		def.defPosStart = v.getStart();
-    		backup(def);
+    		backupDef(def);
 	    	return Def.root(a, def);
 	    }
 	    return Def.root(a,id);
@@ -788,7 +806,7 @@ class_fields=
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
     		def.defPosStart = v.getStart();
-    		backup(def);
+    		backupDef(def);
 	    	return Def.root(a, def);
 	    }
 	    return Def.root(a,id);
@@ -802,7 +820,7 @@ class_fields=
     	Def def = new Def("<constraint>", Def.Type.Constraint, c.getStart(), c.getEnd());
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return Def.root(a, def);
     :}
   | class_fields.a INITIALIZER.i seq_expr.b
@@ -811,7 +829,7 @@ class_fields=
     	def.defPosStart = i.getStart();
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return Def.root(a, def);
     :}
 ;
@@ -834,7 +852,7 @@ virtual_value=
     	def.add(a);
     	def.collapse();
     	def.bAlt = true;
-    	backup(def);
+    	backupDef(def);
 	    return def;
     :}
   | VIRTUAL.v mutable_flag.m label.id COLON core_type.a
@@ -846,7 +864,7 @@ virtual_value=
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)m).bAlt;
-    	backup(def);
+    	backupDef(def);
 	    return def;
     :}
 ;
@@ -862,7 +880,7 @@ value=
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)o).bAlt || ((Def)m).bAlt;
-    	backup(def);
+    	backupDef(def);
 	    return def;
     :}
   | override_flag.o mutable_flag.m label.id type_constraint.a EQUAL seq_expr.b
@@ -877,7 +895,7 @@ value=
     	def.add(b);
     	def.collapse();
     	def.bAlt = ((Def)o).bAlt || ((Def)m).bAlt;
-    	backup(def);
+    	backupDef(def);
 	    return def;
     :}
 ;
@@ -891,7 +909,7 @@ virtual_method=
     	def.add(a);
     	def.collapse();
     	def.bAlt = true;
-    	backup(def);
+    	backupDef(def);
 	    return def;
     :}
   | METHOD.m override_flag.o VIRTUAL private_flag.p label.id COLON poly_type.a
@@ -903,7 +921,7 @@ virtual_method=
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)o).bAlt || ((Def)p).bAlt;
-    	backup(def);
+    	backupDef(def);
 	    return def;
     :}
 ;
@@ -917,7 +935,7 @@ concrete_method =
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)o).bAlt || ((Def)p).bAlt;
-    	backup(def);
+    	backupDef(def);
 	    return def;
     :}
   | METHOD.m override_flag.o private_flag.p label.id COLON poly_type.a EQUAL seq_expr.b
@@ -930,7 +948,7 @@ concrete_method =
     	def.add(b);
     	def.collapse();
     	def.bAlt = ((Def)o).bAlt || ((Def)p).bAlt;
-    	backup(def);
+    	backupDef(def);
 	    return def;
     :}
 ;
@@ -960,7 +978,7 @@ class_signature=
     	Def def = new Def("<object>", Def.Type.Object, o.getStart(), o.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | OBJECT class_sig_body error
@@ -1003,7 +1021,7 @@ value_type=
 	    def.add(a);
 	    def.collapse();
     	def.bAlt = ((Def)m).bAlt;
-	    backup(def);
+	    backupDef(def);
 	    return def;
     :}
   | MUTABLE virtual_flag label.id COLON core_type.a
@@ -1014,7 +1032,7 @@ value_type=
 	    def.add(a);
 	    def.collapse();
     	def.bAlt = true;
-	    backup(def);
+	    backupDef(def);
 	    return def;
     :}
   | label.id COLON core_type.a
@@ -1024,7 +1042,7 @@ value_type=
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
 	    def.add(a);
 	    def.collapse();
-	    backup(def);
+	    backupDef(def);
 	    return def;
     :}
 ;
@@ -1037,7 +1055,7 @@ method_type=
     	def.defPosStart = m.getStart();
 	    def.add(a);
 	    def.collapse();
-	    backup(def);
+	    backupDef(def);
 	    return def;
     :}
 ;
@@ -1050,7 +1068,7 @@ virtual_method_type=
     	def.defPosStart = m.getStart();
 	    def.add(a);
 	    def.collapse();
-	    backup(def);
+	    backupDef(def);
 	    return def;
     :}
   | METHOD.m VIRTUAL private_flag label.id COLON poly_type.a
@@ -1061,7 +1079,7 @@ virtual_method_type=
     	def.defPosStart = m.getStart();
 	    def.add(a);
 	    def.collapse();
-	    backup(def);
+	    backupDef(def);
 	    return def;
     :}
 ;
@@ -1086,7 +1104,7 @@ class_description=
     	Def def = new Def((String)id.value, Def.Type.Class, id.getStart(), id.getEnd());
 	    def.add(a);
 	    def.collapse();
-	    backup(def);
+	    backupDef(def);
 	    return def;
     :}
 ;
@@ -1107,7 +1125,7 @@ class_type_declaration=
     	Def def = new Def((String)id.value, Def.Type.ClassType, id.getStart(), id.getEnd());
 	    def.add(a);
 	    def.collapse();
-	    backup(def);
+	    backupDef(def);
 	    return def;
     :}
 ;
@@ -1212,7 +1230,7 @@ expr=
   			in.collapse();
   			last.children.add(in);
   			last.collapse();
-  			backup(last);
+  			backupDef(last);
   			return a;
   		}
 
@@ -1224,7 +1242,7 @@ expr=
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | LET OPEN mod_longident.id IN seq_expr.a
@@ -1236,7 +1254,7 @@ expr=
 		in.collapse();
 		def.children.add(in);
 		def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | FUNCTION opt_bar.a match_cases.b
@@ -1376,7 +1394,7 @@ expr=
     	Def def = new Def("<object>", Def.Type.Object, o.getStart(), o.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | OBJECT class_structure error
@@ -1499,7 +1517,7 @@ let_binding=
     	Def def = new Def(ident.name, Def.Type.Let, ident.posStart, ident.posEnd);
     	def.add(f);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | val_ident.i COLON typevar_list DOT core_type EQUAL seq_expr.b
@@ -1508,7 +1526,7 @@ let_binding=
     	Def def = new Def(ident.name, Def.Type.Let, ident.posStart, ident.posEnd);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
   | pattern.p EQUAL seq_expr.b
@@ -1538,7 +1556,7 @@ let_binding=
     	if(last != null){
     		last.add(b);
     		last.collapse();
-    		backup(root);
+    		backupDef(root);
     		return root;
     	}
 
@@ -1583,7 +1601,7 @@ strict_binding=
     	if(last != null){
     		last.add(b);
     		last.collapse();
-    		backup(root);
+    		backupDef(root);
     		return root;
     	}
 
@@ -1897,7 +1915,7 @@ type_declaration=
     	Def def = new Def((String)id.value, Def.Type.Type, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
     :}
 ;
@@ -2238,23 +2256,23 @@ signed_constant=
 ident=
     UIDENT.id                                      /*{ $1 }*/
     {:
-       Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
-       backup(def);
-       return def;
+		Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
+		backupIdent(def);
+		return def;
     :}
   | LIDENT.id                                      /*{ $1 }*/
     {:
-      Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); 
-      backup(def);
-      return def;
+		Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
+		backupIdent(def);
+		return def;
     :}
 ;
 val_ident=
     LIDENT.id                                    /*{ $1 }*/
-    {: 
-      Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); 
-      backup(def);
-      return def;
+    {:
+		Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
+		backupIdent(def);
+		return def;
     :}
   | LPAREN operator.o RPAREN                      /*{ $2 }*/
     {:

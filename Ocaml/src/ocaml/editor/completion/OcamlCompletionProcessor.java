@@ -639,7 +639,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			return def;
 		
 		Def firstChild = def.children.get(0);
-		IRegion region = firstChild.getRegion(doc);
+		IRegion region = firstChild.getNameRegion(doc);
 		if (region != null) {
 			if (region.getOffset() > offset)
 				return def;
@@ -649,7 +649,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		Def nearestChild = null;
 		for (Def d : def.children) {
-			region = d.getRegion(doc);
+			region = d.getNameRegion(doc);
 			if (region != null) {
 				if (region.getOffset() < offset)
 					nearestChild = d;
@@ -1055,7 +1055,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	private String computeTypeInfo(Def def, TypeAnnotation[] annotations, IDocument document) {
 		try {
 			String typeInfo = "";
-			IRegion region = def.getRegion(document);
+			IRegion region = def.getNameRegion(document);
 			int offset = region.getOffset();
 	
 			ArrayList<TypeAnnotation> found = new ArrayList<TypeAnnotation>();

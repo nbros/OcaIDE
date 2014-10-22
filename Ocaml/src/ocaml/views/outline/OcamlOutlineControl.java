@@ -141,7 +141,7 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 				IDocument document = editor.getDocumentProvider().getDocument(
 						editor.getEditorInput());
 
-				IRegion region = def.getRegion(document);
+				IRegion region = def.getNameRegion(document);
 
 				if (region != null) {
 					ISelection editorSel = editor.getSelectionProvider().getSelection();

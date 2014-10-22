@@ -1,6 +1,7 @@
 package ocaml.parser;
 
 import java.util.ArrayList;
+import org.eclipse.jface.text.Region;
 import beaver.*;
 
 /**
@@ -749,12 +750,29 @@ public class OcamlParser extends Parser {
 		we use the "bTop" boolean to know if this definition should be added to the outline */
 	public ArrayList<Def> recoverDefs = new ArrayList<Def>();
 
+	public ArrayList<Def> recoverIdents = new ArrayList<Def>();
+
 	/** backup a node, so as to be able to later recover from a parsing error */
-	private void backup(Def def){
+	private void backupDef(Def def){
 		recoverDefs.add(def);
 		for(Def child: def.children)
 			//child.bTop = false;
 			unsetTop(child);
+
+		// remove all identifiers that is used to build this def
+		Region region = def.getFullRegion();
+		ArrayList<Def> usedIdents = new ArrayList<Def>();
+		for (Def ident: recoverIdents)
+			if (ident.posStart >= region.getOffset()
+					&& (ident.posEnd <= region.getOffset() + region.getLength()))
+				usedIdents.add(ident);
+		recoverIdents.removeAll(usedIdents);
+	}
+
+	// backup identifiers for later recovering from a parsing error,
+	// some will be removed when they are used to build a Def sucessfully
+	private void backupIdent(Def def) {
+		recoverIdents.add(def);
 	}
 
 	private void unsetTop(Def def){
@@ -905,7 +923,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def("<structure>", Def.Type.Struct, s.getStart(), s.getEnd());
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -917,7 +935,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def("<structure>", Def.Type.Struct, a.getStart(), a.getEnd());
     	def.add(s);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -931,7 +949,7 @@ public class OcamlParser extends Parser {
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1060,7 +1078,7 @@ public class OcamlParser extends Parser {
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1078,7 +1096,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def((String)id.value, Def.Type.Exception, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1090,7 +1108,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def((String)id.value, Def.Type.Exception, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1106,7 +1124,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def((String)id.value, type, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1125,7 +1143,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def(ident.name, Def.Type.ModuleType, ident.posStart, ident.posEnd);
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1135,7 +1153,7 @@ public class OcamlParser extends Parser {
 					
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.Open, ident.posStart, ident.posEnd);
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1158,7 +1176,7 @@ public class OcamlParser extends Parser {
     	Def ident = (Def)id;
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Include, ident.posStart, ident.posEnd);
-    		backup(def);
+    		backupDef(def);
 	    	return def;
 	    }
 	    return new Def();
@@ -1210,7 +1228,7 @@ public class OcamlParser extends Parser {
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1228,7 +1246,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def("<signature>", Def.Type.Sig, s.getStart(), s.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1247,7 +1265,7 @@ public class OcamlParser extends Parser {
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1308,7 +1326,7 @@ public class OcamlParser extends Parser {
   		// add the start position of the definition
   		def.defPosStart = v.getStart();
 
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1325,7 +1343,7 @@ public class OcamlParser extends Parser {
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1351,7 +1369,7 @@ public class OcamlParser extends Parser {
     	def.defPosStart = e.getStart();
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1365,7 +1383,7 @@ public class OcamlParser extends Parser {
     	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1389,7 +1407,7 @@ public class OcamlParser extends Parser {
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.ModuleType, ident.posStart, ident.posEnd);
     	def.defPosStart = m.getStart();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1404,7 +1422,7 @@ public class OcamlParser extends Parser {
     	def.defPosStart = m.getStart();
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1416,7 +1434,7 @@ public class OcamlParser extends Parser {
     	Def ident = (Def)id;
     	Def def = new Def(ident.name, Def.Type.Open, ident.posStart, ident.posEnd);
     	def.defPosStart = o.getStart();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1429,7 +1447,7 @@ public class OcamlParser extends Parser {
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Include, ident.posStart, ident.posEnd);
     		def.defPosStart = i.getStart();
-    		backup(def);
+    		backupDef(def);
 	    	return def;
 	    }
 	    return new Def();
@@ -1498,7 +1516,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def((String)id.value, Def.Type.Module, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
 	    return def;
 				}
 			},
@@ -1528,7 +1546,7 @@ public class OcamlParser extends Parser {
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
 	    return def;
 				}
 			},
@@ -1621,7 +1639,7 @@ public class OcamlParser extends Parser {
   			in.collapse();
   			last.children.add(in);
   			last.collapse();
-  			backup(last);
+  			backupDef(last);
   			return a;
   		}
 
@@ -1649,7 +1667,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def("<object>", Def.Type.Object, o.getStart(), o.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -1730,7 +1748,7 @@ public class OcamlParser extends Parser {
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
     		def.defPosStart = v.getStart();
-    		backup(def);
+    		backupDef(def);
 	    	return Def.root(a, def);
 	    }
 	    return Def.root(a,id);
@@ -1746,7 +1764,7 @@ public class OcamlParser extends Parser {
     	if(ident.type == Def.Type.Identifier){
     		Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
     		def.defPosStart = v.getStart();
-    		backup(def);
+    		backupDef(def);
 	    	return Def.root(a, def);
 	    }
 	    return Def.root(a,id);
@@ -1775,7 +1793,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def("<constraint>", Def.Type.Constraint, c.getStart(), c.getEnd());
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return Def.root(a, def);
 				}
 			},
@@ -1789,7 +1807,7 @@ public class OcamlParser extends Parser {
     	def.defPosStart = i.getStart();
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return Def.root(a, def);
 				}
 			},
@@ -1820,7 +1838,7 @@ public class OcamlParser extends Parser {
     	def.add(a);
     	def.collapse();
     	def.bAlt = true;
-    	backup(def);
+    	backupDef(def);
 	    return def;
 				}
 			},
@@ -1838,7 +1856,7 @@ public class OcamlParser extends Parser {
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)m).bAlt;
-    	backup(def);
+    	backupDef(def);
 	    return def;
 				}
 			},
@@ -1858,7 +1876,7 @@ public class OcamlParser extends Parser {
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)o).bAlt || ((Def)m).bAlt;
-    	backup(def);
+    	backupDef(def);
 	    return def;
 				}
 			},
@@ -1880,7 +1898,7 @@ public class OcamlParser extends Parser {
     	def.add(b);
     	def.collapse();
     	def.bAlt = ((Def)o).bAlt || ((Def)m).bAlt;
-    	backup(def);
+    	backupDef(def);
 	    return def;
 				}
 			},
@@ -1898,7 +1916,7 @@ public class OcamlParser extends Parser {
     	def.add(a);
     	def.collapse();
     	def.bAlt = true;
-    	backup(def);
+    	backupDef(def);
 	    return def;
 				}
 			},
@@ -1917,7 +1935,7 @@ public class OcamlParser extends Parser {
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)o).bAlt || ((Def)p).bAlt;
-    	backup(def);
+    	backupDef(def);
 	    return def;
 				}
 			},
@@ -1936,7 +1954,7 @@ public class OcamlParser extends Parser {
     	def.add(a);
     	def.collapse();
     	def.bAlt = ((Def)o).bAlt || ((Def)p).bAlt;
-    	backup(def);
+    	backupDef(def);
 	    return def;
 				}
 			},
@@ -1957,7 +1975,7 @@ public class OcamlParser extends Parser {
     	def.add(b);
     	def.collapse();
     	def.bAlt = ((Def)o).bAlt || ((Def)p).bAlt;
-    	backup(def);
+    	backupDef(def);
 	    return def;
 				}
 			},
@@ -2009,7 +2027,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def("<object>", Def.Type.Object, o.getStart(), o.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -2092,7 +2110,7 @@ public class OcamlParser extends Parser {
 	    def.add(a);
 	    def.collapse();
     	def.bAlt = ((Def)m).bAlt;
-	    backup(def);
+	    backupDef(def);
 	    return def;
 				}
 			},
@@ -2107,7 +2125,7 @@ public class OcamlParser extends Parser {
 	    def.add(a);
 	    def.collapse();
     	def.bAlt = true;
-	    backup(def);
+	    backupDef(def);
 	    return def;
 				}
 			},
@@ -2121,7 +2139,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def(ident.name, Def.Type.Val, ident.posStart, ident.posEnd);
 	    def.add(a);
 	    def.collapse();
-	    backup(def);
+	    backupDef(def);
 	    return def;
 				}
 			},
@@ -2137,7 +2155,7 @@ public class OcamlParser extends Parser {
     	def.defPosStart = m.getStart();
 	    def.add(a);
 	    def.collapse();
-	    backup(def);
+	    backupDef(def);
 	    return def;
 				}
 			},
@@ -2153,7 +2171,7 @@ public class OcamlParser extends Parser {
     	def.defPosStart = m.getStart();
 	    def.add(a);
 	    def.collapse();
-	    backup(def);
+	    backupDef(def);
 	    return def;
 				}
 			},
@@ -2169,7 +2187,7 @@ public class OcamlParser extends Parser {
     	def.defPosStart = m.getStart();
 	    def.add(a);
 	    def.collapse();
-	    backup(def);
+	    backupDef(def);
 	    return def;
 				}
 			},
@@ -2206,7 +2224,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def((String)id.value, Def.Type.Class, id.getStart(), id.getEnd());
 	    def.add(a);
 	    def.collapse();
-	    backup(def);
+	    backupDef(def);
 	    return def;
 				}
 			},
@@ -2236,7 +2254,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def((String)id.value, Def.Type.ClassType, id.getStart(), id.getEnd());
 	    def.add(a);
 	    def.collapse();
-	    backup(def);
+	    backupDef(def);
 	    return def;
 				}
 			},
@@ -2414,7 +2432,7 @@ public class OcamlParser extends Parser {
   			in.collapse();
   			last.children.add(in);
   			last.collapse();
-  			backup(last);
+  			backupDef(last);
   			return a;
   		}
 
@@ -2431,7 +2449,7 @@ public class OcamlParser extends Parser {
     	def.add(a);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -2447,7 +2465,7 @@ public class OcamlParser extends Parser {
 		in.collapse();
 		def.children.add(in);
 		def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -2800,7 +2818,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def("<object>", Def.Type.Object, o.getStart(), o.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -3115,7 +3133,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def(ident.name, Def.Type.Let, ident.posStart, ident.posEnd);
     	def.add(f);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -3128,7 +3146,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def(ident.name, Def.Type.Let, ident.posStart, ident.posEnd);
     	def.add(b);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -3162,7 +3180,7 @@ public class OcamlParser extends Parser {
     	if(last != null){
     		last.add(b);
     		last.collapse();
-    		backup(root);
+    		backupDef(root);
     		return root;
     	}
 
@@ -3220,7 +3238,7 @@ public class OcamlParser extends Parser {
     	if(last != null){
     		last.add(b);
     		last.collapse();
-    		backup(root);
+    		backupDef(root);
     		return root;
     	}
 
@@ -3782,7 +3800,7 @@ public class OcamlParser extends Parser {
     	Def def = new Def((String)id.value, Def.Type.Type, id.getStart(), id.getEnd());
     	def.add(a);
     	def.collapse();
-    	backup(def);
+    	backupDef(def);
     	return def;
 				}
 			},
@@ -4387,27 +4405,27 @@ public class OcamlParser extends Parser {
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol id = _symbols[offset + 1];
 					
-       Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
-       backup(def);
-       return def;
+		Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
+		backupIdent(def);
+		return def;
 				}
 			},
 			new Action() {	// [466] ident = LIDENT.id
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol id = _symbols[offset + 1];
 					
-      Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); 
-      backup(def);
-      return def;
+		Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
+		backupIdent(def);
+		return def;
 				}
 			},
 			new Action() {	// [467] val_ident = LIDENT.id
 				public Symbol reduce(Symbol[] _symbols, int offset) {
 					final Symbol id = _symbols[offset + 1];
-					 
-      Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd()); 
-      backup(def);
-      return def;
+					
+		Def def = new Def((String)id.value, Def.Type.Identifier, id.getStart(), id.getEnd());
+		backupIdent(def);
+		return def;
 				}
 			},
 			new Action() {	// [468] val_ident = LPAREN operator.o RPAREN

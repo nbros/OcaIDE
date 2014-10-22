@@ -296,6 +296,11 @@ public class OutlineJob extends Job {
 					def.bTop = false;
 					root.children.add(def);
 				}
+			for (Def def : parser.recoverIdents)
+				if (def.bTop && def.name != null && !"".equals(def.name.trim())) {
+					def.bTop = false;
+					root.children.add(def);
+				}
 			
 			parserError = true;
 		}
@@ -491,7 +496,7 @@ public class OutlineJob extends Job {
 
 	private void addTypeRec(TypeAnnotation[] annotations, Def def, boolean root) {
 		if (!root) {
-			IRegion region = def.getRegion(doc);
+			IRegion region = def.getNameRegion(doc);
 
 			int startOffset = region.getOffset();
 			int endOffset = startOffset + region.getLength() - 1;

@@ -140,7 +140,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				Def target = findDefinitionOf(def, moudulesRoot, interfacesRoot);
 				if (target == null)
 					return;
-				IRegion region = target.getRegion(textViewer.getDocument());
+				IRegion region = target.getNameRegion(textViewer.getDocument());
 				editor.selectAndReveal(region.getOffset(), region.getLength());
 			}
 
@@ -153,7 +153,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			}
 
 			public IRegion getHyperlinkRegion() {
-				return def.getRegion(textViewer.getDocument());
+				return def.getNameRegion(textViewer.getDocument());
 			}
 		};
 
@@ -169,7 +169,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				Def target = findDefinitionOf(strDef, moudulesRoot, interfacesRoot);
 				if (target == null)
 					return;
-				IRegion region = target.getRegion(textViewer.getDocument());
+				IRegion region = target.getNameRegion(textViewer.getDocument());
 				editor.selectAndReveal(region.getOffset(), region.getLength());
 			}
 
@@ -532,7 +532,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 						ITextViewer textViewer = editor.getTextViewer();
 
 						if (interfaceDef != null) {
-							IRegion region = interfaceDef.getRegion(textViewer.getDocument());
+							IRegion region = interfaceDef.getNameRegion(textViewer.getDocument());
 							editor.selectAndReveal(region.getOffset(), region.getLength());
 						}
 					} else
@@ -652,7 +652,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		if (def == null || doc == null)
 			return null;
 
-		IRegion region = def.getRegion(doc);
+		IRegion region = def.getNameRegion(doc);
 
 		if (region == null)
 			return null;
@@ -832,7 +832,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			}
 
 			public IRegion getHyperlinkRegion() {
-				return searchedDef.getRegion(textViewer.getDocument());
+				return searchedDef.getNameRegion(textViewer.getDocument());
 			}
 		};
 	}
