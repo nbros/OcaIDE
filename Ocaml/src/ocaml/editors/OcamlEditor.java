@@ -46,6 +46,8 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -107,6 +109,12 @@ public class OcamlEditor extends TextEditor {
 	@Override
 	protected void createActions() {
 		super.createActions();
+		
+		final ISourceViewer sourceViewer = this.getSourceViewer();
+		final StyledText textWidget = sourceViewer.getTextWidget();
+		final OcamlSourceViewerConfig sourceViewerConfig = 
+				(OcamlSourceViewerConfig) this.getSourceViewerConfiguration();
+
 
 		try {
 			paintManager = new PaintManager(getSourceViewer());
@@ -130,10 +138,8 @@ public class OcamlEditor extends TextEditor {
 		}
 
 		try {
-			StyledText text = this.getSourceViewer().getTextWidget();
-
-			caret = new DebugVisuals(text);
-			text.addPaintListener(caret);
+			caret = new DebugVisuals(textWidget);
+			textWidget.addPaintListener(caret);
 
 			IPath file = getPathOfFileBeingEdited();
 			if (file != null)
@@ -156,6 +162,25 @@ public class OcamlEditor extends TextEditor {
 		} catch (Exception e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
 		}
+		
+		// synchronize with outline when double-click mouse
+		textWidget.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseUp(MouseEvent e) {
+			}
+			
+			@Override
+			public void mouseDown(MouseEvent e) {
+			}
+			
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				if (sourceViewerConfig.isContentAssistantActive() || e == null) 
+					return;
+				
+				synchronizeOutline();
+			}
+		});
 		
 		
 		// Trung: don't rebuild outline when text is changed because it 
