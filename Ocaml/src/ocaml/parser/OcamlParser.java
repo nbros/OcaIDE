@@ -3164,6 +3164,12 @@ public class OcamlParser extends Parser {
     	pat.findIdents(idents);
 
     	Def root = new Def();
+    	
+    	// update root position
+    	int identsSize = idents.size();
+    	if (identsSize > 1)
+    	root.posStart = idents.get(0).posStart;
+    	root.posEnd = idents.get(identsSize - 1).posEnd;
 
     	Def last = null;
     	for(int i = 0; i < idents.size(); i++){
@@ -3181,6 +3187,7 @@ public class OcamlParser extends Parser {
     		last.add(b);
     		last.collapse();
     		backupDef(root);
+    	
     		return root;
     	}
 
@@ -3217,6 +3224,12 @@ public class OcamlParser extends Parser {
     	pat.findIdents(idents);
 
     	Def root = new Def();
+
+    	// update root position
+    	int identsSize = idents.size();
+    	if (identsSize > 1)
+    	root.posStart = idents.get(0).posStart;
+    	root.posEnd = idents.get(identsSize - 1).posEnd;
 
     	Def last = null;
     	boolean bFirst = true;

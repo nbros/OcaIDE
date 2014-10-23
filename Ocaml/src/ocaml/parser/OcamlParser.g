@@ -1540,6 +1540,12 @@ let_binding=
     	pat.findIdents(idents);
 
     	Def root = new Def();
+    	
+    	// update root position
+    	int identsSize = idents.size();
+    	if (identsSize > 1)
+    	root.posStart = idents.get(0).posStart;
+    	root.posEnd = idents.get(identsSize - 1).posEnd;
 
     	Def last = null;
     	for(int i = 0; i < idents.size(); i++){
@@ -1557,6 +1563,7 @@ let_binding=
     		last.add(b);
     		last.collapse();
     		backupDef(root);
+    	
     		return root;
     	}
 
@@ -1580,6 +1587,12 @@ strict_binding=
     	pat.findIdents(idents);
 
     	Def root = new Def();
+
+    	// update root position
+    	int identsSize = idents.size();
+    	if (identsSize > 1)
+    	root.posStart = idents.get(0).posStart;
+    	root.posEnd = idents.get(identsSize - 1).posEnd;
 
     	Def last = null;
     	boolean bFirst = true;
