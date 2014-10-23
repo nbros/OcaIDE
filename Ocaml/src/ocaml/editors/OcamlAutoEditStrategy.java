@@ -291,8 +291,33 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 				}
 
 				else if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
-						PreferenceConstants.P_EDITOR_KEEP_INDENT))
-					command.text = eol + makeIndent(indent);
+						PreferenceConstants.P_EDITOR_KEEP_INDENT)) {
+					if (trimmed.isEmpty()) {
+						// if current line contains only whitespace, then
+						// then trim it and indent next line by indentation
+						// of nearest non-whitespace line
+						try {
+							int lineNum = document.getLineOfOffset(command.offset);
+							int priorIndent = 0;
+							for (int l = lineNum - 1; l >= 0; l--) {
+								int x = document.getLineOffset(l);
+								int y = document.getLineOffset(l+1);
+								String priorLine = document.get(x, y - x + 1);
+								int i = OcamlFormatter.getLineIndent(priorLine); 
+								if (i > 0) {
+									priorIndent = i;
+									break;
+								}
+							}
+							command.offset = lineRegion.getOffset();
+							command.length = lineRegion.getLength();
+							command.text = eol + makeIndent(priorIndent);
+						} catch (BadLocationException e) {
+						}
+					} else {
+						command.text = eol + makeIndent(indent);
+					}
+				}
 
 			}
 		} else if (command.text.equals("\t")) {
