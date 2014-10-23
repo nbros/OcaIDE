@@ -158,6 +158,9 @@ public class OcamlEditor extends TextEditor {
 		}
 		
 		
+		// Trung: don't rebuild outline when text is changed because it 
+		// slow down the system
+		/*
 		final ISourceViewer viewer = this.getSourceViewer();
 		final OcamlSourceViewerConfig viewerConfig = (OcamlSourceViewerConfig) this.getSourceViewerConfiguration();
 		viewer.addTextListener(new ITextListener() {
@@ -176,6 +179,7 @@ public class OcamlEditor extends TextEditor {
 					rebuildOutline(50, false); // don't sync outline with editor
 			}
 		});
+		*/
 
 	}
 
@@ -434,6 +438,9 @@ public class OcamlEditor extends TextEditor {
 	@Override
 	public void doSave(IProgressMonitor monitor) {
 		super.doSave(monitor);
+		
+		// rebuild Outline when file is saved
+		rebuildOutline(50, false);
 
 		boolean bMakefileNature = false;
 		try {
