@@ -28,10 +28,10 @@ public class OcamlCallStackView extends ViewPart{
 		list.removeAll();
 		for(String e : elements)
 			list.add(e);
+		list.setRedraw(true);
 		if (selectionIndex >= 0 && selectionIndex < elements.length) {
 			list.setSelection(selectionIndex);
 		}
-		list.setRedraw(true);
 	}
 	
 	public void empty(){
