@@ -62,7 +62,7 @@ public class OcamlyaccEditor extends TextEditor {
 
 		// effectue le parsing des bibliothèques ocaml en arrière plan
 		CompletionJob job = new CompletionJob("Parsing ocaml library mli files", null);
-		job.setPriority(CompletionJob.INTERACTIVE);	// Trung changes priority
+		job.setPriority(CompletionJob.LONG);	// Trung changes priority
 		job.schedule();
 		
 		

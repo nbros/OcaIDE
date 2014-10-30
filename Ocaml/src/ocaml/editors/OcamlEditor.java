@@ -151,7 +151,7 @@ public class OcamlEditor extends TextEditor {
 		// parse the OCaml libraries in a background thread
 		try {
 			CompletionJob job = new CompletionJob("Parsing ocaml library mli files", null);
-			job.setPriority(CompletionJob.INTERACTIVE); 	// Trung changes priority
+			job.setPriority(CompletionJob.LONG); 	// Trung changes priority
 			job.schedule();
 		} catch (Exception e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
@@ -229,7 +229,7 @@ public class OcamlEditor extends TextEditor {
 
 		// parse the project interfaces in a background thread
 		CompletionJob job = new CompletionJob("Parsing ocaml project mli files", project);
-		job.setPriority(CompletionJob.INTERACTIVE);	// Trung changes priority 
+		job.setPriority(CompletionJob.LONG);	// Trung changes priority 
 		job.schedule();
 
 		if (input instanceof IFileEditorInput) {
@@ -524,7 +524,7 @@ public class OcamlEditor extends TextEditor {
 		else
 			outlineJob.cancel();
 
-		outlineJob.setPriority(CompletionJob.INTERACTIVE);
+		outlineJob.setPriority(CompletionJob.DECORATE);
 		outlineJob.setOutline(this.outline);
 		outlineJob.setDoc(document);
 		outlineJob.setEditor(this);
