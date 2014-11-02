@@ -37,6 +37,9 @@ public class CancelCompileProjectPopupAction implements IObjectActionDelegate {
 	public void run(IAction action) {
 		final String jobName = "Cancelling compiling jobs";
 
+		// show compiler output
+		Misc.showView(OcamlCompilerOutput.ID);
+
 		Job job = new Job(jobName) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {

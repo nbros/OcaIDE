@@ -45,6 +45,11 @@ public class CancelCompileAllProjectsAction implements IWorkbenchWindowActionDel
 				if (project == null)
 					return;
 
+				// show compiler output
+				Misc.showView(OcamlCompilerOutput.ID);
+				// then activate current editor (to resolve shortcut-key issues)
+				page.activate(editorPart);
+
 				final String jobName = "Cancelling compiling jobs";
 
 				Job job = new Job(jobName) {

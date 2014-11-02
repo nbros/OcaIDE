@@ -92,7 +92,10 @@ public class CompileProjectAction implements IWorkbenchWindowActionDelegate {
 					}
 				};
 
-//				Misc.showView(OcamlCompilerOutput.ID);
+				// show compiler output
+				Misc.showView(OcamlCompilerOutput.ID);
+				// then activate current editor (to resolve shortcut-key issues)
+				page.activate(editorPart);
 
 				job.setPriority(Job.BUILD);
 				/*

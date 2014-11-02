@@ -31,9 +31,12 @@ public class CleanProjectPopupAction implements IObjectActionDelegate {
 	public void run(IAction action) {
 		if (project != null) {
 			final String jobName = "Cleaning project " + project.getName();
-			
+
 			final long[] executedTime = new long[1];
 			executedTime[0] = -1;
+
+			// show compiler output
+			Misc.showView(OcamlCompilerOutput.ID);
 
 			Job job = new Job(jobName) {
 				@Override
@@ -59,15 +62,15 @@ public class CleanProjectPopupAction implements IObjectActionDelegate {
 				@Override
 				public void sleeping(IJobChangeEvent event) {
 				}
-				
+
 				@Override
 				public void scheduled(IJobChangeEvent event) {
 				}
-				
+
 				@Override
 				public void running(IJobChangeEvent event) {
 				}
-				
+
 				@Override
 				public void done(IJobChangeEvent event) {
 					// cleaning job was cancelled
@@ -78,14 +81,14 @@ public class CleanProjectPopupAction implements IObjectActionDelegate {
 					else {
 						OcamlPlugin.ActiveBuildJobs.remove(jobName);
 					}
-					
+
 					// time
 					long cleaningTime = -1;
-					if (executedTime[0] > 0) 
+					if (executedTime[0] > 0)
 						cleaningTime = System.currentTimeMillis() - executedTime[0];
 					if (cleaningTime >= 0) {
 						long minutes = TimeUnit.MILLISECONDS.toMinutes(cleaningTime);
-						long seconds = TimeUnit.MILLISECONDS.toSeconds(cleaningTime) - 
+						long seconds = TimeUnit.MILLISECONDS.toSeconds(cleaningTime) -
 							    TimeUnit.MINUTES.toSeconds(minutes);
 						String time = "";
 						if (minutes > 1)
@@ -100,14 +103,14 @@ public class CleanProjectPopupAction implements IObjectActionDelegate {
 					}
 					else
 						Misc.appendToOcamlConsole("Time: unknown");
-					
+
 					Misc.appendToOcamlConsole("");
 				}
-				
+
 				@Override
 				public void awake(IJobChangeEvent event) {
 				}
-				
+
 				@Override
 				public void aboutToRun(IJobChangeEvent event) {
 				}

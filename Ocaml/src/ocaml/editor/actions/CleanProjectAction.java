@@ -52,6 +52,11 @@ public class CleanProjectAction implements IWorkbenchWindowActionDelegate {
 				final long[] executedTime = new long[1];
 				executedTime[0] = -1;
 
+				// show compiler output
+				Misc.showView(OcamlCompilerOutput.ID);
+				// then activate current editor (to resolve shortcut-key issues)
+				page.activate(editorPart);
+
 				Job job = new Job(jobName) {
 					@Override
 					protected IStatus run(IProgressMonitor monitor) {

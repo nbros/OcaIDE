@@ -45,6 +45,9 @@ public class CompileProjectPopupAction implements IObjectActionDelegate {
 
 			final String jobName = "Compiling project " + project.getName();
 
+			// show compiler output
+			Misc.showView(OcamlCompilerOutput.ID);
+
 			Job job = new Job(jobName) {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
