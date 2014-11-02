@@ -44,14 +44,14 @@ public class CompileProjectPopupAction implements IObjectActionDelegate {
 			executedTime[0] = -1;
 
 			final String jobName = "Compiling project " + project.getName();
-			
+
 			Job job = new Job(jobName) {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
 					try {
 						// save progress monitor for later use
 						OcamlPlugin.ActiveBuildJobs.put(jobName, monitor);
-						
+
 						// compile
 						executedTime[0] = System.currentTimeMillis();
 						project.build(IncrementalProjectBuilder.FULL_BUILD, monitor);
@@ -72,15 +72,15 @@ public class CompileProjectPopupAction implements IObjectActionDelegate {
 				@Override
 				public void sleeping(IJobChangeEvent event) {
 				}
-				
+
 				@Override
 				public void scheduled(IJobChangeEvent event) {
 				}
-				
+
 				@Override
 				public void running(IJobChangeEvent event) {
 				}
-				
+
 				@Override
 				public void done(IJobChangeEvent event) {
 					// compiling job was cancelled
@@ -91,14 +91,14 @@ public class CompileProjectPopupAction implements IObjectActionDelegate {
 					else {
 						OcamlPlugin.ActiveBuildJobs.remove(jobName);
 					}
-					
+
 					// time
 					long compilingTime = -1;
-					if (executedTime[0] > 0) 
+					if (executedTime[0] > 0)
 						compilingTime = System.currentTimeMillis() - executedTime[0];
 					if (compilingTime >= 0) {
 						long minutes = TimeUnit.MILLISECONDS.toMinutes(compilingTime);
-						long seconds = TimeUnit.MILLISECONDS.toSeconds(compilingTime) - 
+						long seconds = TimeUnit.MILLISECONDS.toSeconds(compilingTime) -
 							    TimeUnit.MINUTES.toSeconds(minutes);
 						String time = "";
 						if (minutes > 1)
@@ -113,14 +113,14 @@ public class CompileProjectPopupAction implements IObjectActionDelegate {
 					}
 					else
 						Misc.appendToOcamlConsole("Time: unknown");
-					
+
 					Misc.appendToOcamlConsole("");
 				}
-				
+
 				@Override
 				public void awake(IJobChangeEvent event) {
 				}
-				
+
 				@Override
 				public void aboutToRun(IJobChangeEvent event) {
 				}

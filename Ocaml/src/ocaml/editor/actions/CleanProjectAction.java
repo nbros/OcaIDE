@@ -13,6 +13,7 @@ import ocaml.views.OcamlCompilerOutput;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
@@ -20,9 +21,11 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.eclipse.ui.part.FileEditorInput;
 
 /** This action activates completion in the OCaml editor. */
 public class CleanProjectAction implements IWorkbenchWindowActionDelegate {
@@ -35,25 +38,17 @@ public class CleanProjectAction implements IWorkbenchWindowActionDelegate {
 			IEditorPart editorPart = page.getActiveEditor();
 			if (editorPart != null) {
 				IProject project = null;
-				if (editorPart instanceof OcamlEditor) {
-					OcamlEditor editor = (OcamlEditor) editorPart;
-					project = editor.getProject();
-
-				} else if (editorPart instanceof OcamllexEditor) {
-					OcamllexEditor editor = (OcamllexEditor) editorPart;
-					project = editor.getProject();
-
-				} else if (editorPart instanceof OcamlyaccEditor) {
-					OcamlyaccEditor editor = (OcamlyaccEditor) editorPart;
-					project = editor.getProject();
+				FileEditorInput editorInput = (FileEditorInput) editorPart.getEditorInput();
+				if (editorInput != null && editorInput.getFile() != null) {
+					project = editorInput.getFile().getProject();
 				}
-				
+
 				if (project == null)
 					return;
-				
+
 				final IProject buildProject = project;
 				final String jobName = "Cleaning project " + project.getName();
-				
+
 				final long[] executedTime = new long[1];
 				executedTime[0] = -1;
 
@@ -62,7 +57,7 @@ public class CleanProjectAction implements IWorkbenchWindowActionDelegate {
 					protected IStatus run(IProgressMonitor monitor) {
 						// save progress monitor for later use
 						OcamlPlugin.ActiveBuildJobs.put(jobName, monitor);
-						
+
 						// cleaning
 						executedTime[0] = System.currentTimeMillis();
 						OcamlMakefileBuilder builder = new OcamlMakefileBuilder();
@@ -81,15 +76,15 @@ public class CleanProjectAction implements IWorkbenchWindowActionDelegate {
 					@Override
 					public void sleeping(IJobChangeEvent event) {
 					}
-					
+
 					@Override
 					public void scheduled(IJobChangeEvent event) {
 					}
-					
+
 					@Override
 					public void running(IJobChangeEvent event) {
 					}
-					
+
 					@Override
 					public void done(IJobChangeEvent event) {
 						// cleaning job was cancelled
@@ -100,14 +95,14 @@ public class CleanProjectAction implements IWorkbenchWindowActionDelegate {
 						else {
 							OcamlPlugin.ActiveBuildJobs.remove(jobName);
 						}
-						
+
 						// time
 						long cleaningTime = -1;
-						if (executedTime[0] > 0) 
+						if (executedTime[0] > 0)
 							cleaningTime = System.currentTimeMillis() - executedTime[0];
 						if (cleaningTime >= 0) {
 							long minutes = TimeUnit.MILLISECONDS.toMinutes(cleaningTime);
-							long seconds = TimeUnit.MILLISECONDS.toSeconds(cleaningTime) - 
+							long seconds = TimeUnit.MILLISECONDS.toSeconds(cleaningTime) -
 								    TimeUnit.MINUTES.toSeconds(minutes);
 							String time = "";
 							if (minutes > 1)
@@ -122,14 +117,14 @@ public class CleanProjectAction implements IWorkbenchWindowActionDelegate {
 						}
 						else
 							Misc.appendToOcamlConsole("Time: unknown");
-						
+
 						Misc.appendToOcamlConsole("");
 					}
-					
+
 					@Override
 					public void awake(IJobChangeEvent event) {
 					}
-					
+
 					@Override
 					public void aboutToRun(IJobChangeEvent event) {
 					}
