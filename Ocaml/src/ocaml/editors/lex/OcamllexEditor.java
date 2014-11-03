@@ -45,7 +45,7 @@ public class OcamllexEditor extends TextEditor {
 		super.createActions();
 
 		final ISourceViewer viewer = getSourceViewer();
-		
+
 		paintManager = new PaintManager(viewer);
 		matchingCharacterPainter =
 				new MatchingCharacterPainter(viewer, new OcamlCharacterPairMatcher());
@@ -53,10 +53,10 @@ public class OcamllexEditor extends TextEditor {
 		paintManager.addPainter(matchingCharacterPainter);
 
 		OcamlPlugin.getInstance().checkPaths();
-		
+
 		// effectue le parsing des bibliothèques ocaml en arrière plan
 		CompletionJob job = new CompletionJob("Parsing ocaml library mli files", null);
-		job.setPriority(CompletionJob.LONG); // Trung changes priority
+		job.setPriority(CompletionJob.INTERACTIVE); // Trung changes priority
 		job.schedule();
 	}
 

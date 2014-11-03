@@ -49,7 +49,7 @@ public class OcamlyaccEditor extends TextEditor {
 	@Override
 	protected void createActions() {
 		super.createActions();
-		
+
 		final ISourceViewer viewer = getSourceViewer();
 
 		paintManager = new PaintManager(viewer);
@@ -62,10 +62,10 @@ public class OcamlyaccEditor extends TextEditor {
 
 		// effectue le parsing des bibliothèques ocaml en arrière plan
 		CompletionJob job = new CompletionJob("Parsing ocaml library mli files", null);
-		job.setPriority(CompletionJob.LONG);	// Trung changes priority
+		job.setPriority(CompletionJob.INTERACTIVE);	// Trung changes priority
 		job.schedule();
-		
-		
+
+
 		viewer.addTextListener(new ITextListener() {
 
 			public void textChanged(TextEvent event) {
@@ -123,11 +123,11 @@ public class OcamlyaccEditor extends TextEditor {
 				CompileProjectPopupAction.compileProject(this.getProject());
 		}
 	}
-	
-	
+
+
 	private OcamlYaccOutlineControl outline;
 	private YaccOutlineJob outlineJob = null;
-	
+
 	/**
 	 * We give the outline to Eclipse when it asks for an adapter with the outline class.
 	 */
@@ -141,7 +141,7 @@ public class OcamlyaccEditor extends TextEditor {
 		}
 		return super.getAdapter(required);
 	}
-	
+
 	public void rebuildOutline(int delay) {
 		/*
 		 *  Trung: rebuilding outline will dispose all completion proposal
@@ -166,6 +166,6 @@ public class OcamlyaccEditor extends TextEditor {
 
 		outlineJob.schedule(delay);
 	}
-	
-	
+
+
 }

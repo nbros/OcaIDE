@@ -98,7 +98,7 @@ public class OcamlEditor extends TextEditor {
 		this.setSourceViewerConfiguration(new OcamlSourceViewerConfig(this));
 		// this.setRangeIndicator(new DefaultRangeIndicator());
 	}
-	
+
 	/** The debug cursor (as a red I-beam) */
 	private DebugVisuals caret;
 
@@ -109,10 +109,10 @@ public class OcamlEditor extends TextEditor {
 	@Override
 	protected void createActions() {
 		super.createActions();
-		
+
 		final ISourceViewer sourceViewer = this.getSourceViewer();
 		final StyledText textWidget = sourceViewer.getTextWidget();
-		final OcamlSourceViewerConfig sourceViewerConfig = 
+		final OcamlSourceViewerConfig sourceViewerConfig =
 				(OcamlSourceViewerConfig) this.getSourceViewerConfiguration();
 
 
@@ -129,7 +129,7 @@ public class OcamlEditor extends TextEditor {
 			 * AnnotationPainter(getSourceViewer(), null);
 			 * annotationPainter.addAnnotationType
 			 * ("Ocaml.ocamlSyntaxErrorMarker");
-			 * 
+			 *
 			 * paintManager.addPainter(annotationPainter);
 			 */
 
@@ -151,7 +151,7 @@ public class OcamlEditor extends TextEditor {
 		// parse the OCaml libraries in a background thread
 		try {
 			CompletionJob job = new CompletionJob("Parsing ocaml library mli files", null);
-			job.setPriority(CompletionJob.LONG); 	// Trung changes priority
+			job.setPriority(CompletionJob.INTERACTIVE); 	// Trung changes priority
 			job.schedule();
 		} catch (Exception e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
@@ -162,43 +162,43 @@ public class OcamlEditor extends TextEditor {
 		} catch (Exception e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
 		}
-		
+
 		// synchronize with outline when double-click mouse
 		textWidget.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent e) {
 			}
-			
+
 			@Override
 			public void mouseDown(MouseEvent e) {
 			}
-			
+
 			@Override
 			public void mouseDoubleClick(MouseEvent e) {
-				if (sourceViewerConfig.isContentAssistantActive() || e == null) 
+				if (sourceViewerConfig.isContentAssistantActive() || e == null)
 					return;
-				
+
 				synchronizeOutline();
 			}
 		});
-		
-		
-		// Trung: don't rebuild outline when text is changed because it 
+
+
+		// Trung: don't rebuild outline when text is changed because it
 		// slow down the system
 		/*
 		final ISourceViewer viewer = this.getSourceViewer();
 		final OcamlSourceViewerConfig viewerConfig = (OcamlSourceViewerConfig) this.getSourceViewerConfiguration();
 		viewer.addTextListener(new ITextListener() {
-			
+
 			public void textChanged(TextEvent event) {
 				// Trung: rebuild only when content assistant is inactive
-				if (viewerConfig.isContentAssistantActive() || event == null) 
+				if (viewerConfig.isContentAssistantActive() || event == null)
 					return;
-				
+
 				DocumentEvent docEvent = event.getDocumentEvent();
 				if (docEvent == null)
 					return;
-				
+
 				String text = docEvent.getText().trim();
 				if (!text.isEmpty())
 					rebuildOutline(50, false); // don't sync outline with editor
@@ -229,7 +229,7 @@ public class OcamlEditor extends TextEditor {
 
 		// parse the project interfaces in a background thread
 		CompletionJob job = new CompletionJob("Parsing ocaml project mli files", project);
-		job.setPriority(CompletionJob.LONG);	// Trung changes priority 
+		job.setPriority(CompletionJob.INTERACTIVE);	// Trung changes priority
 		job.schedule();
 
 		if (input instanceof IFileEditorInput) {
@@ -243,8 +243,8 @@ public class OcamlEditor extends TextEditor {
 		 * if (this.fOutlinePage != null) this.fOutlinePage.setInput(input);
 		 */
 	}
-	
-	
+
+
 
 	/**
 	 * We give the outline to Eclipse when it asks for an adapter with the
@@ -277,8 +277,8 @@ public class OcamlEditor extends TextEditor {
 		StyledText styledText = this.getSourceViewer().getTextWidget();
 		styledText.setTabs(getTabSize());
 	}
-	
-	
+
+
 
 	public static int getTabSize() {
 		return OcamlPlugin.getInstance().getPreferenceStore().getInt(
@@ -321,7 +321,7 @@ public class OcamlEditor extends TextEditor {
 		OcamlPlugin.logError("selection is not instanceof TextSelection");
 		return -1;
 	}
-	
+
 	public static class LineColumn {
 		private final int line;
 		private final int column;
@@ -339,7 +339,7 @@ public class OcamlEditor extends TextEditor {
 			return column;
 		}
 	}
-	
+
 	/** @return the current selection offset in the editor, as a (line,column) position. */
 	public LineColumn getSelectionLineColumn() {
 		ISelection sel = getSelectionProvider().getSelection();
@@ -355,7 +355,7 @@ public class OcamlEditor extends TextEditor {
 				OcamlPlugin.logError(e);
 				return null;
 			}
-			
+
 		}
 		OcamlPlugin.logError("selection is not instanceof TextSelection");
 		return null;
@@ -463,7 +463,7 @@ public class OcamlEditor extends TextEditor {
 	@Override
 	public void doSave(IProgressMonitor monitor) {
 		super.doSave(monitor);
-		
+
 		// rebuild Outline when file is saved
 		rebuildOutline(50, false);
 
@@ -493,7 +493,7 @@ public class OcamlEditor extends TextEditor {
 	 * @Override protected void editorContextMenuAboutToShow(IMenuManager menu)
 	 * { IFile file = this.getFileBeingEdited();
 	 * super.editorContextMenuAboutToShow(menu);
-	 * 
+	 *
 	 * MenuManager ocamlGroup = new MenuManager("OCaml"); menu.add(new
 	 * Separator()); menu.add(ocamlGroup); ocamlGroup.add(new
 	 * GenDocAction("GenDoc", file)); }
@@ -539,7 +539,7 @@ public class OcamlEditor extends TextEditor {
 	@Override
 	public void handleCursorPositionChanged() {
 		super.handleCursorPositionChanged();
-		
+
 		fireCursorPositionChanged(getTextViewer().getSelectedRange());
 
 		final OcamlEditor editor = this;
@@ -549,21 +549,21 @@ public class OcamlEditor extends TextEditor {
 		IRegion region = hover.getHoverRegion(viewer, offset);
 
 		String message = "";
-		
+
 		if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 				PreferenceConstants.P_SHOW_MARKERS_IN_STATUS_BAR)) {
 			message = hover.getMarkerInfoOneLine(viewer, region);
 		}
-		
+
 		// only display type info when there isn't any markers
-		if (message.isEmpty() 
+		if (message.isEmpty()
 				&& OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 						PreferenceConstants.P_SHOW_TYPES_IN_STATUS_BAR)) {
 			message = hover.getTypeInfoOneLine(viewer, region);
 			if (message.contains("more lines..."))
 				message = "";
 		}
-		
+
 		final String statusMessage = message;
 		Display.getCurrent().asyncExec(new Runnable() {
 			public void run() {
@@ -571,7 +571,7 @@ public class OcamlEditor extends TextEditor {
 			}
 		});
 	}
-	
+
 	@Override
 	public void setStatusLineMessage(String message) {
 		super.setStatusLineMessage(message);
