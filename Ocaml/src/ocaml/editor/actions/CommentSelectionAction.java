@@ -63,7 +63,7 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 						endLineInfo = document.getLineInformation(endLine);
 						endOffset = endLineInfo.getOffset() + endLineInfo.getLength();
 
-						TextSelection sel = new TextSelection(startOffset, endOffset - startOffset);
+						TextSelection sel = new TextSelection(startOffset, endOffset - startOffset + 1);
 						editor.getSelectionProvider().setSelection(sel);
 
 					} catch (BadLocationException e) {
@@ -86,7 +86,7 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 		final int tabSize = OcamlEditor.getTabSize();
 
 		// split the string into lines
-		String[] lines = input.split("\\r?\\n");
+		String[] lines = input.split("\\r?\\n", -1);
 
 		// uncomment
 		if (isCommented(lines)) {
@@ -163,8 +163,8 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 	// comment character should be inserted at the shortest indentation position
 	// and at the end of longest line.
 	private String comment(String line, int indent, int length, int tabSize) {
-		
-		if (line.trim().equals("")) 
+
+		if (line.trim().equals(""))
 			return line;
 
 		StringBuilder builder = new StringBuilder();
