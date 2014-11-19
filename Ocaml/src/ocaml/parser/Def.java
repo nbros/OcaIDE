@@ -73,11 +73,11 @@ public class Def extends beaver.Symbol {
 	 * in the outline when a ".annot" file is present and up-to-date)
 	 */
 	private String ocamlType;
-	
+
 	public String getOcamlType() {
 		return ocamlType;
 	}
-	
+
 	public void setOcamlType(String type) {
 		if (type == null)
 			this.ocamlType = "";
@@ -171,15 +171,26 @@ public class Def extends beaver.Symbol {
 
 	void add(Symbol s) {
 		assert s instanceof Def;
-		children.add((Def) s);
+
+		Def def = (Def) s;
+		children.add(def);
+
+		// update location
+		this.defOffsetEnd = def.defOffsetEnd;
 	}
 
 	/** Creates a new dummy node as root of a and b, and return this node */
 	public static Def root(Symbol a) {
 		assert a instanceof Def;
+
 		Def def = new Def();
 		Def defa = (Def) a;
 		def.children.add(defa);
+
+		// update location
+		def.defOffsetStart = defa.defOffsetStart;
+		def.defOffsetEnd = defa.defOffsetEnd;
+
 		return def;
 	}
 
@@ -195,6 +206,10 @@ public class Def extends beaver.Symbol {
 
 		def.children.add(defa);
 		def.children.add(defb);
+
+		// update location
+		def.defOffsetStart = defa.defOffsetStart;
+		def.defOffsetEnd = defb.defOffsetEnd;
 
 		return def;
 	}
@@ -214,6 +229,10 @@ public class Def extends beaver.Symbol {
 		def.children.add(defa);
 		def.children.add(defb);
 		def.children.add(defc);
+
+		// update location
+		def.defOffsetStart = defa.defOffsetStart;
+		def.defOffsetEnd = defc.defOffsetEnd;
 
 		return def;
 	}
@@ -236,6 +255,10 @@ public class Def extends beaver.Symbol {
 		def.children.add(defb);
 		def.children.add(defc);
 		def.children.add(defd);
+
+		// update location
+		def.defOffsetStart = defa.defOffsetStart;
+		def.defOffsetEnd = defd.defOffsetEnd;
 
 		return def;
 	}
@@ -266,7 +289,7 @@ public class Def extends beaver.Symbol {
 		flatList.add(node);
 		while(!flatList.isEmpty()) {
 			Def def = flatList.removeFirst();
-			
+
 			if (def.type == Type.Dummy || bClean && def.type == Type.Identifier) {
 				for (int i = def.children.size() - 1; i>=0; i--) {
 					Def child = def.children.get(i);
@@ -278,8 +301,8 @@ public class Def extends beaver.Symbol {
 					def.clean();
 			}
 		}
-		
-		
+
+
 	}
 
 	/**
@@ -301,7 +324,7 @@ public class Def extends beaver.Symbol {
 		for (Def child : children)
 			child.findIdents(idents);
 	}
-	
+
 	void findDefNames(ArrayList<String> defNames) {
 		if (this.name != null && !this.name.isEmpty())
 			defNames.add(this.name);
@@ -406,7 +429,7 @@ public class Def extends beaver.Symbol {
 			Def simpleNode = new Def(node);
 			simpleNode.children = new ArrayList<Def>();
 			nodes.add(simpleNode);
-			
+
 			// find children
 			for (Def d : node.children)
 				findRealChildren(d, nodes, false, parserError);
@@ -425,10 +448,10 @@ public class Def extends beaver.Symbol {
 						nodes.add(node);
 				}
 			}
-			
+
 		}
 		// go down to find real children
-		else if (node.type == Type.Dummy 
+		else if (node.type == Type.Dummy
 				|| node.type == Type.Functor
 				|| node.type == Type.Sig
 				|| node.type == Type.Object
@@ -446,17 +469,17 @@ public class Def extends beaver.Symbol {
 	/** completely unnest the 'in' definitions */
 	/*
 	 * public void completelyUnnestIn(Def parent, int index) {
-	 * 
+	 *
 	 * for(int i = 0; i < children.size(); i++){ Def child = children.get(i);
 	 * child.completelyUnnestIn(this, i); }
-	 * 
+	 *
 	 * ArrayList<Def> newChildren = new ArrayList<Def>();
-	 * 
+	 *
 	 * int j = 1; for(int i = 0; i < children.size(); i++){ Def child = children.get(i);
-	 * 
+	 *
 	 * if(type == Type.LetIn && child.type == Type.LetIn){ parent.children.add(index + j++, child);
 	 * }else newChildren.add(child); }
-	 * 
+	 *
 	 * children = newChildren; }
 	 */
 
@@ -546,12 +569,12 @@ public class Def extends beaver.Symbol {
 		return new Region(startOffset, endOffset - startOffset + 1);
 
 	}
-	
+
 	/** Returns the region in the document covered by this definition and its body */
 	public Region getFullRegion() {
 		// startOffset is computed by def name
 		int startOffset = posStart;
-		
+
 		// endOffset is computed by def's full definition
 		Def lastDescendant = this;
 		while (lastDescendant.children != null & lastDescendant.children.size() > 0) {
@@ -567,7 +590,7 @@ public class Def extends beaver.Symbol {
 
 		return new Region(startOffset, endOffset - startOffset + 1);
 	}
-	
+
 
 	/** The ocamldoc comment associated with this definition */
 	public String comment = "";
@@ -603,7 +626,7 @@ public class Def extends beaver.Symbol {
 	public static String cleanString(String str) {
 		if (str == null)
 			return "";
-		
+
 		// remove all redundant spaces
 		String[] lines = str.split("\\n");
 		StringBuilder stringBuilder = new StringBuilder();
@@ -620,28 +643,28 @@ public class Def extends beaver.Symbol {
 	private String body = "";
 
 	private String filename = "";
-	
+
 	public void setBody(String body) {
 //		this.body = Misc.beautify(clean(body));
 		this.body = Misc.beautify(body);
 	}
-	
+
 	public String getBody() {
 		return this.body;
 	}
-	
-	
+
+
 	public void setFileName(String filename) {
 		this.filename = filename;
 	}
-	
+
 	public String getFileName() {
 		return filename;
 	}
-	
+
 	public String getTypeName() {
-		
-		
+
+
 		if (type == Type.Dummy)
 			return "Dummy";
 		else if (type == Type.In)
@@ -701,7 +724,7 @@ public class Def extends beaver.Symbol {
 		else
 			return "Unknown";
 	}
-	
+
 
 	public String parentName = "";
 
@@ -711,10 +734,10 @@ public class Def extends beaver.Symbol {
 	 * 0; try { firstLineOffset = doc.getLineOffset(getLine(defPosStart)); lastLineOffset =
 	 * doc.getLineOffset(getLine(defPosEnd)); } catch (BadLocationException e) {
 	 * OcamlPlugin.logError("offset error", e); return null; }
-	 * 
+	 *
 	 * int startOffset = firstLineOffset + getColumn(defPosStart); int endOffset = lastLineOffset +
 	 * getColumn(defPosEnd);
-	 * 
+	 *
 	 * return new Region(startOffset, endOffset - startOffset + 1); }
 	 */
 }
