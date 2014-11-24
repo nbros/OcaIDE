@@ -422,23 +422,20 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				return null;
 		}
 
-		// if it is an ModuleAlias, find the real module with new name
+		// if it is an ModuleAlias, then using the aliased module to find def
 		if (node.type == Def.Type.ModuleAlias) {
 			if (node.children.size() > 0) {
 				Def def = node.children.get(0);
-				String newName = def.name;
 				// rectify full path in case of there exist aliased module
-				if (fullDefName.length() >= name.length()) {
-					String str = fullDefName.substring(0, name.length());
-					if (str.compareTo(name) == 0) {
-						fullDefName.delete(0, name.length());
-						fullDefName.insert(0, newName);
+				String aliasModule = node.name + ".";
+				String newModule = def.name + ".";
+				if (fullDefName.length() >= aliasModule.length()) {
+					String str = fullDefName.substring(0, aliasModule.length());
+					if (str.compareTo(aliasModule) == 0) {
+						fullDefName.delete(0, aliasModule.length());
+						fullDefName.insert(0, newModule);
 					}
 				}
-				return null;
-
-//				return lookForDefinitionUp(searchedNode, newName, node, interfacesDefinitionsRoot,
-//						fullDefName, false);
 			}
 		}
 
