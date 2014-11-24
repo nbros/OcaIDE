@@ -320,44 +320,25 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			 * name is or aliased by 'prefix'
 			 */
 			else {
-				// look for prefix in sub-module or aliased module of current modules
-				String realPrefix = prefix;
-				boolean stop = false;
-				while (!stop) {
-					stop = true;
-					if (currentDef == null)
-						break;
+				// bottom-up search to look for prefix in sub-module
+				// or aliased module of current modules
+				final Def nearestDef = findSmallestDefAtOffset(currentDef, offset, document);
+				String newPrefix = bottomUpFindAliasedModule(prefix, "", nearestDef);
+				String newSuffix = suffix;
 
-					for (Def def : currentDef.children) {
-						if (!def.name.equals(realPrefix))
-							continue;
-
-						if (def.type == Def.Type.Module) {
-							// find in sub-modules
-							proposals.addAll(lookupProposalsCompletionInDef(
-									suffix, def, interfacesDefsRoot, document,
-									offset, length));
-						}
-						else if (def.type == Def.Type.ModuleAlias)  {
-							if (def.children.size() > 0) {
-								String aliasedName = def.children.get(0).name;
-								if (realPrefix.equals(aliasedName))
-									stop = true;
-								else {
-									realPrefix = aliasedName;
-									stop = false;
-								}
-								break;
-							}
-						}
-					}
+				// compute prefix, suffix
+				if (newPrefix.contains(".")) {
+					index = newPrefix.indexOf('.');
+					newSuffix = newPrefix.substring(index+1);
+					newSuffix = combineModuleNameParts(newSuffix, suffix);
+					newPrefix = newPrefix.substring(0,index);
 				}
 
 				// find in other modules
 				for (Def def: interfacesDefsRoot.children) {
-					if (def.name.equals(realPrefix))
+					if (def.name.equals(newPrefix))
 						proposals.addAll(lookupProposalsCompletionInDef(
-								suffix, def, interfacesDefsRoot, document,
+								newSuffix, def, interfacesDefsRoot, document,
 								offset, length));
 				}
 			}
@@ -411,10 +392,11 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		}
 
 		if (currentDef != null) {
-			// look down from top of current module
+			// search defns from current def to its parents (bottom-up search)
 			final Def nearestDef = findSmallestDefAtOffset(currentDef, offset, document);
 			proposals.addAll(bottomUpFindProposals(completion, nearestDef, offset));
 
+			// looking in children of current module
 			for (Def def: currentDef.children) {
 				if (checkCompletion(def, completion)) {
 					Def proposedDef = createProposalDef(project, def);
@@ -596,6 +578,55 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		}
 
 		return proposals;
+	}
+
+	private String combineModuleNameParts(String prefix, String suffix) {
+		if (suffix.isEmpty())
+			return prefix;
+		else
+			return prefix + "." + suffix;
+	}
+
+	private String bottomUpFindAliasedModule(String prefixAlias, String suffixAlias, Def node) {
+		if (node == null)
+			return combineModuleNameParts(prefixAlias, suffixAlias);
+
+		Def travelNode = node.parent;
+		String newPrefixAlias = prefixAlias;
+		while (true) {
+			if (travelNode == null || travelNode.name == null)
+				break;
+
+			if (travelNode.type == Def.Type.ModuleAlias
+					&& (travelNode.name.compareTo(newPrefixAlias) == 0)) {
+				if (travelNode.children.size() > 0) {
+					newPrefixAlias = travelNode.children.get(0).name;
+					if (newPrefixAlias.contains(".")) // stop when name has "."
+						break;
+				}
+			}
+
+			if (travelNode.type == Def.Type.Root)
+				break;
+
+			travelNode = travelNode.parent;
+		}
+		// if aliased module is a sub-module (containing "."), then find
+		// the first part. Otherwise, continue to search aliased module
+		if (newPrefixAlias.contains(".")) {
+			String[] parts = newPrefixAlias.split("\\.");
+			String newSuffixAlias = "";
+			for (int i = parts.length-1; i > 0; i--)
+				newSuffixAlias = parts[i] + "." + newSuffixAlias ;
+			if (newSuffixAlias.length() > 0) {
+				newSuffixAlias = newSuffixAlias + suffixAlias;
+			} else
+				newSuffixAlias = suffixAlias;
+			newPrefixAlias = parts[0];
+			return bottomUpFindAliasedModule(newPrefixAlias, newSuffixAlias, travelNode);
+		}
+		else
+			return combineModuleNameParts(newPrefixAlias, suffixAlias);
 	}
 
 	private ArrayList<OcamlCompletionProposal> removeDuplicatedCompletionProposal(ArrayList<OcamlCompletionProposal> proposals) {
