@@ -41,9 +41,9 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 	private final TextEditor editor;
-	
+
 	private final IProject project;
-	
+
 	// cache last parsed annotation file for speed up
 	private TypeAnnotation[] lastUsedAnnotations = new TypeAnnotation[0];
 	private String lastParsedFileName = "";
@@ -76,7 +76,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	 * completion box when he types a space
 	 */
 	private int lastOffset = -1;
-	
+
 	/**
 	 * Compute and return completion proposals available at the offset <code>documentOffset</code>.
 	 */
@@ -126,12 +126,12 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			Def interfacesDefinitionsRoot =	null;
 			if (project != null)
 				interfacesDefinitionsRoot = CompletionJob.buildDefinitionsTree(project, false);
-			
+
 			proposals = findCompletionProposals(completion, interfacesDefinitionsRoot, document, documentOffset);
 		} else {
 			proposals = new OcamlCompletionProposal[0];
 			OcamlPlugin.logInfo("Completion proposals skipped (background job not done yet)");
-		}				
+		}
 
 		ICompletionProposal[] templateCompletionProposals;
 
@@ -157,7 +157,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		 * ocamlEditor.getOutlineDefinitionsTree(); if (def != null) { ICompletionProposal[]
 		 * moduleCompletionProposals = findModuleCompletionProposals( def, documentOffset, lastWord.length(),
 		 * lastWord);
-		 * 
+		 *
 		 * for (int j = 0; j < moduleCompletionProposals.length; j++)
 		 * allProposals.add(moduleCompletionProposals[j]); } else OcamlPlugin
 		 * .logError("OcamlCompletionProcessor:computeCompletionProposals : module definitions=null"); }
@@ -170,7 +170,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		/*
 		 * if (allProposals.size() == 2) { ICompletionProposal prop1 = allProposals.get(0);
 		 * ICompletionProposal prop2 = allProposals.get(1);
-		 * 
+		 *
 		 * if (prop1 instanceof OcamlCompletionProposal && prop2 instanceof SimpleCompletionProposal &&
 		 * prop1.getDisplayString().equals(prop2.getDisplayString())) allProposals.remove(1); }
 		 */
@@ -206,7 +206,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	/**
 	 * Find the completions matching the argument <code>completion</code> from all the definitions found in
 	 * the definitionsRoot tree.
-	 * 
+	 *
 	 * @return the completions found
 	 */
 	private OcamlCompletionProposal[] findCompletionProposals(String completion,
@@ -215,7 +215,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			int offset) {
 
 		ArrayList<OcamlCompletionProposal> proposals;
-		
+
 		String moduleName = editor.getEditorInput().getName();
 		if (moduleName.endsWith(".ml"))
 			moduleName = moduleName.substring(0, moduleName.length() - 3);
@@ -225,18 +225,18 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			moduleName = Character.toUpperCase(moduleName.charAt(0))
 					+ moduleName.substring(1);
 
-		if (completion.contains(".")) 
+		if (completion.contains("."))
 			proposals = processDottedCompletion(completion, interfacesDefsRoot,
 					moduleName, doc, offset, completion.length());
 		else
 			proposals = processNondottedCompletion(completion, interfacesDefsRoot,
 					moduleName, doc, offset, completion.length());
-		
+
 		proposals = removeDuplicatedCompletionProposal(proposals);
-		
+
 		return proposals.toArray(new OcamlCompletionProposal[0]);
 	}
-	
+
 	// completion string must contained dots
 	private ArrayList<OcamlCompletionProposal> processDottedCompletion(String completion,
 			Def interfacesDefsRoot,
@@ -246,7 +246,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			int length) {
 
 		ArrayList<OcamlCompletionProposal> proposals = new ArrayList<OcamlCompletionProposal>();
-		
+
 		if (interfacesDefsRoot == null)
 			return proposals;
 
@@ -264,15 +264,15 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 					break;
 				if (!Character.isUpperCase(parts[i].charAt(0)))
 					break;
-				suffix = prefix + "." + suffix; 
+				suffix = prefix + "." + suffix;
 				prefix = parts[i];
 				i--;
 			}
-			
+
 			boolean isLowerCasePrefix= false;
 			if (prefix.length() > 0 && Character.isLowerCase(prefix.charAt(0)))
 				isLowerCasePrefix = true;
-			
+
 			Def currentDef = null;
 			for (Def def: interfacesDefsRoot.children) {
 				if (def.name.equals(moduleName)) {
@@ -280,13 +280,13 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 					break;
 				}
 			}
-			
+
 			/*
 			 * prefix is a lower-case identifier, hence look for suffix completion
 			 * in the current module, sub-modules, included modules or opened modules
 			 */
 			if (isLowerCasePrefix) {
-				
+
 				// find in current def
 				for (Def def : currentDef.children) {
 					// look for completion of suffix in the current module
@@ -295,9 +295,9 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 						proposals.add(new OcamlCompletionProposal(proposedDef,
 								offset, suffix.length()));
 					}
-					
+
 					// look for completion in opened or included module of current module
-					// by attach the involved module name to suffix and find new completion 
+					// by attach the involved module name to suffix and find new completion
 					if (def.type == Def.Type.Open || def.type == Def.Type.Include) {
 						String newCompletion = def.name + "." + suffix;
 						proposals.addAll(processDottedCompletion(newCompletion,
@@ -305,7 +305,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 								offset, suffix.length()));
 					}
 				}
-				
+
 				// completion maybe modules's name
 				for (Def def : interfacesDefsRoot.children) {
 					if (checkCompletion(def, suffix) && isCompletionDef(def)) {
@@ -327,11 +327,11 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 					stop = true;
 					if (currentDef == null)
 						break;
-					
+
 					for (Def def : currentDef.children) {
-						if (!def.name.equals(realPrefix)) 
+						if (!def.name.equals(realPrefix))
 							continue;
-						
+
 						if (def.type == Def.Type.Module) {
 							// find in sub-modules
 							proposals.addAll(lookupProposalsCompletionInDef(
@@ -341,7 +341,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 						else if (def.type == Def.Type.ModuleAlias)  {
 							if (def.children.size() > 0) {
 								String aliasedName = def.children.get(0).name;
-								if (realPrefix.equals(aliasedName)) 
+								if (realPrefix.equals(aliasedName))
 									stop = true;
 								else {
 									realPrefix = aliasedName;
@@ -352,7 +352,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 						}
 					}
 				}
-				
+
 				// find in other modules
 				for (Def def: interfacesDefsRoot.children) {
 					if (def.name.equals(realPrefix))
@@ -375,7 +375,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		return proposals;
 	}
-	
+
 
 	private ArrayList<OcamlCompletionProposal> processNondottedCompletion(String completion,
 			Def interfacesDefsRoot,
@@ -385,10 +385,10 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			int length) {
 
 		ArrayList<OcamlCompletionProposal> proposals = new ArrayList<OcamlCompletionProposal>();
-		
+
 		if (interfacesDefsRoot == null)
 			return proposals;
-		
+
 		/*
 		 *  look in def root
 		 */
@@ -398,7 +398,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 				proposals.add(new OcamlCompletionProposal(proposedDef, offset, length));
 			}
 		}
-		
+
 		/*
 		 *  looked in current module
 		 */
@@ -414,21 +414,21 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			// look down from top of current module
 			final Def nearestDef = findSmallestDefAtOffset(currentDef, offset, document);
 			proposals.addAll(bottomUpFindProposals(completion, nearestDef, offset));
-			
+
 			for (Def def: currentDef.children) {
 				if (checkCompletion(def, completion)) {
 					Def proposedDef = createProposalDef(project, def);
 					proposals.add(new OcamlCompletionProposal(proposedDef, offset, length));
 				}
 			}
-		
+
 			/*
 			 * look in opened module of current module
 			 */
 			for (Def def : currentDef.children) {
-				if (def.type != Def.Type.Open && def.type != Def.Type.Include) 
+				if (def.type != Def.Type.Open && def.type != Def.Type.Include)
 					continue;
-				
+
 				String newCompletion = def.name + "." + completion;
 				proposals.addAll(processDottedCompletion(newCompletion,
 						interfacesDefsRoot, moduleName, document, offset, length));
@@ -439,13 +439,13 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		 * look in Pervasives module, which is always opended
 		 */
 		for (Def def: interfacesDefsRoot.children) {
-			if (!def.name.equals("Pervasives")) 
+			if (!def.name.equals("Pervasives"))
 				continue;
-	
+
 			for (Def d: def.children) {
 				if (d == null || d.name == null)
 					break;
-				
+
 				if (checkCompletion(d, completion) && isCompletionDef(d)) {
 					Def proposedDef = createProposalDef(project, d);
 					proposals.add(new OcamlCompletionProposal(proposedDef, offset, completion.length()));
@@ -455,7 +455,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		return proposals;
 	}
-	
+
 	private ArrayList<OcamlCompletionProposal> lookupProposalsCompletionInDef(String completion,
 			Def defsRoot,
 			Def interfacesDefRoot,
@@ -464,7 +464,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			int length) {
 
 		ArrayList<OcamlCompletionProposal> proposals = new ArrayList<OcamlCompletionProposal>();
-		
+
 		if (defsRoot == null)
 			return proposals;
 
@@ -480,18 +480,18 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 					break;
 				if (!Character.isUpperCase(parts[i].charAt(0)))
 					break;
-				suffix = prefix + "." + suffix; 
+				suffix = prefix + "." + suffix;
 				prefix = parts[i];
 				i--;
 			}
-			
+
 			// look inside def roots first
 			for (Def def: defsRoot.children) {
 				if (def.name.equals(prefix))
 					proposals.addAll(lookupProposalsCompletionInDef(suffix, def,
 							interfacesDefRoot, document, offset, length));
 			}
-			
+
 			// look inside included module
 			for (Def def1: defsRoot.children) {
 				if (def1.type == Def.Type.Include) {
@@ -504,7 +504,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 									completion,includedDefRoot, interfacesDefRoot,
 									document, offset, length));
 						}
-						
+
 					}
 					// look for included def in interfaces root defs
 					for (Def def2: interfacesDefRoot.children) {
@@ -514,7 +514,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 									completion, includedDefRoot, interfacesDefRoot,
 									document, offset, length));
 						}
-						
+
 					}
 				}
 			}
@@ -541,7 +541,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 									completion, includedDefRoot, interfacesDefRoot,
 									document, offset, length));
 						}
-						
+
 					}
 					// look for included def in interfaces root defs
 					for (Def def2: interfacesDefRoot.children) {
@@ -551,7 +551,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 									completion, includedDefRoot, interfacesDefRoot,
 									document, offset, length));
 						}
-						
+
 					}
 				}
 			}
@@ -560,10 +560,10 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		return proposals;
 	}
-	
+
 	private ArrayList<OcamlCompletionProposal> bottomUpFindProposals(String completion, Def node, int offset) {
 		ArrayList<OcamlCompletionProposal> proposals = new ArrayList<OcamlCompletionProposal>();
-		
+
 		if (node == null)
 			return proposals;
 
@@ -581,7 +581,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 				if (def == null || def.name == null)
 					continue;
 				if (checkCompletion(def, completion)) {
-//						&& (def.type == Def.Type.Let 
+//						&& (def.type == Def.Type.Let
 //								|| def.type == Def.Type.LetIn
 //								|| def.type == Def.Type.Parameter)) {
 					Def proposedDef = createProposalDef(project, def);
@@ -591,15 +591,15 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 			if (travelNode.type == Def.Type.Root)
 				break;
-			
+
 			travelNode = travelNode.parent;
 		}
-		
+
 		return proposals;
 	}
-	
+
 	private ArrayList<OcamlCompletionProposal> removeDuplicatedCompletionProposal(ArrayList<OcamlCompletionProposal> proposals) {
-		
+
 		ArrayList<OcamlCompletionProposal> newProposals = new ArrayList<OcamlCompletionProposal>();
 		HashSet<String> proposalHashSet = new HashSet<>();
 		for (OcamlCompletionProposal p: proposals) {
@@ -609,20 +609,20 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 				proposalHashSet.add(s);
 			}
 		}
-		
+
 		return newProposals;
 	}
-	
-	
+
+
 	/** Find an identifier (or an open directive) at a position in the document */
 	private Def findSmallestDefAtOffset(Def def, int offset, IDocument doc) {
 
 		if (def == null || doc == null)
 			return null;
-		
+
 		if (def.children.size() == 0)
 			return def;
-		
+
 		Def firstChild = def.children.get(0);
 		IRegion region = firstChild.getNameRegion(doc);
 		if (region != null) {
@@ -630,7 +630,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 				return def;
 		}
 		else return null;
-		
+
 
 		Def nearestChild = null;
 		for (Def d : def.children) {
@@ -640,17 +640,17 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 					nearestChild = d;
 			}
 		}
-		
+
 		return findSmallestDefAtOffset(nearestChild, offset, doc);
 	}
-	
+
 	private boolean checkCompletion(Def def, String completion) {
 		if (def == null)
 			return false;
-		
+
 		if (def.name == null)
 			return false;
-		
+
 		if (def.name.startsWith(completion)){
 //			if (def.type != Def.Type.Identifier)
 //				return true;
@@ -658,7 +658,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 //				return true;
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -853,7 +853,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 					break;
 				if (!Character.isUpperCase(parts[i].charAt(0)))
 					break;
-				suffix = prefix + "." + suffix; 
+				suffix = prefix + "." + suffix;
 				prefix = parts[i];
 				i--;
 			}
@@ -873,7 +873,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 						}
 						else if (def.type == Def.Type.ModuleAlias)  {
 							String aliasedName = def.children.get(0).name;
-							if (moduleName.equals(aliasedName)) 
+							if (moduleName.equals(aliasedName))
 								stop = true;
 							else {
 								moduleName = aliasedName;
@@ -931,15 +931,15 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 	public String getErrorMessage() {
 		return null;
 	}
-	
+
 	private Def createProposalDef(IProject project, Def def) {
 		Def newDef = new Def(def);
 		if (newDef.type == Def.Type.Let
 				|| newDef.type == Def.Type.LetIn
 				|| newDef.type == Def.Type.External) {
-			
+
 			String typeInfo = "";
-			
+
 			// look for type infor in body first
 			String body = newDef.getBody();
 			int index = body.indexOf(newDef.name);
@@ -951,11 +951,11 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			// not found type in body
 			if (typeInfo.isEmpty()) {
 				String filename = newDef.getFileName();
-				
+
 				// store last used annotation for caching
 				TypeAnnotation[] annotations;
 				long currentTime = System.currentTimeMillis();
-				if (filename.equals(lastParsedFileName) 
+				if (filename.equals(lastParsedFileName)
 						&& (currentTime - lastParsedTime < cacheTime)) {
 					annotations = lastUsedAnnotations;
 				}
@@ -965,7 +965,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 					lastParsedFileName = filename;
 					lastParsedTime = System.currentTimeMillis();
 				}
-				 
+
 				IDocument document = getDocument(project, filename);
 				typeInfo = computeTypeInfo(newDef, annotations, document);
 				if (!typeInfo.isEmpty()) {
@@ -981,7 +981,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		return newDef;
 	}
-	
+
 	private IDocument getDocument(IProject project, String filename) {
 		if (project == null)
 			return null;
@@ -991,21 +991,21 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		try {
 			IFile[] files = project.getWorkspace().getRoot().findFilesForLocationURI(URIUtil.toURI(filename));
-			if (files.length == 0) 
+			if (files.length == 0)
 				return null;
-			
+
 			IFile file = files[0];
 			IDocumentProvider provider = new TextFileDocumentProvider();
 			provider.connect(file);
 			IDocument document = provider.getDocument(file);
-			
+
 			return document;
 		} catch (Exception e) {
 			return null;
 		}
 	}
 
-	
+
 	private TypeAnnotation[] parseModuleAnnotation(IProject project, String filename) {
 		if (project == null)
 			return new TypeAnnotation[0];
@@ -1015,9 +1015,9 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		try {
 			IFile[] files = project.getWorkspace().getRoot().findFilesForLocationURI(URIUtil.toURI(filename));
-			if (files.length == 0) 
+			if (files.length == 0)
 				return new TypeAnnotation[0];
-			
+
 			IFile file = files[0];
 			IPath relativeProjectPath = file.getFullPath();
 			IDocumentProvider provider = new TextFileDocumentProvider();
@@ -1030,37 +1030,37 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 			if (annotFile != null && annotFile.exists()) {
 				TypeAnnotation[] annotations = OcamlAnnotParser.parseFile(annotFile, document);
-				
+
 				return annotations;
 			}
 		} catch (Exception e) {
 //			e.printStackTrace();
 			return new TypeAnnotation[0];
 		}
-		
+
 		return new TypeAnnotation[0];
-		
+
 	}
-	
+
 	private String computeTypeInfo(Def def, TypeAnnotation[] annotations, IDocument document) {
 		try {
 			String typeInfo = "";
 			IRegion region = def.getNameRegion(document);
 			int offset = region.getOffset();
-	
+
 			ArrayList<TypeAnnotation> found = new ArrayList<TypeAnnotation>();
-	
+
 			if (annotations != null) {
 				for (TypeAnnotation annot : annotations)
 					if (annot.getBegin() <= offset && offset < annot.getEnd())
 						found.add(annot);
-	
+
 				/*
 				 * Search for the smallest hovered type annotation
 				 */
 				TypeAnnotation annot = null;
 				int minSize = Integer.MAX_VALUE;
-	
+
 				for (TypeAnnotation a : found) {
 					int size = a.getEnd() - a.getBegin();
 					if (size < minSize) {
@@ -1068,7 +1068,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 						minSize = size;
 					}
 				}
-	
+
 				String docContent = document.get();
 				if (annot != null) {
 					String expr = docContent.substring(annot.getBegin(), annot.getEnd());

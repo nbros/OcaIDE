@@ -2445,7 +2445,7 @@ public class OcamlParser extends Parser {
 					final Symbol a = _symbols[offset + 4];
 					final Symbol b = _symbols[offset + 6];
 					
-    	Def def = new Def((String)id.value, Def.Type.Module, id.getStart(), id.getEnd());
+    	Def def = new Def((String)id.value, Def.Type.ModuleAlias, id.getStart(), id.getEnd());
     	def.add(a);
     	def.add(b);
     	def.collapse();
@@ -3164,7 +3164,7 @@ public class OcamlParser extends Parser {
     	pat.findIdents(idents);
 
     	Def root = new Def();
-    	
+
     	// update root position
     	int identsSize = idents.size();
     	if (identsSize > 1)
@@ -3187,7 +3187,7 @@ public class OcamlParser extends Parser {
     		last.add(b);
     		last.collapse();
     		backupDef(root);
-    	
+
     		return root;
     	}
 

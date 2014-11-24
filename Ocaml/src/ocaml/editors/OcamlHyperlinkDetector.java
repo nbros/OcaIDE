@@ -42,7 +42,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	public OcamlHyperlinkDetector(OcamlEditor editor) {
 		this.editor = editor;
 	}
-	
+
 	/** Caching to speed up consecutive lookups */
 	private long lastTime = 0;
 	private int lastOffset = -1;
@@ -53,10 +53,10 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		IHyperlink hyperlink = makeHyperlink(textViewer, region.getOffset());
 		if (hyperlink != null)
 			return new IHyperlink[] {hyperlink};
-		else 
+		else
 			return null;
 	}
-	
+
 	public IHyperlink makeHyperlink (final ITextViewer textViewer, int offset) {
 		IProject project = editor.getProject();
 
@@ -64,17 +64,17 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		final Def modulesDefinitionsRoot = editor.getDefinitionsTree();
 
 		final Def interfacesDefinitionsRoot;
-		
+
 		if(project != null)
 			interfacesDefinitionsRoot = CompletionJob.buildDefinitionsTree(project, false);
-		/* If the project is null, that means the file is external (not in a project). In this case, 
+		/* If the project is null, that means the file is external (not in a project). In this case,
 		 * parse only the file to be able to show hyperlinks for this file.
-		 */ 
-		/* TODO: Provide hyperlinks to other modules referenced by this file */  
+		 */
+		/* TODO: Provide hyperlinks to other modules referenced by this file */
 		else {
 			interfacesDefinitionsRoot = new Def("<root>", Def.Type.Root, 0, 0);
 			OcamlNewInterfaceParser parser = OcamlNewInterfaceParser.getInstance();
-			
+
 			File file = editor.getPathOfFileBeingEdited().toFile();
 			Def def = parser.parseFile(file, false);
 			if (def != null)
@@ -82,7 +82,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			else
 				return null;
 		}
-		
+
 
 		long time = System.currentTimeMillis();
 
@@ -104,11 +104,11 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			if (searchedDef.type == Def.Type.Open || searchedDef.type == Def.Type.Include) {
 				return makeOpenHyperlink(textViewer, searchedDef, interfacesDefinitionsRoot);
 			}
-			
+
 			if (searchedDef.type == Def.Type.Identifier)
-				return makeDefinitionHyperlink(textViewer, searchedDef, 
+				return makeDefinitionHyperlink(textViewer, searchedDef,
 						modulesDefinitionsRoot, interfacesDefinitionsRoot);
-			
+
 			return null;
 
 		}
@@ -132,7 +132,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 					modulesDefinitionsRoot, interfacesDefinitionsRoot);
 		}
 	}
-	
+
 	private IHyperlink makeDefinitionHyperlink(final ITextViewer textViewer,
 			final Def def, final Def moudulesRoot, final Def interfacesRoot) {
 		IHyperlink hyperlink = 	new IHyperlink() {
@@ -210,7 +210,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				Def firstPart = lookForDefinitionUp(null, parts[0], searchedDef, interfacesDefinitionsRoot, fullDefName, true);
 				// since fullDefName is updated, we need to updata parts variable
 				parts = fullDefName.toString().split("\\.");
-				// don't find it in the current module, look in the other ones 
+				// don't find it in the current module, look in the other ones
 				if (firstPart == null) {
 					if (openDefInInterfaces(0, parts, interfacesDefinitionsRoot))
 						return null;
@@ -226,17 +226,17 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 							Def searchedDef2 = new Def(searchedDef);
 							searchedDef2.name = parts[0];
 							for (int i = 1; i < parts.length; i++)
-								searchedDef2.name = "." + searchedDef2.name; 
+								searchedDef2.name = "." + searchedDef2.name;
 							firstPart = lookForDefinitionUp(null, parts[0], searchedDef2, interfacesDefinitionsRoot, fullDefName, true);
-						} else 
+						} else
 							break;
 					}
 					// if the original definition of firstPart is not in current module, look in the other ones
 					if (firstPart == null) {
 						if (openDefInInterfaces(0, parts, interfacesDefinitionsRoot))
 							return null;
-						
-					} 
+
+					}
 					// look for the whole parts in current module.
 					else {
 						Def defFromPath = findDefFromPath(1, parts, firstPart, null);
@@ -275,7 +275,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	 * Find the definition of <code>searchedDef</code> in <code>modulesDefinitionsRoot</code>,
 	 * and in <code>interfacesDefinitionsRoot</code>
 	 */
-	private Def findDefinitionOf(final String strDef, 
+	private Def findDefinitionOf(final String strDef,
 			final Def modulesDefinitionsRoot,
 			final Def interfacesDefinitionsRoot) {
 		/*
@@ -305,9 +305,9 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			if (stop)
 				break;
 		}
-		
+
 		/*
-		 * lookup in opened module 
+		 * lookup in opened module
 		 */
 		for (Def d : modulesDefinitionsRoot.children) {
 			if (d.type == Def.Type.Open) {
@@ -344,11 +344,11 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			for (int i = 1; i < path.length; i++)
 				newFullDefName = newFullDefName + "." + path[i];
 			String[] aliasedPath = newFullDefName.split("\\.");
-			
+
 			if (openDefInInterfaces(0, aliasedPath, interfacesDefinitionsRoot))
 				return null;
 		}
-			
+
 		/*
 		 * finally, look in Pervasives (which is always opened by default)
 		 */
@@ -356,7 +356,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		openDefInInterfaces(0, pervasivesPath, interfacesDefinitionsRoot);
 		return null;
 	}
-	
+
 	/** Find the definition whose complete path is given, starting at <code>index</code> */
 	private Def findDefFromPath(int index, String[] path, Def def, Def lastPartFound) {
 		if (index == path.length)
@@ -383,7 +383,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	/**
 	 * Look for a definition in the <code>node</code> node, its previous siblings, its associated
 	 * nodes ("and"), and recurse on its parent
-	 * 
+	 *
 	 * @param searchedNode
 	 *            the node we are looking for
 	 * @param name
@@ -420,6 +420,26 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 			if (openDefInInterfaces(0, path, interfacesDefinitionsRoot))
 				return null;
+		}
+
+		// if it is an ModuleAlias, find the real module with new name
+		if (node.type == Def.Type.ModuleAlias) {
+			if (node.children.size() > 0) {
+				Def def = node.children.get(0);
+				String newName = def.name;
+				// rectify full path in case of there exist aliased module
+				if (fullDefName.length() >= name.length()) {
+					String str = fullDefName.substring(0, name.length());
+					if (str.compareTo(name) == 0) {
+						fullDefName.delete(0, name.length());
+						fullDefName.insert(0, newName);
+					}
+				}
+				return null;
+
+//				return lookForDefinitionUp(searchedNode, newName, node, interfacesDefinitionsRoot,
+//						fullDefName, false);
+			}
 		}
 
 		/* if we are at root, we cannot go further up in this module. */
@@ -476,8 +496,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 			// if it is an "open" node, look inside the interface of this module
 			if (before.type == Def.Type.Open || before.type == Def.Type.Include) {
-				String newFullDefName = before.name + "." + fullDefName.toString(); 
-				String[] path = newFullDefName.split("\\."); 
+				String newFullDefName = before.name + "." + fullDefName.toString();
+				String[] path = newFullDefName.split("\\.");
 
 				if (openDefInInterfaces(0, path, interfacesDefinitionsRoot))
 					return null;
@@ -512,9 +532,9 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 						.getActivePage();
 
 				if (page != null) {
-					
+
 					File file = new File(filename);
-					
+
 					final IFileStore fileStore;
 					try {
 						URI uri = file.toURI();
@@ -525,7 +545,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 					}
 
 					IEditorPart part = IDE.openEditorOnFileStore(page, fileStore);
-					
+
 					if (part instanceof OcamlEditor) {
 						final OcamlEditor editor = (OcamlEditor) part;
 
@@ -559,7 +579,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	/**
 	 * Is <code>node</code> the definition of <code>name</code>? If true, returns the node (or
 	 * the constructor in a type). If false, returns null.
-	 * 
+	 *
 	 * @param bIn
 	 *            whether to accept "let in" (or parameter) nodes
 	 * @param otherBranch
@@ -671,7 +691,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 		return null;
 	}
-	
+
 	/** Find a smallest def at a position in the document */
 	private TextSelection findIdentAt(IDocument doc, int offset) {
 		int docLen = doc.getLength();
@@ -690,7 +710,7 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				break;
 			}
 		}
-		
+
 		i = offset - 1;
 		while (i >= 0) {
 			char ch;
@@ -706,8 +726,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			}
 		}
 		int beginOffset = (i >= 0) ? i + 1 : 0;
-		
-		
+
+
 		String[] parts = text.split("\\.");
 		String hoveredText = parts[parts.length - 1];
 		i = parts.length - 2;
@@ -720,10 +740,10 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			i--;
 		}
 		beginOffset = beginOffset + (text.length() - hoveredText.length());
-		
+
 		return new TextSelection(doc, beginOffset, hoveredText.length());
 	}
-	
+
 
 
 	/**

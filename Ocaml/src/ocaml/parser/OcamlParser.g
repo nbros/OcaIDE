@@ -1238,7 +1238,7 @@ expr=
   	:}
   | LET MODULE UIDENT.id module_binding.a IN seq_expr.b
     {:
-    	Def def = new Def((String)id.value, Def.Type.Module, id.getStart(), id.getEnd());
+    	Def def = new Def((String)id.value, Def.Type.ModuleAlias, id.getStart(), id.getEnd());
     	def.add(a);
     	def.add(b);
     	def.collapse();
@@ -1540,7 +1540,7 @@ let_binding=
     	pat.findIdents(idents);
 
     	Def root = new Def();
-    	
+
     	// update root position
     	int identsSize = idents.size();
     	if (identsSize > 1)
@@ -1563,7 +1563,7 @@ let_binding=
     		last.add(b);
     		last.collapse();
     		backupDef(root);
-    	
+
     		return root;
     	}
 
