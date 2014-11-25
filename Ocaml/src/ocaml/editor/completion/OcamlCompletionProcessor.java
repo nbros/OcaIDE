@@ -591,26 +591,43 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		if (node == null)
 			return combineModuleNameParts(prefixAlias, suffixAlias);
 
-		Def travelNode = node.parent;
+		// search for parent from current def until meeting root
+		Def currentNode = node.parent;
 		String newPrefixAlias = prefixAlias;
 		while (true) {
-			if (travelNode == null || travelNode.name == null)
+			if (currentNode == null || currentNode.name == null)
 				break;
 
-			if (travelNode.type == Def.Type.ModuleAlias
-					&& (travelNode.name.compareTo(newPrefixAlias) == 0)) {
-				if (travelNode.children.size() > 0) {
-					newPrefixAlias = travelNode.children.get(0).name;
+			if (currentNode.type == Def.Type.ModuleAlias
+					&& (currentNode.name.compareTo(newPrefixAlias) == 0)) {
+				if (currentNode.children.size() > 0) {
+					newPrefixAlias = currentNode.children.get(0).name;
 					if (newPrefixAlias.contains(".")) // stop when name has "."
 						break;
 				}
 			}
 
-			if (travelNode.type == Def.Type.Root)
+			if (currentNode.type == Def.Type.Root)
 				break;
 
-			travelNode = travelNode.parent;
+			if (currentNode.parent == null)
+				break;
+
+			ArrayList<Def> currentSiblings = currentNode.parent.children;
+			int currentIndex = -1;
+			for (int i = 0; i < currentSiblings.size(); i++)
+				if (currentSiblings.get(i).equals(currentNode)) {
+					currentIndex = i;
+					break;
+				}
+			// if current node has a prior sibling, go to that node
+			if (currentIndex > 0)
+				currentNode = currentSiblings.get(currentIndex-1);
+			// otherwise, go to its parent
+			else
+				currentNode = currentNode.parent;
 		}
+
 		// if aliased module is a sub-module (containing "."), then find
 		// the first part. Otherwise, continue to search aliased module
 		if (newPrefixAlias.contains(".")) {
@@ -623,7 +640,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			} else
 				newSuffixAlias = suffixAlias;
 			newPrefixAlias = parts[0];
-			return bottomUpFindAliasedModule(newPrefixAlias, newSuffixAlias, travelNode);
+			return bottomUpFindAliasedModule(newPrefixAlias, newSuffixAlias, currentNode);
 		}
 		else
 			return combineModuleNameParts(newPrefixAlias, suffixAlias);
