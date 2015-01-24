@@ -301,28 +301,32 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 						String firstPartCurrentLine = 
 								document.get(lineRegion.getOffset(),
 										command.offset - lineRegion.getOffset());
-						if (firstPartCurrentLine.trim().isEmpty()) {
-							startLineFindIndent = lineNum - 1;
-							command.length = command.offset - lineRegion.getOffset();
-							command.offset = lineRegion.getOffset();
+						// if enter is pressed at beginning of line, just start a new line
+						if (firstPartCurrentLine.isEmpty()) {
+							command.text = eol;
 						}
-						else
-							startLineFindIndent = lineNum;
-						int priorIndent = 0;
-						for (int l = startLineFindIndent; l >= 0; l--) {
-							int x = document.getLineOffset(l);
-							int y = document.getLineOffset(l+1);
-							String priorLine = document.get(x, y - x + 1);
-							// pr
-							if (!priorLine.trim().isEmpty()) {
-								int i = OcamlFormatter.getLineIndent(priorLine); 
-								if (i > 0) {
-									priorIndent = i;
+						// if enter is pressed at middle or end of line,
+						// then new-line-and-indent
+						else {
+							if (firstPartCurrentLine.trim().isEmpty()) {
+								startLineFindIndent = lineNum - 1;
+								command.length = command.offset - lineRegion.getOffset();
+								command.offset = lineRegion.getOffset();
+							}
+							else
+								startLineFindIndent = lineNum;
+							int priorIndent = 0;
+							for (int l = startLineFindIndent; l >= 0; l--) {
+								int x = document.getLineOffset(l);
+								int y = document.getLineOffset(l+1);
+								String priorLine = document.get(x, y - x + 1);
+								if (!priorLine.trim().isEmpty()) {
+									priorIndent = OcamlFormatter.getLineIndent(priorLine); 
 									break;
 								}
 							}
+							command.text = eol + makeIndent(priorIndent);
 						}
-						command.text = eol + makeIndent(priorIndent);
 					} catch (BadLocationException e) {
 					}
 				}
