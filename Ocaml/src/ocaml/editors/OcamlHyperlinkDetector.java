@@ -8,6 +8,7 @@ import java.util.List;
 import ocaml.OcamlPlugin;
 import ocaml.editor.completion.CompletionJob;
 import ocaml.parser.Def;
+import ocaml.parser.Def.Type;
 import ocaml.parsers.OcamlNewInterfaceParser;
 import ocaml.util.Misc;
 import ocaml.util.OcamlPaths;
@@ -134,7 +135,9 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	}
 
 	private IHyperlink makeDefinitionHyperlink(final ITextViewer textViewer,
-			final Def def, final Def moudulesRoot, final Def interfacesRoot) {
+			final Def def,
+			final Def moudulesRoot, 
+			final Def interfacesRoot) {
 		IHyperlink hyperlink = 	new IHyperlink() {
 			public void open() {
 				Def target = findDefinitionOf(def, moudulesRoot, interfacesRoot);
@@ -163,7 +166,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 
 	private IHyperlink makeDefinitionHyperlink(final ITextViewer textViewer,
 			final String strDef, final int offset,
-			final Def moudulesRoot, final Def interfacesRoot) {
+			final Def moudulesRoot,
+			final Def interfacesRoot) {
 		IHyperlink hyperlink = 	new IHyperlink() {
 			public void open() {
 				Def target = findDefinitionOf(strDef, moudulesRoot, interfacesRoot);
@@ -194,7 +198,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	 * Find the definition of <code>searchedDef</code> in <code>modulesDefinitionsRoot</code>,
 	 * and in <code>interfacesDefinitionsRoot</code>
 	 */
-	private Def findDefinitionOf(final Def searchedDef, final Def modulesDefinitionsRoot,
+	private Def findDefinitionOf(final Def searchedDef,
+			final Def modulesDefinitionsRoot,
 			final Def interfacesDefinitionsRoot) {
 
 		Def def = null;
@@ -401,6 +406,13 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 	private Def lookForDefinitionUp(Def searchedNode, String name, Def node,
 			Def interfacesDefinitionsRoot, StringBuilder fullDefName, boolean otherBranch) {
 		Def test = null;
+		
+		// extract first part and search again
+		if (name.indexOf('.') > -1) {
+			String[] parts = name.split("\\.");
+			return lookForDefinitionUp(searchedNode, parts[0], node, interfacesDefinitionsRoot, 
+					fullDefName, otherBranch);
+		}
 
 		if (node.type == Def.Type.In) {
 			/* If this is an 'in' node (in a 'let in'), go directly to the parent */
@@ -425,48 +437,24 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 		// if it is an ModuleAlias, then using the aliased module to find def
 		if (node.type == Def.Type.ModuleAlias) {
 			if (node.children.size() > 0) {
-				Def def = node.children.get(0);
-				// rectify full path in case of there exist aliased module
-				String aliasModule = node.name + ".";
-				String newModule = def.name + ".";
-				if (fullDefName.length() >= aliasModule.length()) {
-					String str = fullDefName.substring(0, aliasModule.length());
-					if (str.compareTo(aliasModule) == 0) {
+				String aliasModule = node.name;
+				String aliasedModule = node.children.get(0).name;
+				if (fullDefName.length() > aliasModule.length()) {
+					String str = fullDefName.substring(0, aliasModule.length()+1);
+					if (str.compareTo(aliasModule+".") == 0) {
 						fullDefName.delete(0, aliasModule.length());
-						fullDefName.insert(0, newModule);
+						fullDefName.insert(0, aliasedModule);
 					}
 				}
+				return lookForDefinitionUp(searchedNode, aliasedModule, 
+						node, interfacesDefinitionsRoot,
+						fullDefName, false);
 			}
 		}
 
 		/* if we are at root, we cannot go further up in this module. */
-		if (node.type == Def.Type.Root) {
-			// find possible alias module
-			boolean stop = false;
-			String moduleName = name;
-			while (!stop) {
-				stop = true;
-				for (Def def : node.children) {
-					if (def.name.equals(name) && (def.type == Def.Type.ModuleAlias)) {
-						String aliasedName = def.children.get(0).name;
-						if (moduleName.equals(aliasedName))
-							stop = true;
-						else {
-							moduleName = aliasedName;
-							stop = false;
-						}
-						break;
-					}
-				}
-			}
-			// rectify full path in case of there exist aliased module
-			if (!moduleName.equals(name)) {
-				fullDefName.delete(0, name.length());
-				fullDefName.insert(0, moduleName);
-			}
-
+		if (node.type == Def.Type.Root)
 			return null;
-		}
 
 		// look in the associated "and" nodes after it
 		for (int i = node.getSiblingsOffset() + 1; i < node.parent.children.size(); i++) {
@@ -475,8 +463,26 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 				break;
 
 			test = isDef(searchedNode, name, after, true, false);
-			if (test != null)
-				return test;
+			if (test != null) {
+				if (test.type == Type.ModuleAlias) {
+					if (test.children.size() > 0) {
+						String aliasModule = test.name;
+						String aliasedModule = test.children.get(0).name;
+						if (fullDefName.length() > aliasModule.length()) {
+							String str = fullDefName.substring(0, aliasModule.length()+1);
+							if (str.compareTo(aliasModule+".") == 0) {
+								fullDefName.delete(0, aliasModule.length());
+								fullDefName.insert(0, aliasedModule);
+							}
+						}
+						return lookForDefinitionUp(searchedNode, aliasedModule, 
+								node, interfacesDefinitionsRoot,
+								fullDefName, false);
+					}
+				}
+				else
+					return test;
+			}
 		}
 
 		/* look in the associated "and" nodes that precede it and also in the other (not "and") */
@@ -501,8 +507,26 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			}
 
 			test = isDef(searchedNode, name, before, bAnd, !bAnd);
-			if (test != null)
-				return test;
+			if (test != null) {
+				if (test.type == Type.ModuleAlias) {
+					if (test.children.size() > 0) {
+						String aliasModule = test.name;
+						String aliasedModule = test.children.get(0).name;
+						if (fullDefName.length() > aliasModule.length()) {
+							String str = fullDefName.substring(0, aliasModule.length()+1);
+							if (str.compareTo(aliasModule+".") == 0) {
+								fullDefName.delete(0, aliasModule.length());
+								fullDefName.insert(0, aliasedModule);
+							}
+						}
+						return lookForDefinitionUp(searchedNode, aliasedModule, 
+								node, interfacesDefinitionsRoot,
+								fullDefName, false);
+					}
+				}
+				else
+					return test;
+			}
 		}
 
 		/* Now, go one step up */
@@ -633,6 +657,8 @@ public class OcamlHyperlinkDetector implements IHyperlinkDetector {
 			case Exception:
 				return node;
 			case ModuleType:
+				return node;
+			case ModuleAlias:
 				return node;
 			case External:
 				return node;

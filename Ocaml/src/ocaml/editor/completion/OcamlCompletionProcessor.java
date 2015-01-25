@@ -637,15 +637,6 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 				}
 			}
 
-			if (currentNode.type == Def.Type.ModuleAlias
-					&& (currentNode.name.compareTo(newPrefixAlias) == 0)) {
-				if (currentNode.children.size() > 0) {
-					newPrefixAlias = currentNode.children.get(0).name;
-					if (newPrefixAlias.contains(".")) // stop when name has "."
-						break;
-				}
-			}
-
 			if (currentNode.type == Def.Type.Root)
 				break;
 
