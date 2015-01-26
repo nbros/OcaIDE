@@ -624,8 +624,8 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		if (node == null)
 			return combineModuleNameParts(prefixAlias, suffixAlias);
 
-		// search for parent from current def until meeting root
-		Def currentNode = node.parent;
+		// search for aliasedModuel from current def, and go upper until meeting root
+		Def currentNode = node;
 		String newPrefixAlias = prefixAlias;
 		while (true) {
 			if (currentNode == null || currentNode.name == null)
