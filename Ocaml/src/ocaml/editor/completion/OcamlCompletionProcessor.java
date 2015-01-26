@@ -223,6 +223,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		ArrayList<OcamlCompletionProposal> proposals;
 
+		String fileName = editor.getEditorInput().getName();
 		String moduleName = editor.getEditorInput().getName();
 		if (moduleName.endsWith(".ml"))
 			moduleName = moduleName.substring(0, moduleName.length() - 3);
@@ -234,10 +235,10 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 
 		if (completion.contains("."))
 			proposals = processDottedCompletion(completion, interfacesDefsRoot,
-					outlineDefsRoot, moduleName, doc, offset, completion.length());
+					outlineDefsRoot, moduleName, fileName, doc, offset, completion.length());
 		else
 			proposals = processNondottedCompletion(completion, interfacesDefsRoot,
-					outlineDefsRoot, moduleName, doc, offset, completion.length());
+					outlineDefsRoot, moduleName, fileName, doc, offset, completion.length());
 
 		proposals = removeDuplicatedCompletionProposal(proposals);
 
@@ -249,6 +250,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			Def interfacesDefsRoot,
 			Def outlineDefsRoot,
 			String moduleName,
+			String fileName,
 			IDocument document,
 			int offset,
 			int length) {
@@ -286,7 +288,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			if (outlineDefsRoot != null)
 				searchDefs.addAll(outlineDefsRoot.children);
 			for (Def def: searchDefs) {
-				if (def.name.equals(moduleName)) {
+				if (def.name.equals(moduleName) && def.getFileName().endsWith(fileName)) {
 					currentDef = def;
 					break;
 				}
@@ -313,7 +315,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 						String newCompletion = def.name + "." + suffix;
 						proposals.addAll(processDottedCompletion(newCompletion,
 								interfacesDefsRoot, outlineDefsRoot,
-								moduleName, document,
+								moduleName, fileName, document,
 								offset, suffix.length()));
 					}
 				}
@@ -384,6 +386,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 			Def interfacesDefsRoot,
 			Def outlineDefsRoot,
 			String moduleName,
+			String fileName,
 			IDocument document,
 			int offset,
 			int length) {
@@ -408,7 +411,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 		 */
 		Def currentDef = null;
 		for (Def def: interfacesDefsRoot.children) {
-			if (def.name.equals(moduleName)) {
+			if (def.name.equals(moduleName) && def.getFileName().endsWith(fileName)) {
 				currentDef = def;
 				break;
 			}
@@ -437,7 +440,7 @@ public class OcamlCompletionProcessor implements IContentAssistProcessor {
 				String newCompletion = def.name + "." + completion;
 				proposals.addAll(processDottedCompletion(newCompletion,
 						interfacesDefsRoot, outlineDefsRoot,
-						moduleName, document, offset, length));
+						moduleName, fileName, document, offset, length));
 			}
 		}
 

@@ -146,11 +146,16 @@ public class CompletionJob extends Job {
 				// get all the ml and mli files from the directory
 				String[] mlmliFiles = dir.list(mlmliFilter);
 
+				
 				/*
 				 * keep all the mli files, and discard the ml files when there is a mli file with
 				 * the same name
 				 */
-				String[] files = Misc.filterInterfaces(mlmliFiles);
+				// String[] files = Misc.filterInterfaces(mlmliFiles);
+				
+				// Trung: use both ml & mli files
+				String[] files = mlmliFiles;
+
 
 				// for each file
 				for (String mlmlifile : files) {

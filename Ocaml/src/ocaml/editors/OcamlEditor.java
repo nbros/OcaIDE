@@ -524,7 +524,7 @@ public class OcamlEditor extends TextEditor {
 		else
 			outlineJob.cancel();
 
-		outlineJob.setPriority(CompletionJob.DECORATE);
+		outlineJob.setPriority(CompletionJob.SHORT);
 		outlineJob.setOutline(this.outline);
 		outlineJob.setDoc(document);
 		outlineJob.setEditor(this);
