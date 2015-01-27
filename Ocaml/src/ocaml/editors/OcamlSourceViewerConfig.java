@@ -13,6 +13,10 @@ import ocaml.editor.syntaxcoloring.OcamlRuleScanner;
 import ocaml.preferences.PreferenceConstants;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Plugin;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.JFacePreferences;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
@@ -26,7 +30,9 @@ import org.eclipse.jface.text.contentassist.ICompletionProposalSorter;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.formatter.MultiPassContentFormatter;
+import org.eclipse.jface.text.hyperlink.DefaultHyperlinkPresenter;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
+import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.reconciler.IReconciler;
@@ -48,9 +54,13 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
 import org.eclipse.ui.texteditor.spelling.SpellingService;
+import org.eclipse.ui.themes.ITheme;
+import org.eclipse.ui.themes.IThemeManager;
 
 /**
  * Configures the OCaml code editor: auto edit strategies, formatter, partitioning, completion assistant,
@@ -211,6 +221,17 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 	@Override
 	public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
 		return new IHyperlinkDetector[] { new OcamlHyperlinkDetector(this.ocamlEditor) };
+	}
+	
+	@Override
+	public IHyperlinkPresenter getHyperlinkPresenter(ISourceViewer sourceViewer) {
+		IThemeManager themeManager = WorkbenchPlugin.getDefault().getWorkbench().getThemeManager();
+		ITheme currentTheme = themeManager.getCurrentTheme();
+		ColorRegistry colorRegistry = currentTheme.getColorRegistry();
+		// use hyperlink color from current preference of Eclipse
+		Color color = colorRegistry.get(JFacePreferences.HYPERLINK_COLOR);
+		DefaultHyperlinkPresenter hyperlinkPresenter = new DefaultHyperlinkPresenter(color);
+		return hyperlinkPresenter;
 	}
 
 	@Override
