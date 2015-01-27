@@ -60,15 +60,17 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
 							}
 						}
 					} catch (Exception e) {
-						OcamlPlugin.logError(e);
+//						OcamlPlugin.logError(e);
 					}
-				} else
-					OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": only works on ml and mli files");
-
-			} else
-				OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": editorPart is null");
-		} else
-			OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": page is null");
+				} 
+//				else
+//					OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": only works on ml and mli files");
+			}
+//			else
+//				OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": editorPart is null");
+		}
+//		else
+//			OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": page is null");
 	}
     
 	public void dispose() {
