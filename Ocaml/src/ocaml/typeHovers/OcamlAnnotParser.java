@@ -92,8 +92,8 @@ public class OcamlAnnotParser {
 			try {
 				while ((line = inputStream.readLine()) != null)
 					text.append(line + "\n");
-			} catch (IOException e) {
-				OcamlPlugin.logError("ocaml plugin error", e);
+			} catch (Exception e) {
+//				OcamlPlugin.logError("ocaml plugin error", e);
 				return null;
 			}
 

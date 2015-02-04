@@ -67,7 +67,7 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 						editor.getSelectionProvider().setSelection(sel);
 
 					} catch (BadLocationException e) {
-						OcamlPlugin.logError("Wrong offset", e);
+//						OcamlPlugin.logError("Wrong offset", e);
 						return;
 					}
 
