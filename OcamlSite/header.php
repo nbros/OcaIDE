@@ -3,6 +3,7 @@
 <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
 <meta name="description" content="OcaIDE: an OCaml plug-in for Eclipse">
 <meta name="keywords" content="OcaIDE, ocaml, objective caml, o'caml, eclipse, plugin, plug-in">
+<meta name=viewport content="width=device-width, initial-scale=1">
 
 <style type="text/css">
     a:link {color:blue; text-decoration:none}
@@ -11,6 +12,7 @@
     a:active {color:green}
     a.current:link {color:black; font-weight: bold}
     a.current:visited {color:black; font-weight: bold}
+    a.menuitem { display:block }
     #menu {
         position: fixed;
         left: 10px;
@@ -18,12 +20,12 @@
     }
     #page {
         position: absolute;
-        left: 170px;
+        left: 125px;
     }
-    #friendsLogo {
-        position: fixed;
-        bottom: 10px;
-        left:5px;
+    @media screen and (min-width: 0px) and (max-width: 600px) {
+        #menu { position: static }
+        #page { position: static }
+        a.menuitem { display:inline-block; margin: 5px }
     }
 </style>
 
