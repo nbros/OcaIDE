@@ -39,7 +39,7 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 					int selEnd = selStart + selection.getLength();
 
 					// the last selected character can be a newline
-					if (selEnd > 1)
+					if (selEnd - selStart > 1)
 						selEnd--;
 
 					IEditorInput input = editor.getEditorInput();
@@ -63,7 +63,7 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 						endLineInfo = document.getLineInformation(endLine);
 						endOffset = endLineInfo.getOffset() + endLineInfo.getLength();
 
-						TextSelection sel = new TextSelection(startOffset, endOffset - startOffset + 1);
+						TextSelection sel = new TextSelection(startOffset, endOffset - startOffset);
 						editor.getSelectionProvider().setSelection(sel);
 
 					} catch (BadLocationException e) {
