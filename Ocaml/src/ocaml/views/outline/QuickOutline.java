@@ -357,11 +357,28 @@ public class QuickOutline extends PopupDialog {
 					if (filterText.startsWith("^"))
 						return matchName.matches(filterText);
 					// search for substring when filterText start with "*"
-					else if (filterText.startsWith("*"))
-						return matchName.contains(filterText.substring(1));
-					// otherwise, search for static string
-					else
+					// or by converting to regex
+					if (filterText.startsWith("*")) {
+						if (filterText.lastIndexOf("*") == 0)
+							return matchName.contains(filterText.substring(1));
+						else {
+							// convert to regex
+							String newText = filterText.replaceAll("\\*", ".*");
+							newText = "^" + newText + ".*";
+							System.out.println(newText);
+							return matchName.matches(newText);
+						}
+					}
+					// otherwise, search for static string or by converting to reged
+					if (filterText.lastIndexOf("*") < 0)
 						return matchName.startsWith(filterText);
+					else {
+						// convert to regex
+						String newText = filterText.replaceAll("\\*", ".*");
+						newText = "^" + newText + ".*";
+						System.out.println(newText);
+						return matchName.matches(newText);
+					}
 				} catch (Exception e) {
 					return false;
 				}
