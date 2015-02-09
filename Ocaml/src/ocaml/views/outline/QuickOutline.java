@@ -365,7 +365,6 @@ public class QuickOutline extends PopupDialog {
 							// convert to regex
 							String newText = filterText.replaceAll("\\*", ".*");
 							newText = "^" + newText + ".*";
-							System.out.println(newText);
 							return matchName.matches(newText);
 						}
 					}
@@ -376,7 +375,6 @@ public class QuickOutline extends PopupDialog {
 						// convert to regex
 						String newText = filterText.replaceAll("\\*", ".*");
 						newText = "^" + newText + ".*";
-						System.out.println(newText);
 						return matchName.matches(newText);
 					}
 				} catch (Exception e) {
