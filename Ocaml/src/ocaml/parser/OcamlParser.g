@@ -2477,6 +2477,10 @@ cppo_directive=
     {: return new Def(); :}
   | SHARP ident STRING
     {: return new Def(); :}
+  | SHARP ident ident STRING
+    {: return new Def(); :}
+  | SHARP ident ident seq_expr
+    {: return new Def(); :}
 ;
 
 /* Miscellaneous */
