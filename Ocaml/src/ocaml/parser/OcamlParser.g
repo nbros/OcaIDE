@@ -359,6 +359,10 @@ structure_tail=
     {: return Def.root(a,b); :}
   | structure_item.a structure_tail.b
     {: return Def.root(a,b); :}
+  | SEMISEMI cppo_directive.a structure_tail.b
+    {: return Def.root(a,b); :}
+  | cppo_directive.a structure_tail.b
+    {: return Def.root(a,b); :}
   | error
     {: return new Def(); :}
 ;
@@ -2463,6 +2467,15 @@ toplevel_directive=
   | SHARP ident FALSE           /*{ Ptop_dir($2, Pdir_bool false) }*/
     {: return new Def(); :}
   | SHARP ident TRUE            /*{ Ptop_dir($2, Pdir_bool true) }*/
+    {: return new Def(); :}
+;
+
+/* CPPO directives: http://mjambon.com/cppo.html*/
+// This is temporarily. Should support more CPPO's syntax.
+cppo_directive=
+    SHARP ident
+    {: return new Def(); :}
+  | SHARP ident STRING
     {: return new Def(); :}
 ;
 
