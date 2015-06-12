@@ -2475,10 +2475,12 @@ toplevel_directive=
 cppo_directive=
     SHARP ident
     {: return new Def(); :}
+  | SHARP INCLUDE STRING
+    {: return new Def(); :}
   | SHARP ident STRING
     {: return new Def(); :}
-  | SHARP ident ident STRING
-    {: return new Def(); :}
+//  | SHARP ident ident STRING
+//    {: return new Def(); :}
   | SHARP ident ident seq_expr
     {: return new Def(); :}
 ;
