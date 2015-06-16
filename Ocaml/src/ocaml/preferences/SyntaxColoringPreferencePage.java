@@ -108,6 +108,8 @@ public class SyntaxColoringPreferencePage extends FieldEditorPreferencePage impl
 				.getFieldEditorParent()));
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_BOLD_COMMENTS, "Bold co&mments", this
 				.getFieldEditorParent()));
+		this.addField(new BooleanFieldEditor(PreferenceConstants.P_BOLD_DOCS_COMMENTS, "Bold documentation comments", this
+				.getFieldEditorParent()));
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_BOLD_STRINGS, "Bold stri&ngs", this
 				.getFieldEditorParent()));
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_BOLD_CONSTANTS, "Bold con&stants", this
