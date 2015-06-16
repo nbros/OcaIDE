@@ -85,39 +85,38 @@ public class ShiftLeftAction implements IWorkbenchWindowActionDelegate {
 		String[] lines = input.split("\\r?\\n");
 
 		if (lines.length > 0) {
-			// find the shortest indentation
-			int shortest = lines[0].length();
-			for (String line : lines) {
-				int indent = calculateIndent(line, tabSize);
-				if (indent < shortest)
-					shortest = indent;
-			}
-			if (shortest == 0)		// nothing left to decrease
-				return input;
-			
-			// the size of indentation will be decreased
+			// compute decrease size
 			int decrease = tabSize;
-			if (shortest < tabSize)
-				decrease = shortest;
+			for (String line : lines) {
+				if (!line.trim().isEmpty()) {
+					int indent = calculateIndent(line, tabSize);
+					if (indent < decrease)
+						decrease = indent;
+				}
+			}
+			if (decrease == 0)		// nothing left to decrease
+				return input;
 			
 			// subtract 1 indentation from each lines
 			for (int i = 0; i < lines.length; i++) {
 				String line = lines[i];
-				int d = 0; 
-				int u = 0;
-				for (u = 0; u < line.length(); u++) {
-					if (line.charAt(u) == ' ')
-						d++;
-					else if (line.charAt(u) == '\t')
-						d = d + tabSize;
-					if (d >= decrease)
-						break;
+				if (line.length() >= decrease) {
+					int d = 0; 
+					int u = 0;
+					for (u = 0; u < line.length(); u++) {
+						if (line.charAt(u) == ' ')
+							d++;
+						else if (line.charAt(u) == '\t')
+							d = d + tabSize;
+						if (d >= decrease)
+							break;
+					}
+					String newline = "";
+					for (int j = 0; j < d - decrease; j++)
+						newline = newline + ' ';
+					newline = newline + line.substring(u + 1);
+					lines[i] = newline;
 				}
-				String newline = "";
-				for (int j = 0; j < d - decrease; j++)
-					newline = newline + ' ';
-				newline = newline + line.substring(u + 1);
-				lines[i] = newline;
 			}
 			
 			// rebuild a string from the lines
