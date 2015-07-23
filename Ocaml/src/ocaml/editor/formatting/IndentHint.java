@@ -1,4 +1,4 @@
-package ocaml.editor.newFormatter;
+package ocaml.editor.formatting;
 
 import java.util.Comparator;
 

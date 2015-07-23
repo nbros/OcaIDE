@@ -8,10 +8,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ocaml.OcamlPlugin;
-import ocaml.editor.newFormatter.IndentHint;
-import ocaml.editor.newFormatter.IndentingPreferences;
-import ocaml.editor.newFormatter.OcamlFormatterParser;
-import ocaml.editor.newFormatter.OcamlScanner;
 import ocaml.editors.OcamlEditor;
 import ocaml.parser.ErrorReporting;
 import ocaml.preferences.PreferenceConstants;

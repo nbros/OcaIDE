@@ -1,7 +1,7 @@
-package ocaml.editor.newFormatter;
+package ocaml.editor.formatting;
 
 import ocaml.OcamlPlugin;
-import ocaml.editor.newFormatter.IndentHint.Type;
+import ocaml.editor.formatting.IndentHint.Type;
 import ocaml.preferences.PreferenceConstants;
 
 public class IndentingPreferences {
