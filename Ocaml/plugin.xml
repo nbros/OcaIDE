@@ -898,10 +898,11 @@
          style="push">
    </action>
    <action
-         class="ocaml.editor.actions.synchronizeGotoOutline"
-         definitionId="Ocaml.synchronizeGotoOutlineCommand"
+         class="ocaml.editor.actions.SynchronizeAndGotoOutline"
+         definitionId="Ocaml.synchronizeGotoOutline"
          id="Ocaml_sourceActions_synchronizeGotoOutline"
          label="Synchronize And Go To Outline"
+         state="true"
          style="push">
    </action>
 		</actionSet>

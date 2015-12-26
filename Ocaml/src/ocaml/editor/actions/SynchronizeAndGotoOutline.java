@@ -5,6 +5,7 @@ import ocaml.editors.OcamlEditor;
 import ocaml.editors.OcamlHyperlinkDetector;
 import ocaml.util.Misc;
 import ocaml.views.OcamlCompilerOutput;
+import ocaml.views.outline.OcamlOutlineControl;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.ITextViewer;
@@ -48,7 +49,7 @@ public class SynchronizeAndGotoOutline implements IWorkbenchWindowActionDelegate
 			OcamlEditor editor = (OcamlEditor) editorPart;
 			editor.synchronizeOutline();
 			// show compiler output
-			Misc.showView(OcamlCompilerOutput.ID);
+			editor.getOutline().setFocus();
 		}
 	}
     

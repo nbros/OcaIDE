@@ -27,7 +27,6 @@ import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 /** Implements the outline view for the OCaml editor */
 public final class OcamlOutlineControl extends ContentOutlinePage {
-	public static final String ID = "ocaml.OutlinePage";
 
 	protected Object input;
 
