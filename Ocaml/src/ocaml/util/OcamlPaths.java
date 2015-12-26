@@ -3,10 +3,12 @@ package ocaml.util;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import ocaml.OcamlPlugin;
@@ -35,7 +37,7 @@ public class OcamlPaths {
 
 	public OcamlPaths(IProject project) {
 		this.project = project;
-		restoreDefaults();
+//		restoreDefaults();
 	}
 	
 	public void setPaths(String[] paths) {
@@ -55,6 +57,22 @@ public class OcamlPaths {
 			return;
 		}
 	}
+	
+	List<File> getSubdirs(File file) {
+		List<File> subdirs = Arrays.asList(file.listFiles(new FileFilter() {
+			public boolean accept(File f) {
+				return f.isDirectory();
+			}
+		}));
+		subdirs = new ArrayList<File>(subdirs);
+
+		List<File> deepSubdirs = new ArrayList<File>();
+		for(File subdir : subdirs) {
+			deepSubdirs.addAll(getSubdirs(subdir)); 
+		}
+		subdirs.addAll(deepSubdirs);
+		return subdirs;
+	}
 
 	public void restoreDefaults() {
 		ArrayList<String> paths = new ArrayList<String>();
@@ -70,7 +88,9 @@ public class OcamlPaths {
 				IPath path = folder.getFullPath();
 
 				for (String segment : path.segments()) {
-					if ("_build".equals(segment))
+					if (segment.equals("_build")
+							|| segment.equals(".hg")
+							|| segment.equals(".git"))
 						continue mainLoop;
 				}
 
@@ -82,7 +102,14 @@ public class OcamlPaths {
 			}
 		}
 
-		paths.add(OcamlPlugin.getLibFullPath());
+		// add lib path and its sub-folder
+		String libPath = OcamlPlugin.getLibFullPath();
+		paths.add(libPath);
+		List<File> subpaths = getSubdirs(new File(libPath));
+		for (File file : subpaths)
+			paths.add(file.toPath().toString());
+		
+		
 		this.setPaths(paths.toArray(new String[paths.size()]));
 	}
 
@@ -187,9 +214,9 @@ public class OcamlPaths {
 	 * relative to the project.
 	 * 
 	 * @param paths
-	 *            the list of paths to add
+	 *			the list of paths to add
 	 * @param project
-	 *            the project to add them to
+	 *			the project to add them to
 	 */
 	public static void addToPaths(final List<IPath> paths, final IProject project) {
 		final OcamlPaths oPaths = new OcamlPaths(project);

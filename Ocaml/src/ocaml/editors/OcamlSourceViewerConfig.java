@@ -125,6 +125,7 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
 
 		int styleComment = ocaml.OcamlPlugin.getCommentIsBold() ? SWT.BOLD : SWT.NONE;
+		int styleDocsComment = ocaml.OcamlPlugin.getDocsCommentIsBold() ? SWT.BOLD : SWT.NONE;
 		int styleString = ocaml.OcamlPlugin.getStringIsBold() ? SWT.BOLD : SWT.NONE;
 
 		PresentationReconciler reconciler = new PresentationReconciler();
@@ -139,10 +140,10 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 		// a damager-repairer for doc comments and doc annotations
 		RuleBasedScanner scannerAnnot = new RuleBasedScanner();
 		IToken tokenAnnot = new Token(new TextAttribute(OcamlEditorColors.getDocAnnotationColor(), null,
-				styleComment));
+				styleDocsComment));
 
 		IToken tokenDocComment = new Token(new TextAttribute(OcamlEditorColors.getDocCommentColor(), null,
-				styleComment));
+				styleDocsComment));
 		scannerAnnot.setRules(new IRule[] { new DocumentAnnotationRule(tokenAnnot, tokenDocComment) });
 		dr = new DefaultDamagerRepairer(scannerAnnot);
 

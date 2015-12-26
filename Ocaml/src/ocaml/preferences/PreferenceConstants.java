@@ -36,6 +36,7 @@ public class PreferenceConstants
 	
 	public static final String P_BOLD_KEYWORDS = "boldKeywords";
 	public static final String P_BOLD_COMMENTS = "boldComments";
+	public static final String P_BOLD_DOCS_COMMENTS = "boldDocumentationComments";
 	public static final String P_BOLD_CONSTANTS = "boldConstants";
 	public static final String P_BOLD_STRINGS = "boldStrings";
 	public static final String P_BOLD_NUMBERS = "boldNumbers";

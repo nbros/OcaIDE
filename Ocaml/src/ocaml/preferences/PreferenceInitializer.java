@@ -41,6 +41,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			// set the default syntax coloring bold attributes
 			store.setDefault(PreferenceConstants.P_BOLD_CHARACTERS, false);
 			store.setDefault(PreferenceConstants.P_BOLD_COMMENTS, false);
+			store.setDefault(PreferenceConstants.P_BOLD_DOCS_COMMENTS, false);
 			store.setDefault(PreferenceConstants.P_BOLD_CONSTANTS, false);
 			store.setDefault(PreferenceConstants.P_BOLD_KEYWORDS, true);
 			store.setDefault(PreferenceConstants.P_BOLD_NUMBERS, false);

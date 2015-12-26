@@ -400,6 +400,11 @@ public class OcamlPlugin extends AbstractUIPlugin {
 		return instance.getPreferenceStore().getBoolean(PreferenceConstants.P_BOLD_COMMENTS);
 	}
 
+	/** Returns whether comments should appear in bold (from the user preferences) */
+	public static boolean getDocsCommentIsBold() {
+		return instance.getPreferenceStore().getBoolean(PreferenceConstants.P_BOLD_DOCS_COMMENTS);
+	}
+	
 	/** Returns whether constants should appear in bold (from the user preferences) */
 	public static boolean getConstantIsBold() {
 		return instance.getPreferenceStore().getBoolean(PreferenceConstants.P_BOLD_CONSTANTS);

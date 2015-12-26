@@ -53,6 +53,9 @@ public class OcamlNewMakeProjectWizard extends BasicNewProjectResourceWizard {
 
 			project.setDefaultCharset("ISO-8859-1", null);
 
+			OcamlPaths opaths = new OcamlPaths(project);
+			opaths.restoreDefaults();
+
 			URL url = OcamlPlugin.getInstance().getBundle().getEntry("/resources/OCamlMakefile"); 
 
 			IFile file = project.getFile("OCamlMakefile");
@@ -63,8 +66,6 @@ public class OcamlNewMakeProjectWizard extends BasicNewProjectResourceWizard {
 			file = project.getFile("Makefile");
 			file.create(url.openStream(), true, null);
 
-			OcamlPaths opaths = new OcamlPaths(project);
-			opaths.restoreDefaults();
 
 		} catch (Exception e) {
 			OcamlPlugin.logError("Error in OcamlNewMakeProjectWizard:performFinish()", e);
