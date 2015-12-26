@@ -897,6 +897,13 @@
          label="Delete Trailing Whitespaces"
          style="push">
    </action>
+   <action
+         class="ocaml.editor.actions.synchronizeGotoOutline"
+         definitionId="Ocaml.synchronizeGotoOutlineCommand"
+         id="Ocaml_sourceActions_synchronizeGotoOutline"
+         label="Synchronize And Go To Outline"
+         style="push">
+   </action>
 		</actionSet>
   <actionSet
         description="Action for compiling projects"
@@ -1060,6 +1067,11 @@
         categoryId="Ocaml.commandscategory"
         id="Ocaml.deleteTrailingWhitespaces"
         name="Delete Trailing Whitespaces">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.synchronizeGotoOutline"
+        name="Synchronize And Go To Outline">
   </command>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
@@ -1230,6 +1242,12 @@
         contextId="org.eclipse.ui.contexts.window"
         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
         sequence="M1+\">
+  </key>
+  <key
+        commandId="Ocaml.synchronizeGotoOutline"
+        contextId="Ocaml.editor.context"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M2+M3+Q L">
   </key>
 	</extension>
 	<extension point="org.eclipse.ui.contexts">
