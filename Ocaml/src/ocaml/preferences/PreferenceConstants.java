@@ -36,6 +36,7 @@ public class PreferenceConstants
 	
 	public static final String P_BOLD_KEYWORDS = "boldKeywords";
 	public static final String P_BOLD_COMMENTS = "boldComments";
+	public static final String P_BOLD_DOCS_COMMENTS = "boldDocumentationComments";
 	public static final String P_BOLD_CONSTANTS = "boldConstants";
 	public static final String P_BOLD_STRINGS = "boldStrings";
 	public static final String P_BOLD_NUMBERS = "boldNumbers";
@@ -65,6 +66,7 @@ public class PreferenceConstants
 	public static final String P_DISABLE_UNICODE_CHARS = "DisableUnicodeChars";
 	public static final String P_SHOW_TYPES_IN_OUTLINE = "ShowTypesInOutline";
 	public static final String P_SHOW_TYPES_IN_STATUS_BAR = "ShowTypesInStatusBar";
+	public static final String P_SHOW_MARKERS_IN_STATUS_BAR = "ShowMarkersInStatusBar";
 	public static final String P_SHOW_TYPES_IN_POPUPS = "ShowTypesInPopups";
 	
 	public static final String P_FORMATTER_INDENT_IN = "FormatterIndentIn";

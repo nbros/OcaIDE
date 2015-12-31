@@ -49,8 +49,9 @@ import org.eclipse.ui.texteditor.MarkerUtilities;
 
 public class OutlineJob extends Job {
 
-	public OutlineJob(String name) {
+	public OutlineJob(String name, boolean syncWithEditor) {
 		super(name);
+		this.syncWithEditor = syncWithEditor;
 	}
 
 	/** The outline. Can be <code>null</code> if the outline view is closed */
@@ -59,6 +60,8 @@ public class OutlineJob extends Job {
 	private IDocument doc;
 
 	private OcamlEditor editor;
+	
+	private boolean syncWithEditor;
 
 	public void setDoc(IDocument doc) {
 		this.doc = doc;
@@ -282,6 +285,7 @@ public class OutlineJob extends Job {
 		 * recover pieces from the AST (which couldn't be built completely because of an
 		 * unrecoverable error)
 		 */
+		boolean parserError = false;
 		if (root == null || !parser.errorReporting.errors.isEmpty()) {
 			// System.err.println("recovering");
 			// System.err.println("recovering AST");
@@ -292,6 +296,13 @@ public class OutlineJob extends Job {
 					def.bTop = false;
 					root.children.add(def);
 				}
+			for (Def def : parser.recoverIdents)
+				if (def.bTop && def.name != null && !"".equals(def.name.trim())) {
+					def.bTop = false;
+					root.children.add(def);
+				}
+			
+			parserError = true;
 		}
 
 		/*
@@ -321,7 +332,7 @@ public class OutlineJob extends Job {
 
 		definitions.setInInAttribute();
 
-		Def outlineDefinitions = definitions.cleanCopy();
+		Def outlineDefinitions = definitions.cleanCopy(parserError);
 		// remove the definitions the user has chosen not to display
 		initPreferences();
 		cleanOutline(outlineDefinitions);
@@ -435,7 +446,9 @@ public class OutlineJob extends Job {
 					} else
 						outline.setInput(fOutlineDefinitions);
 
-					editor.synchronizeOutline();
+					// synchronize outline with editor
+					if (syncWithEditor)
+						editor.synchronizeOutline();
 				}
 
 			}
@@ -483,7 +496,7 @@ public class OutlineJob extends Job {
 
 	private void addTypeRec(TypeAnnotation[] annotations, Def def, boolean root) {
 		if (!root) {
-			IRegion region = def.getRegion(doc);
+			IRegion region = def.getNameRegion(doc);
 
 			int startOffset = region.getOffset();
 			int endOffset = startOffset + region.getLength() - 1;
@@ -494,7 +507,7 @@ public class OutlineJob extends Job {
 			if (index >= 0) {
 				TypeAnnotation annot = annotations[index];
 				String type = annot.getType().replaceAll("\r?\n", " ");
-				def.ocamlType = type;
+				def.setOcamlType(type);
 			}
 		}
 

@@ -2,11 +2,12 @@ package ocaml.editors.yacc;
 
 import ocaml.OcamlPlugin;
 import ocaml.editor.completion.CompletionJob;
+import ocaml.editor.syntaxcoloring.OcamlEditorColors;
 import ocaml.editors.util.OcamlCharacterPairMatcher;
 import ocaml.editors.yacc.outline.OcamlYaccOutlineControl;
 import ocaml.editors.yacc.outline.YaccOutlineJob;
 import ocaml.natures.OcamlNatureMakefile;
-import ocaml.popup.actions.CompileProjectAction;
+import ocaml.popup.actions.CompileProjectPopupAction;
 import ocaml.preferences.PreferenceConstants;
 
 import org.eclipse.core.resources.IProject;
@@ -15,11 +16,15 @@ import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextListener;
 import org.eclipse.jface.text.PaintManager;
 import org.eclipse.jface.text.TextEvent;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.MatchingCharacterPainter;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
@@ -45,9 +50,11 @@ public class OcamlyaccEditor extends TextEditor {
 	protected void createActions() {
 		super.createActions();
 
-		paintManager = new PaintManager(getSourceViewer());
+		final ISourceViewer viewer = getSourceViewer();
+
+		paintManager = new PaintManager(viewer);
 		matchingCharacterPainter =
-				new MatchingCharacterPainter(getSourceViewer(), new OcamlCharacterPairMatcher());
+				new MatchingCharacterPainter(viewer, new OcamlCharacterPairMatcher());
 		matchingCharacterPainter.setColor(new Color(Display.getCurrent(), new RGB(160, 160, 160)));
 		paintManager.addPainter(matchingCharacterPainter);
 
@@ -55,17 +62,18 @@ public class OcamlyaccEditor extends TextEditor {
 
 		// effectue le parsing des bibliothèques ocaml en arrière plan
 		CompletionJob job = new CompletionJob("Parsing ocaml library mli files", null);
-		job.setPriority(CompletionJob.DECORATE);
+		job.setPriority(CompletionJob.INTERACTIVE);	// Trung changes priority
 		job.schedule();
-		
-		
-		this.getSourceViewer().addTextListener(new ITextListener() {
+
+
+		viewer.addTextListener(new ITextListener() {
 
 			public void textChanged(TextEvent event) {
 				if (event.getDocumentEvent() != null)
 					rebuildOutline(500);
 			}
 		});
+
 	}
 
 	@Override
@@ -112,14 +120,14 @@ public class OcamlyaccEditor extends TextEditor {
 			IWorkspace ws = ResourcesPlugin.getWorkspace();
 			IWorkspaceDescription desc = ws.getDescription();
 			if (desc.isAutoBuilding())
-				CompileProjectAction.compileProject(this.getProject());
+				CompileProjectPopupAction.compileProject(this.getProject());
 		}
 	}
-	
-	
+
+
 	private OcamlYaccOutlineControl outline;
 	private YaccOutlineJob outlineJob = null;
-	
+
 	/**
 	 * We give the outline to Eclipse when it asks for an adapter with the outline class.
 	 */
@@ -133,8 +141,12 @@ public class OcamlyaccEditor extends TextEditor {
 		}
 		return super.getAdapter(required);
 	}
-	
+
 	public void rebuildOutline(int delay) {
+		/*
+		 *  Trung: rebuilding outline will dispose all completion proposal
+		 *  pop-up windows if existing.
+		 */
 
 		IEditorInput input = this.getEditorInput();
 		IDocument document = this.getDocumentProvider().getDocument(input);
@@ -154,6 +166,6 @@ public class OcamlyaccEditor extends TextEditor {
 
 		outlineJob.schedule(delay);
 	}
-	
-	
+
+
 }

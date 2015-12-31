@@ -13,16 +13,26 @@ import ocaml.editor.syntaxcoloring.OcamlRuleScanner;
 import ocaml.preferences.PreferenceConstants;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Plugin;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.JFacePreferences;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.ICompletionListener;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalSorter;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.formatter.MultiPassContentFormatter;
+import org.eclipse.jface.text.hyperlink.DefaultHyperlinkPresenter;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
+import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.reconciler.IReconciler;
@@ -42,9 +52,15 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
 import org.eclipse.ui.texteditor.spelling.SpellingService;
+import org.eclipse.ui.themes.ITheme;
+import org.eclipse.ui.themes.IThemeManager;
 
 /**
  * Configures the OCaml code editor: auto edit strategies, formatter, partitioning, completion assistant,
@@ -52,9 +68,11 @@ import org.eclipse.ui.texteditor.spelling.SpellingService;
  */
 public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 	private OcamlEditor ocamlEditor;
+	private boolean isContentAssistantActive;
 
 	public OcamlSourceViewerConfig(OcamlEditor ocamlEditor) {
 		this.ocamlEditor = ocamlEditor;
+		this.isContentAssistantActive = false;
 	}
 
 	/**
@@ -107,6 +125,7 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
 
 		int styleComment = ocaml.OcamlPlugin.getCommentIsBold() ? SWT.BOLD : SWT.NONE;
+		int styleDocsComment = ocaml.OcamlPlugin.getDocsCommentIsBold() ? SWT.BOLD : SWT.NONE;
 		int styleString = ocaml.OcamlPlugin.getStringIsBold() ? SWT.BOLD : SWT.NONE;
 
 		PresentationReconciler reconciler = new PresentationReconciler();
@@ -121,10 +140,10 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 		// a damager-repairer for doc comments and doc annotations
 		RuleBasedScanner scannerAnnot = new RuleBasedScanner();
 		IToken tokenAnnot = new Token(new TextAttribute(OcamlEditorColors.getDocAnnotationColor(), null,
-				styleComment));
+				styleDocsComment));
 
 		IToken tokenDocComment = new Token(new TextAttribute(OcamlEditorColors.getDocCommentColor(), null,
-				styleComment));
+				styleDocsComment));
 		scannerAnnot.setRules(new IRule[] { new DocumentAnnotationRule(tokenAnnot, tokenDocComment) });
 		dr = new DefaultDamagerRepairer(scannerAnnot);
 
@@ -149,21 +168,40 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
 		ContentAssistant assistant = new ContentAssistant();
 		assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
-
+		assistant.enablePrefixCompletion(true);
 		assistant.setContentAssistProcessor(new OcamlCompletionProcessor(this.ocamlEditor,
 				OcamlPartitionScanner.OCAML_DOCUMENTATION_COMMENT),
 				OcamlPartitionScanner.OCAML_DOCUMENTATION_COMMENT);
 		assistant.setContentAssistProcessor(new OcamlCompletionProcessor(this.ocamlEditor,
 				IDocument.DEFAULT_CONTENT_TYPE), IDocument.DEFAULT_CONTENT_TYPE);
 
-		assistant.enableAutoInsert(true);
+		assistant.addCompletionListener(new ICompletionListener() {
+			@Override
+			public void selectionChanged(ICompletionProposal proposal, boolean smartToggle) {
+				isContentAssistantActive = true;
+			}
+			@Override
+			public void assistSessionStarted(ContentAssistEvent event) {
+				isContentAssistantActive = true;
+			}
+			@Override
+			public void assistSessionEnded(ContentAssistEvent event) {
+				isContentAssistantActive = false;
+			}
+		});
+		
+		assistant.setSorter(new ICompletionProposalSorter() {
+			@Override
+			public int compare(ICompletionProposal p1, ICompletionProposal p2) {
+				return p1.getDisplayString().compareTo(p2.getDisplayString());
+			}
+		});
 
 		boolean autoActivation = OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
 				PreferenceConstants.P_EDITOR_AUTOCOMPLETION);
-
 		assistant.enableAutoActivation(autoActivation);
-
 		assistant.setAutoActivationDelay(100);
+		assistant.enableAutoInsert(true);
 		assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_STACKED);
 		assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
 		assistant.setInformationControlCreator(new OcamlInformationControlCreator());
@@ -179,10 +217,22 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 	public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
 		return new OcamlAnnotationHover();
 	}
+	
 
 	@Override
 	public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
 		return new IHyperlinkDetector[] { new OcamlHyperlinkDetector(this.ocamlEditor) };
+	}
+	
+	@Override
+	public IHyperlinkPresenter getHyperlinkPresenter(ISourceViewer sourceViewer) {
+		IThemeManager themeManager = WorkbenchPlugin.getDefault().getWorkbench().getThemeManager();
+		ITheme currentTheme = themeManager.getCurrentTheme();
+		ColorRegistry colorRegistry = currentTheme.getColorRegistry();
+		// use hyperlink color from current preference of Eclipse
+		Color color = colorRegistry.get(JFacePreferences.HYPERLINK_COLOR);
+		DefaultHyperlinkPresenter hyperlinkPresenter = new DefaultHyperlinkPresenter(color);
+		return hyperlinkPresenter;
 	}
 
 	@Override
@@ -207,7 +257,7 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 		reconciler.setIsIncrementalReconciler(false);
 		reconciler.setProgressMonitor(new NullProgressMonitor());
 		reconciler.setDelay(500);
-
+		
 		OcamlPlugin.getInstance().getPreferenceStore().addPropertyChangeListener(
 				new IPropertyChangeListener() {
 					public void propertyChange(PropertyChangeEvent event) {
@@ -245,6 +295,14 @@ public class OcamlSourceViewerConfig extends SourceViewerConfiguration {
 		else
 			return null;
 	}
+	
+	
+	
+	public boolean isContentAssistantActive() {
+		return isContentAssistantActive;
+	}
+	
+	
 
 }
 

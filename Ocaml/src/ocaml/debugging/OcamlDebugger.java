@@ -76,7 +76,7 @@ public class OcamlDebugger implements IExecEvents {
 
 	/** The project containing the debugged executable */
 	private IProject project;
-	
+
 	/** list of paths of project */
 	private String[] projectPaths;
 
@@ -240,7 +240,7 @@ public class OcamlDebugger implements IExecEvents {
 				pathStr = pathStr.trim();
 				if (!".".equals(pathStr)) {
 					commandLineArgs.add("-I");
-					
+
 					//These paths are either absolute or relative to the project
 					//directory. We must convert them to absolute paths in case
 					//we are running a bytecode within a nested directory.
@@ -248,12 +248,14 @@ public class OcamlDebugger implements IExecEvents {
 					if (!path.isAbsolute()) {
 						path = Paths.get(projectLocation.append(pathStr).toOSString());
 					}
-					commandLineArgs.add(path.toString());	
+					commandLineArgs.add(path.toString());
 				}
 			}
 
 			// add the _build folder (for the cases making project by using Ocamlbuild)
 			String buildpath = projectLocation.append("_build").toOSString();
+			commandLineArgs.add("-I");
+			commandLineArgs.add(buildpath);
 			ArrayList<String> buildFolders = FileUtil.findSubdirectories(buildpath);
 			for (String path: buildFolders) {
 				commandLineArgs.add("-I");
@@ -429,7 +431,7 @@ public class OcamlDebugger implements IExecEvents {
 			send("start");
 		}
 	}
-	
+
 	public synchronized void setFrame(int frame) {
 		if (!checkStarted())
 			return;
@@ -831,7 +833,6 @@ public class OcamlDebugger implements IExecEvents {
 				refreshEditor();
 				state = State.Idle;
 			}
-
 			else if (state.equals(State.Frame)) {
 				processFrame(output);
 				debuggerOutput.setLength(0);
@@ -903,7 +904,7 @@ public class OcamlDebugger implements IExecEvents {
 		}
 
 	}
-	
+
 	private void getFrame() {
 		state = State.Frame;
 		send("frame");
@@ -1091,7 +1092,7 @@ public class OcamlDebugger implements IExecEvents {
 
     public static final Pattern patternCallstack = Pattern
             .compile("\\A#(\\d+)\\s+Pc\\s*:\\s+(\\d+)\\s+(\\w+)\\s+char\\s+(\\d+)");
-    
+
 	private void processCallStack(final String output) {
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
@@ -1138,7 +1139,7 @@ public class OcamlDebugger implements IExecEvents {
 
 									// prettier stackview
 									String newOutput = "#" + s1 + "  -  " + module + "." + functionName
-														+ "  -  (" + line + ": " + column + ")"; 
+														+ "  -  (" + line + ": " + column + ")";
 									backtrace[i] = newOutput;
 								} else {
 									OcamlPlugin.logError("ocamldebugger: couldn't parse call stack");
@@ -1156,7 +1157,7 @@ public class OcamlDebugger implements IExecEvents {
 			}
 		});
 	}
-	
+
 	// get function that contains line
 	private synchronized String findFunctionContainingLine(String filepath, int line) {
 		String functionName = "";
@@ -1167,20 +1168,20 @@ public class OcamlDebugger implements IExecEvents {
 		int i = 0;
 		for (i = 0; i < childs.size(); i++) {
 			Def def = childs.get(i);
-			int l = Symbol.getLine(def.posStart); 
-			if (l >= line ) 
+			int l = Symbol.getLine(def.posStart);
+			if (l >= line )
 				break;
 		}
 		if (i > 0) {
 			Def child = childs.get(i-1);
 			if (child.type == Def.Type.Let)
 				functionName = child.name;
-			else if (child.type == Def.Type.Module) { 
+			else if (child.type == Def.Type.Module) {
 				List<Def> grandChilds = child.children;
 				int j = 0;
 				for (j = 0; j < grandChilds.size(); j++) {
 					Def def = grandChilds.get(j);
-					int l = Symbol.getLine(def.posStart); 
+					int l = Symbol.getLine(def.posStart);
 					if (l > line)
 						break;
 				}
@@ -1192,7 +1193,7 @@ public class OcamlDebugger implements IExecEvents {
 		}
 		return functionName;
 	}
-	
+
 	private void indicateRunningState(final String message) {
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
@@ -1213,7 +1214,7 @@ public class OcamlDebugger implements IExecEvents {
 		DebugMarkers.getInstance().clearCurrentPosition();
 		refreshEditor();
 	}
-	
+
 	private synchronized IEditorInput getEditorInput(final String filename)
 	{
 		String ufilename = filename.substring(0, 1).toUpperCase() + filename.substring(1);
@@ -1276,6 +1277,7 @@ public class OcamlDebugger implements IExecEvents {
 		}
 		return null;
 	}
+
 
 	public void highlight(final String filename, final int offset) {
 		final IEditorInput editorInput = getEditorInput(filename);
@@ -1446,7 +1448,7 @@ public class OcamlDebugger implements IExecEvents {
 			}
 		});
 	}
-	
+
 	public void printMessage(final String message) {
 		final IOConsoleOutputStream console = this.console;
 

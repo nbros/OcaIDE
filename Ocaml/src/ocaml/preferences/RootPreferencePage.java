@@ -43,6 +43,11 @@ public class RootPreferencePage extends FieldEditorPreferencePage implements
 				PreferenceConstants.P_SHOW_TYPES_IN_POPUPS,
 				"Show the types in popups when hovering over the editor", this
 						.getFieldEditorParent()));
+		
+		this.addField(new BooleanFieldEditor(
+				PreferenceConstants.P_SHOW_MARKERS_IN_STATUS_BAR,
+				"Show markers' information in the editor's status bar", this
+						.getFieldEditorParent()));
 	}
 	
 	@Override

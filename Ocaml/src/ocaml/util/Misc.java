@@ -13,6 +13,7 @@ import ocaml.editor.syntaxcoloring.ILanguageWords;
 import ocaml.preferences.PreferenceConstants;
 import ocaml.views.OcamlCompilerOutput;
 
+import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -219,7 +220,7 @@ public class Misc {
 
 	/**
 	 * Keep all the mli files in the list and the ml files when there is no corresponding mli
-	 * 
+	 *
 	 * @return the mli files and the ml files which don't have a corresponding mli file
 	 */
 	public static String[] filterInterfaces(String[] mlmliFiles) {
@@ -302,7 +303,7 @@ public class Misc {
 	/**
 	 * Return a persistent property associated with the project. The qualified name uses the "ocaml"
 	 * qualifier.
-	 * 
+	 *
 	 * @return the value of the property, or an empty string if it couldn't be retrieved
 	 */
 	public static String getProjectProperty(IProject project, String propertyName) {
@@ -320,7 +321,7 @@ public class Misc {
 
 	/**
 	 * Return a file persistent property
-	 * 
+	 *
 	 * @see getProjectProperty
 	 */
 	public static String getFileProperty(IFile file, String propertyName) {
@@ -338,7 +339,7 @@ public class Misc {
 
 	/**
 	 * Return a folder persistent property
-	 * 
+	 *
 	 * @see getProjectProperty
 	 */
 	public static String getFolderProperty(IFolder folder, String propertyName) {
@@ -372,7 +373,7 @@ public class Misc {
 
 	/**
 	 * set a project persistent property
-	 * 
+	 *
 	 * @see getProjectProperty
 	 */
 	public static void setProjectProperty(IProject project, String propertyName, String value) {
@@ -386,7 +387,7 @@ public class Misc {
 
 	/**
 	 * set a file persistent property
-	 * 
+	 *
 	 * @see getProjectProperty
 	 */
 	public static void setFileProperty(IFile file, String propertyName, String value) {
@@ -400,7 +401,7 @@ public class Misc {
 
 	/**
 	 * set a folder persistent property
-	 * 
+	 *
 	 * @see getProjectProperty
 	 */
 	public static void setFolderProperty(IFolder folder, String propertyName, String value) {
@@ -416,9 +417,7 @@ public class Misc {
 	 * Append text to the OCaml compiler output (in a UI-Thread)
 	 */
 	public static void appendToOcamlConsole(final String msg) {
-
 		Display.getDefault().syncExec(new Runnable() {
-
 			public void run() {
 				try {
 					final IWorkbenchPage activePage = PlatformUI.getWorkbench()
@@ -427,7 +426,6 @@ public class Misc {
 							.findView(OcamlCompilerOutput.ID);
 					if (console == null) {
 						console = (OcamlCompilerOutput) activePage.showView(OcamlCompilerOutput.ID);
-
 					}
 					console.appendln(msg);
 				} catch (PartInitException pe) {
@@ -480,7 +478,7 @@ public class Misc {
 
 	/**
 	 * Create an icon from a filename
-	 * 
+	 *
 	 * @return an image, or <code>null</code> if there was an error
 	 */
 	public static Image createIcon(String name) {
@@ -498,7 +496,7 @@ public class Misc {
 
 	/**
 	 * Get the file with the given extension corresponding to the given ml file.
-	 * 
+	 *
 	 * @param project
 	 *            the project in which the ml file resides
 	 * @param mlPath
@@ -536,10 +534,10 @@ public class Misc {
 
 		return null;
 	}
-	
+
 	/**
 	 * Get the file with the given extension corresponding to the given ml file.
-	 * 
+	 *
 	 * @param mlPath
 	 *            the full absolute filesystem path of the ml file
 	 * @param extension
@@ -565,14 +563,14 @@ public class Misc {
 
 		return null;
 	}
-	
+
 	/** Remove carriage returns */
 	public static String CRLFtoLF(String str){
 		return str.replace("\r", "");
 	}
-	
+
 	private static HashSet<String> keywordsHashset;
-	
+
 	/** Can this character be part of an OCaml identifier */
 	public static boolean isOcamlIdentifierChar(char c) {
 		return (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_' || c == '\'');
@@ -585,13 +583,13 @@ public class Misc {
 
 	/** Test whether this string is a valid OCaml identifier (lowercase) */
 	public static boolean isValidOcamlIdentifier(String str) {
-		
+
 		if(str.length() < 1)
 			return false;
-		
+
 		char[] chars = new char[str.length()];
 		str.getChars(0, str.length(), chars, 0);
-		
+
 		if(!isOcamlIdentifierFirstChar(chars[0]))
 			return false;
 
@@ -604,10 +602,10 @@ public class Misc {
 			for(String word : ILanguageWords.keywords)
 				keywordsHashset.add(word);
 		}
-		
+
 		if(keywordsHashset.contains(str))
 			return false;
-		
+
 		return true;
 	}
 
@@ -619,10 +617,10 @@ public class Misc {
 	public static void setShareableProperty(IResource resource, String name, String value) {
 		setShareableProperty(resource, new QualifiedName(OcamlPlugin.QUALIFIER, name), value);
 	}
-	
+
 	public static void setShareableProperty(IResource resource, QualifiedName name, String value) {
 		String preferenceName = name.getLocalName();
-		IPath resourcePath = resource.getFullPath(); 
+		IPath resourcePath = resource.getFullPath();
 		try {
 			// 1. save in <project>/.settings/ocaml.pref
 			Preferences settings = getPreferences(resource.getProject(), preferenceName, true);
@@ -632,18 +630,20 @@ public class Misc {
 				settings.put(getKeyFor(resourcePath), value);
 			// TODO disable the listener (if any) so we don't react to changes made by ourselves
 			settings.flush();
-			
-			// 2. also save in <workspace>/.medatada to decorate icons (see plugin.xml) 
+
+			// 2. also save in <workspace>/.medatada to decorate icons (see plugin.xml)
 			resource.setPersistentProperty(name, value);
-			
+
 		} catch (BackingStoreException e) {
-			OcamlPlugin.logError("error in OcamlPlugin.setPersistentProperty", e);
-		} catch (CoreException e) {
-			
+			// OcamlPlugin.logError("error in OcamlPlugin.setPersistentProperty", e);
+		} catch (ResourceException e) {
+
+		} catch (Exception e) {
+
 		}
 	}
 
-	/** Load a property from <project>/.settings/. 
+	/** Load a property from <project>/.settings/.
 	 *  If it does not exist, fallback to see <workspace>/.metadata/ */
 	public static String getShareableProperty(IResource resource, String name) {
 		return getShareableProperty(resource, new QualifiedName(OcamlPlugin.QUALIFIER, name));
@@ -664,7 +664,7 @@ public class Misc {
 		if (prefs == null) {
 			return migrateOldSettingIfAny(resource, name);
 		}
-		
+
 		String value = prefs.get(getKeyFor(resource.getFullPath()), null);
 		if(value!=null) {
 			return value;
@@ -672,7 +672,7 @@ public class Misc {
 			return migrateOldSettingIfAny(resource, name);
 		}
 	}
-	
+
 	// for backward compatibility
 	static String migrateOldSettingIfAny(IResource resource, QualifiedName name) {
 		String oldVerSetting = null;
@@ -705,7 +705,7 @@ public class Misc {
 		}
 		return null;
 	}
-	
+
 	private static String getKeyFor(IPath resourcePath) {
 		return resourcePath.segmentCount() > 1 ? resourcePath.removeFirstSegments(1).toString() : "<project>";
 	}

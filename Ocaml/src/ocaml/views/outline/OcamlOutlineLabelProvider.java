@@ -41,6 +41,8 @@ public class OcamlOutlineLabelProvider extends LabelProvider /* implements IStru
 				return ImageRepository.getImage(ImageRepository.ICON_EXTERNAL);
 			if (type.equals(Def.Type.Module))
 				return ImageRepository.getImage(ImageRepository.ICON_OCAML_MODULE);
+			if (type.equals(Def.Type.ModuleAlias))
+				return ImageRepository.getImage(ImageRepository.ICON_OCAML_MODULE);
 			if (type.equals(Def.Type.ModuleType))
 				return ImageRepository.getImage(ImageRepository.ICON_OCAML_MODULE_TYPE);
 			if (type.equals(Def.Type.Open))
@@ -89,8 +91,8 @@ public class OcamlOutlineLabelProvider extends LabelProvider /* implements IStru
 			if (OcamlOutlineControl.bOutlineDebugButton && OcamlOutlineControl.bDebug)
 				return def.name + " (" + def.type + ")";
 
-			if (def.ocamlType != null && !"".equals(def.ocamlType))
-				return def.name + " : " + def.ocamlType;
+			if (!def.getOcamlType().isEmpty())
+				return def.name + " : " + def.getOcamlType();
 			else
 				return def.name;
 		}

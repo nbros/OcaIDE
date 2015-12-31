@@ -41,6 +41,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			// set the default syntax coloring bold attributes
 			store.setDefault(PreferenceConstants.P_BOLD_CHARACTERS, false);
 			store.setDefault(PreferenceConstants.P_BOLD_COMMENTS, false);
+			store.setDefault(PreferenceConstants.P_BOLD_DOCS_COMMENTS, false);
 			store.setDefault(PreferenceConstants.P_BOLD_CONSTANTS, false);
 			store.setDefault(PreferenceConstants.P_BOLD_KEYWORDS, true);
 			store.setDefault(PreferenceConstants.P_BOLD_NUMBERS, false);
@@ -74,7 +75,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
 			store.setDefault(PreferenceConstants.P_SHOW_TYPES_IN_OUTLINE, true);
 			store.setDefault(PreferenceConstants.P_SHOW_TYPES_IN_POPUPS, true);
-			store.setDefault(PreferenceConstants.P_SHOW_TYPES_IN_STATUS_BAR, true);
+			store.setDefault(PreferenceConstants.P_SHOW_TYPES_IN_STATUS_BAR, false);
+			store.setDefault(PreferenceConstants.P_SHOW_MARKERS_IN_STATUS_BAR, true);
 
 			// set the defaults for the formatter
 			store.setDefault(PreferenceConstants.P_FORMATTER_INDENT_IN, false);

@@ -70,30 +70,30 @@
        point="org.eclipse.ui.editors">
 		<editor name="mlEditor" icon="icons/implFile.gif" extensions="ml"
 			class="ocaml.editors.OcamlEditor"
-			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			contributorClass="ocaml.editors.OcamlEditorActionContributor"
 			id="ocaml.editors.mlEditor">
 		</editor>
 		
 		<editor name="mliEditor" icon="icons/interfFile.gif" extensions="mli"
 			class="ocaml.editors.OcamlEditor"
-			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			contributorClass="ocaml.editors.OcamlEditorActionContributor"
 			id="ocaml.editors.mliEditor">
 		</editor>
 		<editor name="mlpEditor" icon="icons/mlp.gif" extensions="mlp,ml4"
 			class="ocaml.editors.OcamlEditor"
-			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			contributorClass="ocaml.editors.OcamlEditorActionContributor"
 			id="ocaml.editors.mlpEditor">
 		</editor>
 		
 		<editor name="yaccEditor" icon="icons/yaccFile.gif" extensions="mly"
 			class="ocaml.editors.yacc.OcamlyaccEditor"
-			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
 			id="ocaml.editors.yaccEditor">
 		</editor>
 		
 		<editor name="lexEditor" icon="icons/lexFile.gif" extensions="mll"
 			class="ocaml.editors.lex.OcamllexEditor"
-			contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+			contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
 			id="ocaml.editors.lexEditor">
 		</editor>
 	</extension>
@@ -739,21 +739,53 @@
 			<menu id="Ocaml_sourceMenu" label="Ocaml">
 				<separator name="slot1"/>
 			</menu>
+   <action
+         class="ocaml.editor.actions.SelectDownwardByIndent"
+         definitionId="Ocaml.selectDownwardByIndent"
+         id="Ocaml_sourceActions_selectDownwardByIndent"
+         label="Select Downward By Indent"
+         style="push">
+   </action>
+   <action
+         class="ocaml.editor.actions.SelectUpwardByIndent"
+         definitionId="Ocaml.selectUpwardByIndent"
+         id="Ocaml_sourceActions_selectUpwardByIndent"
+         label="Select Upward By Indent"
+         style="push">
+   </action>
+   <action
+         class="ocaml.editor.actions.MoveCursorUpwardByIndent"
+         definitionId="Ocaml.moveCursorUpwardByIndent"
+         id="Ocaml_sourceActions_moveCursorUpwardByIndent"
+         label="Move Cursor Upward By Indent"
+         style="push">
+   </action>
+   <action
+         class="ocaml.editor.actions.MoveCursorDownwardByIndent"
+         definitionId="Ocaml.moveCursorDownwardByIndent"
+         id="Ocaml_sourceActions_moveCursorDownwardByIndent"
+         label="Move Cursor Downward By Indent"
+         style="push">
+   </action>
+   <action
+         class="ocaml.editor.actions.GotoDefinition"
+         definitionId="Ocaml.gotoDefinitionCommand"
+         id="Ocaml_sourceActions_gotoDefinition"
+         label="Go To Definition"
+         style="push">
+   </action>
 			<action	class="ocaml.editor.actions.MarkOccurrencesAction"
 				definitionId="Ocaml.markOccurrencesCommand"
 				icon="icons/markOccurrence.gif"
-				id="Ocaml_sourceActions_markOccurrences" label="Mark Occurrences"
-				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+				id="Ocaml_sourceActions_markOccurrences" label="Mark Occurrences" style="push"/>
 			<action	class="ocaml.editor.actions.ShiftLeftAction"
 				definitionId="Ocaml.shiftLeftCommand"
 				icon="icons/shiftLeft.png"
-				id="Ocaml_sourceActions_shiftLeft" label="Shift Left"
-				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+				id="Ocaml_sourceActions_shiftLeft" label="Shift Left" style="push"/>
 			<action	class="ocaml.editor.actions.ShiftRightAction"
 				definitionId="Ocaml.shiftRightCommand"
 				icon="icons/shiftRight.png"
-				id="Ocaml_sourceActions_shiftRight"	label="Shift Right"
-				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+				id="Ocaml_sourceActions_shiftRight"	label="Shift Right" style="push"/>
 			<action class="ocaml.editor.actions.CommentSelectionAction"
 				definitionId="Ocaml.commentSelectionProtectedCommand"
 				id="Ocaml_sourceActions_CommentSelectionProtected" label="Comment/Uncomment Selection (Protected)"
@@ -823,7 +855,84 @@
 				definitionId="Ocaml.openQuickOutlineCommand"
 				id="Ocaml_sourceActions_QuickOutline" label="Quick Outline"
 				menubarPath="Ocaml_sourceMenu/slot1" style="push"/>
+   <action
+         class="ocaml.editor.actions.ShowTextHover"
+         definitionId="Ocaml.showTextHover"
+         id="Ocaml_sourceActions_showTextHover"
+         label="Show Text Hover"
+         style="push">
+   </action>
+   <action
+         class="ocaml.editor.actions.SelectDownwardOneBlock"
+         definitionId="Ocaml.selectDownwardOneBlock"
+         id="Ocaml_sourceActions_selectDownwardOneBlock"
+         label="Select Downward One Block"
+         style="toggle">
+   </action>
+   <action
+         class="ocaml.editor.actions.SelectUpwardOneBlock"
+         definitionId="Ocaml.selectUpwardOneBlock"
+         id="Ocaml_sourceActions_selectUpwardOneBlock"
+         label="Select Upward One Block"
+         style="push">
+   </action>
+   <action
+         class="ocaml.editor.actions.MoveCursorUpwardOneBlock"
+         definitionId="Ocaml.moveCursorUpwardOneBlock"
+         id="Ocaml_sourceActions_moveCursorUpwardOneBlock"
+         label="Move Cursor Upward One Block"
+         style="push">
+   </action>
+   <action
+         class="ocaml.editor.actions.MoveCursorDownwardOneBlock"
+         definitionId="Ocaml.moveCursorDownwardOneBlock"
+         id="Ocaml_sourceActions_moveCursorDownwardOneBlock"
+         label="Move Cursor Downward One Block"
+         style="push">
+   </action>
+   <action
+         class="ocaml.editor.actions.DeleteTrailingWhitespaces"
+         definitionId="Ocaml.deleteTrailingWhitespaces"
+         id="Ocaml_sourceActions_deleteTrailingWhitespaces"
+         label="Delete Trailing Whitespaces"
+         style="push">
+   </action>
+   <action
+         class="ocaml.editor.actions.SynchronizeAndGotoOutline"
+         definitionId="Ocaml.synchronizeGotoOutline"
+         id="Ocaml_sourceActions_synchronizeGotoOutline"
+         label="Synchronize And Go To Outline"
+         state="true"
+         style="push">
+   </action>
 		</actionSet>
+  <actionSet
+        description="Action for compiling projects"
+        id="Ocaml_projectActionSet"
+        label="Project Actions"
+        visible="true">
+     <action
+           class="ocaml.editor.actions.CompileProjectAction"
+           definitionId="Ocaml.compileProject"
+           id="Ocaml_projectActions_compileProject"
+           label="Compile Project"
+           style="push">
+     </action>
+     <action
+           class="ocaml.editor.actions.CancelCompileAllProjectsAction"
+           definitionId="Ocaml.cancelCompileAllProjects"
+           id="Ocaml_projectActions_cancelCompileAllProjects"
+           label="Cancel Compiling All Projects"
+           style="push">
+     </action>
+     <action
+           class="ocaml.editor.actions.CleanProjectAction"
+           definitionId="Ocaml.cleanProject"
+           id="Ocaml_projectActions_cleanProject"
+           label="Clean Project"
+           style="push">
+     </action>
+  </actionSet>
 	</extension>
 	<extension point="org.eclipse.ui.commands">
 		<category id="Ocaml.commandscategory" name="Ocaml Commands"/>
@@ -890,6 +999,81 @@
 			id="Ocaml.shiftLeftCommand" name="Shift Left"/>
 		<command categoryId="Ocaml.commandscategory"
 			id="Ocaml.markOccurrencesCommand" name="Mark Occurrences"/>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.gotoDefinitionCommand"
+        name="Go To Definition">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.moveCursorDownwardByIndent"
+        name="Move Cursor Downward By Indent">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.moveCursorUpwardByIndent"
+        name="Move Cursor Upward By Indent">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.selectUpwardByIndent"
+        name="Select Upward By Indent">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.selectDownwardByIndent"
+        name="Select Downward By Indent">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.showTextHover"
+        name="Show Text Hover">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.cancelCompileAllProjects"
+        name="Cancel Compile All Projects">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.compileProject"
+        name="Compile Project">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.cleanProject"
+        name="Clean Project">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.moveCursorDownwardOneBlock"
+        name="Move Cursor Downward One Block">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.moveCursorUpwardOneBlock"
+        name="Move Cursor Upward One Block">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.selectUpwardOneBlock"
+        name="Select Upward One Block">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.selectDownwardOneBlock"
+        name="Select Downward One Block">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.deleteTrailingWhitespaces"
+        name="Delete Trailing Whitespaces">
+  </command>
+  <command
+        categoryId="Ocaml.commandscategory"
+        id="Ocaml.synchronizeGotoOutline"
+        name="Synchronize And Go To Outline">
+  </command>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
 		<key
@@ -937,9 +1121,6 @@
 			contextId="Ocaml.editor.context"
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
 			sequence="CTRL+SPACE"/>
-		<key commandId="Ocaml.formatterCommand" contextId="Ocaml.editor.context"
-			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-			sequence="F3"/>
 		<key commandId="Ocaml.camlp4formatterCommand" contextId="Ocaml.editor.context"
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
 			sequence="M2+F3"/>
@@ -978,7 +1159,97 @@
 		<key commandId="Ocaml.markOccurrencesCommand"
 			contextId="Ocaml.editor.context"
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-			sequence="M1+M3+K"/>
+			sequence="M1+M3+N"/>
+  <key
+        commandId="Ocaml.gotoDefinitionCommand"
+        contextId="Ocaml.editor.context"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="F3">
+  </key>
+  <key
+        commandId="Ocaml.moveCursorDownwardByIndent"
+        contextId="org.eclipse.ui.textEditorScope"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+ARROW_DOWN">
+  </key>
+  <key
+        commandId="Ocaml.moveCursorUpwardByIndent"
+        contextId="org.eclipse.ui.textEditorScope"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+ARROW_UP">
+  </key>
+  <key
+        commandId="Ocaml.selectUpwardByIndent"
+        contextId="org.eclipse.ui.textEditorScope"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+M2+ARROW_UP">
+  </key>
+  <key
+        commandId="Ocaml.selectDownwardByIndent"
+        contextId="org.eclipse.ui.textEditorScope"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+M2+ARROW_DOWN">
+  </key>
+  <key
+        commandId="Ocaml.showTextHover"
+        contextId="org.eclipse.ui.textEditorScope"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+M3+H">
+  </key>
+  <key
+        commandId="Ocaml.cancelCompileAllProjects"
+        contextId="org.eclipse.ui.contexts.window"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+F12">
+  </key>
+  <key
+        commandId="Ocaml.compileProject"
+        contextId="org.eclipse.ui.contexts.window"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+B">
+  </key>
+  <key
+        commandId="Ocaml.cleanProject"
+        contextId="org.eclipse.ui.contexts.window"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+F9">
+  </key>
+  <key
+        commandId="Ocaml.selectDownwardOneBlock"
+        contextId="org.eclipse.ui.textEditorScope"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+M2+]">
+  </key>
+  <key
+        commandId="Ocaml.selectUpwardOneBlock"
+        contextId="org.eclipse.ui.textEditorScope"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+M2+[">
+  </key>
+  <key
+        commandId="Ocaml.moveCursorDownwardOneBlock"
+        contextId="org.eclipse.ui.textEditorScope"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+]">
+  </key>
+  <key
+        commandId="Ocaml.moveCursorUpwardOneBlock"
+        contextId="org.eclipse.ui.textEditorScope"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+[">
+  </key>
+  <key
+        commandId="Ocaml.deleteTrailingWhitespaces"
+        contextId="org.eclipse.ui.contexts.window"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M1+\">
+  </key>
+  <key
+        commandId="Ocaml.synchronizeGotoOutline"
+        contextId="Ocaml.editor.context"
+        schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+        sequence="M2+M3+Q L">
+  </key>
 	</extension>
 	<extension point="org.eclipse.ui.contexts">
 		<context description="Context for editing Ocaml source"
@@ -1011,16 +1282,23 @@
 			</action>
 			
 			<action label="Clean Project"
-				class="ocaml.popup.actions.CleanProjectAction"
+				class="ocaml.popup.actions.CleanProjectPopupAction"
 				icon="icons/clean.gif" menubarPath="additions" enablesFor="1"
 				id="ocaml.popup.actions.CleanProjectAction">
 			</action>
 			
 			<action label="Make Project"
-				class="ocaml.popup.actions.CompileProjectAction"
+				class="ocaml.popup.actions.CompileProjectPopupAction"
 				icon="icons/buildAll.gif" menubarPath="additions" enablesFor="1"
 				id="ocaml.popup.actions.CompileProjectAction">
 			</action>
+   <action
+         class="ocaml.popup.actions.CancelCompileProjectPopupAction"
+         enablesFor="1"
+         id="ocaml.popup.actions.cancelCompileActions"
+         label="Cancel Compiling Projects"
+         menubarPath="additions">
+   </action>
 			
 		</objectContribution>
 		<objectContribution adaptable="true" id="ocaml.fileContribution"
@@ -1090,6 +1368,10 @@
           markerType="Ocaml.ocamlSyntaxErrorMarker"
           name="Ocaml.ocamlSyntaxErrorAnnotationType">
     </type>
+    <type
+          markerType="ocaml.marker.occurrences"
+          name="ocaml.marker.occurrences">
+    </type>
  </extension>
  <extension
        point="org.eclipse.ui.editors.markerAnnotationSpecification">
@@ -1099,22 +1381,50 @@
           colorPreferenceValue="255,140,0"
           contributesToHeader="true"
           highlightPreferenceKey="syntaxerror.highlight"
-          highlightPreferenceValue="false"
+          highlightPreferenceValue="true"
           includeOnPreferencePage="true"
-          isGoToNextNavigationTarget="false"
-          isGoToPreviousNavigationTarget="false"
+          isGoToNextNavigationTarget="true"
+          isGoToNextNavigationTargetKey="true"
+          isGoToPreviousNavigationTarget="true"
+          isGoToPreviousNavigationTargetKey="true"
           label="Ocaml Syntax Error"
           overviewRulerPreferenceKey="syntaxerror.rulers.overview"
           overviewRulerPreferenceValue="true"
           presentationLayer="1"
-          showInNextPrevDropdownToolbarAction="false"
+          showInNextPrevDropdownToolbarAction="true"
+          showInNextPrevDropdownToolbarActionKey="true"
           symbolicIcon="error"
           textPreferenceKey="syntaxerror.text"
           textPreferenceValue="true"
           textStylePreferenceKey="syntaxerror.textstyle"
           textStylePreferenceValue="SQUIGGLES"
           verticalRulerPreferenceKey="syntaxerror.rulers.vertical"
-          verticalRulerPreferenceValue="false">
+          verticalRulerPreferenceValue="true">
+    </specification>
+    <specification
+          annotationType="ocaml.marker.occurrences"
+          colorPreferenceKey="ocaml.marker.occurrences.color"
+          colorPreferenceValue="192,255,192"
+          contributesToHeader="true"
+          highlightPreferenceKey="ocaml.marker.occurrences.highlight"
+          highlightPreferenceValue="true"
+          includeOnPreferencePage="true"
+          isGoToNextNavigationTarget="true"
+          isGoToNextNavigationTargetKey="true"
+          isGoToPreviousNavigationTarget="true"
+          isGoToPreviousNavigationTargetKey="true"
+          label="Ocaml Occurrences Marker"
+          overviewRulerPreferenceKey="ocaml.marker.occurrences.overview"
+          overviewRulerPreferenceValue="true"
+          presentationLayer="0"
+          showInNextPrevDropdownToolbarAction="true"
+          showInNextPrevDropdownToolbarActionKey="true"
+          symbolicIcon="info"
+          textPreferenceKey="ocaml.marker.occurrences.text"
+          textPreferenceValue="true"
+          textStylePreferenceValue="BOX"
+          verticalRulerPreferenceKey="ocaml.marker.occurrences.ruler"
+          verticalRulerPreferenceValue="true">
     </specification>
  </extension>
  <extension
@@ -1159,34 +1469,6 @@
 		<super
 			type="org.eclipse.core.resources.textmarker">
 		</super>
-	</extension>
-	<extension
-		point="org.eclipse.ui.editors.annotationTypes">
-		<type
-			markerType="ocaml.marker.occurrences"
-			name="ocaml.marker.occurrences">
-		</type>
-	</extension>
-	<extension
-		point="org.eclipse.ui.editors.markerAnnotationSpecification">
-		<specification
-			annotationType="ocaml.marker.occurrences"
-			colorPreferenceKey="ocaml.marker.occurrences.color"
-			colorPreferenceValue="192,255,192"
-			contributesToHeader="false"
-			highlightPreferenceKey="ocaml.marker.occurrences.highlight"
-			highlightPreferenceValue="true"
-			includeOnPreferencePage="true"
-			label="Ocaml Occurrences Marker"
-			overviewRulerPreferenceKey="ocaml.marker.occurrences.overview"
-			overviewRulerPreferenceValue="true"
-			presentationLayer="0"
-			textPreferenceKey="ocaml.marker.occurrences.text"
-			textPreferenceValue="true"
-			textStylePreferenceValue="BOX"
-			verticalRulerPreferenceKey="ocaml.marker.occurrences.ruler"
-			verticalRulerPreferenceValue="true">
-		</specification>
 	</extension>
 
 </plugin>

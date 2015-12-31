@@ -2,15 +2,17 @@ package ocaml.editors;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import ocaml.OcamlPlugin;
 import ocaml.debugging.DebugVisuals;
 import ocaml.editor.completion.CompletionJob;
+import ocaml.editor.syntaxcoloring.OcamlEditorColors;
 import ocaml.editors.util.OcamlCharacterPairMatcher;
 import ocaml.natures.OcamlNatureMakefile;
 import ocaml.parser.Def;
-import ocaml.popup.actions.CompileProjectAction;
+import ocaml.popup.actions.CompileProjectPopupAction;
 import ocaml.preferences.PreferenceConstants;
 import ocaml.views.outline.OcamlOutlineControl;
 import ocaml.views.outline.OutlineJob;
@@ -26,7 +28,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextListener;
@@ -34,10 +38,16 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.PaintManager;
 import org.eclipse.jface.text.TextEvent;
 import org.eclipse.jface.text.TextSelection;
-import org.eclipse.jface.text.TextViewer;
+import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.MatchingCharacterPainter;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -49,6 +59,8 @@ import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
+import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 /**
@@ -98,6 +110,12 @@ public class OcamlEditor extends TextEditor {
 	protected void createActions() {
 		super.createActions();
 
+		final ISourceViewer sourceViewer = this.getSourceViewer();
+		final StyledText textWidget = sourceViewer.getTextWidget();
+		final OcamlSourceViewerConfig sourceViewerConfig =
+				(OcamlSourceViewerConfig) this.getSourceViewerConfiguration();
+
+
 		try {
 			paintManager = new PaintManager(getSourceViewer());
 			matchingCharacterPainter = new MatchingCharacterPainter(getSourceViewer(),
@@ -111,7 +129,7 @@ public class OcamlEditor extends TextEditor {
 			 * AnnotationPainter(getSourceViewer(), null);
 			 * annotationPainter.addAnnotationType
 			 * ("Ocaml.ocamlSyntaxErrorMarker");
-			 * 
+			 *
 			 * paintManager.addPainter(annotationPainter);
 			 */
 
@@ -120,9 +138,8 @@ public class OcamlEditor extends TextEditor {
 		}
 
 		try {
-			StyledText text = this.getSourceViewer().getTextWidget();
-			caret = new DebugVisuals(text);
-			text.addPaintListener(caret);
+			caret = new DebugVisuals(textWidget);
+			textWidget.addPaintListener(caret);
 
 			IPath file = getPathOfFileBeingEdited();
 			if (file != null)
@@ -134,7 +151,7 @@ public class OcamlEditor extends TextEditor {
 		// parse the OCaml libraries in a background thread
 		try {
 			CompletionJob job = new CompletionJob("Parsing ocaml library mli files", null);
-			job.setPriority(CompletionJob.DECORATE);
+			job.setPriority(CompletionJob.INTERACTIVE); 	// Trung changes priority
 			job.schedule();
 		} catch (Exception e) {
 			OcamlPlugin.logError("ocaml plugin error", e);
@@ -146,13 +163,49 @@ public class OcamlEditor extends TextEditor {
 			OcamlPlugin.logError("ocaml plugin error", e);
 		}
 
-		this.getSourceViewer().addTextListener(new ITextListener() {
+		// synchronize with outline when double-click mouse
+		textWidget.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseUp(MouseEvent e) {
+			}
 
-			public void textChanged(TextEvent event) {
-				if (event.getDocumentEvent() != null)
-					rebuildOutline(500);
+			@Override
+			public void mouseDown(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				if (sourceViewerConfig.isContentAssistantActive() || e == null)
+					return;
+
+				synchronizeOutline();
 			}
 		});
+
+
+		// Trung: don't rebuild outline when text is changed because it
+		// slow down the system
+		/*
+		final ISourceViewer viewer = this.getSourceViewer();
+		final OcamlSourceViewerConfig viewerConfig = (OcamlSourceViewerConfig) this.getSourceViewerConfiguration();
+		viewer.addTextListener(new ITextListener() {
+
+			public void textChanged(TextEvent event) {
+				// Trung: rebuild only when content assistant is inactive
+				if (viewerConfig.isContentAssistantActive() || event == null)
+					return;
+
+				DocumentEvent docEvent = event.getDocumentEvent();
+				if (docEvent == null)
+					return;
+
+				String text = docEvent.getText().trim();
+				if (!text.isEmpty())
+					rebuildOutline(50, false); // don't sync outline with editor
+			}
+		});
+		*/
+
 	}
 
 	@Override
@@ -167,7 +220,7 @@ public class OcamlEditor extends TextEditor {
 		super.doSetInput(input);
 
 		if (this.outline != null) {
-			rebuildOutline(100);
+			rebuildOutline(50, false);
 		}
 
 		IProject project = this.getProject();
@@ -176,7 +229,7 @@ public class OcamlEditor extends TextEditor {
 
 		// parse the project interfaces in a background thread
 		CompletionJob job = new CompletionJob("Parsing ocaml project mli files", project);
-		job.setPriority(CompletionJob.DECORATE);
+		job.setPriority(CompletionJob.INTERACTIVE);	// Trung changes priority
 		job.schedule();
 
 		if (input instanceof IFileEditorInput) {
@@ -190,6 +243,8 @@ public class OcamlEditor extends TextEditor {
 		 * if (this.fOutlinePage != null) this.fOutlinePage.setInput(input);
 		 */
 	}
+
+
 
 	/**
 	 * We give the outline to Eclipse when it asks for an adapter with the
@@ -205,7 +260,7 @@ public class OcamlEditor extends TextEditor {
 
 			if (this.outline == null)
 				this.outline = new OcamlOutlineControl(this);
-			rebuildOutline(100);
+			rebuildOutline(50, false);
 			return this.outline;
 		}
 		return super.getAdapter(required);
@@ -222,6 +277,8 @@ public class OcamlEditor extends TextEditor {
 		StyledText styledText = this.getSourceViewer().getTextWidget();
 		styledText.setTabs(getTabSize());
 	}
+
+
 
 	public static int getTabSize() {
 		return OcamlPlugin.getInstance().getPreferenceStore().getInt(
@@ -264,7 +321,7 @@ public class OcamlEditor extends TextEditor {
 		OcamlPlugin.logError("selection is not instanceof TextSelection");
 		return -1;
 	}
-	
+
 	public static class LineColumn {
 		private final int line;
 		private final int column;
@@ -282,7 +339,7 @@ public class OcamlEditor extends TextEditor {
 			return column;
 		}
 	}
-	
+
 	/** @return the current selection offset in the editor, as a (line,column) position. */
 	public LineColumn getSelectionLineColumn() {
 		ISelection sel = getSelectionProvider().getSelection();
@@ -298,7 +355,7 @@ public class OcamlEditor extends TextEditor {
 				OcamlPlugin.logError(e);
 				return null;
 			}
-			
+
 		}
 		OcamlPlugin.logError("selection is not instanceof TextSelection");
 		return null;
@@ -407,6 +464,9 @@ public class OcamlEditor extends TextEditor {
 	public void doSave(IProgressMonitor monitor) {
 		super.doSave(monitor);
 
+		// rebuild Outline when file is saved
+		rebuildOutline(50, false);
+
 		boolean bMakefileNature = false;
 		try {
 			IProject project = this.getProject();
@@ -425,7 +485,7 @@ public class OcamlEditor extends TextEditor {
 			IWorkspace ws = ResourcesPlugin.getWorkspace();
 			IWorkspaceDescription desc = ws.getDescription();
 			if (desc.isAutoBuilding())
-				CompileProjectAction.compileProject(this.getProject());
+				CompileProjectPopupAction.compileProject(this.getProject());
 		}
 	}
 
@@ -433,7 +493,7 @@ public class OcamlEditor extends TextEditor {
 	 * @Override protected void editorContextMenuAboutToShow(IMenuManager menu)
 	 * { IFile file = this.getFileBeingEdited();
 	 * super.editorContextMenuAboutToShow(menu);
-	 * 
+	 *
 	 * MenuManager ocamlGroup = new MenuManager("OCaml"); menu.add(new
 	 * Separator()); menu.add(ocamlGroup); ocamlGroup.add(new
 	 * GenDocAction("GenDoc", file)); }
@@ -446,7 +506,7 @@ public class OcamlEditor extends TextEditor {
 	 * this.fOutlinePage; }
 	 */
 
-	public void rebuildOutline(int delay) {
+	public void rebuildOutline(int delay, boolean syncWithEditor) {
 
 		// invalidate previous definitions
 		this.codeDefinitionsTree = null;
@@ -457,14 +517,14 @@ public class OcamlEditor extends TextEditor {
 		// String doc = document.get();
 
 		if (outlineJob == null)
-			outlineJob = new OutlineJob("Rebuilding outline");
+			outlineJob = new OutlineJob("Rebuilding outline", syncWithEditor);
 		// else if (outlineJob.getState() == OutlineJob.RUNNING)
 		// return;
 		// only one Job at a time
 		else
 			outlineJob.cancel();
 
-		outlineJob.setPriority(CompletionJob.DECORATE);
+		outlineJob.setPriority(CompletionJob.SHORT);
 		outlineJob.setOutline(this.outline);
 		outlineJob.setDoc(document);
 		outlineJob.setEditor(this);
@@ -479,26 +539,42 @@ public class OcamlEditor extends TextEditor {
 	@Override
 	public void handleCursorPositionChanged() {
 		super.handleCursorPositionChanged();
-		synchronizeOutline();
+
 		fireCursorPositionChanged(getTextViewer().getSelectedRange());
 
-		if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
-				PreferenceConstants.P_SHOW_TYPES_IN_STATUS_BAR)) {
-			final String annot = OcamlTextHover.getAnnotAt(this,
-					(TextViewer) this.getSourceViewer(), this.getCaretOffset()).trim();
-			final OcamlEditor editor = this;
-			Display.getCurrent().asyncExec(new Runnable() {
+		final OcamlEditor editor = this;
+		OcamlTextHover hover = new OcamlTextHover(editor);
+		ITextViewer viewer = this.getTextViewer();
+		int offset = this.getCaretOffset();
+		IRegion region = hover.getHoverRegion(viewer, offset);
 
-				public void run() {
-					if (editor == null)
-						return;
-					if (!annot.equals(""))
-						editor.setStatusLineMessage(annot);
-					else
-						editor.setStatusLineMessage(null); // clear
-				}
-			});
+		String message = "";
+
+		if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+				PreferenceConstants.P_SHOW_MARKERS_IN_STATUS_BAR)) {
+			message = hover.getMarkerInfoOneLine(viewer, region);
 		}
+
+		// only display type info when there isn't any markers
+		if (message.isEmpty()
+				&& OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
+						PreferenceConstants.P_SHOW_TYPES_IN_STATUS_BAR)) {
+			message = hover.getTypeInfoOneLine(viewer, region);
+			if (message.contains("more lines..."))
+				message = "";
+		}
+
+		final String statusMessage = message;
+		Display.getCurrent().asyncExec(new Runnable() {
+			public void run() {
+				editor.setStatusLineMessage(statusMessage);
+			}
+		});
+	}
+
+	@Override
+	public void setStatusLineMessage(String message) {
+		super.setStatusLineMessage(message);
 	}
 
 	private Def codeDefinitionsTree = null;

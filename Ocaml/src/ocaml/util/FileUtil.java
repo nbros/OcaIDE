@@ -53,7 +53,6 @@ public class FileUtil {
 				if ((ch == ' ') || (ch == '\t') || (ch == '\n') || (ch == '\r')) {
 					// meets separation character
 					pos--;
-					continue;
 				} else if (ch == ')') {
 					raf.seek(pos - 2);
 					int ch2 = raf.read();
@@ -61,7 +60,6 @@ public class FileUtil {
 						// meets end comment block symbols
 						commentBlocks++;
 						pos = pos - 2;
-						continue;
 					} else if (commentBlocks > 0)
 						pos--;
 					else
@@ -73,7 +71,6 @@ public class FileUtil {
 						// meets begin comments block symbols
 						commentBlocks--;
 						pos = pos - 2;
-						continue;
 					} else if (commentBlocks > 0)
 						pos--;
 					else

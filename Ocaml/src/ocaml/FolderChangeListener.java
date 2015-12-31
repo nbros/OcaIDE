@@ -43,10 +43,11 @@ public class FolderChangeListener implements IResourceChangeListener {
 							switch (delta.getKind()) {
 							case IResourceDelta.ADDED: {
 
-								// ignore special directories (.settings, .git, .cvsignore, etc.)
+								// ignore special directories (.settings, .git, .cvsignore, etc.) but not "."
 								IResource r = res;
 								while (r != null) {
-									if (r.getName().startsWith("."))
+									String rName = r.getName();
+									if (rName.startsWith("."))
 										return false;
 									r = r.getParent();
 								}
@@ -55,12 +56,24 @@ public class FolderChangeListener implements IResourceChangeListener {
 								if(res.getName().equals("_build"))
 									return false;
 
-								// add this path to the project paths
+								// add this path to the project paths when necessary
 								OcamlPaths paths = new OcamlPaths(project);
 								String[] strPaths = paths.getPaths();
-								String[] newPaths = new String[strPaths.length + 1];
-								System.arraycopy(strPaths, 0, newPaths, 0, strPaths.length);
-								newPaths[strPaths.length] = res.getProjectRelativePath().toPortableString();
+								String resPath = res.getProjectRelativePath().toPortableString();
+								
+								boolean needAdd = true;
+								for (String s: strPaths) {
+									if (s.compareTo(resPath) == 0) {
+										needAdd = false;
+										break;
+									}
+								}
+								String[] newPaths = strPaths;
+								if (needAdd) {
+									newPaths = new String[strPaths.length + 1];
+									System.arraycopy(strPaths, 0, newPaths, 0, strPaths.length);
+									newPaths[strPaths.length] = resPath;
+								}
 								paths.setPaths(newPaths);
 
 								break;

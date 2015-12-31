@@ -39,7 +39,7 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 					int selEnd = selStart + selection.getLength();
 
 					// the last selected character can be a newline
-					if (selEnd > 1)
+					if (selEnd - selStart > 1)
 						selEnd--;
 
 					IEditorInput input = editor.getEditorInput();
@@ -67,7 +67,7 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 						editor.getSelectionProvider().setSelection(sel);
 
 					} catch (BadLocationException e) {
-						OcamlPlugin.logError("Wrong offset", e);
+//						OcamlPlugin.logError("Wrong offset", e);
 						return;
 					}
 
@@ -86,7 +86,7 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 		final int tabSize = OcamlEditor.getTabSize();
 
 		// split the string into lines
-		String[] lines = input.split("\\r?\\n");
+		String[] lines = input.split("\\r?\\n", -1);
 
 		// uncomment
 		if (isCommented(lines)) {
@@ -163,8 +163,8 @@ public class CommentSelectionAction implements IWorkbenchWindowActionDelegate {
 	// comment character should be inserted at the shortest indentation position
 	// and at the end of longest line.
 	private String comment(String line, int indent, int length, int tabSize) {
-		
-		if (line.trim().equals("")) 
+
+		if (line.trim().equals(""))
 			return line;
 
 		StringBuilder builder = new StringBuilder();

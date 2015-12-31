@@ -55,19 +55,22 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
 								int endOffset = region.getOffset() + region.getLength();
 								marker.setAttribute(IMarker.CHAR_START, startOffset);
 								marker.setAttribute(IMarker.CHAR_END, endOffset);
+								marker.setAttribute(IMarker.MESSAGE, "");
 								region = docFind.find(endOffset + 1, text, true, true, false, false);
 							}
 						}
 					} catch (Exception e) {
-						OcamlPlugin.logError(e);
+//						OcamlPlugin.logError(e);
 					}
-				} else
-					OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": only works on ml and mli files");
-
-			} else
-				OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": editorPart is null");
-		} else
-			OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": page is null");
+				} 
+//				else
+//					OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": only works on ml and mli files");
+			}
+//			else
+//				OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": editorPart is null");
+		}
+//		else
+//			OcamlPlugin.logError(MarkOccurrencesAction.class.getSimpleName() + ": page is null");
 	}
     
 	public void dispose() {

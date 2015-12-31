@@ -9,9 +9,11 @@ import ocaml.editor.syntaxcoloring.OcamlPartitionScanner;
 import ocaml.preferences.PreferenceConstants;
 
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.BadPartitioningException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TextUtilities;
@@ -34,6 +36,8 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 
 	/** A comment opened at the beginning of the line */
 	private Pattern patternCommentOpen = Pattern.compile("^\\(\\*");
+	
+	private Pattern patternCommentMultipleLines = Pattern.compile("^\\*");
 
 	/** A "no-format" comment opened at the beginning of the line */
 	private Pattern patternCommentOpenNoFormat = Pattern.compile("^\\(\\*\\|");
@@ -88,8 +92,8 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 
 		int offsetInLine = command.offset - lineRegion.getOffset();
 
-		String beforeCursor = line.substring(0, offsetInLine).trim();
-		String afterCursor = line.substring(offsetInLine, line.length()).trim();
+		String beforeCursor = line.substring(0, offsetInLine);
+		String afterCursor = line.substring(offsetInLine, line.length());
 		
 		try {
 			ITypedRegion region = document.getPartition(offsetInLine);
@@ -164,7 +168,7 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 					PreferenceConstants.P_EDITOR_CONTINUE_COMMENTS)) {
 				Matcher matcher = patternCommentOpenNoFormat.matcher(beforeCursor);
 				if (matcher.find() && !beforeCursor.contains("*)")) {
-					command.text = "*)" + eol + makeIndent(indent) + "(*| ";
+					command.text = " *)" + eol + makeIndent(indent) + "(*| ";
 					return;
 				}
 
@@ -173,9 +177,50 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 				if (matcher.find())
 					return;
 
+				// support multiple-lines comment like Ecipse for Java
 				matcher = patternCommentOpen.matcher(beforeCursor);
-				if (matcher.find() && !beforeCursor.contains("*)")) {
-					command.text = "*)" + eol + makeIndent(indent) + "(* ";
+				if (matcher.find()) {
+					try {
+						IDocumentExtension3 extension = (IDocumentExtension3) document;
+						ITypedRegion partition;
+						partition = extension.getPartition(OcamlPartitionScanner.OCAML_PARTITIONING,
+								command.offset, false);
+						if(OcamlPartitionScanner.OCAML_DOCUMENTATION_COMMENT.equals(partition.getType())||
+								OcamlPartitionScanner.OCAML_MULTILINE_COMMENT.equals(partition.getType())) {
+							command.text = eol + makeIndent(indent) + " * ";
+						}
+						else if (partition.getOffset() <= matcher.end() + lineRegion.getOffset()) {
+							String strIndent = makeIndent(indent);
+							command.text = eol + makeIndent(indent) + " * "  + eol + makeIndent(indent) +  " *)";
+							command.shiftsCaret = false;
+			                command.caretOffset = command.offset + eol.length() + strIndent.length() + 3;
+						}
+					} catch (BadLocationException e) {
+						OcamlPlugin.logError("bad location in OcamlAutoEditStrategy", e);
+					} catch (BadPartitioningException e) {
+						OcamlPlugin.logError("bad partitioning in OcamlAutoEditStrategy", e);
+					}
+					return;
+				}
+				
+				// support multiple-lines comment like Eclipse for Java
+				matcher = patternCommentMultipleLines.matcher(trimmed); 
+				if (matcher.find()) {
+					try {
+						IDocumentExtension3 extension = (IDocumentExtension3) document;
+						ITypedRegion partition = extension.getPartition(OcamlPartitionScanner.OCAML_PARTITIONING,
+								command.offset, false);
+						if(OcamlPartitionScanner.OCAML_DOCUMENTATION_COMMENT.equals(partition.getType())||
+								OcamlPartitionScanner.OCAML_MULTILINE_COMMENT.equals(partition.getType())) {
+							if (trimmed.startsWith("*") && !trimmed.startsWith("*)")) {
+								command.text = eol + makeIndent(indent) + " * ";
+							}
+						}
+					} catch (BadLocationException e) {
+						OcamlPlugin.logError("bad location in OcamlAutoEditStrategy", e);
+					} catch (BadPartitioningException e) {
+						OcamlPlugin.logError("bad partitioning in OcamlAutoEditStrategy", e);
+					}
 					return;
 				}
 			}
@@ -246,8 +291,45 @@ public class OcamlAutoEditStrategy implements IAutoEditStrategy {
 				}
 
 				else if (OcamlPlugin.getInstance().getPreferenceStore().getBoolean(
-						PreferenceConstants.P_EDITOR_KEEP_INDENT))
-					command.text = eol + makeIndent(indent);
+						PreferenceConstants.P_EDITOR_KEEP_INDENT)) {
+					// if current line contains only whitespace, then
+					// then trim it and indent next line by indentation
+					// of nearest non-whitespace line
+					try {
+						int lineNum = document.getLineOfOffset(command.offset);
+						int startLineFindIndent = lineNum - 1;
+						String firstPartCurrentLine = 
+								document.get(lineRegion.getOffset(),
+										command.offset - lineRegion.getOffset());
+						// if enter is pressed at beginning of line, just start a new line
+						if (firstPartCurrentLine.isEmpty()) {
+							command.text = eol;
+						}
+						// if enter is pressed at middle or end of line,
+						// then new-line-and-indent
+						else {
+							if (firstPartCurrentLine.trim().isEmpty()) {
+								startLineFindIndent = lineNum - 1;
+								command.length = command.offset - lineRegion.getOffset();
+								command.offset = lineRegion.getOffset();
+							}
+							else
+								startLineFindIndent = lineNum;
+							int priorIndent = 0;
+							for (int l = startLineFindIndent; l >= 0; l--) {
+								int x = document.getLineOffset(l);
+								int y = document.getLineOffset(l+1);
+								String priorLine = document.get(x, y - x + 1);
+								if (!priorLine.trim().isEmpty()) {
+									priorIndent = OcamlFormatter.getLineIndent(priorLine); 
+									break;
+								}
+							}
+							command.text = eol + makeIndent(priorIndent);
+						}
+					} catch (BadLocationException e) {
+					}
+				}
 
 			}
 		} else if (command.text.equals("\t")) {

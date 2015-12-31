@@ -258,8 +258,8 @@ public class OcamlMakefileBuilder extends IncrementalProjectBuilder {
 						public void run() {
 							try {
 								project.refreshLocal(IProject.DEPTH_INFINITE, null);
-							} catch (CoreException e1) {
-								OcamlPlugin.logError("ocaml plugin error", e1);
+							} catch (Exception e) {
+//								OcamlPlugin.logError("ocaml plugin error", e);
 							}
 						}
 					});
