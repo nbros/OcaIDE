@@ -1,5 +1,6 @@
 package ocaml.editor.completion;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import ocaml.OcamlPlugin;
@@ -26,13 +27,14 @@ public class OcamlInformationPresenter implements DefaultInformationControl.IInf
 		final Color colorSection = new Color(display, 150, 50, 191);
 		final Color colorParent = new Color(display, 191, 100, 50);
 		final Color colorCode = new Color(display, 0, 0, 255);
+		final Color colorModuleName = new Color(display, 119, 131, 112);
 		final Color colorFilename = new Color(display, 64, 64, 64);
 
 		String[] infos = infoText.split("\\$\\@\\|");
 
 		// templates don't respect the same format
-		if (infos.length != 5)
-			infos = new String[] { "", "", "", infoText, "" };
+		if (infos.length != 6)
+			infos = new String[] { "", "", "", "", infoText, "" };
 
 		// the offset in the generated text, in number of characters
 		int offset = 0;
@@ -40,19 +42,25 @@ public class OcamlInformationPresenter implements DefaultInformationControl.IInf
 		// the result string
 		StringBuilder result = new StringBuilder();
 
-		String text;
+		String text = "";
 
 		String parentName = infos[0].trim();
 		String body = infos[1].trim();
-		String sectionComment = infos[2].trim();
-		String comment = infos[3].trim();
-		String filename = infos[4].trim();
+		String ocamlType = infos[2].trim();
+		String sectionComment = infos[3].trim();
+		String comment = infos[4].trim();
+		String filename = infos[5].trim();
 
-		if (!body.equals("")) {
+		// if there is type info, then no need to print body
+		if (!ocamlType.equals("")) {
 			text = body + "\n";
 			result.append(text);
-
-			// Color colorBody = new Color(display, 50, 150, 200);
+			presentation.addStyleRange(new StyleRange(offset, text.length(), null, null, SWT.BOLD));
+			offset += text.length();
+		}
+		else if (!body.equals("")) {
+			text = body + "\n";
+			result.append(text);
 			presentation.addStyleRange(new StyleRange(offset, text.length(), null, null, SWT.BOLD));
 			offset += text.length();
 		}
@@ -251,16 +259,28 @@ public class OcamlInformationPresenter implements DefaultInformationControl.IInf
 		}
 
 		if (!filename.equals("")) {
+			// attach module name
+			String[] parts = filename.split(File.separator);
+			String moduleName = "";
+			if (parts.length > 1) {
+				moduleName = "Module: " + parts[parts.length - 1];
+			}
 			String strResult = result.toString();
 			if (strResult.endsWith("\n\n"))
-				text = filename;
+				text = moduleName;
 			else if (strResult.endsWith("\n"))
-				text = "\n" + filename;
+				text = "\n" + moduleName;
 			else
-				text = "\n\n" + filename;
+				text = "\n\n" + moduleName;
 
 			result.append(text);
+			presentation.addStyleRange(new StyleRange(offset, text.length(), colorModuleName, null,
+				SWT.ITALIC));
+			offset += text.length();
 
+			// attach file name
+			text = "\n" + filename;
+			result.append(text);
 			presentation.addStyleRange(new StyleRange(offset, text.length(), colorFilename, null,
 				SWT.ITALIC));
 			offset += text.length();

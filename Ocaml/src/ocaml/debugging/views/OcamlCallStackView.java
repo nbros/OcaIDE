@@ -6,8 +6,6 @@ import java.util.regex.Pattern;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Rectangle;
@@ -30,10 +28,10 @@ public class OcamlCallStackView extends ViewPart{
 		list.removeAll();
 		for(String e : elements)
 			list.add(e);
+		list.setRedraw(true);
 		if (selectionIndex >= 0 && selectionIndex < elements.length) {
 			list.setSelection(selectionIndex);
 		}
-		list.setRedraw(true);
 	}
 	
 	public void empty(){

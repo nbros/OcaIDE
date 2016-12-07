@@ -95,7 +95,7 @@ public class OutlineBuildListener implements IResourceChangeListener {
 							return;
 						IEditorPart editorPart = workbenchPage.getActiveEditor();
 						if (editorPart instanceof OcamlEditor)
-							((OcamlEditor) editorPart).rebuildOutline(500);
+							((OcamlEditor) editorPart).rebuildOutline(500,false);
 					} catch (Throwable e) {
 						OcamlPlugin.logError("rebuilding outline after build", e);
 					}

@@ -64,7 +64,8 @@ public class OcamlNewInterfaceParser {
 	 * interpreting a keyword inside a comment, and to attach comments to
 	 * definitions.
 	 */
-	private LinkedList<Comment> comments;
+	private LinkedList<Comment> comments = new LinkedList<Comment>();
+
 
 	/** Section comments */
 	private LinkedList<Comment> sectionComments;
@@ -198,12 +199,9 @@ public class OcamlNewInterfaceParser {
 			String errors = preprocessor.getErrorOutput().trim();
 			if (!"".equals(errors)) {
 				Def def = new Def(moduleName, Def.Type.ParserError, 0, 0);
-				def.filename = filename;
-
-				def
-						.setComment("ERROR: The camlp4 preprocessor encountered an error "
+				def.setFileName(filename);
+				def.setComment("ERROR: The camlp4 preprocessor encountered an error "
 								+ "while parsing this file:\n" + errors);
-
 				cache.addFirst(new CachedDef(file, def));
 				return def;
 			}
@@ -216,20 +214,14 @@ public class OcamlNewInterfaceParser {
 		// parse the .mli interface file or the .ml module file
 		try {
 			// System.err.println("parsing:" + filename);
-			definition = parseModule(lines, moduleName, bInterface);
+			definition = parseModule(lines, filename, moduleName, bInterface);
 		} catch (Throwable e) {
-			// if there was a parsing error, we log it and we continue on to the
-			// next file
-			// OcamlPlugin.logError("Error parsing '" + moduleName + "'", e);
+			// if there was a parsing error, we log it and we continue on to the next file
+			e.printStackTrace();
 			Def def = new Def(moduleName, Def.Type.ParserError, 0, 0);
-			def.filename = filename;
-
-			def
-					.setComment("ERROR: The parser encountered an error while parsing this file.\n\n"
+			def.setFileName(filename);
+			def.setComment("ERROR 2: The parser encountered an error while parsing this file.\n\n"
 							+ "Please make sure that it is syntactically correct.\n\n");
-
-			// System.err.println("ERROR:" + filename);
-
 			cache.addFirst(new CachedDef(file, def));
 			return def;
 		}
@@ -268,14 +260,13 @@ public class OcamlNewInterfaceParser {
 	}
 
 	private void setFilenames(Def definition, String filename) {
-		definition.filename = filename;
+		definition.setFileName(filename);
 		for (Def child : definition.children)
 			setFilenames(child, filename);
 	}
 
-	private Def parseModule(String doc, String moduleName,
+	private Def parseModule(String doc, String filename, String moduleName,
 			boolean parseInterface) throws Throwable {
-
 		/*
 		 * "Sanitize" the document by replacing extended characters, which
 		 * otherwise would crash the parser
@@ -296,19 +287,38 @@ public class OcamlNewInterfaceParser {
 
 		Def root = null;
 
-		if (parseInterface)
-			root = (Def) parser.parse(scanner, OcamlParser.AltGoals.interfaces);
-		else
-			root = (Def) parser.parse(scanner);
-
-		root = root.cleanCopy();
+		try {
+			if (parseInterface)
+				root = (Def) parser.parse(scanner, OcamlParser.AltGoals.interfaces);
+			else
+				root = (Def) parser.parse(scanner);
+			root = root.cleanCopy(false);
+		} catch (Exception e) {
+			// recover pieces from the AST (which couldn't be built completely 
+			// because of an unrecoverable error)
+			if (root == null || !parser.errorReporting.errors.isEmpty()) {
+				root = new Def(moduleName, Def.Type.Module, 0, 0);
+				for (Def def : parser.recoverDefs)
+					if (def.bTop && def.name != null && !"".equals(def.name.trim())) {
+						def.bTop = false;
+						root.children.add(def);
+					}
+				for (Def def : parser.recoverIdents)
+					if (def.bTop && def.name != null && !"".equals(def.name.trim())) {
+						def.bTop = false;
+						root.children.add(def);
+					}
+				root = root.cleanCopy(true);
+			}
+		}
+		
 
 		root.name = moduleName;
 
 		// set the start offset from the packed (line, column) positions
 		computeLinesStartOffset(doc);
 		computeDefinitionsStartOffset(root);
-
+		
 		// parse the comments and remove them from the text
 		if (parseInterface) {
 			doc = parseComments(doc);
@@ -328,8 +338,7 @@ public class OcamlNewInterfaceParser {
 
 		if (parser.errorReporting.errors.size() != 0) {
 			root.type = Def.Type.ParserError;
-			root
-					.setComment("ERROR: The parser encountered an error while parsing this file.\n\n"
+			root.setComment("ERROR 1: The parser encountered an error while parsing this file.\n\n"
 							+ "Please make sure that it is syntactically correct.\n\n");
 		} else
 			root.type = Def.Type.Module;
@@ -390,7 +399,7 @@ public class OcamlNewInterfaceParser {
 		for (Def child : def.children)
 			computeDefinitionsStartOffset(child);
 	}
-
+	
 	/**
 	 * Find the end of each definition, knowing the start of the next
 	 * definition.
@@ -419,9 +428,7 @@ public class OcamlNewInterfaceParser {
 
 		boolean skip = false;
 		if (def.defOffsetStart > def.defOffsetEnd || def.defOffsetStart < 0) {
-			OcamlPlugin
-					.logError("OcamlNewParser: findDefinitionsEnd: wrong offset ("
-							+ def.name + ")");
+			OcamlPlugin.logWarning("OcamlNewParser: findDefinitionsEnd: wrong offset (" + def.name + ")");
 			skip = true;
 		}
 
@@ -496,7 +503,6 @@ public class OcamlNewInterfaceParser {
 	private String parseComments(String lines) {
 
 		StringBuilder result = new StringBuilder(lines);
-		comments = new LinkedList<Comment>();
 		sectionComments = new LinkedList<Comment>();
 
 		boolean bParL = false;
@@ -685,17 +691,21 @@ public class OcamlNewInterfaceParser {
 
 		boolean bNewline = false;
 		for (int i = offset1; i < offset2; i++) {
-			if (text.charAt(i) == '\n') {
-				if (bNewline)
-					return false;
-				else {
-					if (noNewLines)
+			try {
+				if (text.charAt(i) == '\n') {
+					if (bNewline)
 						return false;
-					bNewline = true;
-				}
-			} else if (!Character.isWhitespace(text.charAt(i))
-					&& text.charAt(i) != ';')
+					else {
+						if (noNewLines)
+							return false;
+						bNewline = true;
+					}
+				} else if (!Character.isWhitespace(text.charAt(i))
+						&& text.charAt(i) != ';')
+					return false;
+			} catch (Exception e) {
 				return false;
+			}
 		}
 
 		return true;

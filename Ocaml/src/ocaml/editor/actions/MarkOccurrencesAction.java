@@ -55,6 +55,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate {
 								int endOffset = region.getOffset() + region.getLength();
 								marker.setAttribute(IMarker.CHAR_START, startOffset);
 								marker.setAttribute(IMarker.CHAR_END, endOffset);
+								marker.setAttribute(IMarker.MESSAGE, "");
 								region = docFind.find(endOffset + 1, text, true, true, false, false);
 							}
 						}

@@ -3,6 +3,7 @@ package ocaml.views.outline;
 import ocaml.OcamlPlugin;
 import ocaml.editors.OcamlEditor;
 import ocaml.parser.Def;
+import ocaml.util.Misc;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -185,7 +186,7 @@ public class QuickOutline extends PopupDialog {
 			
 			IDocument document = editor.getDocumentProvider().getDocument(
 					editor.getEditorInput());
-			IRegion region = def.getRegion(document);
+			IRegion region = def.getNameRegion(document);
 
 			if (region != null) {
 				editor.selectAndReveal(region.getOffset(), region.getLength());
@@ -325,14 +326,44 @@ public class QuickOutline extends PopupDialog {
 		
 		if (element instanceof Def) {
 			Def def = (Def) element;
-			String matchName = ((ILabelProvider) fTreeViewer.getLabelProvider()).getText(def);
-			String filterText = getFilterText().getText();
-			
-			if(matchName != null) {
-				if(filterText.startsWith("*")) {
-					return matchName.contains(filterText.substring(1));
-				} else {
-					return matchName.startsWith(filterText);
+			// don't show identifier and parameter in quick outline
+			if (def.type != Def.Type.Parameter && def.type != Def.Type.Identifier) {
+				String matchName = ((ILabelProvider) fTreeViewer.getLabelProvider()).getText(def);
+				String filterText = getFilterText().getText();
+				/*
+				 *  allow to search special characters in type information:
+				 *  In raw text: 
+				 *    use "a -> b" for function type "a &rarr; b"
+				 *    use "a x b" to search a tuple type (a * b)
+				 *    use 'a, 'b, 'c,... for &alpha;, &beta;, &gamma;,...
+				 */
+				filterText = filterText.replaceAll("->", "\u2192");
+				filterText = filterText.replaceAll(" x ", " \u00d7 ");
+				filterText = filterText.replaceAll("\\B'a\\b", "\u03b1");
+				filterText = filterText.replaceAll("\\B'b\\b", "\u03b2");
+				filterText = filterText.replaceAll("\\B'c\\b", "\u03b3");
+				filterText = filterText.replaceAll("\\B'd\\b", "\u03b4");
+				filterText = filterText.replaceAll("\\B'e\\b", "\u03b5");
+				filterText = filterText.replaceAll("\\B'f\\b", "\u03b6");
+				filterText = filterText.replaceAll("\\B'g\\b", "\u03b7");
+				filterText = filterText.replaceAll("\\B'h\\b", "\u03b8");
+				filterText = filterText.replaceAll("\\B'i\\b", "\u03b9");
+				filterText = filterText.replaceAll("\\B'j\\b", "\u03ba");
+				filterText = filterText.replaceAll("\\B'k\\b", "\u03bb");
+				filterText = filterText.replaceAll("\\B'l\\b", "\u03bc");
+				
+				try {
+					// use regex when filterText start with "^" (regex is slow)
+					if (filterText.startsWith("^"))
+						return matchName.matches(filterText);
+					// search for substring when filterText start with "*"
+					else if (filterText.startsWith("*"))
+						return matchName.contains(filterText.substring(1));
+					// otherwise, search for static string
+					else
+						return matchName.startsWith(filterText);
+				} catch (Exception e) {
+					return false;
 				}
 			}
 		}

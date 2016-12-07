@@ -445,9 +445,9 @@ public class OcamlBrowserView extends ViewPart {
 	}
 
 	private void addFormatedText(StyledText text, Def def) {
-		String body = def.body;
+		String body = def.getBody();
 		String comment = def.comment;
-		String filename = def.filename;
+		String filename = def.getFileName();
 		// String name = def.getName();
 		String parentName = def.parentName;
 		String sectionComment = def.sectionComment;

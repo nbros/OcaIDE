@@ -140,8 +140,6 @@ public class CompletionJob extends Job {
 				}
 
 				if (!(dir.exists() && dir.isDirectory())) {
-					OcamlPlugin.logError("Wrong path:" + dir.toString() + " (in project:"
-							+ project.getName() + ")");
 					continue;
 				}
 

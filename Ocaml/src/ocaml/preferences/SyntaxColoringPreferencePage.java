@@ -104,7 +104,6 @@ public class SyntaxColoringPreferencePage extends FieldEditorPreferencePage impl
 		this.addField(colorFieldUppercase);
 		this.addField(colorFieldPointedUppercase);
 		
-
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_BOLD_KEYWORDS, "Bold k&eywords", this
 				.getFieldEditorParent()));
 		this.addField(new BooleanFieldEditor(PreferenceConstants.P_BOLD_COMMENTS, "Bold co&mments", this

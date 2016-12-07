@@ -196,7 +196,7 @@ public class Camlp4Preprocessor {
 
 		if (def.type != Def.Type.Root) {
 
-			IRegion region = def.getRegion(newDocument);
+			IRegion region = def.getNameRegion(newDocument);
 			// String doc = newDocument.get();
 
 			int pos = region.getOffset() - 1;

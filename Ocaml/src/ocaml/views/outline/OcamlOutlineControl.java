@@ -101,7 +101,7 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 				public void run() {
 					OcamlOutlineControl.bDebug = this.isChecked();
 					super.run();
-					editor.rebuildOutline(0);
+					editor.rebuildOutline(0, false);
 					outline.update();
 				}
 			};
@@ -141,7 +141,7 @@ public final class OcamlOutlineControl extends ContentOutlinePage {
 				IDocument document = editor.getDocumentProvider().getDocument(
 						editor.getEditorInput());
 
-				IRegion region = def.getRegion(document);
+				IRegion region = def.getNameRegion(document);
 
 				if (region != null) {
 					ISelection editorSel = editor.getSelectionProvider().getSelection();

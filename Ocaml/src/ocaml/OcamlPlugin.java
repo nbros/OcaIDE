@@ -37,6 +37,7 @@ package ocaml;
 
 import java.io.File;
 import java.net.URL;
+import java.util.HashMap;
 
 import ocaml.debugging.OcamlDebugger;
 import ocaml.editor.syntaxcoloring.OcamlPartitionScanner;
@@ -51,6 +52,7 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
@@ -72,6 +74,8 @@ public class OcamlPlugin extends AbstractUIPlugin {
 
 	/** The singleton instance of the plug-in. */
 	private static OcamlPlugin instance = null;
+	
+	public static HashMap<String, IProgressMonitor> ActiveBuildJobs = new HashMap<>(); 
 
 	/** The directory in which the plug-in was started. */
 	private final String pluginDirectory;

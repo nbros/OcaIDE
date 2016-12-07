@@ -116,8 +116,11 @@ public class OcamlAnnotParser {
 				int endLineOffset = Integer.parseInt(matcher.group(5));
 				int endOffset = Integer.parseInt(matcher.group(6));
 
-				beginOffset += document.getLineOffset(beginLine - 1) - beginLineOffset;
-				endOffset += document.getLineOffset(endLine - 1) - endLineOffset;
+				if ((beginLine >= 1) && (beginLine <= document.getNumberOfLines()))
+					beginOffset += document.getLineOffset(beginLine - 1) - beginLineOffset;
+				
+				if ((endLine >= 1) && (endLine <= document.getNumberOfLines()))
+					endOffset += document.getLineOffset(endLine - 1) - endLineOffset;
 
 				String type = matcher.group(7);
 
