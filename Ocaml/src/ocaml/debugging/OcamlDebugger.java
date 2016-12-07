@@ -3,8 +3,6 @@ package ocaml.debugging;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -244,11 +242,11 @@ public class OcamlDebugger implements IExecEvents {
 					//These paths are either absolute or relative to the project
 					//directory. We must convert them to absolute paths in case
 					//we are running a bytecode within a nested directory.
-					Path path = Paths.get(pathStr);
-					if (!path.isAbsolute()) {
-						path = Paths.get(projectLocation.append(pathStr).toOSString());
+					File file = new File(pathStr);
+					if (!file.isAbsolute()) {
+						file = new File(projectLocation.append(pathStr).toOSString());
 					}
-					commandLineArgs.add(path.toString());	
+					commandLineArgs.add(file.toString());	
 				}
 			}
 
